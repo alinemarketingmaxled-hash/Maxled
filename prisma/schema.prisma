@@ -89,6 +89,9 @@ model PipelineStage {
   order      Int
   color      String?
 
+  // Marks the stage analytics treats as closed/won revenue (§3.1 KPIs).
+  isWon Boolean @default(false)
+
   // Agenda automation (spec 3.4): the stage that triggers the "on the way"
   // 3-business-day countdown, and which stage it auto-advances into.
   isOnTheWay            Boolean        @default(false)

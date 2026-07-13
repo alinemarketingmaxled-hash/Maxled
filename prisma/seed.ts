@@ -48,20 +48,21 @@ async function main() {
     { name: "Proposta enviada", order: 1 },
     { name: "Negociação", order: 2 },
     { name: "A caminho", order: 3, isOnTheWay: true },
-    { name: "Fechado", order: 4 },
+    { name: "Fechado", order: 4, isWon: true },
   ];
 
   const stages = [];
   for (const s of stageNames) {
     const stage = await prisma.pipelineStage.upsert({
       where: { id: `${pipeline.id}-${s.order}` },
-      update: {},
+      update: { isOnTheWay: s.isOnTheWay ?? false, isWon: s.isWon ?? false },
       create: {
         id: `${pipeline.id}-${s.order}`,
         pipelineId: pipeline.id,
         name: s.name,
         order: s.order,
         isOnTheWay: s.isOnTheWay ?? false,
+        isWon: s.isWon ?? false,
       },
     });
     stages.push(stage);
@@ -111,6 +112,39 @@ async function main() {
       stageId: firstStage.id,
       name: "Distribuidora Sul — Refil #4471",
       value: 18400,
+    },
+  });
+
+  const wonStage = stages.find((s) => s.isWon)!;
+  const negotiationStage = stages[2];
+  const wonDeals = [
+    { id: "seed-deal-2", name: "Distribuidora Sul — Pedido #4102", value: 22900 },
+    { id: "seed-deal-3", name: "Distribuidora Sul — Showroom", value: 31100 },
+  ];
+  for (const d of wonDeals) {
+    await prisma.deal.upsert({
+      where: { id: d.id },
+      update: {},
+      create: {
+        id: d.id,
+        ownerId: seller.id,
+        contactId: contact.id,
+        stageId: wonStage.id,
+        name: d.name,
+        value: d.value,
+      },
+    });
+  }
+  await prisma.deal.upsert({
+    where: { id: "seed-deal-4" },
+    update: {},
+    create: {
+      id: "seed-deal-4",
+      ownerId: seller.id,
+      contactId: contact.id,
+      stageId: negotiationStage.id,
+      name: "Distribuidora Sul — Ampliação galpão",
+      value: 12750,
     },
   });
 
