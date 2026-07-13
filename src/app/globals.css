@@ -1,0 +1,86 @@
+@import "tailwindcss";
+
+/*
+  Maxled CRM is a deliberate single dark world (black backgrounds for
+  dashboards and menus, per the brand brief) — not a light/dark toggle.
+  See docs/CRM-SPEC.md §1 for the full design system this implements.
+*/
+:root {
+  --black-ground: #0c0a06;
+  --black-surface: #16130c;
+  --black-surface-2: #1f1a10;
+  --black-surface-3: #2a2314;
+
+  --gold: #c9a227;
+  --gold-bright: #f0c863;
+  --gold-deep: #8a6a1f;
+
+  --ink: #f5efe0;
+  --ink-muted: #a69c87;
+  --ink-faint: #6e6552;
+
+  --status-good: #4cc97a;
+  --status-info: #3987e5;
+  --status-warning: #e07b3c;
+  --status-critical: #d93a3a;
+
+  --cat-1: #c98500;
+  --cat-2: #3987e5;
+  --cat-3: #d55181;
+  --cat-4: #008300;
+  --cat-5: #e66767;
+  --cat-6: #199e70;
+
+  --seq-1: #241c0d;
+  --seq-2: #4a3a15;
+  --seq-3: #7d631e;
+  --seq-4: #b8922a;
+  --seq-5: #f0c863;
+
+  --font-serif: ui-serif, Georgia, "Iowan Old Style", "Times New Roman", serif;
+  --font-sans: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+@theme inline {
+  --color-ground: var(--black-ground);
+  --color-surface: var(--black-surface);
+  --color-surface-2: var(--black-surface-2);
+  --color-surface-3: var(--black-surface-3);
+
+  --color-gold: var(--gold);
+  --color-gold-bright: var(--gold-bright);
+  --color-gold-deep: var(--gold-deep);
+
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+
+  --color-good: var(--status-good);
+  --color-info: var(--status-info);
+  --color-warning: var(--status-warning);
+  --color-critical: var(--status-critical);
+
+  --color-cat-1: var(--cat-1);
+  --color-cat-2: var(--cat-2);
+  --color-cat-3: var(--cat-3);
+  --color-cat-4: var(--cat-4);
+  --color-cat-5: var(--cat-5);
+  --color-cat-6: var(--cat-6);
+
+  --font-display: var(--font-serif);
+  --font-sans: var(--font-sans);
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--black-ground);
+  color: var(--ink);
+  font-family: var(--font-sans);
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}

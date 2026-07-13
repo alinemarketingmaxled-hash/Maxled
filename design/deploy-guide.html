@@ -1,0 +1,135 @@
+<title>Colocar o Maxled CRM no ar</title>
+<style>
+  :root{
+    --black-ground:#0C0A06; --black-surface:#16130C; --black-surface-2:#1F1A10;
+    --gold:#C9A227; --gold-bright:#F0C863; --gold-deep:#8A6A1F;
+    --ink:#F5EFE0; --ink-muted:#A69C87; --ink-faint:#6E6552;
+    --good:#4CC97A; --critical:#D93A3A;
+    --font-serif: ui-serif, Georgia, 'Iowan Old Style', 'Times New Roman', serif;
+    --font-sans: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, monospace;
+    color-scheme: dark;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--black-ground); color:var(--ink);
+    font-family:var(--font-sans); font-size:15px; line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:720px; margin:0 auto; padding:56px 24px 90px;}
+  .eyebrow{
+    font-size:11px; text-transform:uppercase; letter-spacing:.1em;
+    color:var(--gold); font-weight:600; margin-bottom:10px;
+  }
+  h1{
+    font-family:var(--font-serif); font-weight:400; font-size:32px;
+    margin:0 0 10px; text-wrap:balance; color:var(--ink);
+  }
+  h1 b{color:var(--gold-bright); font-weight:400;}
+  .lede{color:var(--ink-muted); font-size:15px; max-width:56ch; margin:0 0 40px;}
+
+  .step{
+    display:grid; grid-template-columns:40px 1fr; gap:18px;
+    padding:26px 0; border-top:1px solid rgba(138,106,31,.28);
+  }
+  .step:last-of-type{border-bottom:1px solid rgba(138,106,31,.28);}
+  .step-num{
+    width:32px; height:32px; border-radius:50%; background:var(--gold);
+    color:#1a1408; font-weight:700; font-size:14px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .step h2{font-family:var(--font-serif); font-weight:400; font-size:19px; margin:2px 0 8px;}
+  .step p{margin:0 0 12px; color:var(--ink-muted); font-size:14px;}
+  .step ol{margin:0 0 12px; padding-left:20px; color:var(--ink);}
+  .step li{margin-bottom:6px; font-size:14px;}
+  .step li b{color:var(--ink); font-weight:600;}
+  a{color:var(--gold-bright);}
+
+  .field{
+    display:flex; flex-direction:column; gap:4px; margin:10px 0;
+    background:var(--black-surface); border:1px solid rgba(138,106,31,.3);
+    border-radius:8px; padding:10px 12px;
+  }
+  .field-label{font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-faint);}
+  .field-value{
+    font-family:var(--font-mono); font-size:13px; color:var(--gold-bright);
+    word-break:break-all; user-select:all;
+  }
+
+  .note{
+    background:var(--black-surface-2); border-left:3px solid var(--gold-deep);
+    border-radius:6px; padding:10px 14px; font-size:13px; color:var(--ink-muted); margin:12px 0;
+  }
+  .note b{color:var(--ink);}
+
+  footer{margin-top:36px; text-align:center; color:var(--ink-faint); font-size:12.5px;}
+</style>
+
+<div class="wrap">
+  <div class="eyebrow">Guia de lançamento</div>
+  <h1>Colocar o Maxled <b>CRM</b> no ar</h1>
+  <p class="lede">
+    Dois cadastros gratuitos, sem cartão de crédito. Depois disso, toda vez que eu
+    enviar código novo, o site atualiza sozinho — você só acessa o link.
+  </p>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <div>
+      <h2>Criar o banco de dados (Neon)</h2>
+      <p>Onde os dados do CRM (clientes, negócios, etc.) ficam guardados.</p>
+      <ol>
+        <li>Acesse <a href="https://neon.tech" target="_blank" rel="noopener">neon.tech</a> e clique em <b>Sign up</b> → <b>Continue with GitHub</b>.</li>
+        <li>Crie um projeto novo — qualquer nome, ex: <b>maxled-crm</b>.</li>
+        <li>Na tela do projeto, copie a <b>Connection string</b> (começa com <code>postgresql://</code>).</li>
+        <li><b>Cole essa string aqui na nossa conversa</b> — eu configuro o banco de dados remotamente para você (crio as tabelas e o usuário mediador inicial).</li>
+      </ol>
+      <div class="note">Essa string tem uma senha dentro — é normal, ela é só para o banco de dados e ninguém além de nós dois vê essa conversa.</div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <div>
+      <h2>Publicar o site (Vercel)</h2>
+      <p>Onde o CRM em si roda.</p>
+      <ol>
+        <li>Acesse <a href="https://vercel.com" target="_blank" rel="noopener">vercel.com</a> → <b>Continue with GitHub</b>.</li>
+        <li><b>Add New</b> → <b>Project</b> → selecione o repositório <b>Maxled</b>.</li>
+        <li>Antes de clicar em Deploy, abra <b>Environment Variables</b> e adicione as três abaixo (copie e cole os valores):</li>
+      </ol>
+
+      <div class="field">
+        <span class="field-label">DATABASE_URL</span>
+        <span class="field-value">a connection string do Neon (passo 1)</span>
+      </div>
+      <div class="field">
+        <span class="field-label">AUTH_SECRET</span>
+        <span class="field-value">OMc+c0eMVnM0ubqS14alp35NzBaCeFJLuIdLAtSQVlI=</span>
+      </div>
+      <div class="field">
+        <span class="field-label">NEXTAUTH_URL</span>
+        <span class="field-value">deixe em branco por enquanto</span>
+      </div>
+
+      <ol start="4">
+        <li>Clique em <b>Deploy</b> e aguarde (leva 1–2 minutos).</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">3</div>
+    <div>
+      <h2>Último ajuste</h2>
+      <p>Depois que o deploy terminar, a Vercel te dá um endereço (ex: <code>maxled-crm.vercel.app</code>).</p>
+      <ol>
+        <li>Copie esse endereço.</li>
+        <li><b>Cole ele aqui na nossa conversa também</b> — eu te aviso exatamente onde colar de volta como <code>NEXTAUTH_URL</code> (com <code>https://</code> na frente) e você clica em Redeploy uma última vez.</li>
+      </ol>
+      <div class="note">A partir daqui, é só isso — nunca mais precisa mexer em nada de hospedagem.</div>
+    </div>
+  </div>
+
+  <footer>Dúvidas em qualquer passo — cole o print ou a mensagem de erro na conversa.</footer>
+</div>

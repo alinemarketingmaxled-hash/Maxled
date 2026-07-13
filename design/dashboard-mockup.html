@@ -1,0 +1,809 @@
+<title>Maxled CRM — Gold &amp; Black Dashboard</title>
+<style>
+  :root{
+    --black-ground:#0C0A06;
+    --black-surface:#16130C;
+    --black-surface-2:#1F1A10;
+    --black-surface-3:#2A2314;
+    --gold:#C9A227;
+    --gold-bright:#F0C863;
+    --gold-deep:#8A6A1F;
+    --ink:#F5EFE0;
+    --ink-muted:#A69C87;
+    --ink-faint:#6E6552;
+    --good:#4CC97A;
+    --info:#3987E5;
+    --warning:#E07B3C;
+    --critical:#D93A3A;
+    --cat-1:#C98500; --cat-2:#3987E5; --cat-3:#D55181; --cat-4:#008300; --cat-5:#E66767; --cat-6:#199E70;
+    --seq-1:#241C0D; --seq-2:#4A3A15; --seq-3:#7D631E; --seq-4:#B8922A; --seq-5:#F0C863;
+    --radius:12px;
+    --serif: ui-serif, Georgia, 'Iowan Old Style', 'Times New Roman', serif;
+    --sans: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    color-scheme: dark;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--black-ground);
+    color:var(--ink);
+    font-family:var(--sans);
+    font-size:14px;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--gold-deep); color:var(--ink);}
+  a{color:inherit;}
+  button{font-family:inherit;}
+
+  .num{font-variant-numeric:tabular-nums;}
+
+  .eyebrow{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:var(--ink-muted);
+    font-weight:600;
+  }
+
+  h1,h2,h3{font-family:var(--serif); font-weight:400; margin:0; text-wrap:balance;}
+
+  /* ---------- shell ---------- */
+  .shell{display:grid; grid-template-columns:224px 1fr; min-height:100vh;}
+
+  .sidebar{
+    background:var(--black-surface);
+    border-right:1px solid rgba(138,106,31,.35);
+    padding:22px 14px;
+    display:flex;
+    flex-direction:column;
+    gap:26px;
+  }
+  .brand{display:flex; align-items:center; gap:10px; padding:0 8px;}
+  .brand-mark{
+    width:34px; height:34px; border-radius:8px;
+    background:linear-gradient(155deg,var(--gold-bright),var(--gold) 55%,var(--gold-deep));
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--serif); font-weight:400; font-size:18px; color:var(--black-ground);
+    flex:none;
+  }
+  .brand-word{font-family:var(--serif); font-size:19px; letter-spacing:.03em;}
+  .brand-word b{color:var(--gold-bright); font-weight:400;}
+
+  nav.rail{display:flex; flex-direction:column; gap:2px;}
+  .rail-item{
+    display:flex; align-items:center; gap:11px;
+    padding:10px 12px; border-radius:8px;
+    color:var(--ink-muted); cursor:pointer;
+    border-left:3px solid transparent;
+    background:transparent;
+    font-size:13.5px;
+    transition:background .15s ease,color .15s ease;
+  }
+  .rail-item .ico{width:18px; height:18px; flex:none; opacity:.85;}
+  .rail-item:hover{background:var(--black-surface-2); color:var(--ink);}
+  .rail-item.active{
+    background:var(--black-surface-2);
+    color:var(--gold-bright);
+    border-left-color:var(--gold);
+  }
+  .rail-item.active .ico{opacity:1;}
+  .rail-tag{
+    margin-left:auto; font-size:9.5px; letter-spacing:.06em; text-transform:uppercase;
+    background:var(--gold-deep); color:var(--ink); padding:2px 6px; border-radius:99px;
+  }
+  .rail-spacer{flex:1;}
+  .rail-foot{
+    font-size:11px; color:var(--ink-faint); padding:10px 12px; border-top:1px solid rgba(138,106,31,.25);
+  }
+
+  /* ---------- main ---------- */
+  .main{display:flex; flex-direction:column; min-width:0;}
+  .topbar{
+    display:flex; align-items:center; gap:16px;
+    padding:14px 26px;
+    border-bottom:1px solid rgba(138,106,31,.3);
+    background:linear-gradient(180deg,var(--black-surface),var(--black-ground));
+    position:sticky; top:0; z-index:5;
+  }
+  .search{
+    flex:1; max-width:380px;
+    background:var(--black-surface-2);
+    border:1px solid rgba(138,106,31,.35);
+    border-radius:8px; padding:8px 12px;
+    color:var(--ink-faint); font-size:13px;
+  }
+  .topbar-title{font-family:var(--serif); font-size:20px;}
+  .topbar-actions{margin-left:auto; display:flex; align-items:center; gap:14px;}
+  .btn{
+    border-radius:8px; padding:9px 15px; font-size:13px; font-weight:600;
+    border:1px solid transparent; cursor:pointer;
+  }
+  .btn-primary{background:var(--gold); color:#161206;}
+  .btn-primary:hover{background:var(--gold-bright);}
+  .btn-ghost{background:transparent; border-color:var(--gold-deep); color:var(--ink);}
+  .btn-ghost:hover{border-color:var(--gold);}
+  .bell{position:relative; width:20px; height:20px; opacity:.85;}
+  .bell::after{content:''; position:absolute; top:-2px; right:-2px; width:7px; height:7px; border-radius:50%; background:var(--gold-bright); box-shadow:0 0 6px var(--gold-bright);}
+  .avatar{
+    width:32px; height:32px; border-radius:50%;
+    background:var(--black-surface-3); border:1px solid var(--gold-deep);
+    display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--gold-bright); font-weight:700;
+  }
+
+  .content{padding:24px 26px 60px;}
+  .view{display:none;}
+  .view.active{display:block;}
+
+  .section-head{display:flex; align-items:baseline; justify-content:space-between; gap:16px; margin-bottom:16px;}
+  .section-head h2{font-size:22px;}
+  .section-sub{color:var(--ink-muted); font-size:13px; margin-top:2px;}
+
+  /* ---------- palette strip ---------- */
+  .palette{
+    display:flex; gap:10px; overflow-x:auto; padding:14px; margin-bottom:20px;
+    background:var(--black-surface); border:1px solid rgba(138,106,31,.3); border-radius:var(--radius);
+  }
+  .chip{
+    flex:none; display:flex; flex-direction:column; align-items:center; gap:6px;
+    width:88px; padding:12px 6px; border-radius:10px;
+    border:1px dashed var(--gold-deep); color:var(--ink-muted);
+    font-size:11px; text-align:center; cursor:grab; background:var(--black-surface-2);
+  }
+  .chip:hover{border-color:var(--gold-bright); color:var(--gold-bright);}
+  .chip .ico{width:20px; height:20px; opacity:.9;}
+  .palette-hint{align-self:center; flex:none; color:var(--ink-faint); font-size:11.5px; padding-left:6px; white-space:nowrap;}
+
+  /* ---------- canvas grid ---------- */
+  .grid{display:grid; grid-template-columns:repeat(12,1fr); gap:16px;}
+  .span-3{grid-column:span 3;} .span-4{grid-column:span 4;} .span-6{grid-column:span 6;} .span-8{grid-column:span 8;} .span-12{grid-column:span 12;}
+  @media (max-width:1100px){ .span-3,.span-4,.span-6,.span-8{grid-column:span 12;} }
+
+  .card{
+    background:var(--black-surface);
+    border:1px solid rgba(138,106,31,.28);
+    border-radius:var(--radius);
+    padding:16px;
+    min-width:0;
+  }
+  .card-head{display:flex; align-items:flex-start; gap:10px; margin-bottom:12px;}
+  .drag{color:var(--ink-faint); letter-spacing:2px; font-size:12px; line-height:1; cursor:grab; padding-top:2px;}
+  .card-title{font-size:13px; font-weight:600; color:var(--ink);}
+  .card-sub{font-size:11px; color:var(--ink-faint); margin-top:1px;}
+  .card-tools{margin-left:auto; display:flex; align-items:center; gap:8px;}
+  .info-dot{
+    width:16px; height:16px; border-radius:50%; border:1px solid var(--gold-deep);
+    color:var(--ink-muted); font-size:10px; display:flex; align-items:center; justify-content:center;
+    cursor:help; flex:none;
+  }
+  .info-dot:hover{border-color:var(--gold-bright); color:var(--gold-bright);}
+  .more{color:var(--ink-faint); cursor:pointer; font-size:15px; line-height:1;}
+
+  /* KPI */
+  .kpi-value{font-family:var(--sans); font-size:30px; font-weight:700;}
+  .kpi-row{display:flex; align-items:flex-end; justify-content:space-between; gap:10px;}
+  .delta{display:inline-flex; align-items:center; gap:4px; font-size:12px; font-weight:600; padding:3px 7px; border-radius:99px;}
+  .delta.good{color:var(--good); background:rgba(76,201,122,.12);}
+  .delta.warn{color:var(--warning); background:rgba(224,123,60,.12);}
+  .delta.crit{color:var(--critical); background:rgba(217,58,58,.12);}
+  .spark{margin-top:10px; display:block; width:100%; height:34px;}
+
+  /* legend */
+  .legend{display:flex; gap:14px; flex-wrap:wrap; font-size:11px; color:var(--ink-muted); margin-top:10px;}
+  .legend span{display:inline-flex; align-items:center; gap:6px;}
+  .legend i{width:9px; height:9px; border-radius:2px; display:inline-block;}
+
+  /* gauge */
+  .gauge-wrap{display:flex; align-items:center; gap:18px;}
+  .gauge{width:128px; height:128px; border-radius:50%; position:relative; flex:none;}
+  .gauge::before{content:''; position:absolute; inset:12px; border-radius:50%; background:var(--black-surface);}
+  .gauge .val{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;}
+  .gauge .val b{font-size:22px;}
+  .gauge .val small{font-size:10px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.06em;}
+  .gauge-meta div{display:flex; justify-content:space-between; gap:14px; font-size:12px; padding:5px 0; border-bottom:1px dashed rgba(138,106,31,.25);}
+  .gauge-meta div:last-child{border-bottom:none;}
+  .gauge-meta .lbl{color:var(--ink-muted);}
+
+  /* funnel */
+  .funnel-row{display:flex; flex-direction:column; align-items:center; gap:2px; margin-bottom:6px;}
+  .funnel-bar{
+    height:30px; border-radius:6px; display:flex; align-items:center; justify-content:center;
+    color:#1a1408; font-weight:700; font-size:12px;
+  }
+  .funnel-label{font-size:11px; color:var(--ink-muted); display:flex; justify-content:space-between; width:100%; max-width:340px;}
+
+  /* comparator bars */
+  .comp-row{display:grid; grid-template-columns:64px 1fr; align-items:center; gap:10px; margin-bottom:10px;}
+  .comp-name{font-size:12px; color:var(--ink-muted);}
+  .comp-bars{display:flex; flex-direction:column; gap:4px;}
+  .bar-track{background:var(--black-surface-2); border-radius:4px; height:9px; position:relative; overflow:hidden;}
+  .bar-fill{height:100%; border-radius:4px;}
+
+  /* zona */
+  .zone-row{display:grid; grid-template-columns:44px 1fr 70px; align-items:center; gap:10px; margin-bottom:9px; font-size:12px;}
+  .zone-track{background:var(--black-surface-2); border-radius:4px; height:10px;}
+  .zone-fill{height:100%; border-radius:4px; background:var(--gold);}
+  .zone-val{text-align:right; color:var(--ink-muted);}
+
+  /* cohort heatmap */
+  .cohort{display:grid; grid-template-columns:60px repeat(6,1fr); gap:3px; font-size:10px;}
+  .cohort .hd{color:var(--ink-faint); text-align:center; padding:4px 0;}
+  .cohort .rowlbl{color:var(--ink-muted); display:flex; align-items:center; font-size:10.5px;}
+  .cohort .cell{aspect-ratio:1.5; border-radius:4px; display:flex; align-items:center; justify-content:center; color:#1c1608; font-weight:700; font-size:10px;}
+
+  /* quadrant */
+  .quad-wrap{display:flex; gap:16px; align-items:center;}
+  .quad-svg{background:var(--black-surface-2); border-radius:8px;}
+  .quad-axis-label{font-size:10px; fill:var(--ink-faint);}
+
+  /* stage stepper */
+  .stepper{display:flex; align-items:center;}
+  .step{display:flex; flex-direction:column; align-items:center; gap:6px; flex:1; position:relative;}
+  .step-dot{width:14px; height:14px; border-radius:50%; background:var(--black-surface-2); border:2px solid var(--gold-deep); z-index:1;}
+  .step.done .step-dot{background:var(--gold); border-color:var(--gold);}
+  .step.current .step-dot{background:var(--gold-bright); border-color:var(--gold-bright); box-shadow:0 0 0 4px rgba(240,200,99,.18);}
+  .step-line{position:absolute; top:6px; left:-50%; width:100%; height:2px; background:var(--gold-deep); z-index:0;}
+  .step:first-child .step-line{display:none;}
+  .step.done .step-line, .step.current .step-line{background:var(--gold);}
+  .step-label{font-size:10.5px; color:var(--ink-muted); text-align:center;}
+  .step.current .step-label{color:var(--gold-bright); font-weight:600;}
+
+  /* commission */
+  .goal-block{margin-bottom:14px;}
+  .goal-head{display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px;}
+  .goal-head .pct{color:var(--gold-bright); font-weight:700;}
+  .goal-track{height:12px; background:var(--black-surface-2); border-radius:6px; overflow:hidden;}
+  .goal-fill{height:100%; border-radius:6px;}
+  .goal-foot{display:flex; justify-content:space-between; font-size:10.5px; color:var(--ink-faint); margin-top:4px;}
+
+  /* gif placeholder */
+  .gif-tile{
+    height:150px; border-radius:8px; position:relative; overflow:hidden;
+    background:radial-gradient(circle at 30% 30%, #2a2314, #0f0c07 70%);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .gif-tile .badge{position:absolute; top:8px; left:8px; background:rgba(0,0,0,.55); border:1px solid var(--gold-deep); color:var(--gold-bright); font-size:10px; padding:2px 7px; border-radius:99px; letter-spacing:.05em;}
+  .confetti{position:absolute; width:6px; height:6px; border-radius:1px; background:var(--gold-bright); animation:fall 2.6s linear infinite;}
+  @keyframes fall{ from{transform:translateY(-20px) rotate(0deg); opacity:1;} to{transform:translateY(160px) rotate(200deg); opacity:0;} }
+  @media (prefers-reduced-motion:reduce){ .confetti{animation:none; opacity:.5;} }
+  .gif-caption{position:absolute; bottom:8px; left:8px; right:8px; font-size:11.5px; color:var(--ink); background:rgba(0,0,0,.5); padding:5px 8px; border-radius:6px;}
+
+  /* anomaly */
+  .anomaly-label{position:absolute; font-size:9.5px; fill:var(--critical); font-weight:700;}
+
+  /* ---------- Kanban (Negócios) ---------- */
+  .board{display:flex; gap:14px; overflow-x:auto; padding-bottom:8px;}
+  .col{
+    flex:none; width:250px; background:var(--black-surface); border:1px solid rgba(138,106,31,.28);
+    border-radius:var(--radius); padding:12px; display:flex; flex-direction:column; gap:10px;
+  }
+  .col.ghost{border-style:dashed; align-items:center; justify-content:center; color:var(--ink-faint); font-size:12px; min-height:120px;}
+  .col-head{display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:600; color:var(--ink-muted);}
+  .col-count{margin-left:auto; background:var(--black-surface-2); color:var(--ink-faint); font-size:10.5px; padding:1px 7px; border-radius:99px;}
+  .deal-card{
+    background:var(--black-surface-2); border:1px solid rgba(138,106,31,.22); border-radius:8px; padding:10px;
+    display:flex; flex-direction:column; gap:7px;
+  }
+  .deal-name{font-size:12.5px; font-weight:600;}
+  .deal-value{font-size:13px; color:var(--gold-bright); font-weight:700;}
+  .deal-foot{display:flex; align-items:center; gap:8px; font-size:10.5px; color:var(--ink-faint);}
+  .mini-avatar{width:18px; height:18px; border-radius:50%; background:var(--black-surface-3); border:1px solid var(--gold-deep); display:flex; align-items:center; justify-content:center; font-size:8.5px; color:var(--gold-bright); font-weight:700;}
+  .countdown-chip{margin-left:auto; background:rgba(224,123,60,.15); color:var(--warning); padding:2px 7px; border-radius:99px; font-weight:600;}
+
+  /* ---------- Vendas ---------- */
+  .contacts-shell{display:grid; grid-template-columns:280px 1fr; gap:16px;}
+  .contact-list{background:var(--black-surface); border:1px solid rgba(138,106,31,.28); border-radius:var(--radius); padding:10px; max-height:560px; overflow-y:auto;}
+  .contact-item{display:flex; align-items:center; gap:10px; padding:9px 8px; border-radius:8px; cursor:pointer;}
+  .contact-item.active, .contact-item:hover{background:var(--black-surface-2);}
+  .contact-name{font-size:12.5px; font-weight:600;}
+  .contact-acct{font-size:10.5px; color:var(--ink-faint);}
+  .quick-icons{margin-left:auto; display:flex; gap:6px;}
+  .qicon{width:22px; height:22px; border-radius:6px; background:var(--black-surface-3); display:flex; align-items:center; justify-content:center; color:var(--ink-muted); font-size:11px;}
+  .qicon:hover{color:var(--gold-bright); border:1px solid var(--gold);}
+
+  .detail-panel{background:var(--black-surface); border:1px solid rgba(138,106,31,.28); border-radius:var(--radius); padding:20px;}
+  .detail-head{display:flex; align-items:center; gap:14px; margin-bottom:18px;}
+  .detail-avatar{width:52px; height:52px; border-radius:50%; background:var(--black-surface-3); border:1px solid var(--gold-deep); display:flex; align-items:center; justify-content:center; font-family:var(--serif); font-size:20px; color:var(--gold-bright);}
+  .detail-name{font-family:var(--serif); font-size:20px;}
+  .detail-role{color:var(--ink-muted); font-size:12px;}
+  .field-groups{display:grid; grid-template-columns:1fr 1fr; gap:18px;}
+  .fgroup h4{font-family:var(--sans); font-size:11px; text-transform:uppercase; letter-spacing:.07em; color:var(--gold); margin:0 0 8px;}
+  .field{display:flex; justify-content:space-between; gap:10px; font-size:12.5px; padding:6px 0; border-bottom:1px dashed rgba(138,106,31,.22);}
+  .field .k{color:var(--ink-faint);}
+  .field .v{text-align:right;}
+  .timeline{margin-top:20px; border-top:1px solid rgba(138,106,31,.28); padding-top:14px;}
+  .tl-item{display:flex; gap:10px; font-size:12px; padding:8px 0;}
+  .tl-dot{width:8px; height:8px; border-radius:50%; background:var(--gold); margin-top:5px; flex:none;}
+  .tl-when{color:var(--ink-faint); font-size:10.5px;}
+
+  /* ---------- Agenda ---------- */
+  .process{display:flex; gap:0; margin-bottom:22px;}
+  .pstep{flex:1; background:var(--black-surface); border:1px solid rgba(138,106,31,.28); padding:16px; position:relative;}
+  .pstep:first-child{border-radius:var(--radius) 0 0 var(--radius);}
+  .pstep:last-child{border-radius:0 var(--radius) var(--radius) 0;}
+  .pstep + .pstep{border-left:none;}
+  .pnum{width:24px; height:24px; border-radius:50%; background:var(--gold); color:#1a1408; font-weight:700; font-size:12px; display:flex; align-items:center; justify-content:center; margin-bottom:10px;}
+  .pstep h4{font-size:12.5px; margin:0 0 6px; color:var(--ink);}
+  .pstep p{font-size:11.5px; color:var(--ink-muted); margin:0;}
+  .agenda-list{display:flex; flex-direction:column; gap:8px;}
+  .agenda-row{display:flex; align-items:center; gap:12px; background:var(--black-surface); border:1px solid rgba(138,106,31,.24); border-radius:10px; padding:11px 14px; font-size:12.5px;}
+  .agenda-row .name{font-weight:600;}
+  .agenda-row .acct{color:var(--ink-faint); font-size:11px;}
+
+  /* ---------- Social ---------- */
+  .feed{max-width:640px; display:flex; flex-direction:column; gap:14px;}
+  .post{background:var(--black-surface); border:1px solid rgba(138,106,31,.24); border-radius:var(--radius); padding:16px;}
+  .post.system{border-color:var(--gold); box-shadow:0 0 0 1px rgba(201,162,39,.15) inset;}
+  .post-head{display:flex; align-items:center; gap:10px; margin-bottom:10px;}
+  .post-name{font-size:12.5px; font-weight:600;}
+  .post-when{font-size:10.5px; color:var(--ink-faint);}
+  .post-body{font-size:13px; margin-bottom:10px;}
+  .post-actions{display:flex; gap:16px; font-size:11.5px; color:var(--ink-muted);}
+  .post-actions span:hover{color:var(--gold-bright); cursor:pointer;}
+  .sys-badge{background:var(--gold); color:#1a1408; font-size:10px; font-weight:700; padding:1px 8px; border-radius:99px; margin-left:6px;}
+
+  /* ---------- IA ---------- */
+  .ia-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
+  @media (max-width:900px){ .ia-grid{grid-template-columns:1fr;} }
+  .confidence{font-size:10px; color:var(--ink-faint); margin-top:10px; border-top:1px dashed rgba(138,106,31,.22); padding-top:8px;}
+  .ia-ico{width:26px; height:26px; border-radius:7px; background:var(--black-surface-2); border:1px solid var(--gold-deep); display:flex; align-items:center; justify-content:center; color:var(--gold-bright); font-size:13px; margin-bottom:10px;}
+  .sent-row{display:flex; justify-content:space-between; align-items:center; font-size:12px; padding:6px 0; border-bottom:1px dashed rgba(138,106,31,.2);}
+  .sent-pill{font-size:10px; padding:2px 8px; border-radius:99px; font-weight:600;}
+  .sent-pos{color:var(--good); background:rgba(76,201,122,.12);}
+  .sent-neu{color:var(--info); background:rgba(57,135,229,.12);}
+  .sent-neg{color:var(--critical); background:rgba(217,58,58,.12);}
+
+  /* ---------- Perfil ---------- */
+  .profile-switch{display:flex; align-items:center; gap:10px; margin-bottom:18px; font-size:12.5px; color:var(--ink-muted);}
+  .profile-switch select{background:var(--black-surface-2); color:var(--ink); border:1px solid var(--gold-deep); border-radius:6px; padding:6px 10px; font-size:12.5px;}
+  table.vendors{width:100%; border-collapse:collapse; font-size:12.5px;}
+  table.vendors th{text-align:left; color:var(--ink-faint); font-weight:600; font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; padding:8px 10px; border-bottom:1px solid rgba(138,106,31,.3);}
+  table.vendors td{padding:9px 10px; border-bottom:1px dashed rgba(138,106,31,.18);}
+  .rank-list{display:flex; flex-direction:column; gap:8px;}
+  .rank-row{display:flex; align-items:center; gap:10px; font-size:12.5px;}
+  .rank-pos{width:20px; text-align:center; font-weight:700; color:var(--gold-bright); font-family:var(--serif);}
+  .rank-bar{flex:1; height:8px; border-radius:4px; background:var(--black-surface-2); overflow:hidden;}
+  .rank-fill{height:100%; background:var(--gold);}
+  .rank-pct{width:38px; text-align:right; color:var(--ink-muted);}
+
+  footer.spec-note{margin-top:40px; padding:16px 26px; border-top:1px solid rgba(138,106,31,.25); color:var(--ink-faint); font-size:11px;}
+</style>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">M</div>
+      <div class="brand-word">Maxled <b>CRM</b></div>
+    </div>
+    <nav class="rail" id="rail">
+      <div class="rail-item active" data-view="analytics"><span class="ico">◆</span>Analítica</div>
+      <div class="rail-item" data-view="vendas"><span class="ico">☎</span>Vendas</div>
+      <div class="rail-item" data-view="negocios"><span class="ico">▦</span>Negócios</div>
+      <div class="rail-item" data-view="agenda"><span class="ico">◷</span>Agenda</div>
+      <div class="rail-item" data-view="social"><span class="ico">✦</span>Rede Social</div>
+      <div class="rail-item" data-view="ia"><span class="ico">✧</span>IA</div>
+      <div class="rail-item" data-view="perfil"><span class="ico">⬢</span>Perfil<span class="rail-tag">Mediador</span></div>
+      <div class="rail-spacer"></div>
+      <div class="rail-item"><span class="ico">⚙</span>Config</div>
+    </nav>
+    <div class="rail-foot">Encriptado · Backup diário<br>v0.1 — spec visual</div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title" id="topbar-title">Aba Analítica</div>
+      <input class="search" placeholder="Buscar contatos, negócios…" disabled>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost">＋ Novo widget</button>
+        <button class="btn btn-primary">＋ Novo negócio</button>
+        <div class="bell">🔔</div>
+        <div class="avatar">AM</div>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- ============ ANALYTICS ============ -->
+      <section class="view active" id="view-analytics">
+        <div class="section-head">
+          <div>
+            <h2>Analítica</h2>
+            <div class="section-sub">Arraste componentes para o canvas · WhatsApp API e Explee conectados</div>
+          </div>
+        </div>
+
+        <div class="palette">
+          <span class="palette-hint">Componentes ↴</span>
+          <div class="chip"><span class="ico">▧</span>GIF</div>
+          <div class="chip"><span class="ico">◆</span>KPI</div>
+          <div class="chip"><span class="ico">〰</span>Gráfico</div>
+          <div class="chip"><span class="ico">‖</span>Comparador</div>
+          <div class="chip"><span class="ico">▦</span>Coorte</div>
+          <div class="chip"><span class="ico">▤</span>Zona</div>
+          <div class="chip"><span class="ico">▽</span>Funil</div>
+          <div class="chip"><span class="ico">◔</span>Medidor de meta</div>
+          <div class="chip"><span class="ico">⚡</span>Anomalia</div>
+          <div class="chip"><span class="ico">▣</span>Quadrante</div>
+          <div class="chip"><span class="ico">●●●</span>Estágio</div>
+          <div class="chip"><span class="ico">%</span>Comissão</div>
+        </div>
+
+        <div class="grid">
+          <!-- KPI row -->
+          <div class="card span-3">
+            <div class="card-head"><span class="drag">⋮⋮</span><div><div class="card-title">Receita do mês</div><div class="card-sub">KPI</div></div><div class="card-tools"><span class="info-dot" title="Edições suportadas: métrica, período, meta, ícone">ⓘ</span><span class="more">⋯</span></div></div>
+            <div class="kpi-row"><div class="kpi-value num">R$ 428.600</div><span class="delta good">▲ 12,4%</span></div>
+            <svg class="spark" viewBox="0 0 300 100" preserveAspectRatio="none"><polyline points="0,83.5 60,66.3 120,90 180,53.9 240,34.5 300,20" fill="none" stroke="var(--gold-bright)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="card span-3">
+            <div class="card-head"><span class="drag">⋮⋮</span><div><div class="card-title">Negócios fechados</div><div class="card-sub">KPI</div></div><div class="card-tools"><span class="info-dot" title="Edições suportadas: métrica, período, meta, ícone">ⓘ</span><span class="more">⋯</span></div></div>
+            <div class="kpi-row"><div class="kpi-value num">37</div><span class="delta good">▲ 5 vs meta</span></div>
+            <svg class="spark" viewBox="0 0 300 100" preserveAspectRatio="none"><polyline points="0,70 60,64 120,58 180,50 240,38 300,26" fill="none" stroke="var(--gold-bright)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="card span-3">
+            <div class="card-head"><span class="drag">⋮⋮</span><div><div class="card-title">Ticket médio</div><div class="card-sub">KPI</div></div><div class="card-tools"><span class="info-dot" title="Edições suportadas: métrica, período, meta, ícone">ⓘ</span><span class="more">⋯</span></div></div>
+            <div class="kpi-row"><div class="kpi-value num">R$ 11.580</div><span class="delta warn">▼ 3,1%</span></div>
+            <svg class="spark" viewBox="0 0 300 100" preserveAspectRatio="none"><polyline points="0,30 60,40 120,36 180,55 240,50 300,62" fill="none" stroke="var(--warning)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="card span-3">
+            <div class="card-head"><span class="drag">⋮⋮</span><div><div class="card-title">Taxa de conversão</div><div class="card-sub">KPI</div></div><div class="card-tools"><span class="info-dot" title="Edições suportadas: métrica, período, meta, ícone">ⓘ</span><span class="more">⋯</span></div></div>
+            <div class="kpi-row"><div class="kpi-value num">24,8%</div><span class="delta good">▲ 2,2 p.p.</span></div>
+            <svg class="spark" viewBox="0 0 300 100" preserveAspectRatio="none"><polyline points="0,60 60,55 120,58 180,44 240,36 300,24" fill="none" stroke="var(--gold-bright)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+
+          <!-- Gráfico -->
+          <div class="card span-8">
+            <div class="card-head"><span class="drag">⋮⋮</span><div><div class="card-title">Receita — últimos 6 meses</div><div class="card-sub">Gráfico</div></div><div class="card-tools"><span class="info-dot" title="Edições suportadas: métricas, tipo de gráfico, período, granularidade, anotações">ⓘ</span><span class="more">⋯</span></div></div>
+            <svg viewBox="0 0 300 100" style="width:100%; height:150px;" preserveAspectRatio="none">
+              <path d="M0,83.5 L60,66.3 L120,90 L180,53.9 L240,34.5 L300,20 L300,100 L0,100 Z" fill="url(#grad1)" opacity="0.5"/>
+              <polyline points="0,83.5 60,66.3 120,90 180,53.9 240,34.5 300,20" fill="none" stroke="var(--gold-bright)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <defs><linearGradient id="grad1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--gold-bright)" stop-opacity="0.45"/><stop offset="100%" stop-color="var(--gold-bright)" stop-opacity="0"/></linearGradient></defs>
+            </svg>
+            <div class="legend"><span><i style="background:var(--gold-bright)"></i>Fev 310k · Mar 342k · Abr 298k · Mai 365k · Jun 401k · Jul 428k</span></div>
+          </div>
+
+          <!-- Goal meter -->
+          <div class="card span-4">
+            <div class="card-head"><span class="drag">⋮⋮</span><div><div class="card-title">Medidor de meta — Bruno Alves</div><div class="card-sub">Meta 1</div></div><div class="card-tools"><span class="info-dot" title="Edições suportadas: valor alvo, origem do valor atual, limites de alerta">ⓘ</span><span class="more">⋯</span></div></div>
+            <div class="gauge-wrap">
+              <div class="gauge" style="background:conic-gradient(var(--gold-bright) 0% 72%, var(--black-surface-2) 72% 100%);"><div class="val"><b class="num">72%</b><small>da meta 1</small></div></div>
+              <div class="gauge-meta">
+                <div><span class="lbl">Meta 1</span><span class="num">R$ 50.000</span></div>
+                <div><span class="lbl">Atingido</span><span class="num">R$ 36.000</span></div>
+                <div><span class="lbl">Restante</span><span class="num">R$ 14.000</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Comparador -->
+          <div class="card span-6">
+            <div class="card-head"><span class="drag">⋮⋮</span><div><div class="card-title">Comparador — receita por vendedor</div><div class="card-sub">Comparador</div></div><div class="card-tools"><span class="info-dot" title="Edições suportadas: métricas, conjunto de entidades, ordenação, linha de base">ⓘ</span><span class="more">⋯</span></div></div>
+            <div class="comp-row"><div class="comp-name">Ana</div><div class="comp-bars"><div class="bar-track"><div class="bar-fill" style="width:88%; background:var(--cat-1)"></div></div><div class="bar-track"><div class="bar-fill" style="width:74%; background:var(--cat-2)"></div></div></div></div>
+            <div class="comp-row"><div class="comp-name">Bruno</div><div class="comp-bars"><div class="bar-track"><div class="bar-fill" style="width:72%; background:var(--cat-1)"></div></div><div class="bar-track"><div class="bar-fill" style="width:66%; background:var(--cat-2)"></div></div></div></div>
+            <div class="comp-row"><div class="comp-name">Carla</div><div class="comp-bars"><div class="bar-track"><div class="bar-fill" style="width:95%; background:var(--cat-1)"></div></div><div class="bar-track"><div class="bar-fill" style="width:81%; background:var(--cat-2)"></div></div></div></div>
+            <div class="comp-row"><div class="comp-name">Diego</div><div class="comp-bars"><div class="bar-track"><div class="bar-fill" style="width:58%; background:var(--cat-1)"></div></div><div class="bar-track"><div class="bar-fill" style="width:62%; background:var(--cat-2)"></div></div></div></div>
+            <div class="legend"><span><i style="background:var(--cat-1)"></i>Este mês</span><span><i style="background:var(--cat-2)"></i>Mês anterior</span></div>
+          </div>
+
+          <!-- Funil -->
+          <div class="card span-6">
+            <div class="card-head"><span class="drag">⋮⋮</span><div><div class="card-title">Funil de vendas</div><div class="card-sub">Funil</div></div><div class="card-tools"><span class="info-dot" title="Edições suportadas: estágios, métrica, rótulos de conversão">ⓘ</span><span class="more">⋯</span></div></div>
+            <div class="funnel-row"><div class="funnel-bar" style="width:100%; background:var(--seq-2)">Lead — 1.200</div><div class="funnel-label"><span>Contato inicial</span><span>100%</span></div></div>
+            <div class="funnel-row"><div class="funnel-bar" style="width:78%; background:var(--seq-3)">Qualificado — 640</div><div class="funnel-label"><span>Interesse confirmado</span><span>53%</span></div></div>
+            <div class="funnel-row"><div class="funnel-bar" style="width:56%; background:var(--seq-4)">Proposta — 310</div><div class="funnel-label"><span>Orçamento enviado</span><span>26%</span></div></div>
+            <div class="funnel-row"><div class="funnel-bar" style="width:38%; background:var(--gold)">Negociação — 180</div><div class="funnel-label"><span>Em conversa</span><span>15%</span></div></div>
+            <div class="funnel-row"><div class="funnel-bar" style="width:24%; background:var(--seq-5)">Fechado — 96</div><div class="funnel-label"><span>Ganho</span><span class="num">8%</span></div></div>
+          </div>
+
+          <!-- Coorte -->
+          <div class="card span-6">
+            <div class="card-head"><span class="drag">⋮⋮</span><div><div class="card-title">Coorte — retenção mensal</div><div class="card-sub">Coorte</div></div><div class="card-tools"><span class="info-dot" title="Edições suportadas: unidade de coorte, métrica, janela, rampa de cor">ⓘ</span><span class="more">⋯</span></div></div>
+            <div class="cohort">
+              <div class="hd"></div><div class="hd">M0</div><div class="hd">M1</div><div class="hd">M2</div><div class="hd">M3</div><div class="hd">M4</div><div class="hd">M5</div>
+              <div class="rowlbl">Fev</div><div class="cell" style="background:var(--seq-5)">100</div><div class="cell" style="background:var(--seq-4)">74</div><div class="cell" style="background:var(--seq-3)">58</div><div class="cell" style="background:var(--seq-3)">51</div><div class="cell" style="background:var(--seq-2)">44</div><div class="cell" style="background:var(--seq-2)">40</div>
+              <div class="rowlbl">Mar</div><div class="cell" style="background:var(--seq-5)">100</div><div class="cell" style="background:var(--seq-4)">78</div><div class="cell" style="background:var(--seq-3)">62</div><div class="cell" style="background:var(--seq-3)">55</div><div class="cell" style="background:var(--seq-2)">47</div><div class="cell" style="background:var(--seq-1); color:var(--ink-faint)">—</div>
+              <div class="rowlbl">Abr</div><div class="cell" style="background:var(--seq-5)">100</div><div class="cell" style="background:var(--seq-4)">81</div><div class="cell" style="background:var(--seq-3)">64</div><div class="cell" style="background:var(--seq-1); color:var(--ink-faint)">—</div><div class="cell" style="background:var(--seq-1); color:var(--ink-faint)">—</div><div class="cell" style="background:var(--seq-1); color:var(--ink-faint)">—</div>
+              <div class="rowlbl">Mai</div><div class="cell" style="background:var(--seq-5)">100</div><div class="cell" style="background:var(--seq-4)">76</div><div class="cell" style="background:var(--seq-1); color:var(--ink-faint)">—</div><div class="cell" style="background:var(--seq-1); color:var(--ink-faint)">—</div><div class="cell" style="background:var(--seq-1); color:var(--ink-faint)">—</div><div class="cell" style="background:var(--seq-1); color:var(--ink-faint)">—</div>
+              <div class="rowlbl">Jun</div><div class="cell" style="background:var(--seq-5)">100</div><div class="cell" style="background:var(--seq-1); color:var(--ink-faint)">—</div><div class="cell" style="background:var(--seq-1); color:var(--ink-faint)">—</div><div class="cell" style="background:var(--seq-1); color:var(--ink-faint)">—</div><div class="cell" style="background:var(--seq-1); color:var(--ink-faint)">—</div><div class="cell" style="background:var(--seq-1); color:var(--ink-faint)">—</div>
+            </div>
+          </div>
+
+          <!-- Quadrante -->
+          <div class="card span-6">
+            <div class="card-head"><span class="drag">⋮⋮</span><div><div class="card-title">Quadrante — valor × engajamento</div><div class="card-sub">Quadrante</div></div><div class="card-tools"><span class="info-dot" title="Edições suportadas: eixo X, eixo Y, rótulos de quadrante, agrupamento/cor">ⓘ</span><span class="more">⋯</span></div></div>
+            <div class="quad-wrap">
+              <svg class="quad-svg" viewBox="0 0 200 160" width="220" height="176">
+                <line x1="100" y1="6" x2="100" y2="154" stroke="var(--ink-faint)" stroke-width="1"/>
+                <line x1="6" y1="80" x2="194" y2="80" stroke="var(--ink-faint)" stroke-width="1"/>
+                <circle cx="150" cy="45" r="6" fill="var(--cat-1)"><title>VIP — Distribuidora Sul</title></circle>
+                <circle cx="165" cy="60" r="6" fill="var(--cat-1)"><title>VIP — Elétrica Norte</title></circle>
+                <circle cx="140" cy="110" r="6" fill="var(--cat-2)"><title>Recorrente — Casa da Luz</title></circle>
+                <circle cx="120" cy="120" r="6" fill="var(--cat-2)"><title>Recorrente — Ilumina MG</title></circle>
+                <circle cx="55" cy="55" r="6" fill="var(--cat-4)"><title>Novo — Rede Fácil</title></circle>
+                <circle cx="40" cy="145" r="6" fill="var(--cat-3)"><title>Em risco — Depósito Silva</title></circle>
+                <circle cx="60" cy="130" r="6" fill="var(--cat-3)"><title>Em risco — Comercial Vaz</title></circle>
+                <text x="103" y="18" class="quad-axis-label">alto valor</text>
+                <text x="140" y="152" class="quad-axis-label">alto engaj.</text>
+              </svg>
+              <div class="legend" style="flex-direction:column; gap:8px;">
+                <span><i style="background:var(--cat-1)"></i>VIP</span>
+                <span><i style="background:var(--cat-2)"></i>Recorrente</span>
+                <span><i style="background:var(--cat-4)"></i>Novo</span>
+                <span><i style="background:var(--cat-3)"></i>Em risco</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Anomaly -->
+          <div class="card span-6">
+            <div class="card-head"><span class="drag">⋮⋮</span><div><div class="card-title">Detector de anomalia — leads/dia</div><div class="card-sub">Anomalia</div></div><div class="card-tools"><span class="info-dot" title="Edições suportadas: métrica, sensibilidade, janela de referência, canal de alerta">ⓘ</span><span class="more">⋯</span></div></div>
+            <svg viewBox="0 0 300 100" style="width:100%; height:120px;">
+              <polyline points="0,75 40,72 80,70 120,74 160,20 200,68 240,66 280,64 300,63" fill="none" stroke="var(--gold-bright)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="160" cy="20" r="5" fill="var(--critical)"/>
+              <text x="168" y="16" font-size="9.5" fill="var(--critical)" font-weight="700">Pico atípico +340%</text>
+            </svg>
+          </div>
+
+          <!-- Zona -->
+          <div class="card span-6">
+            <div class="card-head"><span class="drag">⋮⋮</span><div><div class="card-title">Zona — receita por estado</div><div class="card-sub">Zona</div></div><div class="card-tools"><span class="info-dot" title="Edições suportadas: nível de região, métrica, mapa ou tabela">ⓘ</span><span class="more">⋯</span></div></div>
+            <div class="zone-row"><div>SP</div><div class="zone-track"><div class="zone-fill" style="width:92%"></div></div><div class="zone-val num">R$ 198k</div></div>
+            <div class="zone-row"><div>MG</div><div class="zone-track"><div class="zone-fill" style="width:61%"></div></div><div class="zone-val num">R$ 131k</div></div>
+            <div class="zone-row"><div>RS</div><div class="zone-track"><div class="zone-fill" style="width:44%"></div></div><div class="zone-val num">R$ 94k</div></div>
+            <div class="zone-row"><div>PR</div><div class="zone-track"><div class="zone-fill" style="width:33%"></div></div><div class="zone-val num">R$ 71k</div></div>
+            <div class="zone-row"><div>BA</div><div class="zone-track"><div class="zone-fill" style="width:21%"></div></div><div class="zone-val num">R$ 46k</div></div>
+          </div>
+
+          <!-- Estágio -->
+          <div class="card span-6">
+            <div class="card-head"><span class="drag">⋮⋮</span><div><div class="card-title">Estágio — Negócio #4471</div><div class="card-sub">Estágio</div></div><div class="card-tools"><span class="info-dot" title="Edições suportadas: conjunto de estágios, pipeline vinculado, visibilidade de rótulo">ⓘ</span><span class="more">⋯</span></div></div>
+            <div class="stepper">
+              <div class="step done"><div class="step-line"></div><div class="step-dot"></div><div class="step-label">Contato</div></div>
+              <div class="step done"><div class="step-line"></div><div class="step-dot"></div><div class="step-label">Proposta</div></div>
+              <div class="step current"><div class="step-line"></div><div class="step-dot"></div><div class="step-label">Negociação</div></div>
+              <div class="step"><div class="step-line"></div><div class="step-dot"></div><div class="step-label">A caminho</div></div>
+              <div class="step"><div class="step-line"></div><div class="step-dot"></div><div class="step-label">Fechado</div></div>
+            </div>
+          </div>
+
+          <!-- Commission -->
+          <div class="card span-6">
+            <div class="card-head"><span class="drag">⋮⋮</span><div><div class="card-title">Comissão — 2 metas — Bruno Alves</div><div class="card-sub">Comissão</div></div><div class="card-tools"><span class="info-dot" title="Edições suportadas: perfil, valor meta 1, valor meta 2, % comissão de cada meta, prévia de pagamento">ⓘ</span><span class="more">⋯</span></div></div>
+            <div class="goal-block">
+              <div class="goal-head"><span>Meta 1 — comissão 3%</span><span class="pct num">82%</span></div>
+              <div class="goal-track"><div class="goal-fill" style="width:82%; background:var(--gold)"></div></div>
+              <div class="goal-foot"><span class="num">R$ 41.000 / R$ 50.000</span><span class="num">Comissão prevista: R$ 1.230</span></div>
+            </div>
+            <div class="goal-block">
+              <div class="goal-head"><span>Meta 2 — comissão 5%</span><span class="pct num">41%</span></div>
+              <div class="goal-track"><div class="goal-fill" style="width:41%; background:var(--gold-bright)"></div></div>
+              <div class="goal-foot"><span class="num">R$ 33.000 / R$ 80.000</span><span class="num">Comissão prevista: R$ 1.650</span></div>
+            </div>
+          </div>
+
+          <!-- GIF -->
+          <div class="card span-6">
+            <div class="card-head"><span class="drag">⋮⋮</span><div><div class="card-title">Comemoração de meta</div><div class="card-sub">GIF</div></div><div class="card-tools"><span class="info-dot" title="Edições suportadas: arquivo de origem, autoplay, loop, legenda">ⓘ</span><span class="more">⋯</span></div></div>
+            <div class="gif-tile">
+              <span class="badge">GIF · loop</span>
+              <div class="confetti" style="left:20%; animation-delay:0s;"></div>
+              <div class="confetti" style="left:40%; animation-delay:.5s; background:var(--gold);"></div>
+              <div class="confetti" style="left:60%; animation-delay:1s;"></div>
+              <div class="confetti" style="left:75%; animation-delay:1.5s; background:var(--gold);"></div>
+              <div class="confetti" style="left:30%; animation-delay:.8s;"></div>
+              <div class="gif-caption">🎉 Carla bateu a Meta 2 — parabéns!</div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ============ VENDAS ============ -->
+      <section class="view" id="view-vendas">
+        <div class="section-head">
+          <div><h2>Vendas</h2><div class="section-sub">Cadastro completo de clientes · histórico de negócios vinculado</div></div>
+          <button class="btn btn-ghost">⭳ Exportar tabela</button>
+        </div>
+        <div class="contacts-shell">
+          <div class="contact-list">
+            <div class="contact-item active"><div class="mini-avatar" style="width:30px;height:30px;font-size:11px;">RS</div><div><div class="contact-name">Renata Souza</div><div class="contact-acct">Distribuidora Sul</div></div></div>
+            <div class="contact-item"><div class="mini-avatar" style="width:30px;height:30px;font-size:11px;">JP</div><div><div class="contact-name">João Pereira</div><div class="contact-acct">Elétrica Norte</div></div></div>
+            <div class="contact-item"><div class="mini-avatar" style="width:30px;height:30px;font-size:11px;">MC</div><div><div class="contact-name">Marina Costa</div><div class="contact-acct">Casa da Luz</div></div></div>
+            <div class="contact-item"><div class="mini-avatar" style="width:30px;height:30px;font-size:11px;">FV</div><div><div class="contact-name">Felipe Vaz</div><div class="contact-acct">Comercial Vaz</div></div></div>
+            <div class="contact-item"><div class="mini-avatar" style="width:30px;height:30px;font-size:11px;">TL</div><div><div class="contact-name">Tânia Lima</div><div class="contact-acct">Ilumina MG</div></div></div>
+          </div>
+          <div class="detail-panel">
+            <div class="detail-head">
+              <div class="detail-avatar">RS</div>
+              <div>
+                <div class="detail-name">Renata Souza</div>
+                <div class="detail-role">Compradora · Distribuidora Sul</div>
+              </div>
+              <div class="quick-icons" style="margin-left:auto;">
+                <div class="qicon" title="Enviar e-mail">✉</div>
+                <div class="qicon" title="Abrir WhatsApp">📱</div>
+              </div>
+            </div>
+            <div class="field-groups">
+              <div class="fgroup">
+                <h4>Identificação</h4>
+                <div class="field"><span class="k">Proprietário do contato</span><span class="v">Bruno Alves</span></div>
+                <div class="field"><span class="k">Nome / Sobrenome</span><span class="v">Renata Souza</span></div>
+                <div class="field"><span class="k">Conta / Título / Depto.</span><span class="v">Distribuidora Sul · Compradora · Suprimentos</span></div>
+              </div>
+              <div class="fgroup">
+                <h4>Contato</h4>
+                <div class="field"><span class="k">E-mail</span><span class="v">renata@distsul.com.br</span></div>
+                <div class="field"><span class="k">Celular / Telefone</span><span class="v num">(51) 99988-2210 · (51) 3222-1090</span></div>
+                <div class="field"><span class="k">Residencial / Assistente</span><span class="v num">— · (51) 99911-0034</span></div>
+              </div>
+              <div class="fgroup">
+                <h4>Origem</h4>
+                <div class="field"><span class="k">Fonte de cliente potencial</span><span class="v">Indicação</span></div>
+                <div class="field"><span class="k">Nome fornecedor</span><span class="v">Maxled Distribuição SP</span></div>
+              </div>
+              <div class="fgroup">
+                <h4>Endereço</h4>
+                <div class="field"><span class="k">Rua / Número</span><span class="v">Av. Ipiranga, 1420</span></div>
+                <div class="field"><span class="k">Cidade / Estado / CEP</span><span class="v">Porto Alegre · RS · 90160-093</span></div>
+                <div class="field"><span class="k">Coordenadas</span><span class="v num">-30.0346, -51.2177</span></div>
+              </div>
+            </div>
+            <div class="timeline">
+              <h4 style="font-size:11px; text-transform:uppercase; letter-spacing:.07em; color:var(--gold); margin:0 0 4px;">Histórico do cliente</h4>
+              <div class="tl-item"><div class="tl-dot"></div><div><div>Negócio #4471 movido para <b>Negociação</b> — R$ 18.400</div><div class="tl-when">hoje, 09:12</div></div></div>
+              <div class="tl-item"><div class="tl-dot" style="background:var(--info)"></div><div><div>WhatsApp — orçamento reenviado com desconto de 5%</div><div class="tl-when">ontem, 16:40</div></div></div>
+              <div class="tl-item"><div class="tl-dot" style="background:var(--good)"></div><div><div>Negócio #4102 fechado — R$ 22.900</div><div class="tl-when">03 jun</div></div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ NEGÓCIOS ============ -->
+      <section class="view" id="view-negocios">
+        <div class="section-head">
+          <div><h2>Negócios</h2><div class="section-sub">Kanban · colunas editáveis, adicionáveis e removíveis</div></div>
+        </div>
+        <div class="board">
+          <div class="col">
+            <div class="col-head">Novo contato<span class="col-count">6</span></div>
+            <div class="deal-card"><div class="deal-name">Rede Fácil — Iluminação galpão</div><div class="deal-value num">R$ 9.200</div><div class="deal-foot"><div class="mini-avatar">AN</div>Ana<span style="margin-left:auto;">📎 2</span></div></div>
+            <div class="deal-card"><div class="deal-name">Depósito Silva — Refit LED</div><div class="deal-value num">R$ 15.600</div><div class="deal-foot"><div class="mini-avatar">DI</div>Diego<span style="margin-left:auto;">📎 1</span></div></div>
+          </div>
+          <div class="col">
+            <div class="col-head">Proposta enviada<span class="col-count">4</span></div>
+            <div class="deal-card"><div class="deal-name">Ilumina MG — Painéis externos</div><div class="deal-value num">R$ 27.300</div><div class="deal-foot"><div class="mini-avatar">TL</div>Tânia<span style="margin-left:auto;">📎 3</span></div></div>
+          </div>
+          <div class="col">
+            <div class="col-head">Negociação<span class="col-count">3</span></div>
+            <div class="deal-card"><div class="deal-name">Distribuidora Sul — Refil #4471</div><div class="deal-value num">R$ 18.400</div><div class="deal-foot"><div class="mini-avatar">BR</div>Bruno<span style="margin-left:auto;">📎 4</span></div></div>
+          </div>
+          <div class="col">
+            <div class="col-head">A caminho<span class="col-count">2</span></div>
+            <div class="deal-card"><div class="deal-name">Elétrica Norte — Pedido #4102</div><div class="deal-value num">R$ 22.900</div><div class="deal-foot"><div class="mini-avatar">JP</div>João<span class="countdown-chip">2 dias úteis</span></div></div>
+          </div>
+          <div class="col">
+            <div class="col-head">Fechado<span class="col-count">12</span></div>
+            <div class="deal-card"><div class="deal-name">Casa da Luz — Showroom</div><div class="deal-value num">R$ 31.100</div><div class="deal-foot"><div class="mini-avatar">MC</div>Marina<span style="margin-left:auto;">📎 5</span></div></div>
+          </div>
+          <div class="col ghost">＋ Adicionar coluna</div>
+        </div>
+      </section>
+
+      <!-- ============ AGENDA ============ -->
+      <section class="view" id="view-agenda">
+        <div class="section-head"><div><h2>Agenda</h2><div class="section-sub">Automação disparada ao mover um negócio para "A caminho"</div></div></div>
+        <div class="process">
+          <div class="pstep"><div class="pnum">1</div><h4>Negócio movido</h4><p>Card entra na coluna "A caminho" no Kanban.</p></div>
+          <div class="pstep"><div class="pnum">2</div><h4>Prazo definido</h4><p>Vencimento = hoje + 3 dias úteis (feriados excluídos).</p></div>
+          <div class="pstep"><div class="pnum">3</div><h4>Mensagem pós-venda</h4><p>Envio automático via WhatsApp (ou e-mail, se sem número).</p></div>
+          <div class="pstep"><div class="pnum">4</div><h4>Avanço automático</h4><p>No dia do prazo, o card avança de estágio sozinho.</p></div>
+        </div>
+        <div class="agenda-list">
+          <div class="agenda-row"><div class="mini-avatar" style="width:26px;height:26px;font-size:10px;">JP</div><div><div class="name">Elétrica Norte — Pedido #4102</div><div class="acct">João Pereira · a caminho desde 11/07</div></div><span class="countdown-chip">2 dias úteis restantes</span></div>
+          <div class="agenda-row"><div class="mini-avatar" style="width:26px;height:26px;font-size:10px;">CA</div><div><div class="name">Rede Fácil — Instalação</div><div class="acct">Carla Nunes · a caminho desde 09/07</div></div><span class="delta good" style="background:rgba(76,201,122,.14)">avança hoje</span></div>
+        </div>
+      </section>
+
+      <!-- ============ SOCIAL ============ -->
+      <section class="view" id="view-social">
+        <div class="section-head"><div><h2>Rede Social Interna</h2><div class="section-sub">Feed da equipe · todos podem postar, curtir e comentar</div></div></div>
+        <div class="feed">
+          <div class="post system">
+            <div class="post-head"><div class="avatar" style="width:28px;height:28px;font-size:10px;">CN</div><div><span class="post-name">Carla Nunes</span><span class="sys-badge">Meta atingida</span><div class="post-when">há 2 horas</div></div></div>
+            <div class="post-body">🎉 Carla bateu a <b>Meta 2</b> do mês — comissão de 5% liberada. Parabéns!</div>
+            <div class="post-actions"><span>♥ 14 curtidas</span><span>💬 5 comentários</span></div>
+          </div>
+          <div class="post">
+            <div class="post-head"><div class="avatar" style="width:28px;height:28px;font-size:10px;">BR</div><div><span class="post-name">Bruno Alves</span><div class="post-when">há 5 horas</div></div></div>
+            <div class="post-body">Fechei o pedido da Elétrica Norte hoje — obrigado ao time de logística pelo prazo apertado 🙌</div>
+            <div class="post-actions"><span>♥ 9 curtidas</span><span>💬 2 comentários</span></div>
+          </div>
+          <div class="post system">
+            <div class="post-head"><div class="avatar" style="width:28px;height:28px;font-size:10px;">TL</div><div><span class="post-name">Tânia Lima</span><span class="sys-badge">Aniversário 🎂</span><div class="post-when">hoje</div></div></div>
+            <div class="post-body">Feliz aniversário, Tânia! Toda a equipe Maxled deseja um ótimo dia 🎈</div>
+            <div class="post-actions"><span>♥ 22 curtidas</span><span>💬 8 comentários</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ IA ============ -->
+      <section class="view" id="view-ia">
+        <div class="section-head"><div><h2>Inteligência Artificial</h2><div class="section-sub">Sugestões, previsões e alertas — sempre com justificativa</div></div></div>
+        <div class="ia-grid">
+          <div class="card"><div class="ia-ico">✎</div><div class="card-title">Assistente de escrita</div><p class="card-sub" style="margin-top:6px; color:var(--ink-muted);">Sugestão de resposta para Renata Souza: "Consigo manter os 5% de desconto se o pedido for fechado até sexta…"</p><div class="confidence">Baseado no histórico de negociação do contato</div></div>
+          <div class="card"><div class="ia-ico">📈</div><div class="card-title">Previsão de vendas</div>
+            <svg viewBox="0 0 220 70" style="width:100%; height:70px; margin-top:6px;"><polyline points="0,55 40,48 80,50 120,32 160,30" fill="none" stroke="var(--gold-bright)" stroke-width="2.5" stroke-linecap="round"/><polyline points="160,30 220,14" fill="none" stroke="var(--gold-deep)" stroke-width="2.5" stroke-dasharray="3,3" stroke-linecap="round"/></svg>
+            <div class="confidence">Projeção: R$ 512k em julho (±8%) · 6 meses de histórico</div>
+          </div>
+          <div class="card"><div class="ia-ico">⚡</div><div class="card-title">Alertas de oportunidade</div>
+            <div class="sent-row"><span>Distribuidora Sul</span><span class="sent-pill sent-pos">Alta chance</span></div>
+            <div class="sent-row"><span>Ilumina MG</span><span class="sent-pill sent-pos">Alta chance</span></div>
+            <div class="sent-row"><span>Comercial Vaz</span><span class="sent-pill sent-neg">Risco de perda</span></div>
+            <div class="confidence">Ranqueado por sinais de engajamento e velocidade de estágio</div>
+          </div>
+          <div class="card"><div class="ia-ico">☺</div><div class="card-title">Análise de sentimento</div>
+            <div class="sent-row"><span>Renata Souza — WhatsApp</span><span class="sent-pill sent-pos">Positivo</span></div>
+            <div class="sent-row"><span>Felipe Vaz — E-mail</span><span class="sent-pill sent-neg">Negativo</span></div>
+            <div class="sent-row"><span>João Pereira — WhatsApp</span><span class="sent-pill sent-neu">Neutro</span></div>
+            <div class="confidence">Rótulo visível apenas ao proprietário e ao mediador (LGPD)</div>
+          </div>
+          <div class="card"><div class="ia-ico">🕑</div><div class="card-title">Melhor horário de contato</div><p class="card-sub" style="margin-top:6px; color:var(--ink-muted);">Renata Souza costuma responder entre <b>10h–11h30</b> — taxa de resposta 3× maior que a média.</p><div class="confidence">Baseado em 18 interações anteriores</div></div>
+          <div class="card"><div class="ia-ico">⇄</div><div class="card-title">Cross-sell / Upsell</div><p class="card-sub" style="margin-top:6px; color:var(--ink-muted);">Clientes que compraram <b>painel LED 60×60</b> também levam <b>driver 40W</b> em 71% dos casos.</p><div class="confidence">Sugerir na proposta do Negócio #4471</div></div>
+        </div>
+      </section>
+
+      <!-- ============ PERFIL ============ -->
+      <section class="view" id="view-perfil">
+        <div class="section-head"><div><h2>Perfil — Mediador</h2><div class="section-sub">Acesso total a todos os perfis · cadastro de vendedores</div></div>
+          <button class="btn btn-primary">＋ Novo vendedor</button>
+        </div>
+        <div class="profile-switch">Visualizando: <select><option>Todos os vendedores</option><option>Bruno Alves</option><option>Carla Nunes</option></select></div>
+        <div class="grid">
+          <div class="card span-8">
+            <div class="card-title" style="margin-bottom:10px;">Vendedores</div>
+            <table class="vendors">
+              <thead><tr><th>Nome</th><th>Função</th><th>Meta 1</th><th>Meta 2</th><th>Comissão</th><th>Aniversário</th></tr></thead>
+              <tbody>
+                <tr><td>Ana Ribeiro</td><td>Vendedora Sênior</td><td class="num">R$ 60.000</td><td class="num">R$ 95.000</td><td class="num">3% / 5%</td><td class="num">14/07</td></tr>
+                <tr><td>Bruno Alves</td><td>Vendedor</td><td class="num">R$ 50.000</td><td class="num">R$ 80.000</td><td class="num">3% / 5%</td><td class="num">02/09</td></tr>
+                <tr><td>Carla Nunes</td><td>Vendedora Sênior</td><td class="num">R$ 65.000</td><td class="num">R$ 100.000</td><td class="num">3,5% / 5,5%</td><td class="num">28/03</td></tr>
+                <tr><td>Diego Farias</td><td>Vendedor Jr.</td><td class="num">R$ 35.000</td><td class="num">R$ 55.000</td><td class="num">2,5% / 4%</td><td class="num">19/11</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="card span-4">
+            <div class="card-title" style="margin-bottom:10px;">Ranking do mês</div>
+            <div class="rank-list">
+              <div class="rank-row"><span class="rank-pos">1º</span><span style="width:70px;">Carla</span><div class="rank-bar"><div class="rank-fill" style="width:94%"></div></div><span class="rank-pct num">94%</span></div>
+              <div class="rank-row"><span class="rank-pos">2º</span><span style="width:70px;">Ana</span><div class="rank-bar"><div class="rank-fill" style="width:88%"></div></div><span class="rank-pct num">88%</span></div>
+              <div class="rank-row"><span class="rank-pos">3º</span><span style="width:70px;">Bruno</span><div class="rank-bar"><div class="rank-fill" style="width:72%"></div></div><span class="rank-pct num">72%</span></div>
+              <div class="rank-row"><span class="rank-pos">4º</span><span style="width:70px;">Diego</span><div class="rank-bar"><div class="rank-fill" style="width:58%"></div></div><span class="rank-pct num">58%</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <footer class="spec-note">Mockup visual do sistema de design — ver <code>docs/CRM-SPEC.md</code> para a especificação completa de funcionalidades, modelo de dados e permissões.</footer>
+  </div>
+</div>
+
+<script>
+  var items = document.querySelectorAll('.rail-item[data-view]');
+  var titles = {
+    analytics: 'Aba Analítica', vendas: 'Aba Vendas', negocios: 'Aba Negócios',
+    agenda: 'Agenda', social: 'Rede Social Interna', ia: 'Inteligência Artificial', perfil: 'Perfil — Mediador'
+  };
+  items.forEach(function(item){
+    item.addEventListener('click', function(){
+      items.forEach(function(i){ i.classList.remove('active'); });
+      item.classList.add('active');
+      document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('active'); });
+      document.getElementById('view-' + item.dataset.view).classList.add('active');
+      document.getElementById('topbar-title').textContent = titles[item.dataset.view];
+    });
+  });
+</script>
