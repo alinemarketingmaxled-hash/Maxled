@@ -3,6 +3,7 @@ import { getKpis, getRevenueByMonth, getFunnel, getGoalProgress } from "@/lib/an
 import { getDailyTasks } from "@/lib/calls";
 import { buildLineChart } from "@/lib/chart-utils";
 import { AnaliticaTabs } from "@/components/home/AnaliticaTabs";
+import { QuickNav } from "@/components/home/QuickNav";
 
 export default async function AnaliticaPage() {
   const session = await requireView("analitica");
@@ -25,6 +26,8 @@ export default async function AnaliticaPage() {
           Olá, {session.user.name ?? session.user.email} — indicadores em tempo real
         </p>
       </div>
+
+      <QuickNav role={session.user.role} />
 
       <AnaliticaTabs
         dailyTasks={dailyTasks}
