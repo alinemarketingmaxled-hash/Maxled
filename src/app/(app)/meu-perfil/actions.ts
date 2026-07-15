@@ -14,14 +14,17 @@ export async function updateOwnProfileAction(formData: FormData) {
   const name = (formData.get("name") as string)?.trim();
   if (!name) throw new Error("Nome é obrigatório.");
 
-  const jobTitle = (formData.get("jobTitle") as string)?.trim() || null;
   const avatarUrl = (formData.get("avatarUrl") as string)?.trim() || null;
   const password = (formData.get("password") as string)?.trim() || undefined;
+  const birthdayStr = (formData.get("birthday") as string)?.trim();
+  const birthday = birthdayStr ? new Date(birthdayStr) : null;
+  const goal1Str = (formData.get("goal1") as string)?.trim();
+  const goal1 = goal1Str ? Number(goal1Str) : null;
 
   if (avatarUrl && avatarUrl.length > MAX_AVATAR_LENGTH) {
     throw new Error("Imagem muito grande. Escolha uma foto menor.");
   }
 
-  await updateOwnProfile(session.user.id, { name, jobTitle, avatarUrl, password });
+  await updateOwnProfile(session.user.id, { name, avatarUrl, birthday, goal1, password });
   revalidatePath("/", "layout");
 }

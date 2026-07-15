@@ -80,19 +80,21 @@ export async function deactivateVendor(actorId: string, id: string) {
 
 export type OwnProfileInput = {
   name: string;
-  jobTitle?: string | null;
   avatarUrl?: string | null;
+  birthday?: Date | null;
+  goal1?: number | null;
   password?: string;
 };
 
 /** Self-service edit: any authenticated user can update their own display
- * name, photo and job title. Role, goals and commission stay mediator-only
- * (set via lib/users.ts updateVendor). */
+ * name, photo, birthday, password, and Meta 1 (a personal target — Meta 2
+ * and commission % stay mediator-only, set via lib/users.ts updateVendor). */
 export async function updateOwnProfile(userId: string, input: OwnProfileInput) {
   const data: Record<string, unknown> = {
     name: input.name,
-    jobTitle: input.jobTitle,
     avatarUrl: input.avatarUrl,
+    birthday: input.birthday,
+    goal1: input.goal1,
   };
   if (input.password) {
     data.passwordHash = await bcrypt.hash(input.password, 10);

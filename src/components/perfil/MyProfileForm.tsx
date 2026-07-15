@@ -35,7 +35,7 @@ function resizeImage(file: File): Promise<string> {
 export function MyProfileForm({
   user,
 }: {
-  user: { name: string; jobTitle: string | null; avatarUrl: string | null };
+  user: { name: string; avatarUrl: string | null; birthday: Date | null; goal1: number | null };
 }) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -131,10 +131,23 @@ export function MyProfileForm({
       </label>
 
       <label className="flex flex-col gap-1 text-xs">
-        <span className="text-ink-faint">Função</span>
+        <span className="text-ink-faint">Data de nascimento</span>
         <input
-          name="jobTitle"
-          defaultValue={user.jobTitle ?? ""}
+          name="birthday"
+          type="date"
+          defaultValue={user.birthday ? user.birthday.toISOString().slice(0, 10) : ""}
+          className="rounded-md border border-gold-deep/40 bg-surface-2 px-2.5 py-2 text-sm text-ink outline-none focus:border-gold"
+        />
+      </label>
+
+      <label className="flex flex-col gap-1 text-xs">
+        <span className="text-ink-faint">Minha meta (R$)</span>
+        <input
+          name="goal1"
+          type="number"
+          step="any"
+          min="0"
+          defaultValue={user.goal1 ?? ""}
           className="rounded-md border border-gold-deep/40 bg-surface-2 px-2.5 py-2 text-sm text-ink outline-none focus:border-gold"
         />
       </label>

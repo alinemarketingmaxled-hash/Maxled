@@ -17,7 +17,7 @@ export default async function MeuPerfilPage() {
 
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: session.user.id },
-    select: { name: true, jobTitle: true, avatarUrl: true, email: true, role: true },
+    select: { name: true, avatarUrl: true, birthday: true, goal1: true, email: true, role: true },
   });
 
   return (
@@ -28,7 +28,14 @@ export default async function MeuPerfilPage() {
           {user.email} · {ROLE_LABELS[user.role] ?? user.role}
         </p>
       </div>
-      <MyProfileForm user={user} />
+      <MyProfileForm
+        user={{
+          name: user.name,
+          avatarUrl: user.avatarUrl,
+          birthday: user.birthday,
+          goal1: user.goal1 ? Number(user.goal1) : null,
+        }}
+      />
     </div>
   );
 }
