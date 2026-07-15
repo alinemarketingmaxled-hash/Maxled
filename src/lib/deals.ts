@@ -4,7 +4,6 @@ import { prisma } from "@/lib/prisma";
 import { getPermission, type Module } from "@/lib/permissions";
 import { logActivity } from "@/lib/activity-log";
 import { addBusinessDays } from "@/lib/business-days";
-import { isWhatsAppConfigured, sendWhatsAppMessage } from "@/lib/whatsapp";
 import type { Prisma } from "@/generated/prisma/client";
 
 /** See the note in lib/contacts.ts — "team" and "all" both see every deal until a team/hierarchy model exists. */
@@ -69,34 +68,6 @@ export async function getDeal(session: Session, id: string) {
   });
 }
 
-/** Sends a WhatsApp message to the deal's contact using the CURRENT user's
- * own connected number (spec §3.6/§9) — not the deal owner's. */
-export async function sendDealWhatsApp(session: Session, dealId: string, message: string) {
-  const [deal, me] = await Promise.all([
-    prisma.deal.findFirst({
-      where: { id: dealId, ...dealScopeWhere(session) },
-      include: { contact: { select: { mobile: true, phone: true } } },
-    }),
-    prisma.user.findUniqueOrThrow({ where: { id: session.user.id }, select: { whatsappToken: true } }),
-  ]);
-  if (!deal) throw new Error("Negócio não encontrado ou sem permissão.");
-  if (!isWhatsAppConfigured(me.whatsappToken)) {
-    throw new Error("Seu WhatsApp ainda não está configurado. Peça para o mediador cadastrar no seu perfil.");
-  }
-  const phone = deal.contact.mobile ?? deal.contact.phone;
-  if (!phone) throw new Error("Este cliente não tem telefone cadastrado.");
-
-  await sendWhatsAppMessage(me.whatsappToken, phone, message);
-  await logActivity({
-    actorId: session.user.id,
-    entityType: "Deal",
-    entityId: dealId,
-    action: "whatsapp_sent",
-    dealId,
-    diff: { outcome: message } as Prisma.InputJsonValue,
-  });
-}
-
 export type DealInput = {
   ownerId: string;
   contactId: string;
@@ -127,10 +98,6 @@ export async function createDeal(session: Session, data: DealInput) {
 export async function moveDeal(session: Session, dealId: string, newStageId: string) {
   const deal = await prisma.deal.findFirst({
     where: { id: dealId, ...dealScopeWhere(session) },
-    include: {
-      contact: { select: { firstName: true, mobile: true, phone: true } },
-      owner: { select: { whatsappToken: true } },
-    },
   });
   if (!deal) throw new Error("Negócio não encontrado ou sem permissão.");
 
@@ -160,32 +127,16 @@ export async function moveDeal(session: Session, dealId: string, newStageId: str
   });
 
   if (newStage.isOnTheWay) {
-    const phone = deal.contact.mobile ?? deal.contact.phone;
-    const token = deal.owner.whatsappToken;
-    let note: string;
-
-    if (isWhatsAppConfigured(token) && phone) {
-      try {
-        await sendWhatsAppMessage(
-          token,
-          phone,
-          `Olá, ${deal.contact.firstName}! Seu pedido "${deal.name}" está a caminho. Qualquer dúvida, estamos à disposição.`,
-        );
-        note = "Mensagem pós-venda enviada por WhatsApp (Netsapp).";
-      } catch (err) {
-        note = `Falha ao enviar mensagem pós-venda por WhatsApp: ${err instanceof Error ? err.message : "erro desconhecido"}`;
-      }
-    } else {
-      note = "Mensagem pós-venda não enviada — WhatsApp não configurado para este vendedor ou cliente sem telefone.";
-    }
-
     await logActivity({
       actorId: session.user.id,
       entityType: "Deal",
       entityId: dealId,
       action: "updated",
       dealId,
-      diff: { note, deadline: data.onTheWayDeadline } as Prisma.InputJsonValue,
+      diff: {
+        note: "Lembrete: envie a mensagem de pós-venda pelo WhatsApp (abra a conversa pelo ícone 📱 na ficha do cliente).",
+        deadline: data.onTheWayDeadline,
+      } as Prisma.InputJsonValue,
     });
   }
 

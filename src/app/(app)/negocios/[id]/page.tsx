@@ -105,7 +105,6 @@ export default async function DealDetailPage({
                 {log.action === "stage_changed" && "mudou o estágio deste negócio"}
                 {log.action === "deleted" && "excluiu este negócio"}
                 {log.action === "updated" && "atualizou este negócio"}
-                {log.action === "whatsapp_sent" && "enviou uma mensagem por WhatsApp"}
                 <span className="ml-1.5 text-ink-faint">
                   · {formatDistanceToNow(log.createdAt, { addSuffix: true, locale: ptBR })}
                 </span>

@@ -99,23 +99,6 @@ export function VendorForm({
         </div>
       </div>
 
-      <div className="border-t border-gold-deep/20 pt-4">
-        <h4 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-gold">
-          WhatsApp (Netsapp)
-        </h4>
-        <label className="flex flex-col gap-1 text-xs">
-          <span className="text-ink-faint">
-            Token de API {vendor?.whatsappToken ? "(configurado — deixe em branco para manter)" : ""}
-          </span>
-          <input
-            name="whatsappToken"
-            type="password"
-            placeholder={vendor?.whatsappToken ? "••••••••" : "Cole o token do WhatsApp conectado"}
-            className="rounded-md border border-gold-deep/40 bg-surface-2 px-2.5 py-2 text-sm text-ink outline-none focus:border-gold"
-          />
-        </label>
-      </div>
-
       <div className="flex justify-end">
         <button
           type="submit"

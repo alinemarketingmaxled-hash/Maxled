@@ -2,14 +2,14 @@
 
 import { useState, useTransition } from "react";
 import type { DealAssistMode } from "@/lib/ai";
-import { generateDealAssistAction, sendDealWhatsAppAction } from "@/app/(app)/ia/actions";
+import { generateDealAssistAction } from "@/app/(app)/ia/actions";
 
 export function DealAssistPanel({
   disabled,
   deals,
 }: {
   disabled: boolean;
-  deals: Array<{ id: string; label: string }>;
+  deals: Array<{ id: string; label: string; phone: string | null }>;
 }) {
   const [isPending, startTransition] = useTransition();
   const [dealId, setDealId] = useState(deals[0]?.id ?? "");
@@ -18,15 +18,13 @@ export function DealAssistPanel({
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [sendState, setSendState] = useState<"idle" | "sending" | "sent">("idle");
-  const [sendError, setSendError] = useState<string | null>(null);
+
+  const selectedDeal = deals.find((d) => d.id === dealId);
 
   function handleGenerate() {
     setError(null);
     setResult(null);
     setCopied(false);
-    setSendState("idle");
-    setSendError(null);
     startTransition(async () => {
       const res = await generateDealAssistAction(dealId, mode, context);
       if (res.error) setError(res.error);
@@ -41,19 +39,11 @@ export function DealAssistPanel({
     setTimeout(() => setCopied(false), 2000);
   }
 
-  function handleSend() {
-    if (!result) return;
-    setSendState("sending");
-    setSendError(null);
-    startTransition(async () => {
-      const res = await sendDealWhatsAppAction(dealId, result);
-      if (res.error) {
-        setSendError(res.error);
-        setSendState("idle");
-      } else {
-        setSendState("sent");
-      }
-    });
+  function handleOpenWhatsApp() {
+    if (!result || !selectedDeal?.phone) return;
+    const digits = selectedDeal.phone.replace(/\D/g, "");
+    const number = digits.startsWith("55") ? digits : `55${digits}`;
+    window.open(`https://wa.me/${number}?text=${encodeURIComponent(result)}`, "_blank");
   }
 
   return (
@@ -148,17 +138,13 @@ export function DealAssistPanel({
                     {copied ? "Copiado!" : "Copiar mensagem"}
                   </button>
                   <button
-                    onClick={handleSend}
-                    disabled={sendState === "sending" || sendState === "sent"}
+                    onClick={handleOpenWhatsApp}
+                    disabled={!selectedDeal?.phone}
+                    title={!selectedDeal?.phone ? "Este cliente não tem telefone cadastrado" : undefined}
                     className="rounded-md bg-good/15 px-2.5 py-1 text-[11.5px] font-semibold text-good transition-colors hover:bg-good/25 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {sendState === "sending"
-                      ? "Enviando…"
-                      : sendState === "sent"
-                        ? "Enviado ✓"
-                        : "📲 Enviar agora"}
+                    📲 Abrir no WhatsApp
                   </button>
-                  {sendError && <span className="text-[11px] text-critical">{sendError}</span>}
                 </div>
               )}
             </div>

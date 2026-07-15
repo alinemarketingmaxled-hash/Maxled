@@ -5,7 +5,7 @@ export async function logActivity(params: {
   actorId: string;
   entityType: "Contact" | "Deal" | "PipelineStage" | "User";
   entityId: string;
-  action: "created" | "updated" | "deleted" | "restored" | "stage_changed" | "call_logged" | "whatsapp_sent";
+  action: "created" | "updated" | "deleted" | "restored" | "stage_changed" | "call_logged";
   diff?: Prisma.InputJsonValue;
   contactId?: string;
   dealId?: string;

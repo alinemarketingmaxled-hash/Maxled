@@ -35,7 +35,6 @@ function readVendorInput(formData: FormData): VendorInput {
     commissionPct1: num("commissionPct1"),
     commissionPct2: num("commissionPct2"),
     password: (formData.get("password") as string)?.trim() || undefined,
-    whatsappToken: (formData.get("whatsappToken") as string)?.trim() || undefined,
   };
 }
 

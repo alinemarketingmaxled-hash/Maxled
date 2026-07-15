@@ -4,13 +4,12 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { Session } from "next-auth";
 import { auth } from "@/auth";
-import { canView, canEdit, getPermission } from "@/lib/permissions";
+import { canEdit, getPermission } from "@/lib/permissions";
 import {
   createContact,
   updateContact,
   softDeleteContact,
   listContacts,
-  sendContactWhatsApp,
   type ContactInput,
 } from "@/lib/contacts";
 import { prisma } from "@/lib/prisma";
@@ -154,21 +153,6 @@ export async function importContactsAction(formData: FormData) {
   redirect(
     `/vendas?imported=${summary.created}-${summary.updated}-${summary.skipped}`,
   );
-}
-
-export async function sendContactWhatsAppAction(contactId: string, message: string) {
-  const session = await auth();
-  if (!session?.user) redirect("/login");
-  if (!canView(session.user.role, "vendas")) {
-    return { error: "Sem permissão para acessar Clientes." };
-  }
-  try {
-    await sendContactWhatsApp(session, contactId, message);
-    revalidatePath("/vendas");
-    return { ok: true };
-  } catch (e) {
-    return { error: e instanceof Error ? e.message : "Erro ao enviar mensagem." };
-  }
 }
 
 export async function assignableOwners(session: Session | null) {
