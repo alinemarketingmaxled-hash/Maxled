@@ -91,6 +91,11 @@ export function getPermission(role: Role, mod: Module): Permission {
   return MATRIX[mod][role];
 }
 
+/** Read-only snapshot for display (e.g. the Config page's permission reference table). */
+export function getPermissionMatrix(): Record<Module, Record<Role, Permission>> {
+  return MATRIX;
+}
+
 export function canView(role: Role, mod: Module): boolean {
   return getPermission(role, mod).level !== "none";
 }
