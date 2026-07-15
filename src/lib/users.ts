@@ -78,6 +78,31 @@ export async function deactivateVendor(actorId: string, id: string) {
   return vendor;
 }
 
+export type OwnProfileInput = {
+  name: string;
+  jobTitle?: string | null;
+  avatarUrl?: string | null;
+  password?: string;
+};
+
+/** Self-service edit: any authenticated user can update their own display
+ * name, photo and job title. Role, goals and commission stay mediator-only
+ * (set via lib/users.ts updateVendor). */
+export async function updateOwnProfile(userId: string, input: OwnProfileInput) {
+  const data: Record<string, unknown> = {
+    name: input.name,
+    jobTitle: input.jobTitle,
+    avatarUrl: input.avatarUrl,
+  };
+  if (input.password) {
+    data.passwordHash = await bcrypt.hash(input.password, 10);
+  }
+
+  const user = await prisma.user.update({ where: { id: userId }, data });
+  await logActivity({ actorId: userId, entityType: "User", entityId: userId, action: "updated" });
+  return user;
+}
+
 /** Feeds the birthday congratulatory message (spec §3.7/§5) — the send itself
  * lives in Rede Social + WhatsApp integration once those modules exist. */
 export async function getTodaysBirthdays() {

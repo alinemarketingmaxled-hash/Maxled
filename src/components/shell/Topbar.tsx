@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { LogoutButton } from "@/components/LogoutButton";
 
 const ROLE_LABELS: Record<string, string> = {
@@ -8,7 +9,15 @@ const ROLE_LABELS: Record<string, string> = {
   MEDIATOR: "Mediador",
 };
 
-export function Topbar({ name, role }: { name: string; role: string }) {
+export function Topbar({
+  name,
+  role,
+  avatarUrl,
+}: {
+  name: string;
+  role: string;
+  avatarUrl?: string | null;
+}) {
   const initials = name
     .split(" ")
     .map((p) => p[0])
@@ -25,9 +34,20 @@ export function Topbar({ name, role }: { name: string; role: string }) {
       />
       <div className="ml-auto flex items-center gap-3.5">
         <span className="text-xs text-ink-muted">{ROLE_LABELS[role] ?? role}</span>
-        <div className="flex h-8 w-8 items-center justify-center rounded-full border border-gold-deep bg-surface-3 text-[11px] font-bold text-gold-bright">
-          {initials}
-        </div>
+        <Link href="/meu-perfil" title="Meu perfil">
+          {avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={avatarUrl}
+              alt={name}
+              className="h-8 w-8 rounded-full border border-gold-deep object-cover transition-opacity hover:opacity-80"
+            />
+          ) : (
+            <div className="flex h-8 w-8 items-center justify-center rounded-full border border-gold-deep bg-surface-3 text-[11px] font-bold text-gold-bright transition-colors hover:border-gold">
+              {initials}
+            </div>
+          )}
+        </Link>
         <LogoutButton />
       </div>
     </header>
