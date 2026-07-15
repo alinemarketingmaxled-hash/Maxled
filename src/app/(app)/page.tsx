@@ -1,6 +1,8 @@
 import { requireView } from "@/lib/require-permission";
 import { getKpis, getRevenueByMonth, getFunnel, getGoalProgress } from "@/lib/analytics";
+import { getDailyTasks } from "@/lib/calls";
 import { buildLineChart } from "@/lib/chart-utils";
+import { DailyTasksPanel } from "@/components/home/DailyTasksPanel";
 
 function currency(v: number) {
   return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
@@ -8,11 +10,12 @@ function currency(v: number) {
 
 export default async function AnaliticaPage() {
   const session = await requireView("analitica");
-  const [kpis, revenueByMonth, funnel, goal] = await Promise.all([
+  const [kpis, revenueByMonth, funnel, goal, dailyTasks] = await Promise.all([
     getKpis(session),
     getRevenueByMonth(session),
     getFunnel(session),
     getGoalProgress(session),
+    getDailyTasks(session),
   ]);
 
   const { polyline, areaPath } = buildLineChart(revenueByMonth.map((m) => m.value));
@@ -27,6 +30,8 @@ export default async function AnaliticaPage() {
           Olá, {session.user.name ?? session.user.email} — indicadores em tempo real
         </p>
       </div>
+
+      <DailyTasksPanel tasks={dailyTasks} />
 
       <div className="grid grid-cols-12 gap-4">
         {/* KPI row */}
