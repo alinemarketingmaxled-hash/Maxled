@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import type { DealAssistMode } from "@/lib/ai";
-import { generateDealAssistAction } from "@/app/(app)/ia/actions";
+import { generateDealAssistAction, sendDealWhatsAppAction } from "@/app/(app)/ia/actions";
 
 export function DealAssistPanel({
   disabled,
@@ -18,11 +18,15 @@ export function DealAssistPanel({
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [sendState, setSendState] = useState<"idle" | "sending" | "sent">("idle");
+  const [sendError, setSendError] = useState<string | null>(null);
 
   function handleGenerate() {
     setError(null);
     setResult(null);
     setCopied(false);
+    setSendState("idle");
+    setSendError(null);
     startTransition(async () => {
       const res = await generateDealAssistAction(dealId, mode, context);
       if (res.error) setError(res.error);
@@ -35,6 +39,21 @@ export function DealAssistPanel({
     await navigator.clipboard.writeText(result);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  }
+
+  function handleSend() {
+    if (!result) return;
+    setSendState("sending");
+    setSendError(null);
+    startTransition(async () => {
+      const res = await sendDealWhatsAppAction(dealId, result);
+      if (res.error) {
+        setSendError(res.error);
+        setSendState("idle");
+      } else {
+        setSendState("sent");
+      }
+    });
   }
 
   return (
@@ -121,12 +140,26 @@ export function DealAssistPanel({
               </div>
               <p className="whitespace-pre-wrap text-[12.5px] text-ink">{result}</p>
               {mode === "writing" && (
-                <button
-                  onClick={handleCopy}
-                  className="mt-2.5 rounded-md bg-surface-3 px-2.5 py-1 text-[11.5px] font-semibold text-gold-bright transition-colors hover:text-gold"
-                >
-                  {copied ? "Copiado!" : "Copiar mensagem"}
-                </button>
+                <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                  <button
+                    onClick={handleCopy}
+                    className="rounded-md bg-surface-3 px-2.5 py-1 text-[11.5px] font-semibold text-gold-bright transition-colors hover:text-gold"
+                  >
+                    {copied ? "Copiado!" : "Copiar mensagem"}
+                  </button>
+                  <button
+                    onClick={handleSend}
+                    disabled={sendState === "sending" || sendState === "sent"}
+                    className="rounded-md bg-good/15 px-2.5 py-1 text-[11.5px] font-semibold text-good transition-colors hover:bg-good/25 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {sendState === "sending"
+                      ? "Enviando…"
+                      : sendState === "sent"
+                        ? "Enviado ✓"
+                        : "📲 Enviar agora"}
+                  </button>
+                  {sendError && <span className="text-[11px] text-critical">{sendError}</span>}
+                </div>
               )}
             </div>
           )}

@@ -26,6 +26,7 @@ export type VendorInput = {
   commissionPct1?: number | null;
   commissionPct2?: number | null;
   password?: string;
+  whatsappToken?: string;
 };
 
 export async function createVendor(actorId: string, input: VendorInput) {
@@ -44,6 +45,7 @@ export async function createVendor(actorId: string, input: VendorInput) {
       commissionPct1: input.commissionPct1,
       commissionPct2: input.commissionPct2,
       passwordHash,
+      whatsappToken: input.whatsappToken || null,
     },
   });
 
@@ -65,6 +67,10 @@ export async function updateVendor(actorId: string, id: string, input: VendorInp
   };
   if (input.password) {
     data.passwordHash = await bcrypt.hash(input.password, 10);
+  }
+  // Blank means "keep the current token" — same write-only UX as password.
+  if (input.whatsappToken) {
+    data.whatsappToken = input.whatsappToken;
   }
 
   const vendor = await prisma.user.update({ where: { id }, data });
