@@ -51,6 +51,7 @@ export type ContactInput = {
   firstName: string;
   lastName: string;
   accountName?: string | null;
+  cnpj?: string | null;
   email?: string | null;
   phone?: string | null;
   mobile?: string | null;

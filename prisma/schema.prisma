@@ -49,6 +49,7 @@ model Contact {
   firstName        String
   lastName         String
   accountName      String?
+  cnpj             String?
   email            String?
   phone            String?
   mobile           String?
