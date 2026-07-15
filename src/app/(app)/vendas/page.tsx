@@ -29,7 +29,7 @@ export default async function VendasPage({
     <div>
       <div className="mb-4 flex items-baseline justify-between gap-4">
         <div>
-          <h2 className="font-display text-[22px] text-ink">Vendas</h2>
+          <h2 className="font-display text-[22px] text-ink">Clientes</h2>
           <p className="mt-0.5 text-[13px] text-ink-muted">
             Cadastro completo de clientes · histórico de negócios vinculado
           </p>

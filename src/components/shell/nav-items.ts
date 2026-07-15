@@ -2,7 +2,7 @@ import type { Module } from "@/lib/permissions";
 
 export const NAV_ITEMS: { href: string; label: string; module: Module; icon: string }[] = [
   { href: "/", label: "Analítica", module: "analitica", icon: "◆" },
-  { href: "/vendas", label: "Vendas", module: "vendas", icon: "☎" },
+  { href: "/vendas", label: "Clientes", module: "vendas", icon: "☎" },
   { href: "/negocios", label: "Negócios", module: "negocios", icon: "▦" },
   { href: "/agenda", label: "Agenda", module: "agenda", icon: "◷" },
   { href: "/social", label: "Rede Social", module: "social", icon: "✦" },

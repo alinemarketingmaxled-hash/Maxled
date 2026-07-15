@@ -22,6 +22,7 @@ model User {
   passwordHash   String
   role           Role      @default(SELLER)
   jobTitle       String?
+  avatarUrl      String?   @db.Text
   birthday       DateTime?
   goal1          Decimal?  @db.Decimal(12, 2)
   goal2          Decimal?  @db.Decimal(12, 2)
@@ -34,6 +35,10 @@ model User {
   contacts     Contact[]     @relation("ContactOwner")
   deals        Deal[]        @relation("DealOwner")
   activityLogs ActivityLog[]
+  posts        Post[]
+  postLikes    PostLike[]
+  postComments PostComment[]
+  tasks        Task[]
 }
 
 model Contact {
@@ -61,6 +66,8 @@ model Contact {
   postalCode String?
   latitude   Float?
   longitude  Float?
+
+  lastContactedAt DateTime?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -161,4 +168,57 @@ model ActivityLog {
 
   @@index([entityType, entityId])
   @@index([actorId])
+}
+
+/** Rede Social mural (spec §3.5): self-hosted, no external API — photos are
+ * stored as data URLs, same approach as User.avatarUrl. */
+model Post {
+  id        String   @id @default(cuid())
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  body      String?
+  imageUrl  String?  @db.Text
+  createdAt DateTime @default(now())
+
+  likes    PostLike[]
+  comments PostComment[]
+
+  @@index([authorId])
+}
+
+model PostLike {
+  id        String   @id @default(cuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+  @@index([postId])
+}
+
+model PostComment {
+  id        String   @id @default(cuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id])
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  body      String
+  createdAt DateTime @default(now())
+
+  @@index([postId])
+}
+
+model Task {
+  id        String    @id @default(cuid())
+  ownerId   String
+  owner     User      @relation(fields: [ownerId], references: [id])
+  title     String
+  dueDate   DateTime?
+  done      Boolean   @default(false)
+  doneAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([ownerId])
 }

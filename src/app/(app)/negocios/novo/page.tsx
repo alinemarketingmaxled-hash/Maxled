@@ -24,7 +24,7 @@ export default async function NovoNegocioPage() {
     return (
       <div className="rounded-xl border border-dashed border-gold-deep/40 bg-surface px-6 py-10 text-center text-sm text-ink-muted">
         {contacts.length === 0
-          ? "Cadastre um contato em Vendas antes de criar um negócio."
+          ? "Cadastre um contato em Clientes antes de criar um negócio."
           : "Nenhum pipeline configurado."}
       </div>
     );

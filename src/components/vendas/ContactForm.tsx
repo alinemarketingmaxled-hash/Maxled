@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Contact } from "@/generated/prisma/client";
 
 type Owner = { id: string; name: string };
@@ -36,6 +37,7 @@ export function ContactForm({
   owners: Owner[];
   action: (formData: FormData) => void | Promise<void>;
 }) {
+  const cancelHref = contact ? `/vendas?id=${contact.id}` : "/vendas";
   const showOwnerPicker = owners.length > 1;
 
   return (
@@ -112,6 +114,12 @@ export function ContactForm({
       </section>
 
       <div className="flex justify-end gap-2">
+        <Link
+          href={cancelHref}
+          className="rounded-lg border border-gold-deep px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:border-gold"
+        >
+          Cancelar
+        </Link>
         <button
           type="submit"
           className="rounded-lg bg-gold px-5 py-2.5 text-sm font-semibold text-black transition-colors hover:bg-gold-bright"

@@ -3,6 +3,7 @@ import { requireView } from "@/lib/require-permission";
 import { canEdit } from "@/lib/permissions";
 import { getVendor } from "@/lib/users";
 import { VendorForm } from "@/components/perfil/VendorForm";
+import { BackLink } from "@/components/shell/BackLink";
 import { updateVendorAction, deactivateVendorAction } from "../actions";
 
 export default async function EditVendorPage({
@@ -19,6 +20,7 @@ export default async function EditVendorPage({
 
   return (
     <div className="max-w-xl">
+      <BackLink href="/perfil" label="Voltar" />
       <h2 className="mb-4 font-display text-[22px] text-ink">Editar {vendor.name}</h2>
       <VendorForm vendor={vendor} action={updateVendorAction.bind(null, vendor.id)} />
 

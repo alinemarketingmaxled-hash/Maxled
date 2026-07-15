@@ -18,7 +18,16 @@ const ACTION_LABEL: Record<string, string> = {
   deleted: "removeu este contato",
   restored: "restaurou este contato",
   stage_changed: "mudou o estágio de um negócio",
+  call_logged: "registrou uma ligação",
 };
+
+function callOutcome(diff: Prisma.JsonValue | null): string | null {
+  if (diff && typeof diff === "object" && !Array.isArray(diff) && "outcome" in diff) {
+    const outcome = (diff as { outcome?: unknown }).outcome;
+    return typeof outcome === "string" ? outcome : null;
+  }
+  return null;
+}
 
 function fieldRow(label: string, value: string | null | undefined) {
   return (
@@ -138,17 +147,21 @@ export function ContactDetailPanel({
               </span>
             </li>
           ))}
-          {contact.activityLogs.map((log) => (
-            <li key={log.id} className="flex items-start gap-2.5 text-xs text-ink-muted">
-              <span className="mt-1 h-1.5 w-1.5 flex-none rounded-full bg-info" />
-              <span>
-                <b className="text-ink">{log.actor.name}</b> {ACTION_LABEL[log.action] ?? log.action}
-                <span className="ml-1.5 text-ink-faint">
-                  · {formatDistanceToNow(log.createdAt, { addSuffix: true, locale: ptBR })}
+          {contact.activityLogs.map((log) => {
+            const outcome = callOutcome(log.diff);
+            return (
+              <li key={log.id} className="flex items-start gap-2.5 text-xs text-ink-muted">
+                <span className="mt-1 h-1.5 w-1.5 flex-none rounded-full bg-info" />
+                <span>
+                  <b className="text-ink">{log.actor.name}</b> {ACTION_LABEL[log.action] ?? log.action}
+                  <span className="ml-1.5 text-ink-faint">
+                    · {formatDistanceToNow(log.createdAt, { addSuffix: true, locale: ptBR })}
+                  </span>
+                  {outcome && <span className="mt-0.5 block text-ink-muted">&ldquo;{outcome}&rdquo;</span>}
                 </span>
-              </span>
-            </li>
-          ))}
+              </li>
+            );
+          })}
           {contact.deals.length === 0 && contact.activityLogs.length === 0 && (
             <li className="text-xs text-ink-faint">Sem histórico ainda.</li>
           )}

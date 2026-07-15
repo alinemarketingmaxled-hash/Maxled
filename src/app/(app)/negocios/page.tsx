@@ -19,13 +19,8 @@ export default async function NegociosPage() {
 
   return (
     <div>
-      <div className="mb-4 flex items-baseline justify-between gap-4">
-        <div>
-          <h2 className="font-display text-[22px] text-ink">Negócios</h2>
-          <p className="mt-0.5 text-[13px] text-ink-muted">
-            Kanban · colunas editáveis, adicionáveis e removíveis
-          </p>
-        </div>
+      <div className="mb-4 flex items-baseline gap-4">
+        <h2 className="font-display text-[22px] text-ink">Negócios</h2>
         {editable && (
           <Link
             href="/negocios/novo"
@@ -35,6 +30,9 @@ export default async function NegociosPage() {
           </Link>
         )}
       </div>
+      <p className="-mt-2.5 mb-4 text-[13px] text-ink-muted">
+        Kanban · colunas editáveis, adicionáveis e removíveis
+      </p>
 
       {pipeline && stages ? (
         <KanbanBoard stages={stages} pipelineId={pipeline.id} canEdit={editable} />
