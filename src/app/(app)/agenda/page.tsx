@@ -1,7 +1,11 @@
 import Link from "next/link";
-import { differenceInCalendarDays } from "date-fns";
+import { differenceInCalendarDays, format } from "date-fns";
 import { requireView } from "@/lib/require-permission";
+import { canEdit } from "@/lib/permissions";
 import { listOnTheWayDeals } from "@/lib/deals";
+import { listTasks } from "@/lib/tasks";
+import { AgendaCalendar, type CalendarItem } from "@/components/agenda/AgendaCalendar";
+import { TaskList } from "@/components/agenda/TaskList";
 
 const STEPS = [
   { n: 1, title: "Negócio movido", body: 'Card entra na coluna "A caminho" no Kanban.' },
@@ -12,15 +16,47 @@ const STEPS = [
 
 export default async function AgendaPage() {
   const session = await requireView("agenda");
-  const deals = await listOnTheWayDeals(session);
+  const editable = canEdit(session.user.role, "agenda");
+  const [deals, tasks] = await Promise.all([listOnTheWayDeals(session), listTasks(session)]);
+
+  const calendarItems: CalendarItem[] = [
+    ...tasks
+      .filter((t) => t.dueDate)
+      .map((t) => ({
+        date: format(t.dueDate!, "yyyy-MM-dd"),
+        label: t.title,
+        type: "task" as const,
+      })),
+    ...deals
+      .filter((d) => d.onTheWayDeadline)
+      .map((d) => ({
+        date: format(new Date(d.onTheWayDeadline!), "yyyy-MM-dd"),
+        label: `Prazo: ${d.name}`,
+        type: "deal" as const,
+      })),
+  ];
 
   return (
     <div>
       <div className="mb-4">
         <h2 className="font-display text-[22px] text-ink">Agenda</h2>
         <p className="mt-0.5 text-[13px] text-ink-muted">
-          Automação disparada ao mover um negócio para &quot;A caminho&quot;
+          Calendário, tarefas e automação de negócios &quot;a caminho&quot;
         </p>
+      </div>
+
+      <div className="mb-4 grid grid-cols-[320px_1fr] gap-4">
+        <AgendaCalendar items={calendarItems} />
+        <TaskList
+          tasks={tasks.map((t) => ({
+            id: t.id,
+            title: t.title,
+            dueDate: t.dueDate ? t.dueDate.toISOString() : null,
+            done: t.done,
+            ownerName: t.owner.name,
+          }))}
+          canEdit={editable}
+        />
       </div>
 
       <div className="mb-6 flex overflow-hidden rounded-xl border border-gold-deep/30">

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { MyProfileForm } from "@/components/perfil/MyProfileForm";
+import { BackLink } from "@/components/shell/BackLink";
 
 const ROLE_LABELS: Record<string, string> = {
   ADMIN: "Admin",
@@ -22,6 +23,7 @@ export default async function MeuPerfilPage() {
 
   return (
     <div className="max-w-lg">
+      <BackLink href="/" label="Voltar" />
       <div className="mb-4">
         <h2 className="font-display text-[22px] text-ink">Meu perfil</h2>
         <p className="mt-0.5 text-[13px] text-ink-muted">
