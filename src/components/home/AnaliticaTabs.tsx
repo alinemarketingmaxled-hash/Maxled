@@ -3,6 +3,9 @@
 import { useState } from "react";
 import type { DailyTasks } from "@/lib/calls";
 import { DailyTasksPanel } from "@/components/home/DailyTasksPanel";
+import { OverdueTasksPanel } from "@/components/home/OverdueTasksPanel";
+import { MonthPicker } from "@/components/home/MonthPicker";
+import type { TaskRow } from "@/components/agenda/TaskList";
 
 type Kpis = {
   revenue: number;
@@ -20,6 +23,7 @@ type Goal = {
   goal2: number | null;
   commissionPct1: number | null;
   commissionPct2: number | null;
+  commissionEarned: number;
 } | null;
 
 function currency(v: number) {
@@ -28,6 +32,7 @@ function currency(v: number) {
 
 const TABS = [
   { key: "hoje", label: "☀ Hoje" },
+  { key: "atrasos", label: "⏰ Atrasos" },
   { key: "desempenho", label: "📊 Desempenho" },
 ] as const;
 
@@ -35,6 +40,8 @@ type TabKey = (typeof TABS)[number]["key"];
 
 export function AnaliticaTabs({
   dailyTasks,
+  overdueTasks,
+  canEditAgenda,
   kpis,
   revenueByMonth,
   polyline,
@@ -42,8 +49,12 @@ export function AnaliticaTabs({
   funnel,
   goal,
   goal1Pct,
+  selectedMonth,
+  isCurrentMonth,
 }: {
   dailyTasks: DailyTasks;
+  overdueTasks: TaskRow[];
+  canEditAgenda: boolean;
   kpis: Kpis;
   revenueByMonth: RevenueMonth[];
   polyline: string;
@@ -51,6 +62,8 @@ export function AnaliticaTabs({
   funnel: FunnelStage[];
   goal: Goal;
   goal1Pct: number;
+  selectedMonth: string;
+  isCurrentMonth: boolean;
 }) {
   const [tab, setTab] = useState<TabKey>("hoje");
   const maxFunnel = Math.max(...funnel.map((f) => f.count), 1);
@@ -73,8 +86,22 @@ export function AnaliticaTabs({
 
       {tab === "hoje" && <DailyTasksPanel tasks={dailyTasks} />}
 
+      {tab === "atrasos" && <OverdueTasksPanel tasks={overdueTasks} canEdit={canEditAgenda} />}
+
       {tab === "desempenho" && (
         <div className="grid grid-cols-12 gap-4">
+          <div className="col-span-12 flex items-center justify-between gap-3">
+            {!isCurrentMonth && (
+              <span className="rounded-full bg-warning/15 px-2.5 py-1 text-[11px] font-semibold text-warning">
+                Mostrando um mês anterior — os números do mês atual continuam intactos
+              </span>
+            )}
+            <div className="ml-auto flex items-center gap-2">
+              <span className="text-[11.5px] text-ink-faint">Ver meses anteriores</span>
+              <MonthPicker selected={selectedMonth} />
+            </div>
+          </div>
+
           <div className="col-span-3 rounded-xl border border-gold-deep/28 bg-surface p-4">
             <div className="text-[11px] uppercase tracking-wide text-ink-muted">Receita do mês</div>
             <div className="mt-1.5 text-[26px] font-bold text-ink">{currency(kpis.revenue)}</div>
@@ -157,6 +184,12 @@ export function AnaliticaTabs({
                       <span className="text-ink">{currency(goal.goal2)}</span>
                     </div>
                   )}
+                  <div className="mt-1 flex justify-between gap-3 border-t border-dashed border-gold-deep/25 pt-1">
+                    <span className="text-ink-faint">Comissão do mês</span>
+                    <span className="font-semibold text-gold-bright">
+                      {currency(goal.commissionEarned)}
+                    </span>
+                  </div>
                 </div>
               </div>
             ) : (

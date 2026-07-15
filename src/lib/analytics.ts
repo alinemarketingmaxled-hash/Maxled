@@ -17,9 +17,9 @@ function startOfNextMonth(d = new Date()) {
   return new Date(d.getFullYear(), d.getMonth() + 1, 1);
 }
 
-export async function getKpis(session: Session) {
+export async function getKpis(session: Session, referenceDate: Date = new Date()) {
   const scope = dealScopeWhere(session);
-  const now = new Date();
+  const now = referenceDate;
   const thisMonth = { gte: startOfMonth(now), lt: startOfNextMonth(now) };
   const lastMonthStart = startOfMonth(new Date(now.getFullYear(), now.getMonth() - 1, 1));
   const lastMonthEnd = startOfMonth(now);
@@ -99,14 +99,14 @@ export async function getFunnel(session: Session) {
   return pipeline?.stages.map((s) => ({ name: s.name, count: s._count.deals })) ?? [];
 }
 
-export async function getGoalProgress(session: Session) {
+export async function getGoalProgress(session: Session, referenceDate: Date = new Date()) {
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: { goal1: true, goal2: true, commissionPct1: true, commissionPct2: true, name: true },
   });
   if (!user || (!user.goal1 && !user.goal2)) return null;
 
-  const now = new Date();
+  const now = referenceDate;
   const wonThisMonth = await prisma.deal.findMany({
     where: {
       ownerId: session.user.id,
@@ -118,12 +118,26 @@ export async function getGoalProgress(session: Session) {
   });
   const achieved = wonThisMonth.reduce((s, d) => s + Number(d.value), 0);
 
+  const goal1 = user.goal1 ? Number(user.goal1) : null;
+  const goal2 = user.goal2 ? Number(user.goal2) : null;
+  const commissionPct1 = user.commissionPct1 ? Number(user.commissionPct1) : null;
+  const commissionPct2 = user.commissionPct2 ? Number(user.commissionPct2) : null;
+
+  // Commission unlocks at whichever goal tier the achieved total reaches (higher tier wins).
+  let commissionEarned = 0;
+  if (goal2 !== null && commissionPct2 !== null && achieved >= goal2) {
+    commissionEarned = achieved * (commissionPct2 / 100);
+  } else if (goal1 !== null && commissionPct1 !== null && achieved >= goal1) {
+    commissionEarned = achieved * (commissionPct1 / 100);
+  }
+
   return {
     name: user.name,
     achieved,
-    goal1: user.goal1 ? Number(user.goal1) : null,
-    goal2: user.goal2 ? Number(user.goal2) : null,
-    commissionPct1: user.commissionPct1 ? Number(user.commissionPct1) : null,
-    commissionPct2: user.commissionPct2 ? Number(user.commissionPct2) : null,
+    goal1,
+    goal2,
+    commissionPct1,
+    commissionPct2,
+    commissionEarned,
   };
 }

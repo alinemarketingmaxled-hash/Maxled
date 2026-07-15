@@ -4,17 +4,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { Role } from "@/generated/prisma/client";
 import { canView } from "@/lib/permissions";
+import { Logo } from "@/components/shell/Logo";
 import { NAV_ITEMS } from "./nav-items";
 
 export function Sidebar({ role }: { role: Role }) {
   const pathname = usePathname();
 
   return (
-    <aside className="flex w-56 flex-none flex-col gap-6 border-r border-gold-deep/35 bg-surface p-3.5">
+    <aside className="relative z-10 flex w-56 flex-none flex-col gap-6 border-r border-gold-deep/35 bg-surface p-3.5">
       <div className="flex items-center gap-2.5 px-2">
-        <div className="flex h-[34px] w-[34px] flex-none items-center justify-center rounded-lg bg-gradient-to-br from-gold-bright via-gold to-gold-deep font-display text-lg text-black">
-          M
-        </div>
+        <Logo size={34} />
         <span className="font-display text-lg tracking-wide">
           Maxled <span className="text-gold-bright">CRM</span>
         </span>
