@@ -35,26 +35,43 @@ function readVendorInput(formData: FormData): VendorInput {
     commissionPct1: num("commissionPct1"),
     commissionPct2: num("commissionPct2"),
     password: (formData.get("password") as string)?.trim() || undefined,
-    whatsappToken: (formData.get("whatsappToken") as string)?.trim() || undefined,
   };
+}
+
+function friendlyError(e: unknown): string {
+  if (e instanceof Error) {
+    // Prisma unique constraint violation (e.g. duplicate e-mail).
+    if ("code" in e && e.code === "P2002") return "Já existe um vendedor com esse e-mail.";
+    return e.message;
+  }
+  return "Erro inesperado ao salvar o vendedor.";
 }
 
 export async function createVendorAction(formData: FormData) {
   const session = await requireMediator();
   const input = readVendorInput(formData);
-  if (!input.name || !input.email) throw new Error("Nome e e-mail são obrigatórios.");
+  if (!input.name || !input.email) return { error: "Nome e e-mail são obrigatórios." };
 
-  await createVendor(session.user.id, input);
+  try {
+    await createVendor(session.user.id, input);
+  } catch (e) {
+    return { error: friendlyError(e) };
+  }
   revalidatePath("/perfil");
-  redirect("/perfil");
+  return { ok: true };
 }
 
 export async function updateVendorAction(id: string, formData: FormData) {
   const session = await requireMediator();
   const input = readVendorInput(formData);
-  await updateVendor(session.user.id, id, input);
+
+  try {
+    await updateVendor(session.user.id, id, input);
+  } catch (e) {
+    return { error: friendlyError(e) };
+  }
   revalidatePath("/perfil");
-  redirect("/perfil");
+  return { ok: true };
 }
 
 export async function deactivateVendorAction(id: string) {

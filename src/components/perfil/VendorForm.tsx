@@ -1,3 +1,7 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import type { User } from "@/generated/prisma/client";
 
 const ROLES: { value: string; label: string }[] = [
@@ -41,10 +45,27 @@ export function VendorForm({
   action,
 }: {
   vendor?: User | null;
-  action: (formData: FormData) => void;
+  action: (formData: FormData) => Promise<{ error?: string; ok?: boolean }>;
 }) {
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  function handleSubmit(formData: FormData) {
+    setError(null);
+    startTransition(async () => {
+      const res = await action(formData);
+      if (res.error) {
+        setError(res.error);
+      } else {
+        router.push("/perfil");
+        router.refresh();
+      }
+    });
+  }
+
   return (
-    <form action={action} className="flex flex-col gap-4 rounded-xl border border-gold-deep/30 bg-surface p-5">
+    <form action={handleSubmit} className="flex flex-col gap-4 rounded-xl border border-gold-deep/30 bg-surface p-5">
       <div className="grid grid-cols-2 gap-3">
         <Field label="Nome" name="name" defaultValue={vendor?.name} required />
         <Field label="E-mail" name="email" type="email" defaultValue={vendor?.email} required />
@@ -99,29 +120,19 @@ export function VendorForm({
         </div>
       </div>
 
-      <div className="border-t border-gold-deep/20 pt-4">
-        <h4 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-gold">
-          WhatsApp (Netsapp)
-        </h4>
-        <label className="flex flex-col gap-1 text-xs">
-          <span className="text-ink-faint">
-            Token de API {vendor?.whatsappToken ? "(configurado — deixe em branco para manter)" : ""}
-          </span>
-          <input
-            name="whatsappToken"
-            type="password"
-            placeholder={vendor?.whatsappToken ? "••••••••" : "Cole o token do WhatsApp conectado"}
-            className="rounded-md border border-gold-deep/40 bg-surface-2 px-2.5 py-2 text-sm text-ink outline-none focus:border-gold"
-          />
-        </label>
-      </div>
+      {error && (
+        <div className="rounded-lg border border-critical/40 bg-critical/10 px-3 py-2 text-[12.5px] text-critical">
+          {error}
+        </div>
+      )}
 
       <div className="flex justify-end">
         <button
           type="submit"
-          className="rounded-lg bg-gold px-5 py-2.5 text-sm font-semibold text-black transition-colors hover:bg-gold-bright"
+          disabled={isPending}
+          className="rounded-lg bg-gold px-5 py-2.5 text-sm font-semibold text-black transition-colors hover:bg-gold-bright disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {vendor ? "Salvar alterações" : "Criar vendedor"}
+          {isPending ? "Salvando…" : vendor ? "Salvar alterações" : "Criar vendedor"}
         </button>
       </div>
     </form>

@@ -20,7 +20,6 @@ const ACTION_LABEL: Record<string, string> = {
   restored: "restaurou este contato",
   stage_changed: "mudou o estágio de um negócio",
   call_logged: "registrou uma ligação",
-  whatsapp_sent: "enviou uma mensagem por WhatsApp",
 };
 
 function callOutcome(diff: Prisma.JsonValue | null): string | null {
@@ -88,7 +87,7 @@ export function ContactDetailPanel({
         </div>
       </div>
 
-      <WhatsAppSendBox contactId={contact.id} />
+      <WhatsAppSendBox phone={contact.mobile ?? contact.phone} />
 
       <div className="grid grid-cols-2 gap-x-8 gap-y-4">
         <div>

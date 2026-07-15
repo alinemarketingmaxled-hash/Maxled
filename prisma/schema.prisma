@@ -23,7 +23,6 @@ model User {
   role           Role      @default(SELLER)
   jobTitle       String?
   avatarUrl      String?   @db.Text
-  whatsappToken  String?   @db.Text
   birthday       DateTime?
   goal1          Decimal?  @db.Decimal(12, 2)
   goal2          Decimal?  @db.Decimal(12, 2)

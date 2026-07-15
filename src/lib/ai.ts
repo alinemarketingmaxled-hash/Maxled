@@ -54,7 +54,7 @@ export async function listOpenDealsBrief(session: Session) {
   const deals = await prisma.deal.findMany({
     where: { ...dealScopeWhere(session), deletedAt: null, stage: { isWon: false } },
     include: {
-      contact: { select: { firstName: true, lastName: true, accountName: true } },
+      contact: { select: { firstName: true, lastName: true, accountName: true, mobile: true, phone: true } },
       stage: { select: { name: true } },
     },
     orderBy: { createdAt: "desc" },
@@ -62,6 +62,7 @@ export async function listOpenDealsBrief(session: Session) {
   return deals.map((d) => ({
     id: d.id,
     label: `${d.name} — ${d.contact.accountName || `${d.contact.firstName} ${d.contact.lastName}`} (${d.stage.name})`,
+    phone: d.contact.mobile ?? d.contact.phone,
   }));
 }
 
