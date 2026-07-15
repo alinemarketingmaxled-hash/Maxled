@@ -18,6 +18,20 @@ export async function listTasks(session: Session) {
   });
 }
 
+/** Tasks with a due date that's already passed and were never marked done —
+ * "coisas que esqueceu de fazer" surfaced separately from today's list. */
+export async function getOverdueTasks(session: Session) {
+  return prisma.task.findMany({
+    where: {
+      ...scopeWhere(session),
+      done: false,
+      dueDate: { lt: new Date(new Date().setHours(0, 0, 0, 0)) },
+    },
+    orderBy: { dueDate: "asc" },
+    include: { owner: { select: { name: true } } },
+  });
+}
+
 export async function createTask(session: Session, title: string, dueDate: Date | null) {
   if (!title.trim()) throw new Error("Descreva a tarefa.");
   return prisma.task.create({
