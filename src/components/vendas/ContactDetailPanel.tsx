@@ -3,6 +3,7 @@ import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import type { Prisma } from "@/generated/prisma/client";
 import { deleteContactAction } from "@/app/(app)/vendas/actions";
+import { WhatsAppSendBox } from "@/components/vendas/WhatsAppSendBox";
 
 type ContactWithRelations = Prisma.ContactGetPayload<{
   include: {
@@ -19,6 +20,7 @@ const ACTION_LABEL: Record<string, string> = {
   restored: "restaurou este contato",
   stage_changed: "mudou o estágio de um negócio",
   call_logged: "registrou uma ligação",
+  whatsapp_sent: "enviou uma mensagem por WhatsApp",
 };
 
 function callOutcome(diff: Prisma.JsonValue | null): string | null {
@@ -85,6 +87,8 @@ export function ContactDetailPanel({
           )}
         </div>
       </div>
+
+      <WhatsAppSendBox contactId={contact.id} />
 
       <div className="grid grid-cols-2 gap-x-8 gap-y-4">
         <div>
