@@ -89,6 +89,51 @@ export async function createDeal(session: Session, data: DealInput) {
   return deal;
 }
 
+export type PastSaleInput = {
+  ownerId: string;
+  contactId: string;
+  name: string;
+  value: number;
+  soldAt: Date;
+};
+
+/**
+ * Backfills a sale that happened before the client existed in the CRM —
+ * e.g. onboarding an existing customer's portfolio. Lands the deal directly
+ * in the pipeline's "won" stage, dated soldAt (both createdAt/updatedAt),
+ * so it shows up in that month's history and revenue instead of today's —
+ * spec request: "ficará apenas nos meses anteriores que a pessoa colocar".
+ */
+export async function addPastSale(session: Session, data: PastSaleInput) {
+  const wonStage = await prisma.pipelineStage.findFirst({
+    where: { pipeline: { isDefault: true }, isWon: true },
+    orderBy: { order: "asc" },
+  });
+  if (!wonStage) throw new Error('Nenhuma etapa "ganho" configurada no pipeline.');
+
+  const deal = await prisma.deal.create({
+    data: {
+      ownerId: data.ownerId,
+      contactId: data.contactId,
+      stageId: wonStage.id,
+      name: data.name,
+      value: data.value,
+      createdAt: data.soldAt,
+      updatedAt: data.soldAt,
+    },
+  });
+  await logActivity({
+    actorId: session.user.id,
+    entityType: "Deal",
+    entityId: deal.id,
+    action: "created",
+    dealId: deal.id,
+    contactId: data.contactId,
+    diff: { note: "Venda antiga registrada manualmente." } as Prisma.InputJsonValue,
+  });
+  return deal;
+}
+
 /**
  * Moves a deal to a new stage. Implements the Agenda automation from
  * docs/CRM-SPEC.md §3.4: entering the "A caminho" stage starts a 3-business-

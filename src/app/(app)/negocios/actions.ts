@@ -12,6 +12,7 @@ import {
   createStage,
   renameStage,
   deleteStage,
+  addPastSale,
 } from "@/lib/deals";
 
 async function requireEdit() {
@@ -38,6 +39,35 @@ export async function createDealAction(formData: FormData) {
   await createDeal(session, { ownerId, contactId, stageId, name, value });
   revalidatePath("/negocios");
   redirect("/negocios");
+}
+
+/** Backs the "Registrar venda antiga" form on a client's Histórico tab —
+ * onboarding an existing customer whose real sales history predates the
+ * CRM. Returns {error} instead of throwing so the form can show it inline. */
+export async function addPastSaleAction(
+  contactId: string,
+  formData: FormData,
+): Promise<{ error?: string; ok?: boolean }> {
+  const session = await requireEdit();
+  const name = (formData.get("name") as string)?.trim();
+  const value = Number(formData.get("value"));
+  const soldAtStr = (formData.get("soldAt") as string)?.trim();
+  const ownerId = (formData.get("ownerId") as string) || session.user.id;
+
+  if (!name || Number.isNaN(value) || value <= 0 || !soldAtStr) {
+    return { error: "Preencha nome, valor e a data da venda." };
+  }
+  const soldAt = new Date(soldAtStr);
+  if (Number.isNaN(soldAt.getTime())) return { error: "Data inválida." };
+  if (soldAt > new Date()) return { error: "A data da venda não pode ser no futuro." };
+
+  try {
+    await addPastSale(session, { ownerId, contactId, name, value, soldAt });
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erro ao registrar a venda antiga." };
+  }
+  revalidatePath("/vendas");
+  return { ok: true };
 }
 
 export async function moveDealAction(dealId: string, newStageId: string) {
