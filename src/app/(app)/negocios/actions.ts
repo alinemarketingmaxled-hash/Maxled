@@ -36,7 +36,13 @@ export type DealDetail = {
   contactName: string;
   accountName: string | null;
   onTheWayDeadline: string | null;
-  notes: { id: string; body: string | null; createdAt: string; flagged: boolean }[];
+  notes: {
+    id: string;
+    body: string | null;
+    createdAt: string;
+    flagged: boolean;
+    attachmentUrl: string | null;
+  }[];
   activityLogs: {
     id: string;
     action: string;
@@ -70,6 +76,7 @@ export async function getDealDetailAction(dealId: string): Promise<DealDetail | 
       body: n.body,
       createdAt: n.createdAt.toISOString(),
       flagged: n.flagged,
+      attachmentUrl: n.attachmentUrl,
     })),
     activityLogs: deal.activityLogs.map((l) => ({
       id: l.id,
@@ -133,12 +140,22 @@ export async function moveDealAction(dealId: string, newStageId: string) {
   revalidatePath("/agenda");
 }
 
-export async function addDealNoteAction(dealId: string, formData: FormData) {
+export async function addDealNoteAction(
+  dealId: string,
+  formData: FormData,
+): Promise<{ error?: string; ok?: boolean }> {
   const session = await requireEdit();
-  const body = (formData.get("body") as string)?.trim();
-  if (!body) return;
-  await addDealNote(session, dealId, body);
+  const body = (formData.get("body") as string)?.trim() || null;
+  const attachmentUrl = (formData.get("attachmentUrl") as string)?.trim() || null;
+  if (!body && !attachmentUrl) return { error: "Escreva algo ou anexe uma foto/print." };
+
+  try {
+    await addDealNote(session, dealId, body, attachmentUrl);
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erro ao salvar a nota." };
+  }
   revalidatePath("/negocios");
+  return { ok: true };
 }
 
 export async function toggleDealNoteFlagAction(noteId: string) {

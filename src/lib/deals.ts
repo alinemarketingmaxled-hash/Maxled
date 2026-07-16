@@ -213,7 +213,20 @@ export async function moveDeal(session: Session, dealId: string, newStageId: str
   return updated;
 }
 
-export async function addDealNote(session: Session, dealId: string, body: string, attachmentUrl?: string) {
+const MAX_ATTACHMENT_LENGTH = 800_000;
+
+export async function addDealNote(
+  session: Session,
+  dealId: string,
+  body: string | null,
+  attachmentUrl?: string | null,
+) {
+  if (!body?.trim() && !attachmentUrl) {
+    throw new Error("Escreva algo ou anexe uma foto/print.");
+  }
+  if (attachmentUrl && attachmentUrl.length > MAX_ATTACHMENT_LENGTH) {
+    throw new Error("Imagem muito grande. Escolha uma foto menor.");
+  }
   const deal = await prisma.deal.findFirst({ where: { id: dealId, ...dealScopeWhere(session) } });
   if (!deal) throw new Error("Negócio não encontrado ou sem permissão.");
 
