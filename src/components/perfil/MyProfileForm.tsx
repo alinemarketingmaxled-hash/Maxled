@@ -36,7 +36,13 @@ export function MyProfileForm({
     }
   }
 
-  function handleSubmit(formData: FormData) {
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    // onSubmit + manual FormData, not <form action={...}>: React resets
+    // uncontrolled fields after any form action resolves, which was wiping
+    // the whole form (name, birthday, etc.) right when an error needed the
+    // user to fix and resubmit it.
+    const formData = new FormData(e.currentTarget);
     setError(null);
     setSaved(false);
     formData.set("avatarUrl", avatarUrl);
@@ -52,7 +58,7 @@ export function MyProfileForm({
   }
 
   return (
-    <form action={handleSubmit} className="flex flex-col gap-4 rounded-xl border border-gold-deep/30 bg-surface p-5">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4 rounded-xl border border-gold-deep/30 bg-surface p-5">
       <div className="flex items-center gap-4">
         {avatarUrl ? (
           // eslint-disable-next-line @next/next/no-img-element

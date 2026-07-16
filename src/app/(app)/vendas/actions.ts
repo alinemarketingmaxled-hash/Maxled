@@ -107,25 +107,53 @@ async function requireEdit() {
   return session;
 }
 
-export async function createContactAction(formData: FormData) {
+function friendlyContactError(e: unknown): string {
+  if (e instanceof Error) {
+    if ("code" in e && e.code === "P2002") return "Já existe um cliente com esses dados.";
+    return e.message;
+  }
+  return "Erro inesperado ao salvar o cliente.";
+}
+
+/** Returns {error}/{id} instead of throwing/redirecting — an uncaught
+ * exception here (e.g. a missing required field) crashed to the generic
+ * error fallback with the contact never saved, same bug class fixed
+ * elsewhere. ContactForm shows {error} inline and navigates on {id}. */
+export async function createContactAction(
+  formData: FormData,
+): Promise<{ error?: string; id?: string }> {
   const session = await requireEdit();
   const ownerId = (formData.get("ownerId") as string) || session.user.id;
   const input = readContactInput(formData, ownerId);
   if (!input.firstName || !input.lastName) {
-    throw new Error("Nome e sobrenome são obrigatórios.");
+    return { error: "Nome e sobrenome são obrigatórios." };
   }
-  const contact = await createContact(session, input);
-  revalidatePath("/vendas");
-  redirect(`/vendas?id=${contact.id}`);
+  try {
+    const contact = await createContact(session, input);
+    revalidatePath("/vendas");
+    return { id: contact.id };
+  } catch (e) {
+    return { error: friendlyContactError(e) };
+  }
 }
 
-export async function updateContactAction(id: string, formData: FormData) {
+export async function updateContactAction(
+  id: string,
+  formData: FormData,
+): Promise<{ error?: string; ok?: boolean }> {
   const session = await requireEdit();
   const ownerId = (formData.get("ownerId") as string) || session.user.id;
   const input = readContactInput(formData, ownerId);
-  await updateContact(session, id, input);
-  revalidatePath("/vendas");
-  redirect(`/vendas?id=${id}`);
+  if (!input.firstName || !input.lastName) {
+    return { error: "Nome e sobrenome são obrigatórios." };
+  }
+  try {
+    await updateContact(session, id, input);
+    revalidatePath("/vendas");
+    return { ok: true };
+  } catch (e) {
+    return { error: friendlyContactError(e) };
+  }
 }
 
 /** Backs the "Buscar CNPJ" button in ContactForm — looks up company data
