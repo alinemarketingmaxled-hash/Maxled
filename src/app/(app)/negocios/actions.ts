@@ -14,6 +14,7 @@ import {
   deleteStage,
   addPastSale,
   getDeal,
+  toggleDealNoteFlag,
 } from "@/lib/deals";
 
 async function requireEdit() {
@@ -35,7 +36,7 @@ export type DealDetail = {
   contactName: string;
   accountName: string | null;
   onTheWayDeadline: string | null;
-  notes: { id: string; body: string | null; createdAt: string }[];
+  notes: { id: string; body: string | null; createdAt: string; flagged: boolean }[];
   activityLogs: {
     id: string;
     action: string;
@@ -64,7 +65,12 @@ export async function getDealDetailAction(dealId: string): Promise<DealDetail | 
     contactName: `${deal.contact.firstName} ${deal.contact.lastName}`,
     accountName: deal.contact.accountName,
     onTheWayDeadline: deal.onTheWayDeadline ? deal.onTheWayDeadline.toISOString() : null,
-    notes: deal.notes.map((n) => ({ id: n.id, body: n.body, createdAt: n.createdAt.toISOString() })),
+    notes: deal.notes.map((n) => ({
+      id: n.id,
+      body: n.body,
+      createdAt: n.createdAt.toISOString(),
+      flagged: n.flagged,
+    })),
     activityLogs: deal.activityLogs.map((l) => ({
       id: l.id,
       action: l.action,
@@ -132,6 +138,12 @@ export async function addDealNoteAction(dealId: string, formData: FormData) {
   const body = (formData.get("body") as string)?.trim();
   if (!body) return;
   await addDealNote(session, dealId, body);
+  revalidatePath("/negocios");
+}
+
+export async function toggleDealNoteFlagAction(noteId: string) {
+  const session = await requireEdit();
+  await toggleDealNoteFlag(session, noteId);
   revalidatePath("/negocios");
 }
 
