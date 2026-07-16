@@ -1,6 +1,6 @@
 import { requireView } from "@/lib/require-permission";
 import { canEdit } from "@/lib/permissions";
-import { getKpis, getRevenueByMonth, getFunnel, getGoalProgress } from "@/lib/analytics";
+import { getKpis, getRevenueByMonth, getFunnel, getGoalProgress, getTeamPerformance } from "@/lib/analytics";
 import { getDailyTasks } from "@/lib/calls";
 import { getOverdueTasks } from "@/lib/tasks";
 import { buildLineChart } from "@/lib/chart-utils";
@@ -27,11 +27,12 @@ export default async function AnaliticaPage({
   const isCurrentMonth =
     referenceDate.getFullYear() === now.getFullYear() && referenceDate.getMonth() === now.getMonth();
 
-  const [kpis, revenueByMonth, funnel, goal, dailyTasks, overdueTasks] = await Promise.all([
+  const [kpis, revenueByMonth, funnel, goal, teamPerformance, dailyTasks, overdueTasks] = await Promise.all([
     getKpis(session, referenceDate),
     getRevenueByMonth(session),
     getFunnel(session),
     getGoalProgress(session, referenceDate),
+    getTeamPerformance(session, referenceDate),
     getDailyTasks(session),
     getOverdueTasks(session),
   ]);
@@ -71,6 +72,7 @@ export default async function AnaliticaPage({
         goal={goal}
         goal1Pct={goal1Pct}
         personalGoalPct={personalGoalPct}
+        teamPerformance={teamPerformance}
         selectedMonth={selectedMonth}
         isCurrentMonth={isCurrentMonth}
       />
