@@ -37,6 +37,7 @@ const ACTION_LABEL: Record<string, string> = {
   restored: "restaurou",
   stage_changed: "mudou o estágio de",
   call_logged: "registrou uma ligação em",
+  unlocked: "desbloqueou o acesso de",
 };
 const ENTITY_LABEL: Record<string, string> = {
   Contact: "um cliente",

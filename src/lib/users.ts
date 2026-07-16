@@ -78,6 +78,17 @@ export async function deactivateVendor(actorId: string, id: string) {
   return vendor;
 }
 
+/** Clears a lockout from 7 failed login attempts in a row (auth.ts). Only
+ * the mediador can call this — see requireMediator() in perfil/actions.ts. */
+export async function unlockVendor(actorId: string, id: string) {
+  const vendor = await prisma.user.update({
+    where: { id },
+    data: { lockedAt: null, failedLoginAttempts: 0 },
+  });
+  await logActivity({ actorId, entityType: "User", entityId: vendor.id, action: "unlocked" });
+  return vendor;
+}
+
 export type OwnProfileInput = {
   name: string;
   avatarUrl?: string | null;

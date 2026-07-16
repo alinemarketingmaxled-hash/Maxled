@@ -25,7 +25,11 @@ export function LoginForm() {
     setLoading(false);
 
     if (result?.error) {
-      setError("E-mail ou senha incorretos.");
+      setError(
+        result.code === "account_locked"
+          ? "Conta bloqueada após várias tentativas incorretas. Peça para o Mediador liberar seu acesso em Perfil."
+          : "E-mail ou senha incorretos.",
+      );
       return;
     }
 
