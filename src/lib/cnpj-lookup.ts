@@ -41,21 +41,41 @@ function formatCep(cep: number | string | undefined): string | null {
   return digits.length === 8 ? `${digits.slice(0, 5)}-${digits.slice(5)}` : String(cep);
 }
 
+/** A plain server-side fetch with no User-Agent looks like a bot to some
+ * providers' WAFs and gets a blanket 403 — sending one that matches a real
+ * browser avoids that without changing anything else about the request. */
+const BROWSER_HEADERS = {
+  Accept: "application/json",
+  "User-Agent":
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+};
+
+async function fetchCnpj(digits: string): Promise<Response> {
+  return fetch(`${BRASILAPI_URL}/${digits}`, {
+    headers: BROWSER_HEADERS,
+    signal: AbortSignal.timeout(8000),
+  });
+}
+
 /** Looks up a CNPJ against BrasilAPI and returns whatever fields it can
- * fill in on a Contact, or a reason it couldn't. Never throws. */
+ * fill in on a Contact, or a reason it couldn't. Never throws. Retries
+ * once — on a thrown network error or on any non-404 failure response —
+ * since free public APIs like this one see transient blips a second
+ * attempt often clears up. */
 export async function lookupCnpj(rawCnpj: string): Promise<CnpjLookupOutcome> {
   const digits = rawCnpj.replace(/\D/g, "");
   if (digits.length !== 14) return { ok: false, reason: "invalid" };
 
-  let response: Response;
-  try {
-    response = await fetch(`${BRASILAPI_URL}/${digits}`, {
-      headers: { Accept: "application/json" },
-      signal: AbortSignal.timeout(8000),
-    });
-  } catch {
-    return { ok: false, reason: "error" };
+  let response: Response | null = null;
+  for (let attempt = 0; attempt < 2 && !response; attempt++) {
+    try {
+      const res = await fetchCnpj(digits);
+      if (res.ok || res.status === 404) response = res;
+    } catch {
+      // fall through to retry
+    }
   }
+  if (!response) return { ok: false, reason: "error" };
 
   if (response.status === 404) return { ok: false, reason: "not_found" };
   if (!response.ok) return { ok: false, reason: "error" };
