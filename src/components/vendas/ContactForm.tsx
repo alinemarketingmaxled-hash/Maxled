@@ -102,11 +102,18 @@ export function ContactForm({
   function handleLookupCnpj() {
     setCnpjError(null);
     startLookup(async () => {
-      const result = await lookupCnpjAction(cnpj);
-      if (!result) {
-        setCnpjError("CNPJ não encontrado. Confira o número ou preencha manualmente.");
+      const outcome = await lookupCnpjAction(cnpj);
+      if (!outcome.ok) {
+        setCnpjError(
+          outcome.reason === "invalid"
+            ? "CNPJ incompleto — digite os 14 números do CNPJ."
+            : outcome.reason === "not_found"
+              ? "CNPJ não encontrado na Receita Federal. Confira o número ou preencha manualmente."
+              : "Não foi possível consultar o CNPJ agora (falha de conexão). Tente de novo em instantes ou preencha manualmente.",
+        );
         return;
       }
+      const { result } = outcome;
       if (result.accountName) setAccountName(result.accountName);
       if (result.phone) setPhone(result.phone);
       if (result.street) setStreet(result.street);

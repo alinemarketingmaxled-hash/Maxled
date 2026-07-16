@@ -24,6 +24,7 @@ type Goal = {
   commissionPct1: number | null;
   commissionPct2: number | null;
   commissionEarned: number;
+  personalGoal: number | null;
 } | null;
 
 function currency(v: number) {
@@ -49,6 +50,7 @@ export function AnaliticaTabs({
   funnel,
   goal,
   goal1Pct,
+  personalGoalPct,
   selectedMonth,
   isCurrentMonth,
 }: {
@@ -62,6 +64,7 @@ export function AnaliticaTabs({
   funnel: FunnelStage[];
   goal: Goal;
   goal1Pct: number;
+  personalGoalPct: number;
   selectedMonth: string;
   isCurrentMonth: boolean;
 }) {
@@ -157,40 +160,61 @@ export function AnaliticaTabs({
           <div className="col-span-4 rounded-xl border border-gold-deep/28 bg-surface p-4">
             <div className="mb-3 text-[13px] font-semibold text-ink">Medidor de meta</div>
             {goal ? (
-              <div className="flex items-center gap-4">
-                <div
-                  className="relative h-[110px] w-[110px] flex-none rounded-full"
-                  style={{
-                    background: `conic-gradient(var(--gold-bright) 0% ${goal1Pct}%, var(--black-surface-2) ${goal1Pct}% 100%)`,
-                  }}
-                >
-                  <div className="absolute inset-[10px] flex flex-col items-center justify-center rounded-full bg-surface">
-                    <b className="text-lg text-ink">{goal1Pct}%</b>
-                    <small className="text-[9px] uppercase text-ink-faint">da meta 1</small>
-                  </div>
-                </div>
-                <div className="flex flex-col gap-1 text-[11.5px]">
-                  <div className="flex justify-between gap-3">
-                    <span className="text-ink-faint">Meta 1</span>
-                    <span className="text-ink">{goal.goal1 ? currency(goal.goal1) : "—"}</span>
-                  </div>
-                  <div className="flex justify-between gap-3">
-                    <span className="text-ink-faint">Atingido</span>
-                    <span className="text-ink">{currency(goal.achieved)}</span>
-                  </div>
-                  {goal.goal2 && (
-                    <div className="flex justify-between gap-3">
-                      <span className="text-ink-faint">Meta 2</span>
-                      <span className="text-ink">{currency(goal.goal2)}</span>
+              <div className="flex flex-col gap-3">
+                {goal.goal1 !== null && (
+                  <div className="flex items-center gap-4">
+                    <div
+                      className="relative h-[110px] w-[110px] flex-none rounded-full"
+                      style={{
+                        background: `conic-gradient(var(--gold-bright) 0% ${goal1Pct}%, var(--black-surface-2) ${goal1Pct}% 100%)`,
+                      }}
+                    >
+                      <div className="absolute inset-[10px] flex flex-col items-center justify-center rounded-full bg-surface">
+                        <b className="text-lg text-ink">{goal1Pct}%</b>
+                        <small className="text-[9px] uppercase text-ink-faint">da meta 1</small>
+                      </div>
                     </div>
-                  )}
-                  <div className="mt-1 flex justify-between gap-3 border-t border-dashed border-gold-deep/25 pt-1">
-                    <span className="text-ink-faint">Comissão do mês</span>
-                    <span className="font-semibold text-gold-bright">
-                      {currency(goal.commissionEarned)}
-                    </span>
+                    <div className="flex flex-col gap-1 text-[11.5px]">
+                      <div className="flex justify-between gap-3">
+                        <span className="text-ink-faint">Meta 1</span>
+                        <span className="text-ink">{currency(goal.goal1)}</span>
+                      </div>
+                      <div className="flex justify-between gap-3">
+                        <span className="text-ink-faint">Atingido</span>
+                        <span className="text-ink">{currency(goal.achieved)}</span>
+                      </div>
+                      {goal.goal2 && (
+                        <div className="flex justify-between gap-3">
+                          <span className="text-ink-faint">Meta 2</span>
+                          <span className="text-ink">{currency(goal.goal2)}</span>
+                        </div>
+                      )}
+                      <div className="mt-1 flex justify-between gap-3 border-t border-dashed border-gold-deep/25 pt-1">
+                        <span className="text-ink-faint">Comissão do mês</span>
+                        <span className="font-semibold text-gold-bright">
+                          {currency(goal.commissionEarned)}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
+                {goal.personalGoal !== null && (
+                  <div className={goal.goal1 !== null ? "border-t border-dashed border-gold-deep/25 pt-3" : ""}>
+                    <div className="mb-1 flex justify-between text-[11.5px]">
+                      <span className="text-ink-faint">Minha meta pessoal</span>
+                      <span className="text-ink">
+                        {currency(goal.achieved)} / {currency(goal.personalGoal)}
+                      </span>
+                    </div>
+                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-2">
+                      <div
+                        className="h-full rounded-full bg-gold-solid transition-[width]"
+                        style={{ width: `${personalGoalPct}%` }}
+                      />
+                    </div>
+                    <div className="mt-1 text-right text-[10.5px] text-ink-faint">{personalGoalPct}%</div>
+                  </div>
+                )}
               </div>
             ) : (
               <p className="text-xs text-ink-faint">Sem meta configurada para este perfil.</p>

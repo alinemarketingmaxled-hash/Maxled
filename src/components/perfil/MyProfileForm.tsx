@@ -8,7 +8,7 @@ import { resizeImageToDataUrl } from "@/lib/resize-image";
 export function MyProfileForm({
   user,
 }: {
-  user: { name: string; avatarUrl: string | null; birthday: Date | null; goal1: number | null };
+  user: { name: string; avatarUrl: string | null; birthday: Date | null; personalGoal: number | null };
 }) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -114,15 +114,18 @@ export function MyProfileForm({
       </label>
 
       <label className="flex flex-col gap-1 text-xs">
-        <span className="text-ink-faint">Minha meta (R$)</span>
+        <span className="text-ink-faint">Minha meta pessoal (R$)</span>
         <input
-          name="goal1"
+          name="personalGoal"
           type="number"
           step="any"
           min="0"
-          defaultValue={user.goal1 ?? ""}
+          defaultValue={user.personalGoal ?? ""}
           className="rounded-md border border-gold-deep/40 bg-surface-2 px-2.5 py-2 text-sm text-ink outline-none focus:border-gold"
         />
+        <span className="text-[10.5px] text-ink-faint">
+          É só sua — não afeta a meta oficial nem a comissão definida pelo Mediador.
+        </span>
       </label>
 
       <label className="flex flex-col gap-1 text-xs">

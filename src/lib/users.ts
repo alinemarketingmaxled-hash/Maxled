@@ -82,19 +82,22 @@ export type OwnProfileInput = {
   name: string;
   avatarUrl?: string | null;
   birthday?: Date | null;
-  goal1?: number | null;
+  personalGoal?: number | null;
   password?: string;
 };
 
 /** Self-service edit: any authenticated user can update their own display
- * name, photo, birthday, password, and Meta 1 (a personal target — Meta 2
- * and commission % stay mediator-only, set via lib/users.ts updateVendor). */
+ * name, photo, birthday, password, and personalGoal — a private target the
+ * seller sets for themselves. This is deliberately a separate field from
+ * goal1/goal2, which are the official commission-linked targets the
+ * mediator sets via lib/users.ts updateVendor; letting sellers edit goal1
+ * directly would let them change their own commission payout threshold. */
 export async function updateOwnProfile(userId: string, input: OwnProfileInput) {
   const data: Record<string, unknown> = {
     name: input.name,
     avatarUrl: input.avatarUrl,
     birthday: input.birthday,
-    goal1: input.goal1,
+    personalGoal: input.personalGoal,
   };
   if (input.password) {
     data.passwordHash = await bcrypt.hash(input.password, 10);
