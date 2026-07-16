@@ -29,6 +29,8 @@ model User {
   commissionPct1 Decimal?  @db.Decimal(5, 2)
   commissionPct2 Decimal?  @db.Decimal(5, 2)
   personalGoal   Decimal?  @db.Decimal(12, 2)
+  failedLoginAttempts Int       @default(0)
+  lockedAt            DateTime?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
   deletedAt      DateTime?

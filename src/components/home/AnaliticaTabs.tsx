@@ -26,6 +26,7 @@ type Goal = {
   commissionEarned: number;
   personalGoal: number | null;
 } | null;
+type SellerPerformance = { id: string; name: string; achieved: number; commissionEarned: number };
 
 function currency(v: number) {
   return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
@@ -51,6 +52,7 @@ export function AnaliticaTabs({
   goal,
   goal1Pct,
   personalGoalPct,
+  teamPerformance,
   selectedMonth,
   isCurrentMonth,
 }: {
@@ -65,6 +67,7 @@ export function AnaliticaTabs({
   goal: Goal;
   goal1Pct: number;
   personalGoalPct: number;
+  teamPerformance: SellerPerformance[] | null;
   selectedMonth: string;
   isCurrentMonth: boolean;
 }) {
@@ -241,6 +244,35 @@ export function AnaliticaTabs({
               })}
             </div>
           </div>
+
+          {teamPerformance && teamPerformance.length > 0 && (
+            <div className="col-span-12 rounded-xl border border-gold-deep/28 bg-surface p-4">
+              <div className="mb-3 text-[13px] font-semibold text-ink">
+                Faturamento e comissão por vendedor
+              </div>
+              <div className="flex flex-col gap-1.5">
+                {teamPerformance.map((s) => (
+                  <div
+                    key={s.id}
+                    className="flex items-center justify-between gap-3 border-b border-dashed border-gold-deep/18 py-1.5 text-[12.5px] last:border-b-0"
+                  >
+                    <span className="text-ink">{s.name}</span>
+                    <div className="flex gap-6 tabular-nums">
+                      <span className="text-ink-muted">
+                        Faturamento <b className="text-ink">{currency(s.achieved)}</b>
+                      </span>
+                      <span className="text-ink-muted">
+                        Comissão{" "}
+                        <b className={s.commissionEarned > 0 ? "text-gold-bright" : "text-ink"}>
+                          {currency(s.commissionEarned)}
+                        </b>
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

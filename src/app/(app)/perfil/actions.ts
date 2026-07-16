@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { canEdit } from "@/lib/permissions";
-import { createVendor, updateVendor, deactivateVendor, type VendorInput } from "@/lib/users";
+import { createVendor, updateVendor, deactivateVendor, unlockVendor, type VendorInput } from "@/lib/users";
 import type { Role } from "@/generated/prisma/client";
 
 async function requireMediator() {
@@ -79,4 +79,10 @@ export async function deactivateVendorAction(id: string) {
   await deactivateVendor(session.user.id, id);
   revalidatePath("/perfil");
   redirect("/perfil");
+}
+
+export async function unlockVendorAction(id: string) {
+  const session = await requireMediator();
+  await unlockVendor(session.user.id, id);
+  revalidatePath(`/perfil/${id}`);
 }
