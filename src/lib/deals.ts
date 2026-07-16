@@ -29,6 +29,22 @@ export async function listOnTheWayDeals(session: Session) {
   });
 }
 
+/** Open (not-yet-won) deals for the home page's "negociações em andamento"
+ * panel — scoped like the rest of Analítica (own/team/all), not "negocios",
+ * since that's the page it lives on. */
+export async function getInProgressDeals(session: Session, limit = 8) {
+  return prisma.deal.findMany({
+    where: { deletedAt: null, stage: { isWon: false }, ...dealScopeWhere(session, "analitica") },
+    orderBy: { updatedAt: "desc" },
+    take: limit,
+    include: {
+      contact: { select: { firstName: true, lastName: true, accountName: true } },
+      owner: { select: { name: true } },
+      stage: { select: { name: true } },
+    },
+  });
+}
+
 export async function getBoard(session: Session) {
   const pipeline = await prisma.pipeline.findFirst({
     where: { isDefault: true },

@@ -7,6 +7,7 @@ import { OverdueTasksPanel } from "@/components/home/OverdueTasksPanel";
 import { useRouter } from "next/navigation";
 import { MonthPicker } from "@/components/home/MonthPicker";
 import { DateRangePicker } from "@/components/home/DateRangePicker";
+import { InProgressDealsPanel, type InProgressDeal } from "@/components/home/InProgressDealsPanel";
 import type { TaskRow } from "@/components/agenda/TaskList";
 
 type Kpis = {
@@ -47,6 +48,8 @@ export function AnaliticaTabs({
   dailyTasks,
   overdueTasks,
   canEditAgenda,
+  canEditNegocios,
+  inProgressDeals,
   kpis,
   revenueByMonth,
   polyline,
@@ -66,6 +69,8 @@ export function AnaliticaTabs({
   dailyTasks: DailyTasks;
   overdueTasks: TaskRow[];
   canEditAgenda: boolean;
+  canEditNegocios: boolean;
+  inProgressDeals: InProgressDeal[];
   kpis: Kpis;
   revenueByMonth: RevenueMonth[];
   polyline: string;
@@ -103,7 +108,12 @@ export function AnaliticaTabs({
         ))}
       </div>
 
-      {tab === "hoje" && <DailyTasksPanel tasks={dailyTasks} />}
+      {tab === "hoje" && (
+        <>
+          <DailyTasksPanel tasks={dailyTasks} />
+          <InProgressDealsPanel deals={inProgressDeals} canEdit={canEditNegocios} />
+        </>
+      )}
 
       {tab === "atrasos" && <OverdueTasksPanel tasks={overdueTasks} canEdit={canEditAgenda} />}
 

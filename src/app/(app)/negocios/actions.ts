@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { canEdit } from "@/lib/permissions";
+import { canEdit, canView } from "@/lib/permissions";
 import {
   createDeal,
   moveDeal,
@@ -13,6 +13,7 @@ import {
   renameStage,
   deleteStage,
   addPastSale,
+  getDeal,
 } from "@/lib/deals";
 
 async function requireEdit() {
@@ -22,6 +23,55 @@ async function requireEdit() {
     throw new Error("Sem permissão para editar Negócios.");
   }
   return session;
+}
+
+export type DealDetail = {
+  id: string;
+  name: string;
+  value: number;
+  stageName: string;
+  ownerName: string | null;
+  contactId: string;
+  contactName: string;
+  accountName: string | null;
+  onTheWayDeadline: string | null;
+  notes: { id: string; body: string | null; createdAt: string }[];
+  activityLogs: {
+    id: string;
+    action: string;
+    actorName: string | null;
+    createdAt: string;
+  }[];
+};
+
+/** Backs the deal-detail modal opened by clicking a card on the Kanban
+ * board — returns null instead of redirecting so the modal can show a
+ * friendly "not found" state rather than navigating the whole page away. */
+export async function getDealDetailAction(dealId: string): Promise<DealDetail | null> {
+  const session = await auth();
+  if (!session?.user || !canView(session.user.role, "negocios")) return null;
+
+  const deal = await getDeal(session, dealId);
+  if (!deal) return null;
+
+  return {
+    id: deal.id,
+    name: deal.name,
+    value: Number(deal.value),
+    stageName: deal.stage.name,
+    ownerName: deal.owner.name,
+    contactId: deal.contactId,
+    contactName: `${deal.contact.firstName} ${deal.contact.lastName}`,
+    accountName: deal.contact.accountName,
+    onTheWayDeadline: deal.onTheWayDeadline ? deal.onTheWayDeadline.toISOString() : null,
+    notes: deal.notes.map((n) => ({ id: n.id, body: n.body, createdAt: n.createdAt.toISOString() })),
+    activityLogs: deal.activityLogs.map((l) => ({
+      id: l.id,
+      action: l.action,
+      actorName: l.actor.name,
+      createdAt: l.createdAt.toISOString(),
+    })),
+  };
 }
 
 export async function createDealAction(formData: FormData) {
