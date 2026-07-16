@@ -4,7 +4,9 @@ import { useState } from "react";
 import type { DailyTasks } from "@/lib/calls";
 import { DailyTasksPanel } from "@/components/home/DailyTasksPanel";
 import { OverdueTasksPanel } from "@/components/home/OverdueTasksPanel";
+import { useRouter } from "next/navigation";
 import { MonthPicker } from "@/components/home/MonthPicker";
+import { DateRangePicker } from "@/components/home/DateRangePicker";
 import type { TaskRow } from "@/components/agenda/TaskList";
 
 type Kpis = {
@@ -57,6 +59,9 @@ export function AnaliticaTabs({
   teamPerformance,
   selectedMonth,
   isCurrentMonth,
+  periodMode,
+  selectedRangeFrom,
+  selectedRangeTo,
 }: {
   dailyTasks: DailyTasks;
   overdueTasks: TaskRow[];
@@ -73,8 +78,13 @@ export function AnaliticaTabs({
   teamPerformance: SellerPerformance[] | null;
   selectedMonth: string;
   isCurrentMonth: boolean;
+  periodMode: "month" | "range";
+  selectedRangeFrom: string;
+  selectedRangeTo: string;
 }) {
+  const router = useRouter();
   const [tab, setTab] = useState<TabKey>("hoje");
+  const [periodUi, setPeriodUi] = useState<"month" | "range">(periodMode);
   const maxFunnel = Math.max(...funnel.map((f) => f.count), 1);
 
   return (
@@ -100,19 +110,53 @@ export function AnaliticaTabs({
       {tab === "desempenho" && (
         <div className="grid grid-cols-12 gap-4">
           <div className="col-span-12 flex items-center justify-between gap-3">
-            {!isCurrentMonth && (
+            {periodMode === "month" && !isCurrentMonth && (
               <span className="rounded-full bg-warning/15 px-2.5 py-1 text-[11px] font-semibold text-warning">
                 Mostrando um mês anterior — os números do mês atual continuam intactos
               </span>
             )}
+            {periodMode === "range" && (
+              <span className="rounded-full bg-warning/15 px-2.5 py-1 text-[11px] font-semibold text-warning">
+                Mostrando um período personalizado — meta e comissão continuam referentes ao mês atual
+              </span>
+            )}
             <div className="ml-auto flex items-center gap-2">
-              <span className="text-[11.5px] text-ink-faint">Ver meses anteriores</span>
-              <MonthPicker selected={selectedMonth} />
+              <div className="flex gap-0.5 rounded-md bg-surface-2 p-0.5">
+                <button
+                  onClick={() => {
+                    setPeriodUi("month");
+                    if (periodMode !== "month") router.push("/");
+                  }}
+                  className={`rounded px-2.5 py-1 text-[11.5px] font-semibold transition-colors ${
+                    periodUi === "month" ? "bg-gold-solid text-black" : "text-ink-muted hover:text-ink"
+                  }`}
+                >
+                  Mês
+                </button>
+                <button
+                  onClick={() => setPeriodUi("range")}
+                  className={`rounded px-2.5 py-1 text-[11.5px] font-semibold transition-colors ${
+                    periodUi === "range" ? "bg-gold-solid text-black" : "text-ink-muted hover:text-ink"
+                  }`}
+                >
+                  Período
+                </button>
+              </div>
+              {periodUi === "month" ? (
+                <>
+                  <span className="text-[11.5px] text-ink-faint">Ver meses anteriores</span>
+                  <MonthPicker selected={selectedMonth} />
+                </>
+              ) : (
+                <DateRangePicker from={selectedRangeFrom} to={selectedRangeTo} />
+              )}
             </div>
           </div>
 
           <div className="col-span-3 rounded-xl border border-gold-deep/28 bg-surface p-4">
-            <div className="text-[11px] uppercase tracking-wide text-ink-muted">Receita do mês</div>
+            <div className="text-[11px] uppercase tracking-wide text-ink-muted">
+              {periodMode === "range" ? "Receita no período" : "Receita do mês"}
+            </div>
             <div className="mt-1.5 text-[26px] font-bold text-ink">{currency(kpis.revenue)}</div>
             {kpis.revenueDelta !== null && (
               <span
@@ -139,7 +183,9 @@ export function AnaliticaTabs({
 
           <div className="col-span-8 rounded-xl border border-gold-deep/28 bg-surface p-4">
             <div className="mb-2 flex items-center justify-between">
-              <span className="text-[13px] font-semibold text-ink">Receita — últimos 6 meses</span>
+              <span className="text-[13px] font-semibold text-ink">
+                {periodMode === "range" ? "Receita — período selecionado" : "Receita — últimos 6 meses"}
+              </span>
               {commissionTiers.length > 0 && (
                 <span className="text-[10px] text-ink-faint">
                   ┄┄ linha marca onde a comissão sobe
