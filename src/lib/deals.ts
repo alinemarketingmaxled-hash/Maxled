@@ -56,7 +56,16 @@ export async function getBoard(session: Session) {
             where: { deletedAt: null, ...dealScopeWhere(session) },
             orderBy: { createdAt: "desc" },
             include: {
-              contact: { select: { firstName: true, lastName: true, accountName: true } },
+              contact: {
+                select: {
+                  firstName: true,
+                  lastName: true,
+                  accountName: true,
+                  phone: true,
+                  mobile: true,
+                  email: true,
+                },
+              },
               owner: { select: { name: true } },
               notes: true,
             },
