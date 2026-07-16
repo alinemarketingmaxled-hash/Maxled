@@ -68,6 +68,7 @@ export function ContactForm({
           <Field label="Nome" name="firstName" defaultValue={contact?.firstName} />
           <Field label="Sobrenome" name="lastName" defaultValue={contact?.lastName} />
           <Field label="Conta / Empresa" name="accountName" defaultValue={contact?.accountName} />
+          <Field label="CNPJ" name="cnpj" defaultValue={contact?.cnpj} />
           <Field label="Título" name="jobTitle" defaultValue={contact?.jobTitle} />
           <Field label="Departamento" name="department" defaultValue={contact?.department} />
         </div>

@@ -93,6 +93,7 @@ export function ContactDetailPanel({
         <div>
           <h4 className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-gold">Identificação</h4>
           {fieldRow("Proprietário", contact.owner.name)}
+          {fieldRow("CNPJ", contact.cnpj)}
           {fieldRow("Departamento", contact.department)}
         </div>
         <div>

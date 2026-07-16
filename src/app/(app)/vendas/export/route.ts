@@ -17,6 +17,7 @@ export async function GET() {
       firstName: c.firstName,
       lastName: c.lastName,
       accountName: c.accountName,
+      cnpj: c.cnpj,
       email: c.email,
       phone: c.phone,
       mobile: c.mobile,

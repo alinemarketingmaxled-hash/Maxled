@@ -18,6 +18,14 @@ export function ImportExportBar({
         ⭳ Exportar tabela
       </a>
       {canEdit && (
+        <a
+          href="/vendas/import-template"
+          className="rounded-lg border border-gold-deep px-3.5 py-1.5 text-xs font-semibold text-ink transition-colors hover:border-gold"
+        >
+          📋 Baixar modelo de importação
+        </a>
+      )}
+      {canEdit && (
         <form action={importContactsAction} className="flex items-center gap-2">
           <input
             type="file"
