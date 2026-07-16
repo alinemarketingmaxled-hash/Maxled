@@ -80,7 +80,7 @@ export async function getDealDetailAction(dealId: string): Promise<DealDetail | 
   };
 }
 
-export async function createDealAction(formData: FormData) {
+export async function createDealAction(formData: FormData): Promise<{ error?: string; ok?: boolean }> {
   const session = await requireEdit();
   const contactId = formData.get("contactId") as string;
   const stageId = formData.get("stageId") as string;
@@ -88,13 +88,17 @@ export async function createDealAction(formData: FormData) {
   const value = Number(formData.get("value"));
   const ownerId = (formData.get("ownerId") as string) || session.user.id;
 
-  if (!contactId || !stageId || !name || Number.isNaN(value)) {
-    throw new Error("Preencha contato, nome e valor do negócio.");
+  if (!contactId || !stageId || !name || Number.isNaN(value) || value <= 0) {
+    return { error: "Selecione a empresa/cliente, o estágio e informe um valor válido." };
   }
 
-  await createDeal(session, { ownerId, contactId, stageId, name, value });
+  try {
+    await createDeal(session, { ownerId, contactId, stageId, name, value });
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erro ao criar o negócio." };
+  }
   revalidatePath("/negocios");
-  redirect("/negocios");
+  return { ok: true };
 }
 
 /** Backs the "Registrar venda antiga" form on a client's Histórico tab —
