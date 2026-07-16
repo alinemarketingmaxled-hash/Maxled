@@ -11,6 +11,7 @@ import {
   renameStageAction,
   deleteStageAction,
 } from "@/app/(app)/negocios/actions";
+import { DealDetailModal } from "@/components/negocios/DealDetailModal";
 
 type StageWithDeals = {
   id: string;
@@ -24,7 +25,15 @@ function currency(value: number) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
-function DealCard({ deal, canEdit }: { deal: SerializedDeal; canEdit: boolean }) {
+function DealCard({
+  deal,
+  canEdit,
+  onOpen,
+}: {
+  deal: SerializedDeal;
+  canEdit: boolean;
+  onOpen: (dealId: string) => void;
+}) {
   const initials = (deal.owner.name ?? "?")
     .split(" ")
     .map((p) => p[0])
@@ -42,6 +51,13 @@ function DealCard({ deal, canEdit }: { deal: SerializedDeal; canEdit: boolean })
       draggable={canEdit}
       onDragStart={(e) => {
         e.dataTransfer.setData("text/plain", deal.id);
+      }}
+      onClick={(e) => {
+        // Plain click opens the quick-view modal; ctrl/cmd/middle-click keeps
+        // the normal browser behavior of opening the full page in a new tab.
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+        e.preventDefault();
+        onOpen(deal.id);
       }}
       className="flex flex-col gap-1.5 rounded-lg border border-gold-deep/25 bg-surface-2 p-2.5 text-left transition-colors hover:border-gold-deep/60"
     >
@@ -76,10 +92,12 @@ function StageColumn({
   stage,
   canEdit,
   isLastStage,
+  onOpenDeal,
 }: {
   stage: StageWithDeals;
   canEdit: boolean;
   isLastStage: boolean;
+  onOpenDeal: (dealId: string) => void;
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
@@ -123,7 +141,7 @@ function StageColumn({
       }}
       onDragLeave={() => setDragOver(false)}
       onDrop={canEdit ? handleDrop : undefined}
-      className={`flex w-64 flex-none flex-col gap-2.5 rounded-xl border p-3 transition-colors ${
+      className={`flex w-60 flex-none flex-col gap-2 rounded-xl border p-2.5 transition-colors ${
         isDragOver ? "border-gold bg-surface-2" : "border-gold-deep/28 bg-surface"
       }`}
     >
@@ -158,9 +176,9 @@ function StageColumn({
           </button>
         )}
       </div>
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-1.5">
         {stage.deals.map((deal) => (
-          <DealCard key={deal.id} deal={deal} canEdit={canEdit} />
+          <DealCard key={deal.id} deal={deal} canEdit={canEdit} onOpen={onOpenDeal} />
         ))}
       </div>
     </div>
@@ -179,6 +197,7 @@ export function KanbanBoard({
   const router = useRouter();
   const [addingColumn, setAddingColumn] = useState(false);
   const [newColumnName, setNewColumnName] = useState("");
+  const [openDealId, setOpenDealId] = useState<string | null>(null);
 
   async function handleAddColumn() {
     if (!newColumnName.trim()) return;
@@ -191,44 +210,51 @@ export function KanbanBoard({
   }
 
   return (
-    <div className="flex gap-3.5 overflow-x-auto pb-2">
-      {stages.map((stage, i) => (
-        <StageColumn
-          key={stage.id}
-          stage={stage}
-          canEdit={canEdit}
-          isLastStage={stages.length === 1 && i === 0}
-        />
-      ))}
-      {canEdit && (
-        <div className="flex w-56 flex-none flex-col gap-2 rounded-xl border border-dashed border-gold-deep/40 p-3">
-          {addingColumn ? (
-            <>
-              <input
-                autoFocus
-                value={newColumnName}
-                onChange={(e) => setNewColumnName(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleAddColumn()}
-                placeholder="Nome da coluna"
-                className="rounded-md border border-gold-deep/40 bg-surface-2 px-2 py-1.5 text-xs text-ink outline-none focus:border-gold"
-              />
+    <>
+      <div className="flex flex-wrap gap-3 pb-2">
+        {stages.map((stage, i) => (
+          <StageColumn
+            key={stage.id}
+            stage={stage}
+            canEdit={canEdit}
+            isLastStage={stages.length === 1 && i === 0}
+            onOpenDeal={setOpenDealId}
+          />
+        ))}
+        {canEdit && (
+          <div className="flex w-56 flex-none flex-col gap-2 rounded-xl border border-dashed border-gold-deep/40 p-3">
+            {addingColumn ? (
+              <>
+                <input
+                  autoFocus
+                  value={newColumnName}
+                  onChange={(e) => setNewColumnName(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleAddColumn()}
+                  placeholder="Nome da coluna"
+                  className="rounded-md border border-gold-deep/40 bg-surface-2 px-2 py-1.5 text-xs text-ink outline-none focus:border-gold"
+                />
+                <button
+                  onClick={handleAddColumn}
+                  className="rounded-md bg-gold-solid px-2 py-1.5 text-xs font-semibold text-black hover:bg-gold-solid-bright"
+                >
+                  Adicionar
+                </button>
+              </>
+            ) : (
               <button
-                onClick={handleAddColumn}
-                className="rounded-md bg-gold-solid px-2 py-1.5 text-xs font-semibold text-black hover:bg-gold-solid-bright"
+                onClick={() => setAddingColumn(true)}
+                className="text-xs font-semibold text-ink-faint hover:text-gold-bright"
               >
-                Adicionar
+                ＋ Adicionar coluna
               </button>
-            </>
-          ) : (
-            <button
-              onClick={() => setAddingColumn(true)}
-              className="text-xs font-semibold text-ink-faint hover:text-gold-bright"
-            >
-              ＋ Adicionar coluna
-            </button>
-          )}
-        </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {openDealId && (
+        <DealDetailModal dealId={openDealId} canEdit={canEdit} onClose={() => setOpenDealId(null)} />
       )}
-    </div>
+    </>
   );
 }

@@ -12,6 +12,7 @@ import {
 } from "@/lib/analytics";
 import { getDailyTasks } from "@/lib/calls";
 import { getOverdueTasks } from "@/lib/tasks";
+import { getInProgressDeals } from "@/lib/deals";
 import { buildLineChart } from "@/lib/chart-utils";
 import { AnaliticaTabs } from "@/components/home/AnaliticaTabs";
 import { QuickNav } from "@/components/home/QuickNav";
@@ -65,15 +66,17 @@ export default async function AnaliticaPage({
     ? toIsoDate(new Date(range.to.getFullYear(), range.to.getMonth(), range.to.getDate() - 1))
     : toIsoDate(defaultRangeTo);
 
-  const [kpis, revenueByMonth, funnel, goal, teamPerformance, dailyTasks, overdueTasks] = await Promise.all([
-    range ? getKpisForRange(session, range) : getKpis(session, referenceDate),
-    range ? getRevenueByMonthRange(session, range.from, range.to) : getRevenueByMonth(session),
-    getFunnel(session),
-    getGoalProgress(session, referenceDate),
-    getTeamPerformance(session, referenceDate),
-    getDailyTasks(session),
-    getOverdueTasks(session),
-  ]);
+  const [kpis, revenueByMonth, funnel, goal, teamPerformance, dailyTasks, overdueTasks, inProgressDeals] =
+    await Promise.all([
+      range ? getKpisForRange(session, range) : getKpis(session, referenceDate),
+      range ? getRevenueByMonthRange(session, range.from, range.to) : getRevenueByMonth(session),
+      getFunnel(session),
+      getGoalProgress(session, referenceDate),
+      getTeamPerformance(session, referenceDate),
+      getDailyTasks(session),
+      getOverdueTasks(session),
+      getInProgressDeals(session),
+    ]);
 
   const goalTiers = [
     goal?.goal1 != null ? { value: goal.goal1, pct: goal.commissionPct1 } : null,
@@ -112,6 +115,16 @@ export default async function AnaliticaPage({
           ownerName: t.owner.name,
         }))}
         canEditAgenda={canEdit(session.user.role, "agenda")}
+        canEditNegocios={canEdit(session.user.role, "negocios")}
+        inProgressDeals={inProgressDeals.map((d) => ({
+          id: d.id,
+          name: d.name,
+          value: Number(d.value),
+          stageName: d.stage.name,
+          contactName: `${d.contact.firstName} ${d.contact.lastName}`,
+          accountName: d.contact.accountName,
+          ownerName: d.owner.name,
+        }))}
         kpis={kpis}
         revenueByMonth={revenueByMonth}
         polyline={polyline}
