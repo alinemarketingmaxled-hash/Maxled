@@ -4,6 +4,22 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { User } from "@/generated/prisma/client";
 
+// Prisma's Decimal instances can't cross the Server->Client Component
+// boundary as-is, so the page converts them to plain numbers before
+// passing the vendor down (same fix applied to ContactForm/DealDetailModal
+// earlier — this form had been missed).
+export type SerializedVendor = Omit<
+  User,
+  "goal1" | "goal2" | "commissionPct1" | "commissionPct2" | "commissionStepValue" | "personalGoal"
+> & {
+  goal1: number | null;
+  goal2: number | null;
+  commissionPct1: number | null;
+  commissionPct2: number | null;
+  commissionStepValue: number | null;
+  personalGoal: number | null;
+};
+
 const ROLES: { value: string; label: string }[] = [
   { value: "SELLER", label: "Vendedor" },
   { value: "SUPPORT", label: "Suporte" },
@@ -44,7 +60,7 @@ export function VendorForm({
   vendor,
   action,
 }: {
-  vendor?: User | null;
+  vendor?: SerializedVendor | null;
   action: (formData: FormData) => Promise<{ error?: string; ok?: boolean }>;
 }) {
   const router = useRouter();
@@ -109,20 +125,31 @@ export function VendorForm({
           Metas e comissão
         </h4>
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Meta 1 (R$)" name="goal1" type="number" defaultValue={vendor?.goal1 ? Number(vendor.goal1) : null} />
+          <Field label="Meta 1 (R$)" name="goal1" type="number" defaultValue={vendor?.goal1} />
           <Field
             label="Comissão da Meta 1 (%)"
             name="commissionPct1"
             type="number"
-            defaultValue={vendor?.commissionPct1 ? Number(vendor.commissionPct1) : null}
+            defaultValue={vendor?.commissionPct1}
           />
-          <Field label="Meta 2 (R$)" name="goal2" type="number" defaultValue={vendor?.goal2 ? Number(vendor.goal2) : null} />
+          <Field label="Meta 2 (R$)" name="goal2" type="number" defaultValue={vendor?.goal2} />
           <Field
             label="Comissão da Meta 2 (%)"
             name="commissionPct2"
             type="number"
-            defaultValue={vendor?.commissionPct2 ? Number(vendor.commissionPct2) : null}
+            defaultValue={vendor?.commissionPct2}
           />
+          <div className="col-span-2">
+            <Field
+              label="A cada quanto vendido além da Meta 2 a comissão sobe 0,02% (R$)"
+              name="commissionStepValue"
+              type="number"
+              defaultValue={vendor?.commissionStepValue}
+            />
+            <p className="mt-1 text-[10.5px] text-ink-faint">
+              Opcional. Deixe em branco para manter a comissão da Meta 2 fixa acima dela.
+            </p>
+          </div>
         </div>
       </div>
 

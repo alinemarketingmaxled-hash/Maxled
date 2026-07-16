@@ -9,6 +9,7 @@ import {
   type DealDetail,
 } from "@/app/(app)/negocios/actions";
 import { DealNotesTimeline } from "@/components/negocios/DealNotesTimeline";
+import { DealInstallments } from "@/components/negocios/DealInstallments";
 import { DealScheduledMessages } from "@/components/negocios/DealScheduledMessages";
 
 function currency(value: number) {
@@ -175,6 +176,15 @@ export function DealDetailModal({
                 </button>
               </div>
             )}
+
+            <div className="mt-5 border-t border-gold-deep/25 pt-4">
+              <DealInstallments
+                dealId={detail.id}
+                installments={detail.installments}
+                canEdit={canEdit}
+                onChanged={async () => setDetail(await getDealDetailAction(dealId))}
+              />
+            </div>
 
             <div className="mt-5 border-t border-gold-deep/25 pt-4">
               <DealScheduledMessages

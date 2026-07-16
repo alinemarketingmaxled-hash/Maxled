@@ -25,6 +25,7 @@ export type VendorInput = {
   goal2?: number | null;
   commissionPct1?: number | null;
   commissionPct2?: number | null;
+  commissionStepValue?: number | null;
   password?: string;
 };
 
@@ -43,6 +44,7 @@ export async function createVendor(actorId: string, input: VendorInput) {
       goal2: input.goal2,
       commissionPct1: input.commissionPct1,
       commissionPct2: input.commissionPct2,
+      commissionStepValue: input.commissionStepValue,
       passwordHash,
     },
   });
@@ -62,6 +64,7 @@ export async function updateVendor(actorId: string, id: string, input: VendorInp
     goal2: input.goal2,
     commissionPct1: input.commissionPct1,
     commissionPct2: input.commissionPct2,
+    commissionStepValue: input.commissionStepValue,
   };
   if (input.password) {
     data.passwordHash = await bcrypt.hash(input.password, 10);

@@ -17,6 +17,11 @@ import {
   addPastSale,
   getDeal,
   toggleDealNoteFlag,
+  getDealInstallments,
+  addInstallment,
+  generateInstallments,
+  toggleInstallmentPaid,
+  deleteInstallment,
 } from "@/lib/deals";
 import { createTask, toggleTask, deleteTask, getDealTasks } from "@/lib/tasks";
 import { assignableOwners } from "@/app/(app)/vendas/actions";
@@ -62,6 +67,7 @@ export type DealDetail = {
   }[];
   stages: { id: string; name: string }[];
   owners: { id: string; name: string | null }[];
+  installments: { id: string; number: number; value: number; dueDate: string; paid: boolean }[];
   scheduledMessages: { id: string; title: string; dueDate: string | null; done: boolean }[];
 };
 
@@ -75,12 +81,13 @@ export async function getDealDetailAction(dealId: string): Promise<DealDetail | 
   const deal = await getDeal(session, dealId);
   if (!deal) return null;
 
-  const [owners, pipeline, scheduledMessages] = await Promise.all([
+  const [owners, pipeline, installments, scheduledMessages] = await Promise.all([
     assignableOwners(session),
     prisma.pipeline.findFirst({
       where: { isDefault: true },
       include: { stages: { orderBy: { order: "asc" } } },
     }),
+    getDealInstallments(session, dealId),
     getDealTasks(session, dealId),
   ]);
 
@@ -113,6 +120,13 @@ export async function getDealDetailAction(dealId: string): Promise<DealDetail | 
     })),
     stages: pipeline?.stages.map((s) => ({ id: s.id, name: s.name })) ?? [],
     owners: owners.map((o) => ({ id: o.id, name: o.name })),
+    installments: installments.map((i) => ({
+      id: i.id,
+      number: i.number,
+      value: Number(i.value),
+      dueDate: i.dueDate.toISOString(),
+      paid: i.paid,
+    })),
     scheduledMessages: scheduledMessages.map((t) => ({
       id: t.id,
       title: t.title,
@@ -264,6 +278,62 @@ export async function renameStageAction(stageId: string, name: string) {
 export async function deleteStageAction(stageId: string) {
   await requireEdit();
   await deleteStage(stageId);
+  revalidatePath("/negocios");
+}
+
+export async function addInstallmentAction(
+  dealId: string,
+  formData: FormData,
+): Promise<{ error?: string; ok?: boolean }> {
+  const session = await requireEdit();
+  const value = Number(formData.get("value"));
+  const dueDateStr = (formData.get("dueDate") as string)?.trim();
+  if (Number.isNaN(value) || value <= 0 || !dueDateStr) {
+    return { error: "Informe um valor e uma data válidos." };
+  }
+  const dueDate = new Date(dueDateStr);
+  if (Number.isNaN(dueDate.getTime())) return { error: "Data inválida." };
+
+  try {
+    await addInstallment(session, dealId, { value, dueDate });
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erro ao adicionar a parcela." };
+  }
+  revalidatePath("/negocios");
+  return { ok: true };
+}
+
+export async function generateInstallmentsAction(
+  dealId: string,
+  formData: FormData,
+): Promise<{ error?: string; ok?: boolean }> {
+  const session = await requireEdit();
+  const count = Number(formData.get("count"));
+  const firstDueDateStr = (formData.get("firstDueDate") as string)?.trim();
+  if (!Number.isInteger(count) || count < 1 || !firstDueDateStr) {
+    return { error: "Informe a quantidade de parcelas e a data da primeira." };
+  }
+  const firstDueDate = new Date(firstDueDateStr);
+  if (Number.isNaN(firstDueDate.getTime())) return { error: "Data inválida." };
+
+  try {
+    await generateInstallments(session, dealId, count, firstDueDate);
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erro ao gerar as parcelas." };
+  }
+  revalidatePath("/negocios");
+  return { ok: true };
+}
+
+export async function toggleInstallmentAction(installmentId: string) {
+  const session = await requireEdit();
+  await toggleInstallmentPaid(session, installmentId);
+  revalidatePath("/negocios");
+}
+
+export async function deleteInstallmentAction(installmentId: string) {
+  const session = await requireEdit();
+  await deleteInstallment(session, installmentId);
   revalidatePath("/negocios");
 }
 

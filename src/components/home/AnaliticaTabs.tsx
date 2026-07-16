@@ -28,9 +28,16 @@ type Goal = {
   commissionPct1: number | null;
   commissionPct2: number | null;
   commissionEarned: number;
+  effectiveCommissionPct: number | null;
   personalGoal: number | null;
 } | null;
-type SellerPerformance = { id: string; name: string; achieved: number; commissionEarned: number };
+type SellerPerformance = {
+  id: string;
+  name: string;
+  achieved: number;
+  commissionEarned: number;
+  effectiveCommissionPct: number | null;
+};
 type CommissionTier = { y: number; value: number; pct: number | null };
 
 function currency(v: number) {
@@ -264,13 +271,14 @@ export function AnaliticaTabs({
                       commissionPct2={goal.commissionPct2}
                     />
                     <div className="mt-1 flex justify-between gap-3 border-t border-dashed border-gold-deep/25 pt-2 text-[11.5px]">
-                      <span className="text-ink-faint">Atingido</span>
-                      <span className="text-ink">{currency(goal.achieved)}</span>
-                    </div>
-                    <div className="mt-1 flex justify-between gap-3 text-[11.5px]">
                       <span className="text-ink-faint">Comissão do mês</span>
                       <span className="font-semibold text-gold-bright">
                         {currency(goal.commissionEarned)}
+                        {goal.effectiveCommissionPct !== null && (
+                          <span className="ml-1 text-[10.5px] font-normal text-ink-faint">
+                            ({goal.effectiveCommissionPct.toFixed(2)}%)
+                          </span>
+                        )}
                       </span>
                     </div>
                   </div>
@@ -336,7 +344,7 @@ export function AnaliticaTabs({
                         Faturamento <b className="text-ink">{currency(s.achieved)}</b>
                       </span>
                       <span className="text-ink-muted">
-                        Comissão{" "}
+                        Comissão{s.effectiveCommissionPct !== null && ` (${s.effectiveCommissionPct.toFixed(2)}%)`}{" "}
                         <b className={s.commissionEarned > 0 ? "text-gold-bright" : "text-ink"}>
                           {currency(s.commissionEarned)}
                         </b>

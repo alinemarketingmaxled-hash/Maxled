@@ -34,6 +34,7 @@ function readVendorInput(formData: FormData): VendorInput {
     goal2: num("goal2"),
     commissionPct1: num("commissionPct1"),
     commissionPct2: num("commissionPct2"),
+    commissionStepValue: num("commissionStepValue"),
     password: (formData.get("password") as string)?.trim() || undefined,
   };
 }
