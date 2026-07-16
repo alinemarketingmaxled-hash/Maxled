@@ -37,7 +37,17 @@ export default async function AnaliticaPage({
     getOverdueTasks(session),
   ]);
 
-  const { polyline, areaPath } = buildLineChart(revenueByMonth.map((m) => m.value));
+  const goalTiers = [
+    goal?.goal1 != null ? { value: goal.goal1, pct: goal.commissionPct1 } : null,
+    goal?.goal2 != null ? { value: goal.goal2, pct: goal.commissionPct2 } : null,
+  ].filter((t): t is { value: number; pct: number | null } => t !== null);
+
+  const { polyline, areaPath, valueToY } = buildLineChart(
+    revenueByMonth.map((m) => m.value),
+    goalTiers.map((t) => t.value),
+  );
+  const commissionTiers = goalTiers.map((t) => ({ y: valueToY(t.value), value: t.value, pct: t.pct }));
+
   const goal1Pct = goal?.goal1 ? Math.min(100, Math.round((goal.achieved / goal.goal1) * 100)) : 0;
   const personalGoalPct = goal?.personalGoal
     ? Math.min(100, Math.round((goal.achieved / goal.personalGoal) * 100))
@@ -68,6 +78,7 @@ export default async function AnaliticaPage({
         revenueByMonth={revenueByMonth}
         polyline={polyline}
         areaPath={areaPath}
+        commissionTiers={commissionTiers}
         funnel={funnel}
         goal={goal}
         goal1Pct={goal1Pct}

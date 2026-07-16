@@ -27,6 +27,7 @@ type Goal = {
   personalGoal: number | null;
 } | null;
 type SellerPerformance = { id: string; name: string; achieved: number; commissionEarned: number };
+type CommissionTier = { y: number; value: number; pct: number | null };
 
 function currency(v: number) {
   return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
@@ -48,6 +49,7 @@ export function AnaliticaTabs({
   revenueByMonth,
   polyline,
   areaPath,
+  commissionTiers,
   funnel,
   goal,
   goal1Pct,
@@ -63,6 +65,7 @@ export function AnaliticaTabs({
   revenueByMonth: RevenueMonth[];
   polyline: string;
   areaPath: string;
+  commissionTiers: CommissionTier[];
   funnel: FunnelStage[];
   goal: Goal;
   goal1Pct: number;
@@ -135,24 +138,56 @@ export function AnaliticaTabs({
           </div>
 
           <div className="col-span-8 rounded-xl border border-gold-deep/28 bg-surface p-4">
-            <div className="mb-2 text-[13px] font-semibold text-ink">Receita — últimos 6 meses</div>
-            <svg viewBox="0 0 300 100" className="h-[150px] w-full" preserveAspectRatio="none">
-              <path d={areaPath} fill="url(#analyticsGrad)" opacity="0.5" />
-              <polyline
-                points={polyline}
-                fill="none"
-                stroke="var(--gold-bright)"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <defs>
-                <linearGradient id="analyticsGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--gold-bright)" stopOpacity="0.45" />
-                  <stop offset="100%" stopColor="var(--gold-bright)" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-            </svg>
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-[13px] font-semibold text-ink">Receita — últimos 6 meses</span>
+              {commissionTiers.length > 0 && (
+                <span className="text-[10px] text-ink-faint">
+                  ┄┄ linha marca onde a comissão sobe
+                </span>
+              )}
+            </div>
+            <div className="relative">
+              <svg viewBox="0 0 300 100" className="h-[150px] w-full" preserveAspectRatio="none">
+                <path d={areaPath} fill="url(#analyticsGrad)" opacity="0.5" />
+                {commissionTiers.map((tier, i) => (
+                  <line
+                    key={i}
+                    x1="0"
+                    y1={tier.y}
+                    x2="300"
+                    y2={tier.y}
+                    stroke="var(--status-good)"
+                    strokeWidth="1"
+                    strokeDasharray="5 4"
+                    opacity="0.7"
+                  />
+                ))}
+                <polyline
+                  points={polyline}
+                  fill="none"
+                  stroke="var(--gold-bright)"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <defs>
+                  <linearGradient id="analyticsGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--gold-bright)" stopOpacity="0.45" />
+                    <stop offset="100%" stopColor="var(--gold-bright)" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              {commissionTiers.map((tier, i) => (
+                <span
+                  key={i}
+                  className="pointer-events-none absolute left-1 -translate-y-1/2 whitespace-nowrap rounded bg-surface/90 px-1 text-[9.5px] font-semibold text-good"
+                  style={{ top: `${Math.min(96, Math.max(4, tier.y))}%` }}
+                >
+                  {currency(tier.value)}
+                  {tier.pct !== null ? ` · ${tier.pct}%` : ""}
+                </span>
+              ))}
+            </div>
             <div className="mt-2 flex justify-between text-[10.5px] text-ink-faint">
               {revenueByMonth.map((m) => (
                 <span key={m.label}>{m.label}</span>
