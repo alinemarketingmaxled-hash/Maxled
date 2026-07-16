@@ -3,8 +3,10 @@ import { notFound } from "next/navigation";
 import { canEdit } from "@/lib/permissions";
 import { requireView } from "@/lib/require-permission";
 import { getDeal } from "@/lib/deals";
+import { getDealTasks } from "@/lib/tasks";
 import { deleteDealAction } from "../actions";
 import { DealNotesTimeline } from "@/components/negocios/DealNotesTimeline";
+import { DealScheduledMessages } from "@/components/negocios/DealScheduledMessages";
 
 const PAYMENT_LABEL: Record<string, string> = { PENDENTE: "Pendente", PARCIAL: "Parcial", PAGO: "Pago" };
 const PAYMENT_CLASS: Record<string, string> = {
@@ -24,6 +26,7 @@ export default async function DealDetailPage({
 
   const deal = await getDeal(session, id);
   if (!deal) notFound();
+  const scheduledMessages = await getDealTasks(session, deal.id);
 
   return (
     <div className="max-w-2xl">
@@ -82,6 +85,19 @@ export default async function DealDetailPage({
             </button>
           </form>
         )}
+
+        <div className="mt-5 border-t border-gold-deep/25 pt-4">
+          <DealScheduledMessages
+            dealId={deal.id}
+            messages={scheduledMessages.map((t) => ({
+              id: t.id,
+              title: t.title,
+              dueDate: t.dueDate ? t.dueDate.toISOString() : null,
+              done: t.done,
+            }))}
+            canEdit={editable}
+          />
+        </div>
 
         <div className="mt-5 border-t border-gold-deep/25 pt-4">
           <DealNotesTimeline

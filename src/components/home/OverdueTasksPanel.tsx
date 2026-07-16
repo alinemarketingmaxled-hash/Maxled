@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toggleTaskAction, deleteTaskAction } from "@/app/(app)/agenda/actions";
@@ -52,6 +53,14 @@ export function OverdueTasksPanel({ tasks, canEdit }: { tasks: TaskRow[]; canEdi
                   Venceu em {t.dueDate ? new Date(t.dueDate).toLocaleDateString("pt-BR") : "—"} ·{" "}
                   {t.ownerName}
                 </div>
+                {t.dealId && (
+                  <Link
+                    href={`/negocios/${t.dealId}`}
+                    className="mt-0.5 inline-block text-[11px] text-gold-bright hover:underline"
+                  >
+                    🔗 {t.dealName}
+                  </Link>
+                )}
               </div>
               {canEdit && (
                 <div className="flex flex-none gap-1.5">

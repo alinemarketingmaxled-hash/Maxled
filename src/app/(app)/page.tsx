@@ -112,6 +112,8 @@ export default async function AnaliticaPage({
           dueDate: t.dueDate ? t.dueDate.toISOString() : null,
           done: t.done,
           ownerName: t.owner.name,
+          dealId: t.dealId,
+          dealName: t.deal?.name ?? null,
         }))}
         canEditAgenda={canEdit(session.user.role, "agenda")}
         canEditNegocios={canEdit(session.user.role, "negocios")}
