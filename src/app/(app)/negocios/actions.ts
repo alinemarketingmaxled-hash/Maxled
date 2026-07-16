@@ -18,6 +18,7 @@ import {
   getDeal,
   toggleDealNoteFlag,
 } from "@/lib/deals";
+import { createTask, toggleTask, deleteTask, getDealTasks } from "@/lib/tasks";
 import { assignableOwners } from "@/app/(app)/vendas/actions";
 
 async function requireEdit() {
@@ -56,6 +57,7 @@ export type DealDetail = {
   }[];
   stages: { id: string; name: string }[];
   owners: { id: string; name: string | null }[];
+  scheduledMessages: { id: string; title: string; dueDate: string | null; done: boolean }[];
 };
 
 /** Backs the deal-detail modal opened by clicking a card on the Kanban
@@ -68,12 +70,13 @@ export async function getDealDetailAction(dealId: string): Promise<DealDetail | 
   const deal = await getDeal(session, dealId);
   if (!deal) return null;
 
-  const [owners, pipeline] = await Promise.all([
+  const [owners, pipeline, scheduledMessages] = await Promise.all([
     assignableOwners(session),
     prisma.pipeline.findFirst({
       where: { isDefault: true },
       include: { stages: { orderBy: { order: "asc" } } },
     }),
+    getDealTasks(session, dealId),
   ]);
 
   return {
@@ -103,6 +106,12 @@ export async function getDealDetailAction(dealId: string): Promise<DealDetail | 
     })),
     stages: pipeline?.stages.map((s) => ({ id: s.id, name: s.name })) ?? [],
     owners: owners.map((o) => ({ id: o.id, name: o.name })),
+    scheduledMessages: scheduledMessages.map((t) => ({
+      id: t.id,
+      title: t.title,
+      dueDate: t.dueDate ? t.dueDate.toISOString() : null,
+      done: t.done,
+    })),
   };
 }
 
@@ -240,4 +249,43 @@ export async function deleteStageAction(stageId: string) {
   await requireEdit();
   await deleteStage(stageId);
   revalidatePath("/negocios");
+}
+
+/** Backs the "Agendar mensagem" mini-form on a deal's quick-view — schedules
+ * a follow-up (a Task tied to this deal via dealId) that also shows up in
+ * Analítica → Atrasos once it's overdue, same as any other agenda task. */
+export async function createDealMessageAction(
+  dealId: string,
+  formData: FormData,
+): Promise<{ error?: string; ok?: boolean }> {
+  const session = await requireEdit();
+  const title = (formData.get("title") as string)?.trim();
+  const dueDateStr = (formData.get("dueDate") as string)?.trim();
+  if (!title || !dueDateStr) return { error: "Escreva a mensagem e escolha uma data." };
+
+  const dueDate = new Date(dueDateStr);
+  if (Number.isNaN(dueDate.getTime())) return { error: "Data inválida." };
+
+  try {
+    await createTask(session, title, dueDate, dealId);
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erro ao agendar a mensagem." };
+  }
+  revalidatePath("/negocios");
+  revalidatePath("/");
+  return { ok: true };
+}
+
+export async function toggleDealMessageAction(taskId: string) {
+  const session = await requireEdit();
+  await toggleTask(session, taskId);
+  revalidatePath("/negocios");
+  revalidatePath("/");
+}
+
+export async function deleteDealMessageAction(taskId: string) {
+  const session = await requireEdit();
+  await deleteTask(session, taskId);
+  revalidatePath("/negocios");
+  revalidatePath("/");
 }

@@ -10,6 +10,8 @@ export type TaskRow = {
   dueDate: string | null;
   done: boolean;
   ownerName: string;
+  dealId?: string | null;
+  dealName?: string | null;
 };
 
 export function TaskList({ tasks, canEdit }: { tasks: TaskRow[]; canEdit: boolean }) {
