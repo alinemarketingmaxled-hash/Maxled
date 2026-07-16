@@ -89,7 +89,6 @@ export default async function AnaliticaPage({
   );
   const commissionTiers = goalTiers.map((t) => ({ y: valueToY(t.value), value: t.value, pct: t.pct }));
 
-  const goal1Pct = goal?.goal1 ? Math.min(100, Math.round((goal.achieved / goal.goal1) * 100)) : 0;
   const personalGoalPct = goal?.personalGoal
     ? Math.min(100, Math.round((goal.achieved / goal.personalGoal) * 100))
     : 0;
@@ -132,7 +131,6 @@ export default async function AnaliticaPage({
         commissionTiers={commissionTiers}
         funnel={funnel}
         goal={goal}
-        goal1Pct={goal1Pct}
         personalGoalPct={personalGoalPct}
         teamPerformance={teamPerformance}
         selectedMonth={selectedMonth}
