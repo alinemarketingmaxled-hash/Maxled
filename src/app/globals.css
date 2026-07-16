@@ -1,9 +1,13 @@
 @import "tailwindcss";
 
 /*
-  Maxled CRM is a deliberate single dark world (black backgrounds for
-  dashboards and menus, per the brand brief) — not a light/dark toggle.
-  See docs/CRM-SPEC.md §1 for the full design system this implements.
+  Maxled CRM defaults to a dark gold-and-black world per the brand brief,
+  but users can switch to a light theme and a larger base font size from
+  Config → Aparência. Both are applied as attributes on <html>
+  (data-theme, data-font-scale) by AppearanceSettings.tsx, with an inline
+  script in the root layout setting them before first paint to avoid a
+  flash of the wrong theme. See docs/CRM-SPEC.md §1 for the base design
+  system this implements.
 */
 :root {
   --black-ground: #0c0a06;
@@ -14,6 +18,14 @@
   --gold: #c9a227;
   --gold-bright: #f0c863;
   --gold-deep: #8a6a1f;
+  --gold-circuit: #f0c863;
+
+  /* Solid gold fills (buttons, active pills, badges) always pair with
+     black text/icons on top, so — unlike --gold/--gold-bright, which are
+     also used as text and need to darken in the light theme for
+     contrast — these stay fixed across both themes. */
+  --gold-solid: #c9a227;
+  --gold-solid-bright: #f0c863;
 
   --ink: #f5efe0;
   --ink-muted: #c7bda6;
@@ -39,6 +51,38 @@
 
   --font-serif: ui-serif, Georgia, "Iowan Old Style", "Times New Roman", serif;
   --font-sans: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  --user-font-scale: 1;
+}
+
+/* Light theme: same variable names, contrast-checked replacements (every
+   ink/gold text tone clears WCAG AA against every surface below). */
+:root[data-theme="light"] {
+  --black-ground: #f3efe4;
+  --black-surface: #ffffff;
+  --black-surface-2: #faf7ef;
+  --black-surface-3: #f1ead8;
+
+  --gold: #7d5d16;
+  --gold-bright: #6b4e0c;
+  --gold-deep: #c4a03a;
+  --gold-circuit: #b08a2e;
+
+  --ink: #201a0d;
+  --ink-muted: #5c5340;
+  --ink-faint: #6d6450;
+
+  --status-good: #1e7a44;
+  --status-info: #1f5aa8;
+  --status-warning: #a8501e;
+  --status-critical: #a01f1f;
+}
+
+:root[data-font-scale="large"] {
+  --user-font-scale: 1.15;
+}
+:root[data-font-scale="xlarge"] {
+  --user-font-scale: 1.3;
 }
 
 @theme inline {
@@ -50,6 +94,8 @@
   --color-gold: var(--gold);
   --color-gold-bright: var(--gold-bright);
   --color-gold-deep: var(--gold-deep);
+  --color-gold-solid: var(--gold-solid);
+  --color-gold-solid-bright: var(--gold-solid-bright);
 
   --color-ink: var(--ink);
   --color-ink-muted: var(--ink-muted);
@@ -73,6 +119,11 @@
 
 html {
   color-scheme: dark;
+  font-size: calc(16px * var(--user-font-scale));
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
 }
 
 body {

@@ -38,6 +38,9 @@ export default async function AnaliticaPage({
 
   const { polyline, areaPath } = buildLineChart(revenueByMonth.map((m) => m.value));
   const goal1Pct = goal?.goal1 ? Math.min(100, Math.round((goal.achieved / goal.goal1) * 100)) : 0;
+  const personalGoalPct = goal?.personalGoal
+    ? Math.min(100, Math.round((goal.achieved / goal.personalGoal) * 100))
+    : 0;
 
   return (
     <div>
@@ -67,6 +70,7 @@ export default async function AnaliticaPage({
         funnel={funnel}
         goal={goal}
         goal1Pct={goal1Pct}
+        personalGoalPct={personalGoalPct}
         selectedMonth={selectedMonth}
         isCurrentMonth={isCurrentMonth}
       />

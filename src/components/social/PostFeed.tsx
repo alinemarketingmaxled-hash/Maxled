@@ -144,7 +144,7 @@ function PostCard({ post, currentUserId }: { post: FeedPost; currentUserId: stri
                 <button
                   onClick={handleComment}
                   disabled={isPending || !commentBody.trim()}
-                  className="rounded-md bg-gold px-3 py-1.5 text-[11.5px] font-semibold text-black hover:bg-gold-bright disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded-md bg-gold-solid px-3 py-1.5 text-[11.5px] font-semibold text-black hover:bg-gold-solid-bright disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Enviar
                 </button>

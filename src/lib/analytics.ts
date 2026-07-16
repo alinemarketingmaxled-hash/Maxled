@@ -102,9 +102,16 @@ export async function getFunnel(session: Session) {
 export async function getGoalProgress(session: Session, referenceDate: Date = new Date()) {
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { goal1: true, goal2: true, commissionPct1: true, commissionPct2: true, name: true },
+    select: {
+      goal1: true,
+      goal2: true,
+      commissionPct1: true,
+      commissionPct2: true,
+      personalGoal: true,
+      name: true,
+    },
   });
-  if (!user || (!user.goal1 && !user.goal2)) return null;
+  if (!user || (!user.goal1 && !user.goal2 && !user.personalGoal)) return null;
 
   const now = referenceDate;
   const wonThisMonth = await prisma.deal.findMany({
@@ -122,6 +129,7 @@ export async function getGoalProgress(session: Session, referenceDate: Date = ne
   const goal2 = user.goal2 ? Number(user.goal2) : null;
   const commissionPct1 = user.commissionPct1 ? Number(user.commissionPct1) : null;
   const commissionPct2 = user.commissionPct2 ? Number(user.commissionPct2) : null;
+  const personalGoal = user.personalGoal ? Number(user.personalGoal) : null;
 
   // Commission unlocks at whichever goal tier the achieved total reaches (higher tier wins).
   let commissionEarned = 0;
@@ -139,5 +147,6 @@ export async function getGoalProgress(session: Session, referenceDate: Date = ne
     commissionPct1,
     commissionPct2,
     commissionEarned,
+    personalGoal,
   };
 }

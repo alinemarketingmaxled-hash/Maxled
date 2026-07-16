@@ -82,7 +82,7 @@ export function PostComposer({ authorInitials }: { authorInitials: string }) {
             <button
               onClick={handlePublish}
               disabled={isPending}
-              className="ml-auto rounded-lg bg-gold px-4 py-1.5 text-[12px] font-semibold text-black transition-colors hover:bg-gold-bright disabled:cursor-not-allowed disabled:opacity-50"
+              className="ml-auto rounded-lg bg-gold-solid px-4 py-1.5 text-[12px] font-semibold text-black transition-colors hover:bg-gold-solid-bright disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isPending ? "Publicando…" : "Publicar"}
             </button>

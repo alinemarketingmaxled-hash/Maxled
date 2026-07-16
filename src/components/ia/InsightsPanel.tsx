@@ -45,7 +45,7 @@ export function InsightsPanel({ disabled }: { disabled: boolean }) {
         <button
           onClick={handleGenerate}
           disabled={disabled || isPending}
-          className="flex-none rounded-lg bg-gold px-4 py-2 text-xs font-semibold text-black shadow-[0_0_0_1px_rgba(201,162,39,0.4)] transition-colors hover:bg-gold-bright disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex-none rounded-lg bg-gold-solid px-4 py-2 text-xs font-semibold text-black shadow-[0_0_0_1px_rgba(201,162,39,0.4)] transition-colors hover:bg-gold-solid-bright disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isPending ? "Gerando…" : "Gerar insights com IA"}
         </button>

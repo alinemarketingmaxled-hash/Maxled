@@ -82,7 +82,7 @@ export default async function DealDetailPage({
               />
               <button
                 type="submit"
-                className="rounded-md bg-gold px-3 py-1.5 text-xs font-semibold text-black hover:bg-gold-bright"
+                className="rounded-md bg-gold-solid px-3 py-1.5 text-xs font-semibold text-black hover:bg-gold-solid-bright"
               >
                 Adicionar
               </button>

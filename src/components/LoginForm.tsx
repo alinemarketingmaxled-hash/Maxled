@@ -67,7 +67,7 @@ export function LoginForm() {
       <button
         type="submit"
         disabled={loading}
-        className="mt-1 rounded-lg bg-gold px-4 py-2.5 text-sm font-semibold text-black transition-colors hover:bg-gold-bright disabled:opacity-60"
+        className="mt-1 rounded-lg bg-gold-solid px-4 py-2.5 text-sm font-semibold text-black transition-colors hover:bg-gold-solid-bright disabled:opacity-60"
       >
         {loading ? "Entrando…" : "Entrar"}
       </button>

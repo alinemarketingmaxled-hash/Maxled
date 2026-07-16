@@ -58,7 +58,7 @@ export function OverdueTasksPanel({ tasks, canEdit }: { tasks: TaskRow[]; canEdi
                   <button
                     onClick={() => handleToggle(t.id)}
                     disabled={isPending}
-                    className="rounded-md bg-gold px-2.5 py-1 text-[11px] font-semibold text-black transition-colors hover:bg-gold-bright disabled:opacity-50"
+                    className="rounded-md bg-gold-solid px-2.5 py-1 text-[11px] font-semibold text-black transition-colors hover:bg-gold-solid-bright disabled:opacity-50"
                   >
                     Concluir
                   </button>

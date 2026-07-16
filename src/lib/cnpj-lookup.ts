@@ -27,6 +27,14 @@ export type CnpjLookupResult = {
   postalCode: string | null;
 };
 
+/** Distinguishes *why* a lookup didn't return data — "the CNPJ doesn't
+ * exist" and "BrasilAPI is unreachable right now" need different messages,
+ * and lumping them into one generic "not found" made a real outage look
+ * identical to a typo. */
+export type CnpjLookupOutcome =
+  | { ok: true; result: CnpjLookupResult }
+  | { ok: false; reason: "invalid" | "not_found" | "error" };
+
 function formatCep(cep: number | string | undefined): string | null {
   if (cep === undefined || cep === null) return null;
   const digits = String(cep).replace(/\D/g, "").padStart(8, "0");
@@ -34,32 +42,37 @@ function formatCep(cep: number | string | undefined): string | null {
 }
 
 /** Looks up a CNPJ against BrasilAPI and returns whatever fields it can
- * fill in on a Contact. Returns null (never throws) when the CNPJ isn't
- * found or is malformed — callers should treat that as "no match". */
-export async function lookupCnpj(rawCnpj: string): Promise<CnpjLookupResult | null> {
+ * fill in on a Contact, or a reason it couldn't. Never throws. */
+export async function lookupCnpj(rawCnpj: string): Promise<CnpjLookupOutcome> {
   const digits = rawCnpj.replace(/\D/g, "");
-  if (digits.length !== 14) return null;
+  if (digits.length !== 14) return { ok: false, reason: "invalid" };
 
   let response: Response;
   try {
     response = await fetch(`${BRASILAPI_URL}/${digits}`, {
       headers: { Accept: "application/json" },
+      signal: AbortSignal.timeout(8000),
     });
   } catch {
-    return null;
+    return { ok: false, reason: "error" };
   }
-  if (!response.ok) return null;
+
+  if (response.status === 404) return { ok: false, reason: "not_found" };
+  if (!response.ok) return { ok: false, reason: "error" };
 
   const data = (await response.json().catch(() => null)) as BrasilApiCnpjResponse | null;
-  if (!data) return null;
+  if (!data) return { ok: false, reason: "error" };
 
   return {
-    accountName: data.razao_social || data.nome_fantasia || null,
-    phone: data.ddd_telefone_1 || null,
-    street: data.logradouro || null,
-    number: data.numero || null,
-    city: data.municipio || null,
-    state: data.uf || null,
-    postalCode: formatCep(data.cep),
+    ok: true,
+    result: {
+      accountName: data.razao_social || data.nome_fantasia || null,
+      phone: data.ddd_telefone_1 || null,
+      street: data.logradouro || null,
+      number: data.numero || null,
+      city: data.municipio || null,
+      state: data.uf || null,
+      postalCode: formatCep(data.cep),
+    },
   };
 }

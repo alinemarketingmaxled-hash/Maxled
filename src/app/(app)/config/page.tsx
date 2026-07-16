@@ -3,6 +3,7 @@ import { ptBR } from "date-fns/locale";
 import { requireView } from "@/lib/require-permission";
 import { canView, getPermissionMatrix, type Module } from "@/lib/permissions";
 import { listActivity } from "@/lib/activity-log";
+import { AppearanceSettings } from "@/components/shell/AppearanceSettings";
 import type { Role } from "@/generated/prisma/client";
 
 const ROLE_LABELS: Record<Role, string> = {
@@ -68,6 +69,8 @@ export default async function ConfigPage() {
           Permissões por módulo e registro de atividades
         </p>
       </div>
+
+      <AppearanceSettings />
 
       <div className="mb-4 rounded-xl border border-gold-deep/30 bg-surface p-4">
         <h3 className="mb-3 text-[13px] font-semibold text-ink">Permissões por perfil</h3>

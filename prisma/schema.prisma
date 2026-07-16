@@ -28,6 +28,7 @@ model User {
   goal2          Decimal?  @db.Decimal(12, 2)
   commissionPct1 Decimal?  @db.Decimal(5, 2)
   commissionPct2 Decimal?  @db.Decimal(5, 2)
+  personalGoal   Decimal?  @db.Decimal(12, 2)
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
   deletedAt      DateTime?

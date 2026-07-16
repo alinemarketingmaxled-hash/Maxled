@@ -214,7 +214,7 @@ export function KanbanBoard({
               />
               <button
                 onClick={handleAddColumn}
-                className="rounded-md bg-gold px-2 py-1.5 text-xs font-semibold text-black hover:bg-gold-bright"
+                className="rounded-md bg-gold-solid px-2 py-1.5 text-xs font-semibold text-black hover:bg-gold-solid-bright"
               >
                 Adicionar
               </button>

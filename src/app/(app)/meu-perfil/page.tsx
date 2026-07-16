@@ -18,7 +18,7 @@ export default async function MeuPerfilPage() {
 
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: session.user.id },
-    select: { name: true, avatarUrl: true, birthday: true, goal1: true, email: true, role: true },
+    select: { name: true, avatarUrl: true, birthday: true, personalGoal: true, email: true, role: true },
   });
 
   return (
@@ -35,7 +35,7 @@ export default async function MeuPerfilPage() {
           name: user.name,
           avatarUrl: user.avatarUrl,
           birthday: user.birthday,
-          goal1: user.goal1 ? Number(user.goal1) : null,
+          personalGoal: user.personalGoal ? Number(user.personalGoal) : null,
         }}
       />
     </div>

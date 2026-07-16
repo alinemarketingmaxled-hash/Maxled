@@ -13,7 +13,7 @@ import {
   listContacts,
   type ContactInput,
 } from "@/lib/contacts";
-import { lookupCnpj, type CnpjLookupResult } from "@/lib/cnpj-lookup";
+import { lookupCnpj, type CnpjLookupOutcome } from "@/lib/cnpj-lookup";
 import { prisma } from "@/lib/prisma";
 import { parseCsv, parseBrDate, type ImportSummary } from "@/lib/csv";
 
@@ -131,7 +131,7 @@ export async function updateContactAction(id: string, formData: FormData) {
 /** Backs the "Buscar CNPJ" button in ContactForm — looks up company data
  * from BrasilAPI (free, no key) so a bare CNPJ can auto-fill the rest of
  * the form instead of the user retyping it. */
-export async function lookupCnpjAction(cnpj: string): Promise<CnpjLookupResult | null> {
+export async function lookupCnpjAction(cnpj: string): Promise<CnpjLookupOutcome> {
   await requireEdit();
   return lookupCnpj(cnpj);
 }
