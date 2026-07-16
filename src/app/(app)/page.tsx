@@ -1,6 +1,15 @@
 import { requireView } from "@/lib/require-permission";
 import { canEdit } from "@/lib/permissions";
-import { getKpis, getRevenueByMonth, getFunnel, getGoalProgress, getTeamPerformance } from "@/lib/analytics";
+import {
+  getKpis,
+  getKpisForRange,
+  getRevenueByMonth,
+  getRevenueByMonthRange,
+  getFunnel,
+  getGoalProgress,
+  getTeamPerformance,
+  type DateRange,
+} from "@/lib/analytics";
 import { getDailyTasks } from "@/lib/calls";
 import { getOverdueTasks } from "@/lib/tasks";
 import { buildLineChart } from "@/lib/chart-utils";
@@ -14,22 +23,51 @@ function parseMonthParam(mes: string | undefined): Date {
   return new Date(year, month - 1, 1);
 }
 
+function toIsoDate(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+const MAX_RANGE_YEARS = 5;
+
+/** "ate" is treated as inclusive of the whole day, so the query's exclusive
+ * upper bound is the day after it. Clamped to a sane span so a fat-fingered
+ * date doesn't trigger a runaway multi-decade bucket query. */
+function parseRangeParams(de: string | undefined, ate: string | undefined): DateRange | null {
+  if (!de || !ate) return null;
+  const from = new Date(`${de}T00:00:00`);
+  const toRaw = new Date(`${ate}T00:00:00`);
+  if (Number.isNaN(from.getTime()) || Number.isNaN(toRaw.getTime())) return null;
+  let to = new Date(toRaw.getFullYear(), toRaw.getMonth(), toRaw.getDate() + 1);
+  if (to <= from) return null;
+  const maxTo = new Date(from.getFullYear() + MAX_RANGE_YEARS, from.getMonth(), from.getDate());
+  if (to > maxTo) to = maxTo;
+  return { from, to };
+}
+
 export default async function AnaliticaPage({
   searchParams,
 }: {
-  searchParams: Promise<{ mes?: string }>;
+  searchParams: Promise<{ mes?: string; de?: string; ate?: string }>;
 }) {
   const session = await requireView("analitica");
-  const { mes } = await searchParams;
+  const { mes, de, ate } = await searchParams;
+  const range = parseRangeParams(de, ate);
   const referenceDate = parseMonthParam(mes);
   const now = new Date();
   const selectedMonth = `${referenceDate.getFullYear()}-${String(referenceDate.getMonth() + 1).padStart(2, "0")}`;
   const isCurrentMonth =
     referenceDate.getFullYear() === now.getFullYear() && referenceDate.getMonth() === now.getMonth();
 
+  const defaultRangeTo = now;
+  const defaultRangeFrom = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+  const selectedRangeFrom = range ? toIsoDate(range.from) : toIsoDate(defaultRangeFrom);
+  const selectedRangeTo = range
+    ? toIsoDate(new Date(range.to.getFullYear(), range.to.getMonth(), range.to.getDate() - 1))
+    : toIsoDate(defaultRangeTo);
+
   const [kpis, revenueByMonth, funnel, goal, teamPerformance, dailyTasks, overdueTasks] = await Promise.all([
-    getKpis(session, referenceDate),
-    getRevenueByMonth(session),
+    range ? getKpisForRange(session, range) : getKpis(session, referenceDate),
+    range ? getRevenueByMonthRange(session, range.from, range.to) : getRevenueByMonth(session),
     getFunnel(session),
     getGoalProgress(session, referenceDate),
     getTeamPerformance(session, referenceDate),
@@ -86,6 +124,9 @@ export default async function AnaliticaPage({
         teamPerformance={teamPerformance}
         selectedMonth={selectedMonth}
         isCurrentMonth={isCurrentMonth}
+        periodMode={range ? "range" : "month"}
+        selectedRangeFrom={selectedRangeFrom}
+        selectedRangeTo={selectedRangeTo}
       />
     </div>
   );

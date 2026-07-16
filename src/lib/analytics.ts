@@ -57,32 +57,80 @@ export async function getKpis(session: Session, referenceDate: Date = new Date()
   };
 }
 
+const MONTH_LABELS = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+
+function buildMonthBuckets(from: Date, toExclusive: Date) {
+  const buckets = new Map<string, number>();
+  const cursor = new Date(from.getFullYear(), from.getMonth(), 1);
+  const end = new Date(toExclusive.getFullYear(), toExclusive.getMonth(), 1);
+  while (cursor < end) {
+    buckets.set(`${cursor.getFullYear()}-${cursor.getMonth()}`, 0);
+    cursor.setMonth(cursor.getMonth() + 1);
+  }
+  return buckets;
+}
+
 export async function getRevenueByMonth(session: Session, months = 6) {
-  const scope = dealScopeWhere(session);
   const now = new Date();
   const from = new Date(now.getFullYear(), now.getMonth() - (months - 1), 1);
+  return getRevenueByMonthRange(session, from, startOfNextMonth(now));
+}
 
+/** Same as getRevenueByMonth but buckets across an arbitrary caller-supplied
+ * range instead of always trailing 6 months from today — backs the
+ * Desempenho custom period picker. */
+export async function getRevenueByMonthRange(session: Session, from: Date, toExclusive: Date) {
+  const scope = dealScopeWhere(session);
   const deals = await prisma.deal.findMany({
-    where: { ...scope, deletedAt: null, stage: { isWon: true }, updatedAt: { gte: from } },
+    where: { ...scope, deletedAt: null, stage: { isWon: true }, updatedAt: { gte: from, lt: toExclusive } },
     select: { value: true, updatedAt: true },
   });
 
-  const buckets = new Map<string, number>();
-  for (let i = 0; i < months; i++) {
-    const d = new Date(now.getFullYear(), now.getMonth() - (months - 1 - i), 1);
-    buckets.set(`${d.getFullYear()}-${d.getMonth()}`, 0);
-  }
+  const buckets = buildMonthBuckets(from, toExclusive);
   for (const deal of deals) {
     const d = deal.updatedAt;
     const key = `${d.getFullYear()}-${d.getMonth()}`;
     if (buckets.has(key)) buckets.set(key, (buckets.get(key) ?? 0) + Number(deal.value));
   }
 
-  const labels = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
   return Array.from(buckets.entries()).map(([key, value]) => {
     const [, month] = key.split("-").map(Number);
-    return { label: labels[month], value };
+    return { label: MONTH_LABELS[month], value };
   });
+}
+
+export type DateRange = { from: Date; to: Date };
+
+/** Range-based counterpart to getKpis for the Desempenho custom period
+ * picker. Compares against the immediately preceding period of equal
+ * length (there's no "previous calendar month" equivalent for an
+ * arbitrary range). */
+export async function getKpisForRange(session: Session, range: DateRange) {
+  const scope = dealScopeWhere(session);
+  const { from, to } = range;
+  const durationMs = Math.max(0, to.getTime() - from.getTime());
+  const prevFrom = new Date(from.getTime() - durationMs);
+  const prevTo = from;
+
+  const [wonInRange, wonPrev, allInRange] = await Promise.all([
+    prisma.deal.findMany({
+      where: { ...scope, deletedAt: null, stage: { isWon: true }, updatedAt: { gte: from, lt: to } },
+      select: { value: true },
+    }),
+    prisma.deal.findMany({
+      where: { ...scope, deletedAt: null, stage: { isWon: true }, updatedAt: { gte: prevFrom, lt: prevTo } },
+      select: { value: true },
+    }),
+    prisma.deal.count({ where: { ...scope, deletedAt: null, createdAt: { gte: from, lt: to } } }),
+  ]);
+
+  const revenue = wonInRange.reduce((s, d) => s + Number(d.value), 0);
+  const revenuePrev = wonPrev.reduce((s, d) => s + Number(d.value), 0);
+  const revenueDelta = revenuePrev > 0 ? ((revenue - revenuePrev) / revenuePrev) * 100 : null;
+  const avgTicket = wonInRange.length > 0 ? revenue / wonInRange.length : 0;
+  const conversionRate = allInRange > 0 ? (wonInRange.length / allInRange) * 100 : 0;
+
+  return { revenue, revenueDelta, dealsWon: wonInRange.length, avgTicket, conversionRate };
 }
 
 export async function getFunnel(session: Session) {
