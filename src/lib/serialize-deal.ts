@@ -2,7 +2,16 @@ import type { Prisma } from "@/generated/prisma/client";
 
 type DealWithRelations = Prisma.DealGetPayload<{
   include: {
-    contact: { select: { firstName: true; lastName: true; accountName: true } };
+    contact: {
+      select: {
+        firstName: true;
+        lastName: true;
+        accountName: true;
+        phone: true;
+        mobile: true;
+        email: true;
+      };
+    };
     owner: { select: { name: true } };
     notes: true;
   };

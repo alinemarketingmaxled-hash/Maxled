@@ -5,8 +5,15 @@ import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { addDealNoteAction, toggleDealNoteFlagAction } from "@/app/(app)/negocios/actions";
+import { resizeImageToDataUrl } from "@/lib/resize-image";
 
-export type TimelineNote = { id: string; body: string | null; createdAt: string | Date; flagged: boolean };
+export type TimelineNote = {
+  id: string;
+  body: string | null;
+  createdAt: string | Date;
+  flagged: boolean;
+  attachmentUrl: string | null;
+};
 export type TimelineLog = {
   id: string;
   action: string;
@@ -41,23 +48,46 @@ export function DealNotesTimeline({
 }) {
   const router = useRouter();
   const [noteBody, setNoteBody] = useState("");
+  const [attachment, setAttachment] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [callNote, setCallNote] = useState("");
   const [savingCall, setSavingCall] = useState(false);
+  const [attachError, setAttachError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   async function refresh() {
     router.refresh();
     await onChanged?.();
   }
 
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setAttachError(null);
+    try {
+      setAttachment(await resizeImageToDataUrl(file, 800, 0.8));
+    } catch {
+      setAttachError("Não foi possível ler essa imagem. Tente outra foto/print.");
+    }
+  }
+
   async function handleAddNote(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!noteBody.trim() || saving) return;
+    if ((!noteBody.trim() && !attachment) || saving) return;
     setSaving(true);
+    setError(null);
     const fd = new FormData();
     fd.set("body", noteBody);
-    await addDealNoteAction(dealId, fd);
+    if (attachment) fd.set("attachmentUrl", attachment);
+    const response = await addDealNoteAction(dealId, fd);
+    if (response.error) {
+      setError(response.error);
+      setSaving(false);
+      return;
+    }
     setNoteBody("");
+    setAttachment(null);
     setSaving(false);
     await refresh();
   }
@@ -88,20 +118,44 @@ export function DealNotesTimeline({
       </h3>
 
       {canEdit && (
-        <form onSubmit={handleAddNote} className="mb-3 flex gap-2">
-          <input
-            value={noteBody}
-            onChange={(e) => setNoteBody(e.target.value)}
-            placeholder="Anotar print, contexto adicional…"
-            className="flex-1 rounded-md border border-gold-deep/40 bg-surface-2 px-2.5 py-1.5 text-xs text-ink outline-none focus:border-gold"
-          />
-          <button
-            type="submit"
-            disabled={saving}
-            className="rounded-md bg-gold-solid px-3 py-1.5 text-xs font-semibold text-black hover:bg-gold-solid-bright disabled:opacity-60"
-          >
-            Adicionar
-          </button>
+        <form onSubmit={handleAddNote} className="mb-3 flex flex-col gap-2">
+          {error && <p className="rounded-md bg-critical/10 px-2.5 py-1.5 text-[11px] text-critical">{error}</p>}
+          <div className="flex gap-2">
+            <input
+              value={noteBody}
+              onChange={(e) => setNoteBody(e.target.value)}
+              placeholder="Anotar print, contexto adicional…"
+              className="flex-1 rounded-md border border-gold-deep/40 bg-surface-2 px-2.5 py-1.5 text-xs text-ink outline-none focus:border-gold"
+            />
+            <label
+              title="Anexar foto/print"
+              className="flex cursor-pointer items-center rounded-md border border-gold-deep/40 bg-surface-2 px-2.5 text-xs text-ink-muted hover:text-gold-bright"
+            >
+              📎
+              <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
+            </label>
+            <button
+              type="submit"
+              disabled={saving}
+              className="rounded-md bg-gold-solid px-3 py-1.5 text-xs font-semibold text-black hover:bg-gold-solid-bright disabled:opacity-60"
+            >
+              Adicionar
+            </button>
+          </div>
+          {attachError && <p className="text-[11px] text-critical">{attachError}</p>}
+          {attachment && (
+            <div className="flex items-center gap-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={attachment} alt="Anexo" className="h-14 w-14 rounded-md object-cover" />
+              <button
+                type="button"
+                onClick={() => setAttachment(null)}
+                className="text-[11px] text-ink-faint hover:text-critical"
+              >
+                Remover anexo
+              </button>
+            </div>
+          )}
         </form>
       )}
 
@@ -133,6 +187,15 @@ export function DealNotesTimeline({
           >
             <div className="min-w-0 flex-1">
               {note.body}
+              {note.attachmentUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={note.attachmentUrl}
+                  alt="Anexo"
+                  onClick={() => window.open(note.attachmentUrl ?? undefined, "_blank")}
+                  className="mt-1.5 max-h-40 cursor-zoom-in rounded-md object-cover"
+                />
+              )}
               <div className="mt-1 text-[10px] text-ink-faint">
                 {formatDistanceToNow(new Date(note.createdAt), { addSuffix: true, locale: ptBR })}
               </div>
