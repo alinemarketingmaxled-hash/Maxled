@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getPermission, type Module } from "@/lib/permissions";
 import { logActivity } from "@/lib/activity-log";
 import { addBusinessDays } from "@/lib/business-days";
-import type { Prisma } from "@/generated/prisma/client";
+import type { Prisma, PaymentStatus } from "@/generated/prisma/client";
 
 /** See the note in lib/contacts.ts — "team" and "all" both see every deal until a team/hierarchy model exists. */
 function dealScopeWhere(session: Session, mod: Module = "negocios"): Prisma.DealWhereInput {
@@ -213,9 +213,15 @@ export async function moveDeal(session: Session, dealId: string, newStageId: str
   return updated;
 }
 
-export type DealUpdateInput = { name: string; value: number; ownerId: string };
+export type DealUpdateInput = {
+  name: string;
+  value: number;
+  ownerId: string;
+  paymentStatus: PaymentStatus;
+  paymentMethod: string | null;
+};
 
-/** Edits a deal's name/value/owner from the quick-view modal or the
+/** Edits a deal's name/value/owner/payment from the quick-view modal or the
  * standalone page. Stage changes go through moveDeal separately so the
  * "A caminho" automation still fires when an edit also changes stage. */
 export async function updateDeal(session: Session, dealId: string, data: DealUpdateInput) {
@@ -224,7 +230,13 @@ export async function updateDeal(session: Session, dealId: string, data: DealUpd
 
   const updated = await prisma.deal.update({
     where: { id: dealId },
-    data: { name: data.name, value: data.value, ownerId: data.ownerId },
+    data: {
+      name: data.name,
+      value: data.value,
+      ownerId: data.ownerId,
+      paymentStatus: data.paymentStatus,
+      paymentMethod: data.paymentMethod,
+    },
   });
   await logActivity({
     actorId: session.user.id,

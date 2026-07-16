@@ -6,6 +6,13 @@ import { getDeal } from "@/lib/deals";
 import { deleteDealAction } from "../actions";
 import { DealNotesTimeline } from "@/components/negocios/DealNotesTimeline";
 
+const PAYMENT_LABEL: Record<string, string> = { PENDENTE: "Pendente", PARCIAL: "Parcial", PAGO: "Pago" };
+const PAYMENT_CLASS: Record<string, string> = {
+  PENDENTE: "bg-warning/15 text-warning",
+  PARCIAL: "bg-gold/15 text-gold-bright",
+  PAGO: "bg-good/15 text-good",
+};
+
 export default async function DealDetailPage({
   params,
 }: {
@@ -45,6 +52,15 @@ export default async function DealDetailPage({
           <div>
             <span className="text-ink-faint">Proprietário: </span>
             <span className="text-ink">{deal.owner.name}</span>
+          </div>
+          <div>
+            <span className="text-ink-faint">Pagamento: </span>
+            <span
+              className={`rounded-full px-1.5 py-0.5 text-[11px] font-semibold ${PAYMENT_CLASS[deal.paymentStatus]}`}
+            >
+              {PAYMENT_LABEL[deal.paymentStatus]}
+            </span>
+            {deal.paymentMethod && <span className="ml-1.5 text-ink-faint">· {deal.paymentMethod}</span>}
           </div>
           {deal.onTheWayDeadline && (
             <div>

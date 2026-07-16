@@ -19,6 +19,9 @@ import {
   toggleDealNoteFlag,
 } from "@/lib/deals";
 import { assignableOwners } from "@/app/(app)/vendas/actions";
+import type { PaymentStatus } from "@/generated/prisma/client";
+
+const PAYMENT_STATUSES: PaymentStatus[] = ["PENDENTE", "PARCIAL", "PAGO"];
 
 async function requireEdit() {
   const session = await auth();
@@ -41,6 +44,8 @@ export type DealDetail = {
   contactName: string;
   accountName: string | null;
   onTheWayDeadline: string | null;
+  paymentStatus: PaymentStatus;
+  paymentMethod: string | null;
   notes: {
     id: string;
     body: string | null;
@@ -88,6 +93,8 @@ export async function getDealDetailAction(dealId: string): Promise<DealDetail | 
     contactName: `${deal.contact.firstName} ${deal.contact.lastName}`,
     accountName: deal.contact.accountName,
     onTheWayDeadline: deal.onTheWayDeadline ? deal.onTheWayDeadline.toISOString() : null,
+    paymentStatus: deal.paymentStatus,
+    paymentMethod: deal.paymentMethod,
     notes: deal.notes.map((n) => ({
       id: n.id,
       body: n.body,
@@ -115,15 +122,24 @@ export async function updateDealAction(
   const value = Number(formData.get("value"));
   const ownerId = (formData.get("ownerId") as string)?.trim();
   const stageId = (formData.get("stageId") as string)?.trim();
+  const paymentStatus = (formData.get("paymentStatus") as string)?.trim() as PaymentStatus;
+  const paymentMethod = (formData.get("paymentMethod") as string)?.trim() || null;
 
-  if (!name || Number.isNaN(value) || value <= 0 || !ownerId || !stageId) {
-    return { error: "Preencha nome, valor, vendedor e estágio corretamente." };
+  if (
+    !name ||
+    Number.isNaN(value) ||
+    value <= 0 ||
+    !ownerId ||
+    !stageId ||
+    !PAYMENT_STATUSES.includes(paymentStatus)
+  ) {
+    return { error: "Preencha nome, valor, vendedor, estágio e pagamento corretamente." };
   }
 
   try {
     const current = await getDeal(session, dealId);
     if (!current) return { error: "Negócio não encontrado ou sem permissão." };
-    await updateDeal(session, dealId, { name, value, ownerId });
+    await updateDeal(session, dealId, { name, value, ownerId, paymentStatus, paymentMethod });
     if (current.stageId !== stageId) {
       await moveDeal(session, dealId, stageId);
     }
