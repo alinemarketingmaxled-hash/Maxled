@@ -51,7 +51,13 @@ export function VendorForm({
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  function handleSubmit(formData: FormData) {
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    // onSubmit + manual FormData, not <form action={...}>: React resets
+    // uncontrolled fields after any form action resolves, even one that
+    // returns {error} — that was wiping the whole form (name, email, etc.)
+    // right when a duplicate-email error needed the user to fix and resubmit.
+    const formData = new FormData(e.currentTarget);
     setError(null);
     startTransition(async () => {
       const res = await action(formData);
@@ -65,7 +71,7 @@ export function VendorForm({
   }
 
   return (
-    <form action={handleSubmit} className="flex flex-col gap-4 rounded-xl border border-gold-deep/30 bg-surface p-5">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4 rounded-xl border border-gold-deep/30 bg-surface p-5">
       <div className="grid grid-cols-2 gap-3">
         <Field label="Nome" name="name" defaultValue={vendor?.name} required />
         <Field label="E-mail" name="email" type="email" defaultValue={vendor?.email} required />

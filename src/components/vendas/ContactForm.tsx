@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import type { Contact } from "@/generated/prisma/client";
 import { lookupCnpjAction } from "@/app/(app)/vendas/actions";
@@ -14,6 +15,7 @@ function Field({
   value,
   onChange,
   type = "text",
+  required,
 }: {
   label: string;
   name: string;
@@ -21,6 +23,7 @@ function Field({
   value?: string;
   onChange?: (value: string) => void;
   type?: string;
+  required?: boolean;
 }) {
   const controlled = value !== undefined;
   return (
@@ -29,6 +32,7 @@ function Field({
       <input
         name={name}
         type={type}
+        required={required}
         {...(controlled
           ? { value, onChange: (e: React.ChangeEvent<HTMLInputElement>) => onChange?.(e.target.value) }
           : { defaultValue: defaultValue ?? "" })}
@@ -83,8 +87,9 @@ export function ContactForm({
 }: {
   contact?: Contact | null;
   owners: Owner[];
-  action: (formData: FormData) => void | Promise<void>;
+  action: (formData: FormData) => Promise<{ error?: string; id?: string; ok?: boolean }>;
 }) {
+  const router = useRouter();
   const cancelHref = contact ? `/vendas?id=${contact.id}` : "/vendas";
   const showOwnerPicker = owners.length > 1;
 
@@ -98,6 +103,34 @@ export function ContactForm({
   const [postalCode, setPostalCode] = useState(contact?.postalCode ?? "");
   const [cnpjError, setCnpjError] = useState<string | null>(null);
   const [isLookingUp, startLookup] = useTransition();
+  const [formError, setFormError] = useState<string | null>(null);
+  const [isSaving, startSave] = useTransition();
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    // Deliberately onSubmit + manual FormData, not <form action={...}>: React
+    // resets uncontrolled fields after any form action resolves — including
+    // one that returns {error} rather than throwing — which was wiping the
+    // whole form (including firstName/lastName) right when the user needed
+    // to fix and resubmit it.
+    const formData = new FormData(e.currentTarget);
+    setFormError(null);
+    startSave(async () => {
+      let response;
+      try {
+        response = await action(formData);
+      } catch {
+        setFormError("Não foi possível salvar o cliente agora. Tente novamente em instantes.");
+        return;
+      }
+      if (response.error) {
+        setFormError(response.error);
+        return;
+      }
+      router.push(response.id ? `/vendas?id=${response.id}` : cancelHref);
+      router.refresh();
+    });
+  }
 
   function handleLookupCnpj() {
     setCnpjError(null);
@@ -136,7 +169,7 @@ export function ContactForm({
   }
 
   return (
-    <form action={action} className="flex flex-col gap-6">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-6">
       <section>
         <h4 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-gold">
           Identificação
@@ -169,8 +202,8 @@ export function ContactForm({
               { value: "JURIDICA", label: "Jurídica" },
             ]}
           />
-          <Field label="Nome" name="firstName" defaultValue={contact?.firstName} />
-          <Field label="Sobrenome" name="lastName" defaultValue={contact?.lastName} />
+          <Field label="Nome" name="firstName" defaultValue={contact?.firstName} required />
+          <Field label="Sobrenome" name="lastName" defaultValue={contact?.lastName} required />
           <div className="col-span-2 flex items-end gap-2">
             <div className="flex-1">
               <Field label="CNPJ" name="cnpj" value={cnpj} onChange={setCnpj} />
@@ -267,6 +300,12 @@ export function ContactForm({
         </label>
       </section>
 
+      {formError && (
+        <div className="rounded-lg border border-critical/40 bg-critical/10 px-3 py-2 text-[12.5px] text-critical">
+          {formError}
+        </div>
+      )}
+
       <div className="flex justify-end gap-2">
         <Link
           href={cancelHref}
@@ -276,9 +315,10 @@ export function ContactForm({
         </Link>
         <button
           type="submit"
-          className="rounded-lg bg-gold-solid px-5 py-2.5 text-sm font-semibold text-black transition-colors hover:bg-gold-solid-bright"
+          disabled={isSaving}
+          className="rounded-lg bg-gold-solid px-5 py-2.5 text-sm font-semibold text-black transition-colors hover:bg-gold-solid-bright disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {contact ? "Salvar alterações" : "Criar contato"}
+          {isSaving ? "Salvando…" : contact ? "Salvar alterações" : "Criar contato"}
         </button>
       </div>
     </form>
