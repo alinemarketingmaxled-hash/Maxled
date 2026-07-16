@@ -3,10 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
 import { canEdit, canView } from "@/lib/permissions";
 import {
   createDeal,
   moveDeal,
+  updateDeal,
   addDealNote,
   softDeleteDeal,
   createStage,
@@ -16,6 +18,7 @@ import {
   getDeal,
   toggleDealNoteFlag,
 } from "@/lib/deals";
+import { assignableOwners } from "@/app/(app)/vendas/actions";
 
 async function requireEdit() {
   const session = await auth();
@@ -30,7 +33,9 @@ export type DealDetail = {
   id: string;
   name: string;
   value: number;
+  stageId: string;
   stageName: string;
+  ownerId: string;
   ownerName: string | null;
   contactId: string;
   contactName: string;
@@ -49,6 +54,8 @@ export type DealDetail = {
     actorName: string | null;
     createdAt: string;
   }[];
+  stages: { id: string; name: string }[];
+  owners: { id: string; name: string | null }[];
 };
 
 /** Backs the deal-detail modal opened by clicking a card on the Kanban
@@ -61,11 +68,21 @@ export async function getDealDetailAction(dealId: string): Promise<DealDetail | 
   const deal = await getDeal(session, dealId);
   if (!deal) return null;
 
+  const [owners, pipeline] = await Promise.all([
+    assignableOwners(session),
+    prisma.pipeline.findFirst({
+      where: { isDefault: true },
+      include: { stages: { orderBy: { order: "asc" } } },
+    }),
+  ]);
+
   return {
     id: deal.id,
     name: deal.name,
     value: Number(deal.value),
+    stageId: deal.stageId,
     stageName: deal.stage.name,
+    ownerId: deal.ownerId,
     ownerName: deal.owner.name,
     contactId: deal.contactId,
     contactName: `${deal.contact.firstName} ${deal.contact.lastName}`,
@@ -84,10 +101,40 @@ export async function getDealDetailAction(dealId: string): Promise<DealDetail | 
       actorName: l.actor.name,
       createdAt: l.createdAt.toISOString(),
     })),
+    stages: pipeline?.stages.map((s) => ({ id: s.id, name: s.name })) ?? [],
+    owners: owners.map((o) => ({ id: o.id, name: o.name })),
   };
 }
 
-export async function createDealAction(formData: FormData) {
+export async function updateDealAction(
+  dealId: string,
+  formData: FormData,
+): Promise<{ error?: string; ok?: boolean }> {
+  const session = await requireEdit();
+  const name = (formData.get("name") as string)?.trim();
+  const value = Number(formData.get("value"));
+  const ownerId = (formData.get("ownerId") as string)?.trim();
+  const stageId = (formData.get("stageId") as string)?.trim();
+
+  if (!name || Number.isNaN(value) || value <= 0 || !ownerId || !stageId) {
+    return { error: "Preencha nome, valor, vendedor e estágio corretamente." };
+  }
+
+  try {
+    const current = await getDeal(session, dealId);
+    if (!current) return { error: "Negócio não encontrado ou sem permissão." };
+    await updateDeal(session, dealId, { name, value, ownerId });
+    if (current.stageId !== stageId) {
+      await moveDeal(session, dealId, stageId);
+    }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erro ao editar o negócio." };
+  }
+  revalidatePath("/negocios");
+  return { ok: true };
+}
+
+export async function createDealAction(formData: FormData): Promise<{ error?: string; ok?: boolean }> {
   const session = await requireEdit();
   const contactId = formData.get("contactId") as string;
   const stageId = formData.get("stageId") as string;
@@ -95,13 +142,17 @@ export async function createDealAction(formData: FormData) {
   const value = Number(formData.get("value"));
   const ownerId = (formData.get("ownerId") as string) || session.user.id;
 
-  if (!contactId || !stageId || !name || Number.isNaN(value)) {
-    throw new Error("Preencha contato, nome e valor do negócio.");
+  if (!contactId || !stageId || !name || Number.isNaN(value) || value <= 0) {
+    return { error: "Selecione a empresa/cliente, o estágio e informe um valor válido." };
   }
 
-  await createDeal(session, { ownerId, contactId, stageId, name, value });
+  try {
+    await createDeal(session, { ownerId, contactId, stageId, name, value });
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erro ao criar o negócio." };
+  }
   revalidatePath("/negocios");
-  redirect("/negocios");
+  return { ok: true };
 }
 
 /** Backs the "Registrar venda antiga" form on a client's Histórico tab —

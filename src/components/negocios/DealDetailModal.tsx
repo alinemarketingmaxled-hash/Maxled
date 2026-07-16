@@ -2,7 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getDealDetailAction, deleteDealAction, type DealDetail } from "@/app/(app)/negocios/actions";
+import {
+  getDealDetailAction,
+  updateDealAction,
+  deleteDealAction,
+  type DealDetail,
+} from "@/app/(app)/negocios/actions";
 import { DealNotesTimeline } from "@/components/negocios/DealNotesTimeline";
 
 function currency(value: number) {
@@ -21,6 +26,9 @@ export function DealDetailModal({
   const router = useRouter();
   // undefined = still loading, null = fetched but not found/no permission.
   const [detail, setDetail] = useState<DealDetail | null | undefined>(undefined);
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
   const loading = detail === undefined;
 
   useEffect(() => {
@@ -45,6 +53,30 @@ export function DealDetailModal({
     if (!detail || !confirm(`Excluir o negócio "${detail.name}"?`)) return;
     await deleteDealAction(dealId);
     onClose();
+    router.refresh();
+  }
+
+  async function handleSaveEdit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setSaving(true);
+    setEditError(null);
+    const formData = new FormData(e.currentTarget);
+    let response;
+    try {
+      response = await updateDealAction(dealId, formData);
+    } catch {
+      setEditError("Não foi possível salvar agora. Tente novamente em instantes.");
+      setSaving(false);
+      return;
+    }
+    if (response.error) {
+      setEditError(response.error);
+      setSaving(false);
+      return;
+    }
+    setDetail(await getDealDetailAction(dealId));
+    setEditing(false);
+    setSaving(false);
     router.refresh();
   }
 
@@ -73,7 +105,7 @@ export function DealDetailModal({
         {loading && <p className="text-xs text-ink-faint">Carregando…</p>}
         {!loading && !detail && <p className="text-xs text-ink-faint">Negócio não encontrado.</p>}
 
-        {detail && (
+        {detail && !editing && (
           <>
             <div className="mb-4 flex items-start justify-between gap-4 pr-6">
               <div>
@@ -91,7 +123,7 @@ export function DealDetailModal({
 
             <div className="grid grid-cols-2 gap-3 border-t border-dashed border-gold-deep/25 pt-3 text-[12.5px]">
               <div>
-                <span className="text-ink-faint">Proprietário: </span>
+                <span className="text-ink-faint">Vendedor: </span>
                 <span className="text-ink">{detail.ownerName}</span>
               </div>
               {detail.onTheWayDeadline && (
@@ -105,7 +137,13 @@ export function DealDetailModal({
             </div>
 
             {canEdit && (
-              <div className="mt-4 border-t border-gold-deep/25 pt-4">
+              <div className="mt-4 flex gap-2 border-t border-gold-deep/25 pt-4">
+                <button
+                  onClick={() => setEditing(true)}
+                  className="rounded-lg border border-gold-deep px-3.5 py-1.5 text-xs font-semibold text-ink hover:border-gold"
+                >
+                  Editar
+                </button>
                 <button
                   onClick={handleDelete}
                   className="rounded-lg border border-critical/50 px-3.5 py-1.5 text-xs font-semibold text-critical hover:border-critical"
@@ -125,6 +163,89 @@ export function DealDetailModal({
               />
             </div>
           </>
+        )}
+
+        {detail && editing && (
+          <form onSubmit={handleSaveEdit} className="flex flex-col gap-3 pr-6">
+            <h2 className="mb-1 font-display text-lg text-ink">Editar negócio</h2>
+
+            {editError && (
+              <p className="rounded-md bg-critical/10 px-3 py-2 text-xs text-critical">{editError}</p>
+            )}
+
+            <label className="flex flex-col gap-1 text-xs">
+              <span className="text-ink-faint">Nome do negócio</span>
+              <input
+                name="name"
+                defaultValue={detail.name}
+                required
+                className="rounded-md border border-gold-deep/40 bg-surface-2 px-2.5 py-2 text-sm text-ink outline-none focus:border-gold"
+              />
+            </label>
+
+            <label className="flex flex-col gap-1 text-xs">
+              <span className="text-ink-faint">Valor (R$)</span>
+              <input
+                name="value"
+                type="number"
+                step="0.01"
+                min="0"
+                defaultValue={detail.value}
+                required
+                className="rounded-md border border-gold-deep/40 bg-surface-2 px-2.5 py-2 text-sm text-ink outline-none focus:border-gold"
+              />
+            </label>
+
+            <label className="flex flex-col gap-1 text-xs">
+              <span className="text-ink-faint">Vendedor</span>
+              <select
+                name="ownerId"
+                defaultValue={detail.ownerId}
+                className="rounded-md border border-gold-deep/40 bg-surface-2 px-2.5 py-2 text-sm text-ink outline-none focus:border-gold"
+              >
+                {detail.owners.map((o) => (
+                  <option key={o.id} value={o.id}>
+                    {o.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="flex flex-col gap-1 text-xs">
+              <span className="text-ink-faint">Estágio</span>
+              <select
+                name="stageId"
+                defaultValue={detail.stageId}
+                className="rounded-md border border-gold-deep/40 bg-surface-2 px-2.5 py-2 text-sm text-ink outline-none focus:border-gold"
+              >
+                {detail.stages.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <div className="mt-1 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setEditing(false);
+                  setEditError(null);
+                }}
+                className="rounded-lg border border-gold-deep px-3.5 py-1.5 text-xs font-semibold text-ink"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={saving}
+                className="rounded-lg bg-gold-solid px-3.5 py-1.5 text-xs font-semibold text-black transition-colors hover:bg-gold-solid-bright disabled:opacity-60"
+              >
+                {saving ? "Salvando…" : "Salvar"}
+              </button>
+            </div>
+          </form>
         )}
       </div>
     </div>

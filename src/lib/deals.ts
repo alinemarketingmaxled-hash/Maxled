@@ -213,6 +213,30 @@ export async function moveDeal(session: Session, dealId: string, newStageId: str
   return updated;
 }
 
+export type DealUpdateInput = { name: string; value: number; ownerId: string };
+
+/** Edits a deal's name/value/owner from the quick-view modal or the
+ * standalone page. Stage changes go through moveDeal separately so the
+ * "A caminho" automation still fires when an edit also changes stage. */
+export async function updateDeal(session: Session, dealId: string, data: DealUpdateInput) {
+  const deal = await prisma.deal.findFirst({ where: { id: dealId, ...dealScopeWhere(session) } });
+  if (!deal) throw new Error("Negócio não encontrado ou sem permissão.");
+
+  const updated = await prisma.deal.update({
+    where: { id: dealId },
+    data: { name: data.name, value: data.value, ownerId: data.ownerId },
+  });
+  await logActivity({
+    actorId: session.user.id,
+    entityType: "Deal",
+    entityId: dealId,
+    action: "updated",
+    dealId,
+    diff: { note: "Negócio editado" } as Prisma.InputJsonValue,
+  });
+  return updated;
+}
+
 const MAX_ATTACHMENT_LENGTH = 800_000;
 
 export async function addDealNote(
