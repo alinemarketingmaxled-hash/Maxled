@@ -135,3 +135,14 @@ body {
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-10px) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(160px) rotate(360deg);
+    opacity: 0;
+  }
+}

@@ -23,7 +23,11 @@ import {
   toggleInstallmentPaid,
   deleteInstallment,
 } from "@/lib/deals";
+import { createTask, toggleTask, deleteTask, getDealTasks } from "@/lib/tasks";
 import { assignableOwners } from "@/app/(app)/vendas/actions";
+import type { PaymentStatus } from "@/generated/prisma/client";
+
+const PAYMENT_STATUSES: PaymentStatus[] = ["PENDENTE", "PARCIAL", "PAGO"];
 
 async function requireEdit() {
   const session = await auth();
@@ -46,6 +50,8 @@ export type DealDetail = {
   contactName: string;
   accountName: string | null;
   onTheWayDeadline: string | null;
+  paymentStatus: PaymentStatus;
+  paymentMethod: string | null;
   notes: {
     id: string;
     body: string | null;
@@ -62,6 +68,7 @@ export type DealDetail = {
   stages: { id: string; name: string }[];
   owners: { id: string; name: string | null }[];
   installments: { id: string; number: number; value: number; dueDate: string; paid: boolean }[];
+  scheduledMessages: { id: string; title: string; dueDate: string | null; done: boolean }[];
 };
 
 /** Backs the deal-detail modal opened by clicking a card on the Kanban
@@ -74,13 +81,14 @@ export async function getDealDetailAction(dealId: string): Promise<DealDetail | 
   const deal = await getDeal(session, dealId);
   if (!deal) return null;
 
-  const [owners, pipeline, installments] = await Promise.all([
+  const [owners, pipeline, installments, scheduledMessages] = await Promise.all([
     assignableOwners(session),
     prisma.pipeline.findFirst({
       where: { isDefault: true },
       include: { stages: { orderBy: { order: "asc" } } },
     }),
     getDealInstallments(session, dealId),
+    getDealTasks(session, dealId),
   ]);
 
   return {
@@ -95,6 +103,8 @@ export async function getDealDetailAction(dealId: string): Promise<DealDetail | 
     contactName: `${deal.contact.firstName} ${deal.contact.lastName}`,
     accountName: deal.contact.accountName,
     onTheWayDeadline: deal.onTheWayDeadline ? deal.onTheWayDeadline.toISOString() : null,
+    paymentStatus: deal.paymentStatus,
+    paymentMethod: deal.paymentMethod,
     notes: deal.notes.map((n) => ({
       id: n.id,
       body: n.body,
@@ -117,6 +127,12 @@ export async function getDealDetailAction(dealId: string): Promise<DealDetail | 
       dueDate: i.dueDate.toISOString(),
       paid: i.paid,
     })),
+    scheduledMessages: scheduledMessages.map((t) => ({
+      id: t.id,
+      title: t.title,
+      dueDate: t.dueDate ? t.dueDate.toISOString() : null,
+      done: t.done,
+    })),
   };
 }
 
@@ -129,15 +145,24 @@ export async function updateDealAction(
   const value = Number(formData.get("value"));
   const ownerId = (formData.get("ownerId") as string)?.trim();
   const stageId = (formData.get("stageId") as string)?.trim();
+  const paymentStatus = (formData.get("paymentStatus") as string)?.trim() as PaymentStatus;
+  const paymentMethod = (formData.get("paymentMethod") as string)?.trim() || null;
 
-  if (!name || Number.isNaN(value) || value <= 0 || !ownerId || !stageId) {
-    return { error: "Preencha nome, valor, vendedor e estágio corretamente." };
+  if (
+    !name ||
+    Number.isNaN(value) ||
+    value <= 0 ||
+    !ownerId ||
+    !stageId ||
+    !PAYMENT_STATUSES.includes(paymentStatus)
+  ) {
+    return { error: "Preencha nome, valor, vendedor, estágio e pagamento corretamente." };
   }
 
   try {
     const current = await getDeal(session, dealId);
     if (!current) return { error: "Negócio não encontrado ou sem permissão." };
-    await updateDeal(session, dealId, { name, value, ownerId });
+    await updateDeal(session, dealId, { name, value, ownerId, paymentStatus, paymentMethod });
     if (current.stageId !== stageId) {
       await moveDeal(session, dealId, stageId);
     }
@@ -310,4 +335,43 @@ export async function deleteInstallmentAction(installmentId: string) {
   const session = await requireEdit();
   await deleteInstallment(session, installmentId);
   revalidatePath("/negocios");
+}
+
+/** Backs the "Agendar mensagem" mini-form on a deal's quick-view — schedules
+ * a follow-up (a Task tied to this deal via dealId) that also shows up in
+ * Analítica → Atrasos once it's overdue, same as any other agenda task. */
+export async function createDealMessageAction(
+  dealId: string,
+  formData: FormData,
+): Promise<{ error?: string; ok?: boolean }> {
+  const session = await requireEdit();
+  const title = (formData.get("title") as string)?.trim();
+  const dueDateStr = (formData.get("dueDate") as string)?.trim();
+  if (!title || !dueDateStr) return { error: "Escreva a mensagem e escolha uma data." };
+
+  const dueDate = new Date(dueDateStr);
+  if (Number.isNaN(dueDate.getTime())) return { error: "Data inválida." };
+
+  try {
+    await createTask(session, title, dueDate, dealId);
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erro ao agendar a mensagem." };
+  }
+  revalidatePath("/negocios");
+  revalidatePath("/");
+  return { ok: true };
+}
+
+export async function toggleDealMessageAction(taskId: string) {
+  const session = await requireEdit();
+  await toggleTask(session, taskId);
+  revalidatePath("/negocios");
+  revalidatePath("/");
+}
+
+export async function deleteDealMessageAction(taskId: string) {
+  const session = await requireEdit();
+  await deleteTask(session, taskId);
+  revalidatePath("/negocios");
+  revalidatePath("/");
 }

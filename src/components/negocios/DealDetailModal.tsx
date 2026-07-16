@@ -10,10 +10,22 @@ import {
 } from "@/app/(app)/negocios/actions";
 import { DealNotesTimeline } from "@/components/negocios/DealNotesTimeline";
 import { DealInstallments } from "@/components/negocios/DealInstallments";
+import { DealScheduledMessages } from "@/components/negocios/DealScheduledMessages";
 
 function currency(value: number) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
+
+const PAYMENT_LABEL: Record<string, string> = {
+  PENDENTE: "Pendente",
+  PARCIAL: "Parcial",
+  PAGO: "Pago",
+};
+const PAYMENT_CLASS: Record<string, string> = {
+  PENDENTE: "bg-warning/15 text-warning",
+  PARCIAL: "bg-gold/15 text-gold-bright",
+  PAGO: "bg-good/15 text-good",
+};
 
 export function DealDetailModal({
   dealId,
@@ -127,6 +139,17 @@ export function DealDetailModal({
                 <span className="text-ink-faint">Vendedor: </span>
                 <span className="text-ink">{detail.ownerName}</span>
               </div>
+              <div>
+                <span className="text-ink-faint">Pagamento: </span>
+                <span
+                  className={`rounded-full px-1.5 py-0.5 text-[11px] font-semibold ${PAYMENT_CLASS[detail.paymentStatus]}`}
+                >
+                  {PAYMENT_LABEL[detail.paymentStatus]}
+                </span>
+                {detail.paymentMethod && (
+                  <span className="ml-1.5 text-ink-faint">· {detail.paymentMethod}</span>
+                )}
+              </div>
               {detail.onTheWayDeadline && (
                 <div>
                   <span className="text-ink-faint">Prazo (a caminho): </span>
@@ -158,6 +181,15 @@ export function DealDetailModal({
               <DealInstallments
                 dealId={detail.id}
                 installments={detail.installments}
+                canEdit={canEdit}
+                onChanged={async () => setDetail(await getDealDetailAction(dealId))}
+              />
+            </div>
+
+            <div className="mt-5 border-t border-gold-deep/25 pt-4">
+              <DealScheduledMessages
+                dealId={detail.id}
+                messages={detail.scheduledMessages}
                 canEdit={canEdit}
                 onChanged={async () => setDetail(await getDealDetailAction(dealId))}
               />
@@ -235,6 +267,39 @@ export function DealDetailModal({
                 ))}
               </select>
             </label>
+
+            <div className="grid grid-cols-2 gap-3">
+              <label className="flex flex-col gap-1 text-xs">
+                <span className="text-ink-faint">Status do pagamento</span>
+                <select
+                  name="paymentStatus"
+                  defaultValue={detail.paymentStatus}
+                  className="rounded-md border border-gold-deep/40 bg-surface-2 px-2.5 py-2 text-sm text-ink outline-none focus:border-gold"
+                >
+                  <option value="PENDENTE">Pendente</option>
+                  <option value="PARCIAL">Parcial</option>
+                  <option value="PAGO">Pago</option>
+                </select>
+              </label>
+              <label className="flex flex-col gap-1 text-xs">
+                <span className="text-ink-faint">Forma de pagamento</span>
+                <input
+                  name="paymentMethod"
+                  list="payment-methods"
+                  defaultValue={detail.paymentMethod ?? ""}
+                  placeholder="Ex.: Pix, boleto…"
+                  className="rounded-md border border-gold-deep/40 bg-surface-2 px-2.5 py-2 text-sm text-ink outline-none focus:border-gold"
+                />
+                <datalist id="payment-methods">
+                  <option value="À vista" />
+                  <option value="Pix" />
+                  <option value="Boleto" />
+                  <option value="Cartão" />
+                  <option value="Transferência" />
+                  <option value="Parcelado" />
+                </datalist>
+              </label>
+            </div>
 
             <div className="mt-1 flex justify-end gap-2">
               <button

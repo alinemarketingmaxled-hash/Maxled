@@ -25,6 +25,12 @@ function currency(value: number) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
+const PAYMENT_LABEL: Record<string, string> = { PARCIAL: "Parcial", PAGO: "Pago" };
+const PAYMENT_CLASS: Record<string, string> = {
+  PARCIAL: "bg-gold/15 text-gold-bright",
+  PAGO: "bg-good/15 text-good",
+};
+
 function DealCard({
   deal,
   canEdit,
@@ -68,7 +74,16 @@ function DealCard({
           {deal.contact.accountName ?? `${deal.contact.firstName} ${deal.contact.lastName}`}
         </div>
       </div>
-      <div className="text-[13px] font-bold text-gold-bright">{currency(deal.value)}</div>
+      <div className="flex items-center gap-1.5">
+        <span className="text-[13px] font-bold text-gold-bright">{currency(deal.value)}</span>
+        {PAYMENT_LABEL[deal.paymentStatus] && (
+          <span
+            className={`rounded-full px-1.5 py-0.5 text-[9.5px] font-semibold ${PAYMENT_CLASS[deal.paymentStatus]}`}
+          >
+            {PAYMENT_LABEL[deal.paymentStatus]}
+          </span>
+        )}
+      </div>
       <div className="flex items-center gap-2 text-[10.5px] text-ink-faint">
         <span className="flex h-[18px] w-[18px] items-center justify-center rounded-full border border-gold-deep bg-surface-3 text-[8.5px] font-bold text-gold-bright">
           {initials}

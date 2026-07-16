@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { MonthPicker } from "@/components/home/MonthPicker";
 import { DateRangePicker } from "@/components/home/DateRangePicker";
 import { InProgressDealsPanel, type InProgressDeal } from "@/components/home/InProgressDealsPanel";
+import { GoalProgressBar } from "@/components/home/GoalProgressBar";
 import type { TaskRow } from "@/components/agenda/TaskList";
 
 type Kpis = {
@@ -64,7 +65,6 @@ export function AnaliticaTabs({
   commissionTiers,
   funnel,
   goal,
-  goal1Pct,
   personalGoalPct,
   teamPerformance,
   selectedMonth,
@@ -85,7 +85,6 @@ export function AnaliticaTabs({
   commissionTiers: CommissionTier[];
   funnel: FunnelStage[];
   goal: Goal;
-  goal1Pct: number;
   personalGoalPct: number;
   teamPerformance: SellerPerformance[] | null;
   selectedMonth: string;
@@ -263,42 +262,24 @@ export function AnaliticaTabs({
             {goal ? (
               <div className="flex flex-col gap-3">
                 {goal.goal1 !== null && (
-                  <div className="flex items-center gap-4">
-                    <div
-                      className="relative h-[110px] w-[110px] flex-none rounded-full"
-                      style={{
-                        background: `conic-gradient(var(--gold-bright) 0% ${goal1Pct}%, var(--black-surface-2) ${goal1Pct}% 100%)`,
-                      }}
-                    >
-                      <div className="absolute inset-[10px] flex flex-col items-center justify-center rounded-full bg-surface">
-                        <b className="text-lg text-ink">{goal1Pct}%</b>
-                        <small className="text-[9px] uppercase text-ink-faint">da meta 1</small>
-                      </div>
-                    </div>
-                    <div className="flex flex-col gap-1 text-[11.5px]">
-                      <div className="flex justify-between gap-3">
-                        <span className="text-ink-faint">Meta 1</span>
-                        <span className="text-ink">{currency(goal.goal1)}</span>
-                      </div>
-                      <div className="flex justify-between gap-3">
-                        <span className="text-ink-faint">Atingido</span>
-                        <span className="text-ink">{currency(goal.achieved)}</span>
-                      </div>
-                      {goal.goal2 && (
-                        <div className="flex justify-between gap-3">
-                          <span className="text-ink-faint">Meta 2</span>
-                          <span className="text-ink">{currency(goal.goal2)}</span>
-                        </div>
-                      )}
-                      <div className="mt-1 flex justify-between gap-3 border-t border-dashed border-gold-deep/25 pt-1">
-                        <span className="text-ink-faint">
-                          Comissão do mês
-                          {goal.effectiveCommissionPct !== null && ` (${goal.effectiveCommissionPct.toFixed(2)}%)`}
-                        </span>
-                        <span className="font-semibold text-gold-bright">
-                          {currency(goal.commissionEarned)}
-                        </span>
-                      </div>
+                  <div>
+                    <GoalProgressBar
+                      achieved={goal.achieved}
+                      goal1={goal.goal1}
+                      goal2={goal.goal2}
+                      commissionPct1={goal.commissionPct1}
+                      commissionPct2={goal.commissionPct2}
+                    />
+                    <div className="mt-1 flex justify-between gap-3 border-t border-dashed border-gold-deep/25 pt-2 text-[11.5px]">
+                      <span className="text-ink-faint">Comissão do mês</span>
+                      <span className="font-semibold text-gold-bright">
+                        {currency(goal.commissionEarned)}
+                        {goal.effectiveCommissionPct !== null && (
+                          <span className="ml-1 text-[10.5px] font-normal text-ink-faint">
+                            ({goal.effectiveCommissionPct.toFixed(2)}%)
+                          </span>
+                        )}
+                      </span>
                     </div>
                   </div>
                 )}

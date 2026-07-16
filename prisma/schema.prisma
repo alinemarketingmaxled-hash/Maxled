@@ -64,6 +64,12 @@ enum CrmStatus {
   INATIVO
 }
 
+enum PaymentStatus {
+  PENDENTE
+  PARCIAL
+  PAGO
+}
+
 model Contact {
   id     String @id @default(cuid())
   ownerId String
@@ -153,6 +159,9 @@ model Deal {
   name  String
   value Decimal @db.Decimal(12, 2)
 
+  paymentStatus PaymentStatus @default(PENDENTE)
+  paymentMethod String?
+
   onTheWaySince    DateTime?
   onTheWayDeadline DateTime?
   postSaleSentAt   DateTime?
@@ -161,9 +170,10 @@ model Deal {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  notes        DealNote[]
-  activityLogs ActivityLog[]
-  installments DealInstallment[]
+  notes             DealNote[]
+  activityLogs      ActivityLog[]
+  installments      DealInstallment[]
+  scheduledMessages Task[]
 
   @@index([ownerId])
   @@index([contactId])
@@ -260,6 +270,8 @@ model Task {
   id        String    @id @default(cuid())
   ownerId   String
   owner     User      @relation(fields: [ownerId], references: [id])
+  dealId    String?
+  deal      Deal?     @relation(fields: [dealId], references: [id])
   title     String
   dueDate   DateTime?
   done      Boolean   @default(false)
@@ -267,4 +279,5 @@ model Task {
   createdAt DateTime  @default(now())
 
   @@index([ownerId])
+  @@index([dealId])
 }
