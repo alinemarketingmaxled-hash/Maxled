@@ -92,6 +92,38 @@ function DealCard({
           </span>
         )}
       </div>
+      {(deal.contact.phone || deal.contact.mobile || deal.contact.email) && (
+        <div className="flex items-center gap-1.5 border-t border-gold-deep/15 pt-1.5">
+          {(deal.contact.phone || deal.contact.mobile) && (
+            <button
+              type="button"
+              title={`Ligar para ${deal.contact.phone ?? deal.contact.mobile}`}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                window.location.href = `tel:${deal.contact.phone ?? deal.contact.mobile}`;
+              }}
+              className="flex items-center gap-1 rounded-md bg-surface-3 px-1.5 py-0.5 text-[10px] text-ink-muted hover:text-gold-bright"
+            >
+              📞 Ligar
+            </button>
+          )}
+          {deal.contact.email && (
+            <button
+              type="button"
+              title={`Enviar e-mail para ${deal.contact.email}`}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                window.location.href = `mailto:${deal.contact.email}`;
+              }}
+              className="flex items-center gap-1 rounded-md bg-surface-3 px-1.5 py-0.5 text-[10px] text-ink-muted hover:text-gold-bright"
+            >
+              ✉️ E-mail
+            </button>
+          )}
+        </div>
+      )}
     </Link>
   );
 }
