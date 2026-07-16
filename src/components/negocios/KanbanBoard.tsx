@@ -44,6 +44,7 @@ function DealCard({
   const daysLeft = deal.onTheWayDeadline
     ? differenceInCalendarDays(new Date(deal.onTheWayDeadline), new Date())
     : null;
+  const hasFlaggedNote = deal.notes.some((n) => n.flagged);
 
   return (
     <Link
@@ -73,7 +74,14 @@ function DealCard({
           {initials}
         </span>
         {deal.owner.name}
-        {deal.notes.length > 0 && <span className="ml-auto">📎 {deal.notes.length}</span>}
+        {hasFlaggedNote && (
+          <span className="ml-auto text-gold-bright" title="Tem mensagem marcada">
+            ★
+          </span>
+        )}
+        {deal.notes.length > 0 && (
+          <span className={hasFlaggedNote ? "" : "ml-auto"}>📎 {deal.notes.length}</span>
+        )}
         {daysLeft !== null && (
           <span
             className={`ml-auto rounded-full px-1.5 py-0.5 font-semibold ${

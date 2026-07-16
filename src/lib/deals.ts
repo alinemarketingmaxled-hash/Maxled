@@ -222,6 +222,21 @@ export async function addDealNote(session: Session, dealId: string, body: string
   return note;
 }
 
+/** Toggles the "marked" state of a note in a deal's history — lets sellers
+ * flag the message that matters (e.g. a client's key requirement) so it
+ * stands out among the rest of the negotiation's notes. */
+export async function toggleDealNoteFlag(session: Session, noteId: string) {
+  const note = await prisma.dealNote.findFirst({
+    where: { id: noteId, deal: dealScopeWhere(session) },
+  });
+  if (!note) throw new Error("Nota não encontrada ou sem permissão.");
+
+  return prisma.dealNote.update({
+    where: { id: noteId },
+    data: { flagged: !note.flagged },
+  });
+}
+
 export async function softDeleteDeal(session: Session, dealId: string) {
   const deal = await prisma.deal.update({
     where: { id: dealId },
