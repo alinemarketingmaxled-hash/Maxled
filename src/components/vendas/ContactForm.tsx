@@ -102,7 +102,18 @@ export function ContactForm({
   function handleLookupCnpj() {
     setCnpjError(null);
     startLookup(async () => {
-      const outcome = await lookupCnpjAction(cnpj);
+      let outcome;
+      try {
+        outcome = await lookupCnpjAction(cnpj);
+      } catch {
+        // A server action can reject outright (network/RPC failure, session
+        // hiccup, etc.) — without this catch, that crashed the whole page
+        // instead of showing a message, same class of bug fixed elsewhere.
+        setCnpjError(
+          "Não foi possível consultar o CNPJ agora. Tente de novo em instantes ou preencha manualmente.",
+        );
+        return;
+      }
       if (!outcome.ok) {
         setCnpjError(
           outcome.reason === "invalid"
