@@ -28,6 +28,8 @@ const ACTION_LABEL: Record<string, string> = {
   updated: "atualizou este negócio",
 };
 
+const CALL_PREFIX = "📞 Ligação: ";
+
 /** Shared by the Kanban quick-view modal and the standalone deal page — both
  * show the same note/activity history and need the same "mark a message"
  * (flag) behavior, so it lives in one place. */
@@ -48,6 +50,8 @@ export function DealNotesTimeline({
   const [noteBody, setNoteBody] = useState("");
   const [attachment, setAttachment] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [callNote, setCallNote] = useState("");
+  const [savingCall, setSavingCall] = useState(false);
   const [attachError, setAttachError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -85,6 +89,18 @@ export function DealNotesTimeline({
     setNoteBody("");
     setAttachment(null);
     setSaving(false);
+    await refresh();
+  }
+
+  async function handleLogCall(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!callNote.trim() || savingCall) return;
+    setSavingCall(true);
+    const fd = new FormData();
+    fd.set("body", CALL_PREFIX + callNote.trim());
+    await addDealNoteAction(dealId, fd);
+    setCallNote("");
+    setSavingCall(false);
     await refresh();
   }
 
@@ -140,6 +156,24 @@ export function DealNotesTimeline({
               </button>
             </div>
           )}
+        </form>
+      )}
+
+      {canEdit && (
+        <form onSubmit={handleLogCall} className="mb-3 flex gap-2">
+          <input
+            value={callNote}
+            onChange={(e) => setCallNote(e.target.value)}
+            placeholder="Registro rápido de ligação — o que foi tratado?"
+            className="flex-1 rounded-md border border-gold-deep/25 bg-surface-2/70 px-2.5 py-1.5 text-[11px] text-ink outline-none focus:border-gold"
+          />
+          <button
+            type="submit"
+            disabled={savingCall}
+            className="rounded-md border border-gold-deep/40 px-3 py-1.5 text-[11px] font-semibold text-ink-muted hover:border-gold hover:text-gold-bright disabled:opacity-60"
+          >
+            📞 Registrar
+          </button>
         </form>
       )}
 
