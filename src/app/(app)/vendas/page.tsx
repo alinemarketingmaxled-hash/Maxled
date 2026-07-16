@@ -16,6 +16,7 @@ export default async function VendasPage({
   const session = await requireView("vendas");
   const params = await searchParams;
   const editable = canEdit(session.user.role, "vendas");
+  const editableDeals = canEdit(session.user.role, "negocios");
 
   const contacts = await listContacts(session);
   const selectedId = params.id ?? contacts[0]?.id;
@@ -24,6 +25,23 @@ export default async function VendasPage({
 
   const insights = selected
     ? computeContactInsights(selected, (await getAbcClasses(session)).get(selected.id) ?? null)
+    : null;
+
+  // Client Components (ContactForm, ContactDetailPanel) can't receive
+  // Prisma's Decimal instances — selected.deals carries deal.value as a
+  // Decimal, so it needs converting to a plain number before crossing that
+  // boundary, same as insights already does internally.
+  const serializedContact = selected
+    ? {
+        ...selected,
+        deals: selected.deals.map((d) => ({
+          id: d.id,
+          name: d.name,
+          value: Number(d.value),
+          updatedAt: d.updatedAt,
+          stage: d.stage,
+        })),
+      }
     : null;
 
   const isNew = params.new === "1" && editable;
@@ -60,21 +78,26 @@ export default async function VendasPage({
           </div>
         )}
 
-        {!isNew && isEditing && selected && (
+        {!isNew && isEditing && selected && serializedContact && (
           <div className="rounded-xl border border-gold-deep/30 bg-surface p-5">
             <h3 className="mb-4 font-display text-lg text-ink">
               Editar {selected.firstName} {selected.lastName}
             </h3>
             <ContactForm
-              contact={selected}
+              contact={serializedContact}
               owners={owners}
               action={updateContactAction.bind(null, selected.id)}
             />
           </div>
         )}
 
-        {!isNew && !isEditing && selected && insights && (
-          <ContactDetailPanel contact={selected} canEdit={editable} insights={insights} />
+        {!isNew && !isEditing && serializedContact && insights && (
+          <ContactDetailPanel
+            contact={serializedContact}
+            canEdit={editable}
+            canEditDeals={editableDeals}
+            insights={insights}
+          />
         )}
 
         {!isNew && !selected && (
