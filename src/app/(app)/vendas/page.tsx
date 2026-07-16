@@ -11,7 +11,7 @@ import { createContactAction, updateContactAction, assignableOwners } from "./ac
 export default async function VendasPage({
   searchParams,
 }: {
-  searchParams: Promise<{ id?: string; edit?: string; new?: string; imported?: string }>;
+  searchParams: Promise<{ id?: string; edit?: string; new?: string }>;
 }) {
   const session = await requireView("vendas");
   const params = await searchParams;
@@ -48,7 +48,7 @@ export default async function VendasPage({
         )}
       </div>
 
-      <ImportExportBar canEdit={editable} importSummary={params.imported} />
+      <ImportExportBar canEdit={editable} />
 
       <div className="grid grid-cols-[280px_1fr] gap-4">
         <ContactListPanel contacts={contacts} selectedId={selectedId} />

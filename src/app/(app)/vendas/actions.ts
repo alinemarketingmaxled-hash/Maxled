@@ -143,85 +143,101 @@ export async function deleteContactAction(id: string) {
   redirect("/vendas");
 }
 
+function friendlyImportError(e: unknown): string {
+  if (e instanceof Error) {
+    if ("code" in e && e.code === "P2002") return "Um dos clientes da planilha já existe com esses dados.";
+    return `Erro ao importar: ${e.message}`;
+  }
+  return "Erro inesperado ao importar a planilha.";
+}
+
 /**
  * Round-trips the CSV produced by /vendas/export: matches existing contacts
  * by e-mail (spec's "duplicate detection on import" recommendation) so a
  * re-import updates rather than duplicates, and resolves ownerEmail back to
  * a real owner, falling back to the importing user when no match is found.
+ *
+ * Returns {error}/{summary} instead of throwing/redirecting — an uncaught
+ * exception here would crash to Next.js's generic error page (the same bug
+ * fixed for Perfil), leaving no way to tell what actually went wrong.
  */
-export async function importContactsAction(formData: FormData) {
+export async function importContactsAction(
+  formData: FormData,
+): Promise<{ error?: string; summary?: ImportSummary }> {
   const session = await requireEdit();
   const file = formData.get("file") as File | null;
-  if (!file) throw new Error("Selecione um arquivo CSV.");
+  if (!file || file.size === 0) return { error: "Selecione um arquivo CSV." };
 
-  const text = await file.text();
-  const rows = parseCsv(text);
+  try {
+    const text = await file.text();
+    const rows = parseCsv(text);
 
-  const users = await prisma.user.findMany({ select: { id: true, email: true } });
-  const userByEmail = new Map(users.map((u) => [u.email.toLowerCase(), u.id]));
+    const users = await prisma.user.findMany({ select: { id: true, email: true } });
+    const userByEmail = new Map(users.map((u) => [u.email.toLowerCase(), u.id]));
 
-  const existing = await listContacts(session);
-  const existingByEmail = new Map(
-    existing.filter((c) => c.email).map((c) => [c.email!.toLowerCase(), c.id]),
-  );
+    const existing = await listContacts(session);
+    const existingByEmail = new Map(
+      existing.filter((c) => c.email).map((c) => [c.email!.toLowerCase(), c.id]),
+    );
 
-  const summary: ImportSummary = { created: 0, updated: 0, skipped: 0 };
+    const summary: ImportSummary = { created: 0, updated: 0, skipped: 0 };
 
-  for (const row of rows) {
-    const firstName = row.firstName?.trim();
-    const lastName = row.lastName?.trim();
-    if (!firstName || !lastName) {
-      summary.skipped++;
-      continue;
+    for (const row of rows) {
+      const firstName = row.firstName?.trim();
+      const lastName = row.lastName?.trim();
+      if (!firstName || !lastName) {
+        summary.skipped++;
+        continue;
+      }
+
+      const ownerId =
+        userByEmail.get((row.ownerEmail ?? "").toLowerCase()) ?? session.user.id;
+
+      const input: ContactInput = {
+        ownerId,
+        personType: readEnum(normalizePersonType(row.personType), PERSON_TYPES),
+        firstName,
+        lastName,
+        accountName: row.accountName || null,
+        cnpj: row.cnpj || null,
+        email: row.email || null,
+        phone: row.phone || null,
+        mobile: row.mobile || null,
+        residentialPhone: row.residentialPhone || null,
+        assistantPhone: row.assistantPhone || null,
+        leadSource: row.leadSource || null,
+        supplierName: row.supplierName || null,
+        jobTitle: row.jobTitle || null,
+        department: row.department || null,
+        street: row.street || null,
+        number: row.number || null,
+        city: row.city || null,
+        state: row.state || null,
+        postalCode: row.postalCode || null,
+        latitude: row.latitude ? Number(row.latitude) : null,
+        longitude: row.longitude ? Number(row.longitude) : null,
+        birthday: row.birthday ? parseBrDate(row.birthday) : null,
+        commercialPotential: readEnum(normalizePotential(row.commercialPotential), COMMERCIAL_POTENTIALS),
+        crmStatus: readEnum(normalizeCrmStatus(row.crmStatus), CRM_STATUSES),
+        nextContactAt: row.nextContactAt ? parseBrDate(row.nextContactAt) : null,
+        notes: row.notes || null,
+      };
+
+      const existingId = row.email ? existingByEmail.get(row.email.toLowerCase()) : undefined;
+      if (existingId) {
+        await updateContact(session, existingId, input);
+        summary.updated++;
+      } else {
+        await createContact(session, input);
+        summary.created++;
+      }
     }
 
-    const ownerId =
-      userByEmail.get((row.ownerEmail ?? "").toLowerCase()) ?? session.user.id;
-
-    const input: ContactInput = {
-      ownerId,
-      personType: readEnum(normalizePersonType(row.personType), PERSON_TYPES),
-      firstName,
-      lastName,
-      accountName: row.accountName || null,
-      cnpj: row.cnpj || null,
-      email: row.email || null,
-      phone: row.phone || null,
-      mobile: row.mobile || null,
-      residentialPhone: row.residentialPhone || null,
-      assistantPhone: row.assistantPhone || null,
-      leadSource: row.leadSource || null,
-      supplierName: row.supplierName || null,
-      jobTitle: row.jobTitle || null,
-      department: row.department || null,
-      street: row.street || null,
-      number: row.number || null,
-      city: row.city || null,
-      state: row.state || null,
-      postalCode: row.postalCode || null,
-      latitude: row.latitude ? Number(row.latitude) : null,
-      longitude: row.longitude ? Number(row.longitude) : null,
-      birthday: row.birthday ? parseBrDate(row.birthday) : null,
-      commercialPotential: readEnum(normalizePotential(row.commercialPotential), COMMERCIAL_POTENTIALS),
-      crmStatus: readEnum(normalizeCrmStatus(row.crmStatus), CRM_STATUSES),
-      nextContactAt: row.nextContactAt ? parseBrDate(row.nextContactAt) : null,
-      notes: row.notes || null,
-    };
-
-    const existingId = row.email ? existingByEmail.get(row.email.toLowerCase()) : undefined;
-    if (existingId) {
-      await updateContact(session, existingId, input);
-      summary.updated++;
-    } else {
-      await createContact(session, input);
-      summary.created++;
-    }
+    revalidatePath("/vendas");
+    return { summary };
+  } catch (e) {
+    return { error: friendlyImportError(e) };
   }
-
-  revalidatePath("/vendas");
-  redirect(
-    `/vendas?imported=${summary.created}-${summary.updated}-${summary.skipped}`,
-  );
 }
 
 export async function assignableOwners(session: Session | null) {
