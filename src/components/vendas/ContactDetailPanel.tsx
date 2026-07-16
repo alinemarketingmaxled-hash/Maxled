@@ -2,16 +2,34 @@ import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import type { Prisma } from "@/generated/prisma/client";
+import type { ContactInsights } from "@/lib/contacts";
 import { deleteContactAction } from "@/app/(app)/vendas/actions";
 import { WhatsAppSendBox } from "@/components/vendas/WhatsAppSendBox";
 
 type ContactWithRelations = Prisma.ContactGetPayload<{
   include: {
     owner: { select: { name: true; email: true } };
-    deals: { include: { stage: { select: { name: true } } } };
+    deals: { include: { stage: { select: { name: true; isWon: true; isOnTheWay: true } } } };
     activityLogs: { include: { actor: { select: { name: true } } } };
   };
 }>;
+
+const PERSON_TYPE_LABEL: Record<string, string> = { FISICA: "Física", JURIDICA: "Jurídica" };
+const POTENTIAL_LABEL: Record<string, string> = { ALTO: "Alto", MEDIO: "Médio", BAIXO: "Baixo" };
+const CRM_STATUS_LABEL: Record<string, string> = { LEAD: "Lead", ATIVO: "Ativo", INATIVO: "Inativo" };
+const PRIORITY_STYLE: Record<ContactInsights["prioridade"], string> = {
+  alta: "border-critical/50 text-critical",
+  média: "border-gold-deep text-gold",
+  baixa: "border-ink-faint/40 text-ink-muted",
+};
+
+function formatCurrency(value: number): string {
+  return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+function formatDate(date: Date | null): string {
+  return date ? date.toLocaleDateString("pt-BR") : "—";
+}
 
 const ACTION_LABEL: Record<string, string> = {
   created: "criou este contato",
@@ -42,9 +60,11 @@ function fieldRow(label: string, value: string | null | undefined) {
 export function ContactDetailPanel({
   contact,
   canEdit,
+  insights,
 }: {
   contact: ContactWithRelations;
   canEdit: boolean;
+  insights: ContactInsights;
 }) {
   const initials = `${contact.firstName[0] ?? ""}${contact.lastName[0] ?? ""}`.toUpperCase();
   const waNumber = contact.mobile?.replace(/\D/g, "");
@@ -93,8 +113,10 @@ export function ContactDetailPanel({
         <div>
           <h4 className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-gold">Identificação</h4>
           {fieldRow("Proprietário", contact.owner.name)}
+          {fieldRow("Tipo de pessoa", contact.personType ? PERSON_TYPE_LABEL[contact.personType] : null)}
           {fieldRow("CNPJ", contact.cnpj)}
           {fieldRow("Departamento", contact.department)}
+          {fieldRow("Data de aniversário", formatDate(contact.birthday))}
         </div>
         <div>
           <h4 className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-gold">Contato</h4>
@@ -103,9 +125,12 @@ export function ContactDetailPanel({
           {fieldRow("Residencial / Assistente", [contact.residentialPhone, contact.assistantPhone].filter(Boolean).join(" · "))}
         </div>
         <div>
-          <h4 className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-gold">Origem</h4>
+          <h4 className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-gold">Origem e relacionamento</h4>
           {fieldRow("Fonte de cliente potencial", contact.leadSource)}
           {fieldRow("Nome fornecedor", contact.supplierName)}
+          {fieldRow("Potencial comercial", contact.commercialPotential ? POTENTIAL_LABEL[contact.commercialPotential] : null)}
+          {fieldRow("Status CRM", contact.crmStatus ? CRM_STATUS_LABEL[contact.crmStatus] : null)}
+          {fieldRow("Próximo contato", formatDate(contact.nextContactAt))}
         </div>
         <div>
           <h4 className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-gold">Endereço</h4>
@@ -116,6 +141,38 @@ export function ContactDetailPanel({
             contact.latitude && contact.longitude ? `${contact.latitude}, ${contact.longitude}` : null,
           )}
         </div>
+      </div>
+
+      {contact.notes && (
+        <div className="mt-4 rounded-lg border border-dashed border-gold-deep/30 bg-surface-2 p-3 text-[12.5px] text-ink-muted">
+          <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-gold">Observações</span>
+          {contact.notes}
+        </div>
+      )}
+
+      <div className="mt-5 border-t border-gold-deep/20 pt-4">
+        <div className="mb-2 flex items-center justify-between">
+          <h4 className="text-[11px] font-semibold uppercase tracking-wide text-gold">Inteligência do cliente</h4>
+          <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase ${PRIORITY_STYLE[insights.prioridade]}`}>
+            Prioridade {insights.prioridade}
+          </span>
+        </div>
+        <div className="grid grid-cols-2 gap-x-8 gap-y-1 sm:grid-cols-3">
+          {fieldRow("Valor comprado", formatCurrency(insights.valorComprado))}
+          {fieldRow("Qtd. negócios ganhos", String(insights.quantidadeComprada))}
+          {fieldRow("Ticket médio", formatCurrency(insights.ticketMedio))}
+          {fieldRow("Classe ABC", insights.abcClass)}
+          {fieldRow("Etapa do funil", insights.etapaFunil)}
+          {fieldRow("Dias sem contato", insights.diasSemContato !== null ? String(insights.diasSemContato) : null)}
+          {fieldRow(
+            "Dias até aniversário",
+            insights.diasAteAniversario !== null ? String(insights.diasAteAniversario) : null,
+          )}
+        </div>
+        <p className="mt-2 text-[12.5px] text-ink">
+          <span className="text-ink-faint">Ação recomendada: </span>
+          {insights.acaoRecomendada}
+        </p>
       </div>
 
       {canEdit && (

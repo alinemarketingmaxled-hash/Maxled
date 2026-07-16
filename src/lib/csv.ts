@@ -2,6 +2,7 @@ export type ImportSummary = { created: number; updated: number; skipped: number 
 
 export const CONTACT_CSV_COLUMNS = [
   "ownerEmail",
+  "personType",
   "firstName",
   "lastName",
   "accountName",
@@ -22,7 +23,27 @@ export const CONTACT_CSV_COLUMNS = [
   "postalCode",
   "latitude",
   "longitude",
+  "birthday",
+  "commercialPotential",
+  "crmStatus",
+  "nextContactAt",
+  "notes",
 ] as const;
+
+/** Parses dd/mm/yyyy (common in BR spreadsheets) or ISO yyyy-mm-dd; returns
+ * null for anything else rather than guessing. */
+export function parseBrDate(value: string): Date | null {
+  const v = value.trim();
+  if (!v) return null;
+  const br = v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (br) {
+    const [, d, m, y] = br;
+    const date = new Date(Number(y), Number(m) - 1, Number(d));
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+  const iso = new Date(v);
+  return Number.isNaN(iso.getTime()) ? null : iso;
+}
 
 function escapeCsvField(value: unknown): string {
   const str = value === null || value === undefined ? "" : String(value);
@@ -42,16 +63,18 @@ export function toCsv(rows: Record<string, unknown>[]): string {
  * Clientes, and readable back by the same fuzzy importer below. */
 export function buildImportTemplate(): string {
   const headers = [
-    "Proprietário (e-mail)", "Nome", "Sobrenome", "Empresa", "CNPJ", "E-mail",
+    "Proprietário (e-mail)", "Tipo de Pessoa", "Nome", "Sobrenome", "Empresa", "CNPJ", "E-mail",
     "Telefone", "Celular", "Telefone residencial", "Telefone do assistente",
     "Origem do lead", "Fornecedor", "Cargo", "Departamento",
     "Rua", "Número", "Cidade", "Estado", "CEP",
+    "Data Aniversário", "Potencial Comercial", "Status CRM", "Próximo Contato", "Observações",
   ];
   const example = [
-    "", "João", "Silva", "Distribuidora ABC", "12.345.678/0001-90", "joao@abc.com.br",
+    "", "Jurídica", "João", "Silva", "Distribuidora ABC", "12.345.678/0001-90", "joao@abc.com.br",
     "1133334444", "11988887777", "", "",
     "Indicação", "", "Comprador", "Compras",
     "Rua das Flores", "123", "São Paulo", "SP", "01310-100",
+    "15/03/1980", "Alto", "Ativo", "20/07/2026", "Prefere contato pela manhã.",
   ];
   return [headers, example].map((r) => r.map(escapeCsvField).join(",")).join("\r\n");
 }
@@ -112,14 +135,15 @@ type TargetField = (typeof CONTACT_CSV_COLUMNS)[number] | "fullName";
 
 const FIELD_ALIASES: Record<TargetField, string[]> = {
   ownerEmail: ["ownerEmail", "proprietario", "proprietarioemail", "vendedor", "owner"],
+  personType: ["personType", "tipodepessoa", "tipopessoa"],
   firstName: ["firstName", "nome", "primeironome"],
   lastName: ["lastName", "sobrenome", "ultimonome"],
-  fullName: ["fullName", "nomecompleto", "nomeesobrenome", "name"],
-  accountName: ["accountName", "empresa", "conta", "razaosocial", "company"],
+  fullName: ["fullName", "nomecompleto", "nomeesobrenome", "name", "comprador", "compradorcontato"],
+  accountName: ["accountName", "empresa", "conta", "razaosocial", "company", "clienterazaosocial"],
   cnpj: ["cnpj", "cnpjdaempresa"],
   email: ["email", "emailcorreio", "correio"],
   phone: ["phone", "telefone", "fone", "tel"],
-  mobile: ["mobile", "celular", "whatsapp", "whats", "cel"],
+  mobile: ["mobile", "celular", "whatsapp", "whats", "cel", "telefonewhatsapp"],
   residentialPhone: ["residentialPhone", "telefoneresidencial", "residencial"],
   assistantPhone: ["assistantPhone", "telefonedoassistente", "telefoneassistente", "assistente"],
   leadSource: ["leadSource", "origemdolead", "origem", "fonte"],
@@ -133,6 +157,11 @@ const FIELD_ALIASES: Record<TargetField, string[]> = {
   postalCode: ["postalCode", "cep", "zip", "zipcode"],
   latitude: ["latitude", "lat"],
   longitude: ["longitude", "lng", "long"],
+  birthday: ["birthday", "dataaniversario", "aniversario", "datadeaniversario", "dataaniversariocomprador"],
+  commercialPotential: ["commercialPotential", "potencialcomercial", "potencial"],
+  crmStatus: ["crmStatus", "statuscrm", "status"],
+  nextContactAt: ["nextContactAt", "proximocontato", "proximocontatoem"],
+  notes: ["notes", "observacoes", "obs", "observacao"],
 };
 
 /** Splits into individually-normalized words — "Fone Contato" -> ["fone", "contato"]. */
@@ -203,6 +232,7 @@ function assignColumns(headers: string[]): (TargetField | null)[] {
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const NAME_RE = /^[a-zA-ZÀ-ÿ'.\s-]+$/;
+const DATE_RE = /^\d{1,2}\/\d{1,2}\/\d{2,4}$|^\d{4}-\d{1,2}-\d{1,2}$/;
 const PHONE_SLOTS: TargetField[] = ["phone", "mobile", "residentialPhone", "assistantPhone"];
 
 /** For columns a header couldn't identify, guess the field by sniffing a
@@ -212,6 +242,10 @@ function guessFieldFromValues(values: string[], assigned: Set<TargetField>): Tar
   if (sample.length === 0) return null;
 
   if (!assigned.has("email") && sample.every((v) => EMAIL_RE.test(v.trim()))) return "email";
+
+  // Dates like "10/06/2026" strip down to 8 digits, which would otherwise
+  // collide with the phone-number digit-count check below.
+  if (sample.some((v) => DATE_RE.test(v.trim()))) return null;
 
   const digitCounts = sample.map((v) => v.replace(/\D/g, "").length);
   if (digitCounts.every((n) => n >= 8 && n <= 13)) {

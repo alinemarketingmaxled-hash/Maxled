@@ -14,6 +14,7 @@ export async function GET() {
   const csv = toCsv(
     contacts.map((c) => ({
       ownerEmail: c.owner?.email ?? "",
+      personType: c.personType,
       firstName: c.firstName,
       lastName: c.lastName,
       accountName: c.accountName,
@@ -34,6 +35,11 @@ export async function GET() {
       postalCode: c.postalCode,
       latitude: c.latitude,
       longitude: c.longitude,
+      birthday: c.birthday ? c.birthday.toLocaleDateString("pt-BR") : "",
+      commercialPotential: c.commercialPotential,
+      crmStatus: c.crmStatus,
+      nextContactAt: c.nextContactAt ? c.nextContactAt.toLocaleDateString("pt-BR") : "",
+      notes: c.notes,
     })),
   );
 

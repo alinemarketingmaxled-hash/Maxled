@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { canEdit } from "@/lib/permissions";
-import { listContacts, getContact } from "@/lib/contacts";
+import { listContacts, getContact, computeContactInsights, getAbcClasses } from "@/lib/contacts";
 import { requireView } from "@/lib/require-permission";
 import { ContactListPanel } from "@/components/vendas/ContactListPanel";
 import { ContactDetailPanel } from "@/components/vendas/ContactDetailPanel";
@@ -21,6 +21,10 @@ export default async function VendasPage({
   const selectedId = params.id ?? contacts[0]?.id;
   const selected = selectedId ? await getContact(session, selectedId) : null;
   const owners = await assignableOwners(session);
+
+  const insights = selected
+    ? computeContactInsights(selected, (await getAbcClasses(session)).get(selected.id) ?? null)
+    : null;
 
   const isNew = params.new === "1" && editable;
   const isEditing = params.edit === "1" && editable && selected;
@@ -69,8 +73,8 @@ export default async function VendasPage({
           </div>
         )}
 
-        {!isNew && !isEditing && selected && (
-          <ContactDetailPanel contact={selected} canEdit={editable} />
+        {!isNew && !isEditing && selected && insights && (
+          <ContactDetailPanel contact={selected} canEdit={editable} insights={insights} />
         )}
 
         {!isNew && !selected && (

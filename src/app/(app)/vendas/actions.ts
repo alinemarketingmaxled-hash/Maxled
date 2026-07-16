@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { Session } from "next-auth";
+import type { PersonType, CommercialPotential, CrmStatus } from "@/generated/prisma/client";
 import { auth } from "@/auth";
 import { canEdit, getPermission } from "@/lib/permissions";
 import {
@@ -12,8 +13,54 @@ import {
   listContacts,
   type ContactInput,
 } from "@/lib/contacts";
+import { lookupCnpj, type CnpjLookupResult } from "@/lib/cnpj-lookup";
 import { prisma } from "@/lib/prisma";
-import { parseCsv, type ImportSummary } from "@/lib/csv";
+import { parseCsv, parseBrDate, type ImportSummary } from "@/lib/csv";
+
+const PERSON_TYPES: PersonType[] = ["FISICA", "JURIDICA"];
+const COMMERCIAL_POTENTIALS: CommercialPotential[] = ["ALTO", "MEDIO", "BAIXO"];
+const CRM_STATUSES: CrmStatus[] = ["LEAD", "ATIVO", "INATIVO"];
+
+function readEnum<T extends string>(value: string | null, allowed: readonly T[]): T | null {
+  return value && (allowed as readonly string[]).includes(value) ? (value as T) : null;
+}
+
+function readDateInput(formData: FormData, key: string): Date | null {
+  const v = (formData.get(key) as string) || "";
+  if (!v) return null;
+  const d = new Date(v);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+/** Maps free-text CSV values (Portuguese labels, the enum names themselves,
+ * or common abbreviations) onto the strict enum values — messy imports
+ * shouldn't silently drop a column just because the label doesn't match
+ * exactly. */
+function normalizePersonType(value: string | undefined): string | null {
+  const v = (value || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  if (!v) return null;
+  if (v.includes("juridic") || v === "pj" || v.includes("empresa")) return "JURIDICA";
+  if (v.includes("fisic") || v === "pf" || v.includes("pessoa")) return "FISICA";
+  return null;
+}
+
+function normalizePotential(value: string | undefined): string | null {
+  const v = (value || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  if (!v) return null;
+  if (v.includes("alto")) return "ALTO";
+  if (v.includes("medio")) return "MEDIO";
+  if (v.includes("baixo")) return "BAIXO";
+  return null;
+}
+
+function normalizeCrmStatus(value: string | undefined): string | null {
+  const v = (value || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  if (!v) return null;
+  if (v.includes("lead")) return "LEAD";
+  if (v.includes("ativo") && !v.includes("inativo")) return "ATIVO";
+  if (v.includes("inativo")) return "INATIVO";
+  return null;
+}
 
 function readContactInput(formData: FormData, ownerId: string): ContactInput {
   const str = (key: string) => (formData.get(key) as string)?.trim() || null;
@@ -22,6 +69,7 @@ function readContactInput(formData: FormData, ownerId: string): ContactInput {
 
   return {
     ownerId,
+    personType: readEnum(str("personType"), PERSON_TYPES),
     firstName: (formData.get("firstName") as string)?.trim() ?? "",
     lastName: (formData.get("lastName") as string)?.trim() ?? "",
     accountName: str("accountName"),
@@ -42,6 +90,11 @@ function readContactInput(formData: FormData, ownerId: string): ContactInput {
     postalCode: str("postalCode"),
     latitude: lat ? Number(lat) : null,
     longitude: lng ? Number(lng) : null,
+    birthday: readDateInput(formData, "birthday"),
+    commercialPotential: readEnum(str("commercialPotential"), COMMERCIAL_POTENTIALS),
+    crmStatus: readEnum(str("crmStatus"), CRM_STATUSES),
+    nextContactAt: readDateInput(formData, "nextContactAt"),
+    notes: str("notes"),
   };
 }
 
@@ -73,6 +126,14 @@ export async function updateContactAction(id: string, formData: FormData) {
   await updateContact(session, id, input);
   revalidatePath("/vendas");
   redirect(`/vendas?id=${id}`);
+}
+
+/** Backs the "Buscar CNPJ" button in ContactForm — looks up company data
+ * from BrasilAPI (free, no key) so a bare CNPJ can auto-fill the rest of
+ * the form instead of the user retyping it. */
+export async function lookupCnpjAction(cnpj: string): Promise<CnpjLookupResult | null> {
+  await requireEdit();
+  return lookupCnpj(cnpj);
 }
 
 export async function deleteContactAction(id: string) {
@@ -119,6 +180,7 @@ export async function importContactsAction(formData: FormData) {
 
     const input: ContactInput = {
       ownerId,
+      personType: readEnum(normalizePersonType(row.personType), PERSON_TYPES),
       firstName,
       lastName,
       accountName: row.accountName || null,
@@ -139,6 +201,11 @@ export async function importContactsAction(formData: FormData) {
       postalCode: row.postalCode || null,
       latitude: row.latitude ? Number(row.latitude) : null,
       longitude: row.longitude ? Number(row.longitude) : null,
+      birthday: row.birthday ? parseBrDate(row.birthday) : null,
+      commercialPotential: readEnum(normalizePotential(row.commercialPotential), COMMERCIAL_POTENTIALS),
+      crmStatus: readEnum(normalizeCrmStatus(row.crmStatus), CRM_STATUSES),
+      nextContactAt: row.nextContactAt ? parseBrDate(row.nextContactAt) : null,
+      notes: row.notes || null,
     };
 
     const existingId = row.email ? existingByEmail.get(row.email.toLowerCase()) : undefined;

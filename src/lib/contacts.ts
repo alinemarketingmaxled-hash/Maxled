@@ -3,7 +3,7 @@ import type { Session } from "next-auth";
 import { prisma } from "@/lib/prisma";
 import { getPermission } from "@/lib/permissions";
 import { logActivity } from "@/lib/activity-log";
-import type { Prisma } from "@/generated/prisma/client";
+import type { Prisma, PersonType, CommercialPotential, CrmStatus } from "@/generated/prisma/client";
 
 /**
  * The spec's permission matrix (docs/CRM-SPEC.md §6) distinguishes "team"
@@ -34,7 +34,7 @@ export async function getContact(session: Session, id: string) {
       deals: {
         where: { deletedAt: null },
         orderBy: { createdAt: "desc" },
-        include: { stage: { select: { name: true } } },
+        include: { stage: { select: { name: true, isWon: true, isOnTheWay: true } } },
       },
       activityLogs: {
         orderBy: { createdAt: "desc" },
@@ -46,8 +46,118 @@ export async function getContact(session: Session, id: string) {
   return contact;
 }
 
+const DAY_MS = 1000 * 60 * 60 * 24;
+function daysSince(date: Date): number {
+  return Math.floor((Date.now() - date.getTime()) / DAY_MS);
+}
+
+export type ContactInsights = {
+  valorComprado: number;
+  quantidadeComprada: number;
+  ticketMedio: number;
+  diasSemContato: number | null;
+  diasAteAniversario: number | null;
+  etapaFunil: string | null;
+  abcClass: "A" | "B" | "C" | null;
+  prioridade: "alta" | "média" | "baixa";
+  acaoRecomendada: string;
+};
+
+/**
+ * Every number here is grounded in real Deal records (spec request: "os
+ * valores precisam ser um negócio, no histórico") — valorComprado/
+ * quantidadeComprada are literally the sum/count of the won deals already
+ * listed in the contact's history, never a standalone figure.
+ */
+export function computeContactInsights(
+  contact: {
+    deals: Array<{ value: Prisma.Decimal | number; stage: { name: string; isWon: boolean; isOnTheWay: boolean } }>;
+    lastContactedAt: Date | null;
+    createdAt: Date;
+    birthday: Date | null;
+  },
+  abcClass: "A" | "B" | "C" | null,
+): ContactInsights {
+  const wonDeals = contact.deals.filter((d) => d.stage.isWon);
+  const valorComprado = wonDeals.reduce((s, d) => s + Number(d.value), 0);
+  const quantidadeComprada = wonDeals.length;
+  const ticketMedio = quantidadeComprada > 0 ? valorComprado / quantidadeComprada : 0;
+
+  const diasSemContato = contact.lastContactedAt
+    ? daysSince(contact.lastContactedAt)
+    : daysSince(contact.createdAt);
+
+  let diasAteAniversario: number | null = null;
+  if (contact.birthday) {
+    const today = new Date();
+    const next = new Date(today.getFullYear(), contact.birthday.getMonth(), contact.birthday.getDate());
+    if (next < today) next.setFullYear(today.getFullYear() + 1);
+    diasAteAniversario = Math.ceil((next.getTime() - today.getTime()) / DAY_MS);
+  }
+
+  const openDeal = contact.deals.find((d) => !d.stage.isWon);
+  const etapaFunil = openDeal?.stage.name ?? (wonDeals.length > 0 ? wonDeals[0].stage.name : null);
+
+  let prioridade: ContactInsights["prioridade"] = "baixa";
+  let acaoRecomendada = "Nenhuma ação necessária no momento.";
+
+  if (diasSemContato > 180 && quantidadeComprada > 0) {
+    prioridade = "alta";
+    acaoRecomendada = "Ligar urgentemente — cliente sem contato há mais de 6 meses.";
+  } else if (openDeal && !openDeal.stage.isOnTheWay) {
+    prioridade = "média";
+    acaoRecomendada = `Dar andamento ao negócio em "${openDeal.stage.name}".`;
+  } else if (diasSemContato > 30) {
+    prioridade = "média";
+    acaoRecomendada = "Fazer um contato de rotina.";
+  }
+
+  return {
+    valorComprado,
+    quantidadeComprada,
+    ticketMedio,
+    diasSemContato,
+    diasAteAniversario,
+    etapaFunil,
+    abcClass,
+    prioridade,
+    acaoRecomendada,
+  };
+}
+
+/**
+ * Classic ABC/Pareto split by real purchased value: contacts making up the
+ * first 80% of cumulative revenue are A, the next 15% are B, the rest C.
+ * Computed across the same scope a seller would see in Clientes.
+ */
+export async function getAbcClasses(session: Session): Promise<Map<string, "A" | "B" | "C">> {
+  const contacts = await prisma.contact.findMany({
+    where: { deletedAt: null, ...contactScopeWhere(session) },
+    select: {
+      id: true,
+      deals: { where: { deletedAt: null, stage: { isWon: true } }, select: { value: true } },
+    },
+  });
+
+  const totals = contacts
+    .map((c) => ({ id: c.id, total: c.deals.reduce((s, d) => s + Number(d.value), 0) }))
+    .filter((c) => c.total > 0)
+    .sort((a, b) => b.total - a.total);
+
+  const grandTotal = totals.reduce((s, c) => s + c.total, 0);
+  const classes = new Map<string, "A" | "B" | "C">();
+  let cumulative = 0;
+  for (const c of totals) {
+    cumulative += c.total;
+    const pct = grandTotal > 0 ? cumulative / grandTotal : 0;
+    classes.set(c.id, pct <= 0.8 ? "A" : pct <= 0.95 ? "B" : "C");
+  }
+  return classes;
+}
+
 export type ContactInput = {
   ownerId: string;
+  personType?: PersonType | null;
   firstName: string;
   lastName: string;
   accountName?: string | null;
@@ -68,6 +178,11 @@ export type ContactInput = {
   postalCode?: string | null;
   latitude?: number | null;
   longitude?: number | null;
+  birthday?: Date | null;
+  commercialPotential?: CommercialPotential | null;
+  crmStatus?: CrmStatus | null;
+  nextContactAt?: Date | null;
+  notes?: string | null;
 };
 
 export async function createContact(session: Session, data: ContactInput) {
