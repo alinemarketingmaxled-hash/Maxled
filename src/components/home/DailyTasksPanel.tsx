@@ -45,7 +45,7 @@ function TaskItem({ task, onDone }: { task: CallTask; onDone: (contactId: string
         {!open && (
           <button
             onClick={() => setOpen(true)}
-            className="flex-none rounded-md bg-gold px-2.5 py-1 text-[11px] font-semibold text-black transition-colors hover:bg-gold-bright"
+            className="flex-none rounded-md bg-gold-solid px-2.5 py-1 text-[11px] font-semibold text-black transition-colors hover:bg-gold-solid-bright"
           >
             Concluir
           </button>
@@ -66,7 +66,7 @@ function TaskItem({ task, onDone }: { task: CallTask; onDone: (contactId: string
             <button
               onClick={handleSave}
               disabled={isPending || !outcome.trim()}
-              className="rounded-md bg-gold px-3 py-1.5 text-[11.5px] font-semibold text-black transition-colors hover:bg-gold-bright disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-md bg-gold-solid px-3 py-1.5 text-[11.5px] font-semibold text-black transition-colors hover:bg-gold-solid-bright disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isPending ? "Salvando…" : "Salvar"}
             </button>

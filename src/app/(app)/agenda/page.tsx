@@ -62,7 +62,7 @@ export default async function AgendaPage() {
       <div className="mb-6 flex overflow-hidden rounded-xl border border-gold-deep/30">
         {STEPS.map((s) => (
           <div key={s.n} className="flex-1 border-l border-gold-deep/25 bg-surface p-4 first:border-l-0">
-            <div className="mb-2.5 flex h-6 w-6 items-center justify-center rounded-full bg-gold text-xs font-bold text-black">
+            <div className="mb-2.5 flex h-6 w-6 items-center justify-center rounded-full bg-gold-solid text-xs font-bold text-black">
               {s.n}
             </div>
             <h4 className="mb-1 text-[12.5px] text-ink">{s.title}</h4>

@@ -67,7 +67,7 @@ export function TaskList({ tasks, canEdit }: { tasks: TaskRow[]; canEdit: boolea
           <button
             onClick={handleAdd}
             disabled={isPending || !title.trim()}
-            className="rounded-md bg-gold px-3 py-1.5 text-[12px] font-semibold text-black hover:bg-gold-bright disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-md bg-gold-solid px-3 py-1.5 text-[12px] font-semibold text-black hover:bg-gold-solid-bright disabled:cursor-not-allowed disabled:opacity-50"
           >
             +
           </button>
@@ -104,7 +104,7 @@ export function TaskList({ tasks, canEdit }: { tasks: TaskRow[]; canEdit: boolea
               <div key={t.id} className="flex items-center gap-2.5 rounded-md px-1.5 py-1 opacity-50">
                 <button
                   onClick={() => canEdit && handleToggle(t.id)}
-                  className="flex h-4 w-4 flex-none items-center justify-center rounded border border-gold-deep bg-gold text-[10px] text-black"
+                  className="flex h-4 w-4 flex-none items-center justify-center rounded border border-gold-deep bg-gold-solid text-[10px] text-black"
                 >
                   ✓
                 </button>

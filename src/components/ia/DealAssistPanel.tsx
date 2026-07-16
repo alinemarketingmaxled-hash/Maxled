@@ -84,7 +84,7 @@ export function DealAssistPanel({
             <button
               onClick={() => setMode("tips")}
               className={`flex-1 rounded-md px-3 py-1.5 text-[12px] font-semibold transition-colors ${
-                mode === "tips" ? "bg-gold text-black" : "text-ink-muted hover:text-ink"
+                mode === "tips" ? "bg-gold-solid text-black" : "text-ink-muted hover:text-ink"
               }`}
             >
               💡 Dicas estratégicas
@@ -92,7 +92,7 @@ export function DealAssistPanel({
             <button
               onClick={() => setMode("writing")}
               className={`flex-1 rounded-md px-3 py-1.5 text-[12px] font-semibold transition-colors ${
-                mode === "writing" ? "bg-gold text-black" : "text-ink-muted hover:text-ink"
+                mode === "writing" ? "bg-gold-solid text-black" : "text-ink-muted hover:text-ink"
               }`}
             >
               ✉ Rascunho de mensagem
@@ -112,7 +112,7 @@ export function DealAssistPanel({
           <button
             onClick={handleGenerate}
             disabled={disabled || isPending || !dealId}
-            className="self-start rounded-lg bg-gold px-4 py-2 text-xs font-semibold text-black shadow-[0_0_0_1px_rgba(201,162,39,0.4)] transition-colors hover:bg-gold-bright disabled:cursor-not-allowed disabled:opacity-50"
+            className="self-start rounded-lg bg-gold-solid px-4 py-2 text-xs font-semibold text-black shadow-[0_0_0_1px_rgba(201,162,39,0.4)] transition-colors hover:bg-gold-solid-bright disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isPending ? "Gerando…" : "Gerar com IA"}
           </button>

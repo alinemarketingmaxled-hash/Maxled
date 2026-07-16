@@ -76,7 +76,7 @@ export function AnaliticaTabs({
             key={t.key}
             onClick={() => setTab(t.key)}
             className={`flex-1 rounded-md px-4 py-2 text-[13px] font-semibold transition-colors ${
-              tab === t.key ? "bg-gold text-black" : "text-ink-muted hover:text-ink"
+              tab === t.key ? "bg-gold-solid text-black" : "text-ink-muted hover:text-ink"
             }`}
           >
             {t.label}
@@ -161,7 +161,7 @@ export function AnaliticaTabs({
                 <div
                   className="relative h-[110px] w-[110px] flex-none rounded-full"
                   style={{
-                    background: `conic-gradient(var(--gold-bright) 0% ${goal1Pct}%, var(--surface-2) ${goal1Pct}% 100%)`,
+                    background: `conic-gradient(var(--gold-bright) 0% ${goal1Pct}%, var(--black-surface-2) ${goal1Pct}% 100%)`,
                   }}
                 >
                   <div className="absolute inset-[10px] flex flex-col items-center justify-center rounded-full bg-surface">

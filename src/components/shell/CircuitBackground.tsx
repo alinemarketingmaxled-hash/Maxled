@@ -10,18 +10,18 @@ export function CircuitBackground() {
     >
       <defs>
         <pattern id="circuitPattern" width="160" height="160" patternUnits="userSpaceOnUse">
-          <g stroke="var(--gold-bright)" strokeWidth="1.25" fill="none" opacity="0.22">
+          <g stroke="var(--gold-circuit)" strokeWidth="1.25" fill="none" opacity="0.22">
             <path d="M0 24 H44 L54 34 H100 L110 24 H160" />
             <path d="M24 0 V38 L34 48 V100 L24 110 V160" />
             <path d="M0 130 H30 L40 120 H90 L100 130 H160" />
             <path d="M120 0 V50 L130 60 V160" />
-            <circle cx="54" cy="34" r="2.2" fill="var(--gold-bright)" />
-            <circle cx="110" cy="24" r="2.2" fill="var(--gold-bright)" />
-            <circle cx="34" cy="48" r="2.2" fill="var(--gold-bright)" />
-            <circle cx="24" cy="110" r="2.2" fill="var(--gold-bright)" />
-            <circle cx="40" cy="120" r="2.2" fill="var(--gold-bright)" />
-            <circle cx="100" cy="130" r="2.2" fill="var(--gold-bright)" />
-            <circle cx="130" cy="60" r="2.2" fill="var(--gold-bright)" />
+            <circle cx="54" cy="34" r="2.2" fill="var(--gold-circuit)" />
+            <circle cx="110" cy="24" r="2.2" fill="var(--gold-circuit)" />
+            <circle cx="34" cy="48" r="2.2" fill="var(--gold-circuit)" />
+            <circle cx="24" cy="110" r="2.2" fill="var(--gold-circuit)" />
+            <circle cx="40" cy="120" r="2.2" fill="var(--gold-circuit)" />
+            <circle cx="100" cy="130" r="2.2" fill="var(--gold-circuit)" />
+            <circle cx="130" cy="60" r="2.2" fill="var(--gold-circuit)" />
           </g>
         </pattern>
       </defs>

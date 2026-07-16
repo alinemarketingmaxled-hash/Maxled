@@ -149,7 +149,7 @@ export function MyProfileForm({
         <button
           type="submit"
           disabled={isPending}
-          className="rounded-lg bg-gold px-5 py-2.5 text-sm font-semibold text-black transition-colors hover:bg-gold-bright disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-lg bg-gold-solid px-5 py-2.5 text-sm font-semibold text-black transition-colors hover:bg-gold-solid-bright disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isPending ? "Salvando…" : "Salvar alterações"}
         </button>

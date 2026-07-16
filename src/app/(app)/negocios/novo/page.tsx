@@ -113,7 +113,7 @@ export default async function NovoNegocioPage() {
           </Link>
           <button
             type="submit"
-            className="rounded-lg bg-gold px-4 py-2 text-xs font-semibold text-black transition-colors hover:bg-gold-bright"
+            className="rounded-lg bg-gold-solid px-4 py-2 text-xs font-semibold text-black transition-colors hover:bg-gold-solid-bright"
           >
             Criar negócio
           </button>

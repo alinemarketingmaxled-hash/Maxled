@@ -87,7 +87,7 @@ export function AgendaCalendar({ items }: { items: CalendarItem[] }) {
               onClick={() => setSelected(d)}
               className={`flex aspect-square flex-col items-center justify-center rounded-md text-[11.5px] transition-colors ${
                 active
-                  ? "bg-gold text-black"
+                  ? "bg-gold-solid text-black"
                   : isToday(d)
                     ? "border border-gold-deep text-gold-bright"
                     : isSameMonth(d, cursor)
