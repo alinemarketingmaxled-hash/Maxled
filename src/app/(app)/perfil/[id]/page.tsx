@@ -18,6 +18,17 @@ export default async function EditVendorPage({
   const vendor = await getVendor(id);
   if (!vendor) notFound();
 
+  // Prisma's Decimal instances can't cross into VendorForm ("use client") as-is.
+  const serializedVendor = {
+    ...vendor,
+    goal1: vendor.goal1 ? Number(vendor.goal1) : null,
+    goal2: vendor.goal2 ? Number(vendor.goal2) : null,
+    commissionPct1: vendor.commissionPct1 ? Number(vendor.commissionPct1) : null,
+    commissionPct2: vendor.commissionPct2 ? Number(vendor.commissionPct2) : null,
+    commissionStepValue: vendor.commissionStepValue ? Number(vendor.commissionStepValue) : null,
+    personalGoal: vendor.personalGoal ? Number(vendor.personalGoal) : null,
+  };
+
   return (
     <div className="max-w-xl">
       <BackLink href="/perfil" label="Voltar" />
@@ -39,7 +50,7 @@ export default async function EditVendorPage({
         </div>
       )}
 
-      <VendorForm vendor={vendor} action={updateVendorAction.bind(null, vendor.id)} />
+      <VendorForm vendor={serializedVendor} action={updateVendorAction.bind(null, vendor.id)} />
 
       {vendor.id !== session.user.id && (
         <form action={deactivateVendorAction.bind(null, vendor.id)} className="mt-4">

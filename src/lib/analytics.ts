@@ -147,23 +147,35 @@ export async function getFunnel(session: Session) {
   return pipeline?.stages.map((s) => ({ name: s.name, count: s._count.deals })) ?? [];
 }
 
+/** Once achieved passes goal2, the commission keeps climbing +0.02 points
+ * for every extra commissionStepValue in revenue past goal2 — open-ended,
+ * per the seller's own cadastro (no cap). */
+const COMMISSION_STEP_INCREMENT_PCT = 0.02;
+
 /** Commission unlocks at whichever goal tier the achieved total reaches
  * (higher tier wins) — shared by getGoalProgress (self) and
- * getTeamPerformance (everyone, for the mediator/manager view). */
+ * getTeamPerformance (everyone, for the mediator/manager view). Returns the
+ * effective % too, since past goal2 it isn't just commissionPct2 anymore. */
 function computeCommission(
   achieved: number,
   goal1: number | null,
   goal2: number | null,
   commissionPct1: number | null,
   commissionPct2: number | null,
-): number {
+  commissionStepValue: number | null = null,
+): { earned: number; effectivePct: number | null } {
   if (goal2 !== null && commissionPct2 !== null && achieved >= goal2) {
-    return achieved * (commissionPct2 / 100);
+    let pct = commissionPct2;
+    if (commissionStepValue !== null && commissionStepValue > 0 && achieved > goal2) {
+      const extraSteps = Math.floor((achieved - goal2) / commissionStepValue);
+      pct = commissionPct2 + extraSteps * COMMISSION_STEP_INCREMENT_PCT;
+    }
+    return { earned: achieved * (pct / 100), effectivePct: pct };
   }
   if (goal1 !== null && commissionPct1 !== null && achieved >= goal1) {
-    return achieved * (commissionPct1 / 100);
+    return { earned: achieved * (commissionPct1 / 100), effectivePct: commissionPct1 };
   }
-  return 0;
+  return { earned: 0, effectivePct: null };
 }
 
 export async function getGoalProgress(session: Session, referenceDate: Date = new Date()) {
@@ -174,6 +186,7 @@ export async function getGoalProgress(session: Session, referenceDate: Date = ne
       goal2: true,
       commissionPct1: true,
       commissionPct2: true,
+      commissionStepValue: true,
       personalGoal: true,
       name: true,
     },
@@ -196,9 +209,17 @@ export async function getGoalProgress(session: Session, referenceDate: Date = ne
   const goal2 = user.goal2 ? Number(user.goal2) : null;
   const commissionPct1 = user.commissionPct1 ? Number(user.commissionPct1) : null;
   const commissionPct2 = user.commissionPct2 ? Number(user.commissionPct2) : null;
+  const commissionStepValue = user.commissionStepValue ? Number(user.commissionStepValue) : null;
   const personalGoal = user.personalGoal ? Number(user.personalGoal) : null;
 
-  const commissionEarned = computeCommission(achieved, goal1, goal2, commissionPct1, commissionPct2);
+  const { earned: commissionEarned, effectivePct: effectiveCommissionPct } = computeCommission(
+    achieved,
+    goal1,
+    goal2,
+    commissionPct1,
+    commissionPct2,
+    commissionStepValue,
+  );
 
   return {
     name: user.name,
@@ -207,7 +228,9 @@ export async function getGoalProgress(session: Session, referenceDate: Date = ne
     goal2,
     commissionPct1,
     commissionPct2,
+    commissionStepValue,
     commissionEarned,
+    effectiveCommissionPct,
     personalGoal,
   };
 }
@@ -217,6 +240,7 @@ export type SellerPerformance = {
   name: string;
   achieved: number;
   commissionEarned: number;
+  effectiveCommissionPct: number | null;
 };
 
 /**
@@ -234,7 +258,15 @@ export async function getTeamPerformance(
   const now = referenceDate;
   const sellers = await prisma.user.findMany({
     where: { deletedAt: null, role: "SELLER" },
-    select: { id: true, name: true, goal1: true, goal2: true, commissionPct1: true, commissionPct2: true },
+    select: {
+      id: true,
+      name: true,
+      goal1: true,
+      goal2: true,
+      commissionPct1: true,
+      commissionPct2: true,
+      commissionStepValue: true,
+    },
     orderBy: { name: "asc" },
   });
   if (sellers.length === 0) return [];
@@ -258,12 +290,16 @@ export async function getTeamPerformance(
       const goal2 = s.goal2 ? Number(s.goal2) : null;
       const commissionPct1 = s.commissionPct1 ? Number(s.commissionPct1) : null;
       const commissionPct2 = s.commissionPct2 ? Number(s.commissionPct2) : null;
-      return {
-        id: s.id,
-        name: s.name,
+      const commissionStepValue = s.commissionStepValue ? Number(s.commissionStepValue) : null;
+      const { earned, effectivePct } = computeCommission(
         achieved,
-        commissionEarned: computeCommission(achieved, goal1, goal2, commissionPct1, commissionPct2),
-      };
+        goal1,
+        goal2,
+        commissionPct1,
+        commissionPct2,
+        commissionStepValue,
+      );
+      return { id: s.id, name: s.name, achieved, commissionEarned: earned, effectiveCommissionPct: effectivePct };
     })
     .sort((a, b) => b.achieved - a.achieved);
 }

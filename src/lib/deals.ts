@@ -378,3 +378,71 @@ export async function checkAndAdvanceOverdueDeals() {
 
   return overdue.length;
 }
+
+export async function getDealInstallments(session: Session, dealId: string) {
+  const deal = await prisma.deal.findFirst({ where: { id: dealId, ...dealScopeWhere(session) } });
+  if (!deal) throw new Error("Negócio não encontrado ou sem permissão.");
+  return prisma.dealInstallment.findMany({ where: { dealId }, orderBy: { number: "asc" } });
+}
+
+export type InstallmentInput = { value: number; dueDate: Date };
+
+export async function addInstallment(session: Session, dealId: string, data: InstallmentInput) {
+  const deal = await prisma.deal.findFirst({ where: { id: dealId, ...dealScopeWhere(session) } });
+  if (!deal) throw new Error("Negócio não encontrado ou sem permissão.");
+  if (data.value <= 0) throw new Error("O valor da parcela deve ser maior que zero.");
+
+  const last = await prisma.dealInstallment.findFirst({ where: { dealId }, orderBy: { number: "desc" } });
+  return prisma.dealInstallment.create({
+    data: { dealId, number: (last?.number ?? 0) + 1, value: data.value, dueDate: data.dueDate },
+  });
+}
+
+/** Splits the deal's value into `count` equal monthly-spaced installments
+ * starting at firstDueDate — the last one absorbs any rounding remainder so
+ * they always sum exactly to the deal's value. Appends after any existing
+ * installments rather than replacing them. */
+export async function generateInstallments(
+  session: Session,
+  dealId: string,
+  count: number,
+  firstDueDate: Date,
+) {
+  const deal = await prisma.deal.findFirst({ where: { id: dealId, ...dealScopeWhere(session) } });
+  if (!deal) throw new Error("Negócio não encontrado ou sem permissão.");
+  if (count < 1 || count > 60) throw new Error("Escolha entre 1 e 60 parcelas.");
+
+  const total = Number(deal.value);
+  const base = Math.floor((total / count) * 100) / 100;
+  const last = await prisma.dealInstallment.findFirst({ where: { dealId }, orderBy: { number: "desc" } });
+  const startNumber = (last?.number ?? 0) + 1;
+
+  const rows = Array.from({ length: count }, (_, i) => {
+    const dueDate = new Date(firstDueDate.getFullYear(), firstDueDate.getMonth() + i, firstDueDate.getDate());
+    const isLast = i === count - 1;
+    const value = isLast ? Number((total - base * (count - 1)).toFixed(2)) : base;
+    return { dealId, number: startNumber + i, value, dueDate };
+  });
+
+  await prisma.dealInstallment.createMany({ data: rows });
+  return rows.length;
+}
+
+export async function toggleInstallmentPaid(session: Session, installmentId: string) {
+  const installment = await prisma.dealInstallment.findFirst({
+    where: { id: installmentId, deal: dealScopeWhere(session) },
+  });
+  if (!installment) throw new Error("Parcela não encontrada ou sem permissão.");
+  return prisma.dealInstallment.update({
+    where: { id: installmentId },
+    data: { paid: !installment.paid, paidAt: !installment.paid ? new Date() : null },
+  });
+}
+
+export async function deleteInstallment(session: Session, installmentId: string) {
+  const installment = await prisma.dealInstallment.findFirst({
+    where: { id: installmentId, deal: dealScopeWhere(session) },
+  });
+  if (!installment) throw new Error("Parcela não encontrada ou sem permissão.");
+  await prisma.dealInstallment.delete({ where: { id: installmentId } });
+}

@@ -2,9 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { canEdit } from "@/lib/permissions";
 import { requireView } from "@/lib/require-permission";
-import { getDeal } from "@/lib/deals";
+import { getDeal, getDealInstallments } from "@/lib/deals";
 import { deleteDealAction } from "../actions";
 import { DealNotesTimeline } from "@/components/negocios/DealNotesTimeline";
+import { DealInstallments } from "@/components/negocios/DealInstallments";
 
 export default async function DealDetailPage({
   params,
@@ -17,6 +18,7 @@ export default async function DealDetailPage({
 
   const deal = await getDeal(session, id);
   if (!deal) notFound();
+  const installments = await getDealInstallments(session, deal.id);
 
   return (
     <div className="max-w-2xl">
@@ -66,6 +68,20 @@ export default async function DealDetailPage({
             </button>
           </form>
         )}
+
+        <div className="mt-5 border-t border-gold-deep/25 pt-4">
+          <DealInstallments
+            dealId={deal.id}
+            installments={installments.map((i) => ({
+              id: i.id,
+              number: i.number,
+              value: Number(i.value),
+              dueDate: i.dueDate.toISOString(),
+              paid: i.paid,
+            }))}
+            canEdit={editable}
+          />
+        </div>
 
         <div className="mt-5 border-t border-gold-deep/25 pt-4">
           <DealNotesTimeline
