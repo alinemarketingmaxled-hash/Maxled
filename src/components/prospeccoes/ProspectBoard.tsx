@@ -198,7 +198,7 @@ export function ProspectBoard({
                           {!p.activation ? (
                             <button
                               onClick={() => setActivationTarget(p)}
-                              className="text-left text-[11px] text-ink-faint hover:text-gold-bright hover:underline"
+                              className="text-left text-[11.5px] font-semibold text-gold-bright hover:underline"
                             >
                               Tornar cliente ativo
                             </button>
