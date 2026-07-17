@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { MyProfileForm } from "@/components/perfil/MyProfileForm";
 import { BackLink } from "@/components/shell/BackLink";
+import { AppearanceSettings } from "@/components/shell/AppearanceSettings";
 
 const ROLE_LABELS: Record<string, string> = {
   ADMIN: "Admin",
@@ -38,6 +39,7 @@ export default async function MeuPerfilPage() {
           personalGoal: user.personalGoal ? Number(user.personalGoal) : null,
         }}
       />
+      <AppearanceSettings />
     </div>
   );
 }
