@@ -176,7 +176,6 @@ export async function submitActivationRequest(session: Session, prospectId: stri
 
   const clientStage = await prisma.prospectStage.findFirst({ where: { isClientStage: true } });
   if (!clientStage) throw new Error('Coluna "Cliente Ativo" não configurada.');
-  await assertStageUnlocked(prospectId, clientStage);
 
   const request = await prisma.clientActivationRequest.upsert({
     where: { prospectId },

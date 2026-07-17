@@ -65,8 +65,11 @@ function daysSince(iso: string) {
 }
 
 /** Columns unlock left-to-right: a stage is available once the previous
- * one (by order) has been marked done for that prospect. */
+ * one (by order) has been marked done for that prospect. "Cliente Ativo" is
+ * exempt — it stays a visible button on every prospect, since a deal can
+ * close out of order and shouldn't be hidden behind the sequence. */
 function isStageUnlocked(prospect: ProspectRow, stage: ProspectStageDef, stages: ProspectStageDef[]) {
+  if (stage.isClientStage) return true;
   const idx = stages.findIndex((s) => s.id === stage.id);
   if (idx <= 0) return true;
   const prevStage = stages[idx - 1];
@@ -189,13 +192,13 @@ export function ProspectBoard({
                           {!p.activation ? (
                             <button
                               onClick={() => setActivationTarget(p)}
-                              className="text-left text-[11.5px] font-semibold text-gold-bright hover:underline"
+                              className="rounded-md bg-gold-solid px-2.5 py-1.5 text-[11.5px] font-semibold text-black hover:bg-gold-solid-bright"
                             >
                               Tornar cliente ativo
                             </button>
                           ) : p.activation.status === "PENDENTE" ? (
-                            <span className="rounded-full bg-warning/15 px-1.5 py-0.5 text-[10.5px] font-semibold text-warning">
-                              Aguardando aprovação
+                            <span className="rounded-full bg-surface-3 px-1.5 py-0.5 text-[10.5px] font-semibold text-ink-faint">
+                              Em análise pelo mediador
                             </span>
                           ) : p.activation.status === "RECUSADO" ? (
                             <div>
