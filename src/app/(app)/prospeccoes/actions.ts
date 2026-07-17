@@ -9,11 +9,11 @@ import {
   updateProspect,
   deleteProspect,
   upsertProspectStageValue,
-  addProspectStage,
   submitActivationRequest,
   approveActivation,
   rejectActivation,
 } from "@/lib/prospects";
+import { createTask } from "@/lib/tasks";
 import type { ProspectTemperature } from "@/generated/prisma/client";
 
 async function requireEdit() {
@@ -139,22 +139,6 @@ export async function saveStageValueAction(
   return { ok: true };
 }
 
-export async function addProspectStageAction(formData: FormData): Promise<{ error?: string; ok?: boolean }> {
-  const session = await auth();
-  if (!session?.user || session.user.role !== "MEDIATOR") {
-    return { error: "Apenas o mediador pode adicionar colunas." };
-  }
-  const name = (formData.get("name") as string)?.trim();
-  if (!name) return { error: "Dê um nome para a coluna." };
-  try {
-    await addProspectStage(name);
-  } catch (e) {
-    return { error: errorMessage(e) };
-  }
-  revalidatePath("/");
-  return { ok: true };
-}
-
 export async function submitActivationAction(
   prospectId: string,
   formData: FormData,
@@ -231,5 +215,28 @@ export async function rejectActivationAction(
     return { error: errorMessage(e) };
   }
   revalidatePath("/");
+  return { ok: true };
+}
+
+/** Backs the "+ Agendar" button on the Prospecções board — a task with a
+ * due date, optionally linked to an existing prospect. Shows up
+ * automatically in "Tarefas de hoje"/"Atrasados" like any other task. */
+export async function scheduleTaskAction(formData: FormData): Promise<{ error?: string; ok?: boolean }> {
+  const session = await requireEdit();
+  const title = (formData.get("title") as string)?.trim();
+  const dueDateStr = (formData.get("dueDate") as string)?.trim();
+  const prospectId = (formData.get("prospectId") as string)?.trim() || null;
+
+  if (!title || !dueDateStr) return { error: "Escreva o que fazer e escolha uma data." };
+  const dueDate = new Date(dueDateStr);
+  if (Number.isNaN(dueDate.getTime())) return { error: "Data inválida." };
+
+  try {
+    await createTask(session, title, dueDate, null, prospectId);
+  } catch (e) {
+    return { error: errorMessage(e) };
+  }
+  revalidatePath("/");
+  revalidatePath("/agenda");
   return { ok: true };
 }

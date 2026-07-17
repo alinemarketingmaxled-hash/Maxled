@@ -62,18 +62,19 @@ export async function seedProduction() {
   });
 
   const prospectStageDefs = [
-    { name: "Conversação", order: 0 },
-    { name: "Retorno", order: 1 },
-    { name: "Cotação", order: 2 },
-    { name: "Negociação", order: 3 },
-    { name: "Cliente Ativo", order: 4, isClientStage: true },
+    { id: "prospect-stage-prospeccao", name: "Prospecção", order: 0 },
+    { id: "prospect-stage-0", name: "Conversação", order: 1 },
+    { id: "prospect-stage-1", name: "Retorno", order: 2 },
+    { id: "prospect-stage-2", name: "Cotação", order: 3 },
+    { id: "prospect-stage-3", name: "Negociação", order: 4 },
+    { id: "prospect-stage-4", name: "Cliente Ativo", order: 5, isClientStage: true },
   ];
   for (const s of prospectStageDefs) {
     await prisma.prospectStage.upsert({
-      where: { id: `prospect-stage-${s.order}` },
-      update: {},
+      where: { id: s.id },
+      update: { name: s.name, order: s.order, isClientStage: s.isClientStage ?? false },
       create: {
-        id: `prospect-stage-${s.order}`,
+        id: s.id,
         name: s.name,
         order: s.order,
         isClientStage: s.isClientStage ?? false,
