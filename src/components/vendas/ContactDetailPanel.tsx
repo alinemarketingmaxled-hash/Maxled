@@ -10,6 +10,7 @@ import type { ContactInsights } from "@/lib/contacts";
 import { deleteContactAction } from "@/app/(app)/vendas/actions";
 import { addPastSaleAction } from "@/app/(app)/negocios/actions";
 import { WhatsAppSendBox } from "@/components/vendas/WhatsAppSendBox";
+import { DealDetailModal } from "@/components/negocios/DealDetailModal";
 
 /** deals.value is typed as `number`, not Prisma's Decimal — Client
  * Components can't receive Decimal instances from a Server Component
@@ -186,6 +187,7 @@ export function ContactDetailPanel({
   insights: ContactInsights;
 }) {
   const [tab, setTab] = useState<TabKey>("geral");
+  const [openDealId, setOpenDealId] = useState<string | null>(null);
   const initials = `${contact.firstName[0] ?? ""}${contact.lastName[0] ?? ""}`.toUpperCase();
   const waNumber = contact.mobile?.replace(/\D/g, "");
 
@@ -358,18 +360,25 @@ export function ContactDetailPanel({
 
       {tab === "historico" && (
         <div className="flex flex-col gap-3">
+          <p className="text-[11px] text-ink-faint">Clique em um item pra ver os detalhes e editar.</p>
           <ul className="flex flex-col gap-2.5">
             {contact.deals
               .slice()
               .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
               .map((deal) => (
-                <li key={deal.id} className="flex items-start gap-2.5 text-xs">
-                  <span className="mt-1 h-1.5 w-1.5 flex-none rounded-full bg-gold" />
-                  <span>
-                    <b className="text-ink">{deal.name}</b> — {formatCurrency(deal.value)} · estágio{" "}
-                    {deal.stage.name}
-                    <span className="ml-1.5 text-ink-faint">· {formatDate(deal.updatedAt)}</span>
-                  </span>
+                <li key={deal.id}>
+                  <button
+                    type="button"
+                    onClick={() => setOpenDealId(deal.id)}
+                    className="flex w-full items-start gap-2.5 rounded-md px-1.5 py-1 text-left text-xs transition-colors hover:bg-surface-2"
+                  >
+                    <span className="mt-1 h-1.5 w-1.5 flex-none rounded-full bg-gold" />
+                    <span>
+                      <b className="text-ink">{deal.name}</b> — {formatCurrency(deal.value)} · estágio{" "}
+                      {deal.stage.name}
+                      <span className="ml-1.5 text-ink-faint">· {formatDate(deal.updatedAt)}</span>
+                    </span>
+                  </button>
                 </li>
               ))}
             {contact.deals.length === 0 && (
@@ -383,6 +392,10 @@ export function ContactDetailPanel({
             </div>
           )}
         </div>
+      )}
+
+      {openDealId && (
+        <DealDetailModal dealId={openDealId} canEdit={canEditDeals} onClose={() => setOpenDealId(null)} />
       )}
     </div>
   );
