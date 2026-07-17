@@ -14,6 +14,7 @@ import { getDailyTasks } from "@/lib/calls";
 import { getOverdueTasks } from "@/lib/tasks";
 import { getInProgressDeals } from "@/lib/deals";
 import { listProspects, listProspectStages, listPendingActivationRequests } from "@/lib/prospects";
+import { assignableOwners } from "@/app/(app)/vendas/actions";
 import { buildLineChart } from "@/lib/chart-utils";
 import { AnaliticaTabs } from "@/components/home/AnaliticaTabs";
 import { QuickNav } from "@/components/home/QuickNav";
@@ -79,6 +80,7 @@ export default async function AnaliticaPage({
     prospects,
     prospectStages,
     pendingActivations,
+    prospectOwners,
   ] = await Promise.all([
     range ? getKpisForRange(session, range) : getKpis(session, referenceDate),
     range ? getRevenueByMonthRange(session, range.from, range.to) : getRevenueByMonth(session),
@@ -91,6 +93,7 @@ export default async function AnaliticaPage({
     listProspects(session),
     listProspectStages(),
     listPendingActivationRequests(session),
+    assignableOwners(session),
   ]);
 
   const goalTiers = [
@@ -157,6 +160,7 @@ export default async function AnaliticaPage({
         selectedRangeTo={selectedRangeTo}
         prospects={prospects.map((p) => ({
           id: p.id,
+          ownerId: p.ownerId,
           ownerName: p.owner.name,
           name: p.name,
           clientName: p.clientName,
@@ -200,6 +204,7 @@ export default async function AnaliticaPage({
           condicaoPagamento: r.condicaoPagamento,
           createdAt: r.createdAt.toISOString(),
         }))}
+        prospectOwners={prospectOwners.map((o) => ({ id: o.id, name: o.name }))}
       />
     </div>
   );
