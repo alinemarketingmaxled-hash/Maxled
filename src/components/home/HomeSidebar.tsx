@@ -25,6 +25,7 @@ type Goal = {
   personalGoal: number | null;
 } | null;
 type CommissionTier = { y: number; value: number; pct: number | null };
+type ImportantPost = { id: string; body: string | null; authorName: string | null; createdAt: string };
 
 function currency(v: number) {
   return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
@@ -47,6 +48,7 @@ export function HomeSidebar({
   dailyTasks,
   overdueTasks,
   selectedMonth,
+  importantPosts,
 }: {
   kpis: Kpis;
   revenueByMonth: RevenueMonth[];
@@ -58,6 +60,7 @@ export function HomeSidebar({
   dailyTasks: DailyTasks;
   overdueTasks: TaskRow[];
   selectedMonth: string;
+  importantPosts: ImportantPost[];
 }) {
   const todayItems = [
     ...dailyTasks.toCall.map((t) => ({ ...t, tag: "Ligar" })),
@@ -160,6 +163,29 @@ export function HomeSidebar({
             </div>
           ))}
         </div>
+      </div>
+
+      <div className={CARD}>
+        <div className="mb-2.5 flex items-center justify-between">
+          <h3 className="text-[13px] font-semibold text-ink">Comunicados</h3>
+          <Link href="/social" className="text-[10.5px] text-gold-bright hover:underline">
+            Ver todos
+          </Link>
+        </div>
+        {importantPosts.length === 0 ? (
+          <p className="text-[11.5px] text-ink-faint">Nenhum comunicado importante no momento.</p>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {importantPosts.map((p) => (
+              <div key={p.id} className="border-b border-dashed border-gold-deep/18 pb-2 text-[11.5px] last:border-b-0 last:pb-0">
+                <p className="line-clamp-2 text-ink">{p.body}</p>
+                <p className="mt-0.5 text-[10.5px] text-ink-faint">
+                  {p.authorName} · {new Date(p.createdAt).toLocaleDateString("pt-BR")}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className={CARD}>

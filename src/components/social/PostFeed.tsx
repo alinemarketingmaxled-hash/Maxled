@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { toggleLikeAction, deletePostAction, addCommentAction } from "@/app/(app)/social/actions";
+import { toggleLikeAction, deletePostAction, addCommentAction, toggleImportantAction } from "@/app/(app)/social/actions";
 
 type Author = { id: string; name: string; avatarUrl: string | null };
 type Comment = { id: string; body: string; createdAt: string; author: Author };
@@ -12,6 +12,7 @@ export type FeedPost = {
   id: string;
   body: string | null;
   imageUrl: string | null;
+  important: boolean;
   createdAt: string;
   author: Author;
   likeCount: number;
@@ -41,10 +42,19 @@ function Avatar({ author, size = "md" }: { author: Author; size?: "sm" | "md" })
   );
 }
 
-function PostCard({ post, currentUserId }: { post: FeedPost; currentUserId: string }) {
+function PostCard({
+  post,
+  currentUserId,
+  isMediator,
+}: {
+  post: FeedPost;
+  currentUserId: string;
+  isMediator: boolean;
+}) {
   const router = useRouter();
   const [likeCount, setLikeCount] = useState(post.likeCount);
   const [likedByMe, setLikedByMe] = useState(post.likedByMe);
+  const [important, setImportant] = useState(post.important);
   const [showComments, setShowComments] = useState(post.comments.length > 0);
   const [commentBody, setCommentBody] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -54,6 +64,14 @@ function PostCard({ post, currentUserId }: { post: FeedPost; currentUserId: stri
     setLikeCount((c) => (likedByMe ? c - 1 : c + 1));
     startTransition(async () => {
       await toggleLikeAction(post.id);
+      router.refresh();
+    });
+  }
+
+  function handleToggleImportant() {
+    setImportant((v) => !v);
+    startTransition(async () => {
+      await toggleImportantAction(post.id);
       router.refresh();
     });
   }
@@ -76,7 +94,11 @@ function PostCard({ post, currentUserId }: { post: FeedPost; currentUserId: stri
   }
 
   return (
-    <div className="rounded-xl border border-gold-deep/30 bg-surface p-4">
+    <div
+      className={`rounded-xl border p-4 ${
+        important ? "border-gold-solid bg-gold-solid/[0.06]" : "border-gold-deep/30 bg-surface"
+      }`}
+    >
       <div className="flex items-start gap-3">
         <Avatar author={post.author} />
         <div className="min-w-0 flex-1">
@@ -85,14 +107,27 @@ function PostCard({ post, currentUserId }: { post: FeedPost; currentUserId: stri
             <span className="text-[11px] text-ink-faint">
               {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ptBR })}
             </span>
-            {post.author.id === currentUserId && (
-              <button
-                onClick={handleDelete}
-                className="ml-auto text-[11px] text-ink-faint hover:text-critical"
-              >
-                Excluir
-              </button>
+            {important && (
+              <span className="rounded-full bg-gold-solid/20 px-1.5 py-0.5 text-[10px] font-semibold text-gold-bright">
+                ★ Importante
+              </span>
             )}
+            <div className="ml-auto flex items-center gap-2.5">
+              {isMediator && (
+                <button
+                  onClick={handleToggleImportant}
+                  disabled={isPending}
+                  className="text-[11px] text-ink-faint hover:text-gold-bright disabled:opacity-50"
+                >
+                  {important ? "Remover destaque" : "Marcar importante"}
+                </button>
+              )}
+              {post.author.id === currentUserId && (
+                <button onClick={handleDelete} className="text-[11px] text-ink-faint hover:text-critical">
+                  Excluir
+                </button>
+              )}
+            </div>
           </div>
           {post.body && <p className="mt-1.5 whitespace-pre-wrap text-[13px] text-ink">{post.body}</p>}
           {post.imageUrl && (
@@ -157,7 +192,15 @@ function PostCard({ post, currentUserId }: { post: FeedPost; currentUserId: stri
   );
 }
 
-export function PostFeed({ posts, currentUserId }: { posts: FeedPost[]; currentUserId: string }) {
+export function PostFeed({
+  posts,
+  currentUserId,
+  isMediator,
+}: {
+  posts: FeedPost[];
+  currentUserId: string;
+  isMediator: boolean;
+}) {
   if (posts.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-gold-deep/40 bg-surface px-6 py-10 text-center text-sm text-ink-muted">
@@ -169,7 +212,7 @@ export function PostFeed({ posts, currentUserId }: { posts: FeedPost[]; currentU
   return (
     <div className="flex flex-col gap-3">
       {posts.map((post) => (
-        <PostCard key={post.id} post={post} currentUserId={currentUserId} />
+        <PostCard key={post.id} post={post} currentUserId={currentUserId} isMediator={isMediator} />
       ))}
     </div>
   );

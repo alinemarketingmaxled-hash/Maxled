@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { getGoalProgress } from "@/lib/analytics";
 import { Sidebar } from "@/components/shell/Sidebar";
 import { Topbar } from "@/components/shell/Topbar";
 import { CircuitBackground } from "@/components/shell/CircuitBackground";
@@ -13,15 +14,31 @@ export default async function AppLayout({
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const me = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { name: true, avatarUrl: true },
-  });
+  const [me, goal] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { name: true, avatarUrl: true },
+    }),
+    getGoalProgress(session),
+  ]);
 
   return (
     <div className="relative flex min-h-screen flex-1">
       <CircuitBackground />
-      <Sidebar role={session.user.role} />
+      <Sidebar
+        role={session.user.role}
+        commission={
+          goal
+            ? {
+                achieved: goal.achieved,
+                dealsWon: goal.dealsWon,
+                goal1: goal.goal1,
+                commissionEarned: goal.commissionEarned,
+                effectiveCommissionPct: goal.effectiveCommissionPct,
+              }
+            : null
+        }
+      />
       <div className="relative z-10 flex flex-1 flex-col">
         <Topbar
           name={me?.name ?? session.user.name ?? session.user.email ?? "Usuário"}
