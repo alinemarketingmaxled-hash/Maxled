@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getGoalProgress } from "@/lib/analytics";
 import { listImportantPosts } from "@/lib/social";
+import { areProspectStagesSeeded, ensureProspectStagesSeeded } from "@/lib/prospect-stages";
 import { Sidebar } from "@/components/shell/Sidebar";
 import { Topbar } from "@/components/shell/Topbar";
 import { CircuitBackground } from "@/components/shell/CircuitBackground";
@@ -14,6 +15,10 @@ export default async function AppLayout({
 }) {
   const session = await auth();
   if (!session?.user) redirect("/login");
+
+  if (!(await areProspectStagesSeeded())) {
+    await ensureProspectStagesSeeded();
+  }
 
   const [me, goal, importantPosts] = await Promise.all([
     prisma.user.findUnique({
