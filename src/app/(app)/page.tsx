@@ -15,7 +15,6 @@ import { getOverdueTasks } from "@/lib/tasks";
 import { getInProgressDeals } from "@/lib/deals";
 import { listProspects, listProspectStages, listPendingActivationRequests } from "@/lib/prospects";
 import { assignableOwners } from "@/app/(app)/vendas/actions";
-import { listImportantPosts } from "@/lib/social";
 import { buildLineChart } from "@/lib/chart-utils";
 import { AnaliticaTabs } from "@/components/home/AnaliticaTabs";
 
@@ -81,7 +80,6 @@ export default async function AnaliticaPage({
     prospectStages,
     pendingActivations,
     prospectOwners,
-    importantPosts,
   ] = await Promise.all([
     range ? getKpisForRange(session, range) : getKpis(session, referenceDate),
     range ? getRevenueByMonthRange(session, range.from, range.to) : getRevenueByMonth(session),
@@ -95,7 +93,6 @@ export default async function AnaliticaPage({
     listProspectStages(),
     listPendingActivationRequests(session),
     assignableOwners(session),
-    listImportantPosts(),
   ]);
 
   const goalTiers = [
@@ -205,12 +202,6 @@ export default async function AnaliticaPage({
           createdAt: r.createdAt.toISOString(),
         }))}
         prospectOwners={prospectOwners.map((o) => ({ id: o.id, name: o.name }))}
-        importantPosts={importantPosts.map((p) => ({
-          id: p.id,
-          body: p.body,
-          authorName: p.authorName,
-          createdAt: p.createdAt.toISOString(),
-        }))}
       />
     </div>
   );
