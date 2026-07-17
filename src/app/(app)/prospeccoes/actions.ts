@@ -6,6 +6,8 @@ import { auth } from "@/auth";
 import { canEdit } from "@/lib/permissions";
 import {
   createProspect,
+  updateProspect,
+  deleteProspect,
   upsertProspectStageValue,
   addProspectStage,
   submitActivationRequest,
@@ -58,6 +60,57 @@ export async function createProspectAction(formData: FormData): Promise<{ error?
       notes,
       contactDate,
     });
+  } catch (e) {
+    return { error: errorMessage(e) };
+  }
+  revalidatePath("/");
+  return { ok: true };
+}
+
+export async function updateProspectAction(
+  prospectId: string,
+  formData: FormData,
+): Promise<{ error?: string; ok?: boolean }> {
+  const session = await requireEdit();
+  const name = (formData.get("name") as string)?.trim();
+  const clientName = (formData.get("clientName") as string)?.trim();
+  const phone = (formData.get("phone") as string)?.trim() || null;
+  const email = (formData.get("email") as string)?.trim() || null;
+  const temperature = (formData.get("temperature") as string)?.trim() as ProspectTemperature;
+  const profile = (formData.get("profile") as string)?.trim();
+  const notes = (formData.get("notes") as string)?.trim() || null;
+  const contactDateStr = (formData.get("contactDate") as string)?.trim();
+  const ownerId = (formData.get("ownerId") as string)?.trim() || session.user.id;
+
+  if (!name || !clientName || !profile || !TEMPERATURES.includes(temperature) || !contactDateStr) {
+    return { error: "Preencha nome, cliente, status, perfil e data." };
+  }
+  const contactDate = new Date(contactDateStr);
+  if (Number.isNaN(contactDate.getTime())) return { error: "Data inválida." };
+
+  try {
+    await updateProspect(session, prospectId, {
+      name,
+      clientName,
+      phone,
+      email,
+      temperature,
+      profile,
+      notes,
+      contactDate,
+      ownerId,
+    });
+  } catch (e) {
+    return { error: errorMessage(e) };
+  }
+  revalidatePath("/");
+  return { ok: true };
+}
+
+export async function deleteProspectAction(prospectId: string): Promise<{ error?: string; ok?: boolean }> {
+  const session = await requireEdit();
+  try {
+    await deleteProspect(session, prospectId);
   } catch (e) {
     return { error: errorMessage(e) };
   }

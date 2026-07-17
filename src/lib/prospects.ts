@@ -60,6 +60,49 @@ export async function createProspect(session: Session, data: ProspectInput) {
   return prospect;
 }
 
+export type ProspectUpdateInput = {
+  name: string;
+  clientName: string;
+  phone?: string | null;
+  email?: string | null;
+  temperature: ProspectTemperature;
+  profile: string;
+  notes?: string | null;
+  contactDate: Date;
+  ownerId: string;
+};
+
+export async function updateProspect(session: Session, prospectId: string, data: ProspectUpdateInput) {
+  const prospect = await prisma.prospect.findFirst({
+    where: { id: prospectId, deletedAt: null, ...prospectScopeWhere(session) },
+  });
+  if (!prospect) throw new Error("Prospecção não encontrada ou sem permissão.");
+
+  const updated = await prisma.prospect.update({ where: { id: prospectId }, data });
+  await logActivity({
+    actorId: session.user.id,
+    entityType: "Prospect",
+    entityId: prospectId,
+    action: "updated",
+  });
+  return updated;
+}
+
+export async function deleteProspect(session: Session, prospectId: string) {
+  const prospect = await prisma.prospect.findFirst({
+    where: { id: prospectId, deletedAt: null, ...prospectScopeWhere(session) },
+  });
+  if (!prospect) throw new Error("Prospecção não encontrada ou sem permissão.");
+
+  await prisma.prospect.update({ where: { id: prospectId }, data: { deletedAt: new Date() } });
+  await logActivity({
+    actorId: session.user.id,
+    entityType: "Prospect",
+    entityId: prospectId,
+    action: "deleted",
+  });
+}
+
 export type StageValueInput = { date: Date | null; note: string | null; done: boolean };
 
 /** Fills/edits one cell of the sheet. Also bumps lastTouchedAt (resets the

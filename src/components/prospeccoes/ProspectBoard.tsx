@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   createProspectAction,
+  updateProspectAction,
+  deleteProspectAction,
   saveStageValueAction,
   addProspectStageAction,
   submitActivationAction,
@@ -15,6 +17,7 @@ export type StageValue = { stageId: string; date: string | null; note: string | 
 export type Activation = { id: string; status: "PENDENTE" | "APROVADO" | "RECUSADO"; rejectionReason: string | null };
 export type ProspectRow = {
   id: string;
+  ownerId: string;
   ownerName: string | null;
   name: string;
   clientName: string;
@@ -61,16 +64,20 @@ function daysSince(iso: string) {
   return Math.floor((Date.now() - new Date(iso).getTime()) / (1000 * 60 * 60 * 24));
 }
 
+export type ProspectOwner = { id: string; name: string | null };
+
 export function ProspectBoard({
   prospects,
   stages,
   isMediator,
   pendingActivations,
+  owners,
 }: {
   prospects: ProspectRow[];
   stages: ProspectStageDef[];
   isMediator: boolean;
   pendingActivations: PendingActivation[];
+  owners: ProspectOwner[];
 }) {
   const router = useRouter();
   const [showNew, setShowNew] = useState(false);
@@ -78,6 +85,7 @@ export function ProspectBoard({
   const [showQueue, setShowQueue] = useState(false);
   const [cell, setCell] = useState<{ prospect: ProspectRow; stage: ProspectStageDef } | null>(null);
   const [activationTarget, setActivationTarget] = useState<ProspectRow | null>(null);
+  const [editTarget, setEditTarget] = useState<ProspectRow | null>(null);
 
   async function refresh() {
     router.refresh();
@@ -161,24 +169,26 @@ export function ProspectBoard({
               return (
                 <tr key={p.id} className={atrasado ? "bg-critical/[0.06]" : undefined}>
                   <td className="sticky left-0 z-10 border-b border-dashed border-gold-deep/18 bg-surface px-3 py-2.5 align-top">
-                    <div className="font-semibold text-ink">{p.clientName}</div>
-                    <div className="text-[11px] text-ink-muted">
-                      {p.name}
-                      {p.phone ? ` · ${p.phone}` : ""}
-                    </div>
-                    <div className="mt-1 flex flex-wrap items-center gap-1">
-                      <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${TEMP_CLASS[p.temperature]}`}>
-                        {TEMP_LABEL[p.temperature]}
-                      </span>
-                      <span className="rounded-full bg-surface-2 px-1.5 py-0.5 text-[10px] text-ink-faint">
-                        {p.profile}
-                      </span>
-                      {atrasado && (
-                        <span className="rounded-full bg-critical/15 px-1.5 py-0.5 text-[10px] font-semibold text-critical">
-                          Atrasado
+                    <button onClick={() => setEditTarget(p)} className="block w-full text-left hover:opacity-80">
+                      <div className="font-semibold text-ink">{p.clientName}</div>
+                      <div className="text-[11px] text-ink-muted">
+                        {p.name}
+                        {p.phone ? ` · ${p.phone}` : ""}
+                      </div>
+                      <div className="mt-1 flex flex-wrap items-center gap-1">
+                        <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${TEMP_CLASS[p.temperature]}`}>
+                          {TEMP_LABEL[p.temperature]}
                         </span>
-                      )}
-                    </div>
+                        <span className="rounded-full bg-surface-2 px-1.5 py-0.5 text-[10px] text-ink-faint">
+                          {p.profile}
+                        </span>
+                        {atrasado && (
+                          <span className="rounded-full bg-critical/15 px-1.5 py-0.5 text-[10px] font-semibold text-critical">
+                            Atrasado
+                          </span>
+                        )}
+                      </div>
+                    </button>
                   </td>
                   {stages.map((s) => {
                     const value = p.stageValues.find((v) => v.stageId === s.id);
@@ -188,7 +198,7 @@ export function ProspectBoard({
                           {!p.activation ? (
                             <button
                               onClick={() => setActivationTarget(p)}
-                              className="rounded-md border border-gold-deep/40 px-2 py-1 text-[11px] text-ink-muted hover:border-gold hover:text-ink"
+                              className="text-left text-[11px] text-ink-faint hover:text-gold-bright hover:underline"
                             >
                               Tornar cliente ativo
                             </button>
@@ -223,18 +233,20 @@ export function ProspectBoard({
                       <td key={s.id} className="border-b border-l border-dashed border-gold-deep/18 px-3 py-2.5 align-top">
                         <button
                           onClick={() => setCell({ prospect: p, stage: s })}
-                          className="block w-full text-left"
+                          className="block w-full text-left hover:opacity-80"
                         >
                           {value?.date || value?.note ? (
-                            <div className="rounded-md bg-surface-2 px-2 py-1">
-                              <div className="flex items-center justify-between gap-2 text-[10.5px] text-ink-faint">
-                                <span>{formatDate(value.date) ?? "—"}</span>
-                                <span>{value.done ? "✔️" : "◻"}</span>
+                            <div className="text-[11.5px] leading-snug">
+                              <div className="text-ink-muted">
+                                Data: {formatDate(value.date) ?? "—"} {value.done && <span className="text-good">✔</span>}
                               </div>
-                              {value.note && <div className="mt-0.5 truncate text-[11px] text-ink">{value.note}</div>}
+                              <div className="truncate text-ink-faint">Obs.: {value.note || "—"}</div>
                             </div>
                           ) : (
-                            <span className="text-[11px] text-ink-faint hover:text-gold-bright">+ preencher</span>
+                            <div className="text-[11.5px] leading-snug text-ink-faint">
+                              <div>Data</div>
+                              <div>Obs.:</div>
+                            </div>
                           )}
                         </button>
                       </td>
@@ -260,6 +272,22 @@ export function ProspectBoard({
           onClose={() => setShowNew(false)}
           onSaved={async () => {
             setShowNew(false);
+            await refresh();
+          }}
+        />
+      )}
+
+      {editTarget && (
+        <EditProspectModal
+          prospect={editTarget}
+          owners={owners}
+          onClose={() => setEditTarget(null)}
+          onSaved={async () => {
+            setEditTarget(null);
+            await refresh();
+          }}
+          onDeleted={async () => {
+            setEditTarget(null);
             await refresh();
           }}
         />
@@ -401,6 +429,137 @@ function NewProspectModal({ onClose, onSaved }: { onClose: () => void; onSaved: 
           >
             {saving ? "Salvando…" : "Salvar"}
           </button>
+        </div>
+      </form>
+    </ModalShell>
+  );
+}
+
+function EditProspectModal({
+  prospect,
+  owners,
+  onClose,
+  onSaved,
+  onDeleted,
+}: {
+  prospect: ProspectRow;
+  owners: ProspectOwner[];
+  onClose: () => void;
+  onSaved: () => void;
+  onDeleted: () => void;
+}) {
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setSaving(true);
+    setError(null);
+    const fd = new FormData(e.currentTarget);
+    const r = await updateProspectAction(prospect.id, fd);
+    if (r.error) {
+      setError(r.error);
+      setSaving(false);
+      return;
+    }
+    onSaved();
+  }
+
+  async function handleDelete() {
+    if (!confirm(`Excluir a prospecção de "${prospect.clientName}"?`)) return;
+    setDeleting(true);
+    const r = await deleteProspectAction(prospect.id);
+    if (r.error) {
+      setError(r.error);
+      setDeleting(false);
+      return;
+    }
+    onDeleted();
+  }
+
+  return (
+    <ModalShell title={`Editar — ${prospect.clientName}`} onClose={onClose}>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">
+        {error && <p className="rounded-md bg-critical/10 px-2.5 py-1.5 text-xs text-critical">{error}</p>}
+        <label className="flex flex-col gap-1 text-xs">
+          <span className="text-ink-faint">Nome do contato</span>
+          <input name="name" required defaultValue={prospect.name} className={inputClass} />
+        </label>
+        <label className="flex flex-col gap-1 text-xs">
+          <span className="text-ink-faint">Cliente / empresa</span>
+          <input name="clientName" required defaultValue={prospect.clientName} className={inputClass} />
+        </label>
+        <div className="grid grid-cols-2 gap-2.5">
+          <label className="flex flex-col gap-1 text-xs">
+            <span className="text-ink-faint">Número</span>
+            <input name="phone" defaultValue={prospect.phone ?? ""} className={inputClass} />
+          </label>
+          <label className="flex flex-col gap-1 text-xs">
+            <span className="text-ink-faint">E-mail</span>
+            <input name="email" type="email" defaultValue={prospect.email ?? ""} className={inputClass} />
+          </label>
+        </div>
+        <div className="grid grid-cols-2 gap-2.5">
+          <label className="flex flex-col gap-1 text-xs">
+            <span className="text-ink-faint">Status</span>
+            <select name="temperature" defaultValue={prospect.temperature} className={inputClass}>
+              <option value="QUENTE">Quente</option>
+              <option value="MORNO">Morno</option>
+              <option value="FRIO">Frio</option>
+            </select>
+          </label>
+          <label className="flex flex-col gap-1 text-xs">
+            <span className="text-ink-faint">Perfil</span>
+            <input name="profile" list="profile-presets-edit" required defaultValue={prospect.profile} className={inputClass} />
+            <datalist id="profile-presets-edit">
+              {PROFILE_PRESETS.map((p) => (
+                <option key={p} value={p} />
+              ))}
+            </datalist>
+          </label>
+        </div>
+        {owners.length > 1 && (
+          <label className="flex flex-col gap-1 text-xs">
+            <span className="text-ink-faint">Vendedor</span>
+            <select name="ownerId" defaultValue={prospect.ownerId} className={inputClass}>
+              {owners.map((o) => (
+                <option key={o.id} value={o.id}>
+                  {o.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+        <label className="flex flex-col gap-1 text-xs">
+          <span className="text-ink-faint">Data</span>
+          <input name="contactDate" type="date" required defaultValue={prospect.contactDate.slice(0, 10)} className={inputClass} />
+        </label>
+        <label className="flex flex-col gap-1 text-xs">
+          <span className="text-ink-faint">Observação</span>
+          <textarea name="notes" rows={2} defaultValue={prospect.notes ?? ""} className={inputClass} />
+        </label>
+        <div className="mt-1 flex items-center justify-between gap-2">
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={deleting}
+            className="rounded-lg border border-critical/50 px-3.5 py-1.5 text-xs font-semibold text-critical hover:border-critical disabled:opacity-60"
+          >
+            {deleting ? "Excluindo…" : "Excluir"}
+          </button>
+          <div className="flex gap-2">
+            <button type="button" onClick={onClose} className="rounded-lg border border-gold-deep px-3.5 py-1.5 text-xs font-semibold text-ink">
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="rounded-lg bg-gold-solid px-3.5 py-1.5 text-xs font-semibold text-black hover:bg-gold-solid-bright disabled:opacity-60"
+            >
+              {saving ? "Salvando…" : "Salvar"}
+            </button>
+          </div>
         </div>
       </form>
     </ModalShell>
