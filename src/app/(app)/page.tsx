@@ -13,6 +13,7 @@ import {
 import { getDailyTasks } from "@/lib/calls";
 import { getOverdueTasks } from "@/lib/tasks";
 import { getInProgressDeals } from "@/lib/deals";
+import { listProspects, listProspectStages, listPendingActivationRequests } from "@/lib/prospects";
 import { buildLineChart } from "@/lib/chart-utils";
 import { AnaliticaTabs } from "@/components/home/AnaliticaTabs";
 import { QuickNav } from "@/components/home/QuickNav";
@@ -66,17 +67,31 @@ export default async function AnaliticaPage({
     ? toIsoDate(new Date(range.to.getFullYear(), range.to.getMonth(), range.to.getDate() - 1))
     : toIsoDate(defaultRangeTo);
 
-  const [kpis, revenueByMonth, funnel, goal, teamPerformance, dailyTasks, overdueTasks, inProgressDeals] =
-    await Promise.all([
-      range ? getKpisForRange(session, range) : getKpis(session, referenceDate),
-      range ? getRevenueByMonthRange(session, range.from, range.to) : getRevenueByMonth(session),
-      getFunnel(session),
-      getGoalProgress(session, referenceDate),
-      getTeamPerformance(session, referenceDate),
-      getDailyTasks(session),
-      getOverdueTasks(session),
-      getInProgressDeals(session),
-    ]);
+  const [
+    kpis,
+    revenueByMonth,
+    funnel,
+    goal,
+    teamPerformance,
+    dailyTasks,
+    overdueTasks,
+    inProgressDeals,
+    prospects,
+    prospectStages,
+    pendingActivations,
+  ] = await Promise.all([
+    range ? getKpisForRange(session, range) : getKpis(session, referenceDate),
+    range ? getRevenueByMonthRange(session, range.from, range.to) : getRevenueByMonth(session),
+    getFunnel(session),
+    getGoalProgress(session, referenceDate),
+    getTeamPerformance(session, referenceDate),
+    getDailyTasks(session),
+    getOverdueTasks(session),
+    getInProgressDeals(session),
+    listProspects(session),
+    listProspectStages(),
+    listPendingActivationRequests(session),
+  ]);
 
   const goalTiers = [
     goal?.goal1 != null ? { value: goal.goal1, pct: goal.commissionPct1 } : null,
@@ -96,7 +111,7 @@ export default async function AnaliticaPage({
   return (
     <div>
       <div className="mb-4">
-        <h2 className="font-display text-[22px] text-ink">Analítica</h2>
+        <h2 className="font-display text-[22px] text-ink">Início</h2>
         <p className="mt-0.5 text-[13px] text-ink-muted">
           Olá, {session.user.name ?? session.user.email} — indicadores em tempo real
         </p>
@@ -140,6 +155,51 @@ export default async function AnaliticaPage({
         periodMode={range ? "range" : "month"}
         selectedRangeFrom={selectedRangeFrom}
         selectedRangeTo={selectedRangeTo}
+        prospects={prospects.map((p) => ({
+          id: p.id,
+          ownerName: p.owner.name,
+          name: p.name,
+          clientName: p.clientName,
+          phone: p.phone,
+          email: p.email,
+          temperature: p.temperature,
+          profile: p.profile,
+          notes: p.notes,
+          contactDate: p.contactDate.toISOString(),
+          lastTouchedAt: p.lastTouchedAt.toISOString(),
+          currentStageId: p.currentStageId,
+          stageValues: p.stageValues.map((v) => ({
+            stageId: v.stageId,
+            date: v.date ? v.date.toISOString() : null,
+            note: v.note,
+            done: v.done,
+          })),
+          activation: p.activationRequest
+            ? {
+                id: p.activationRequest.id,
+                status: p.activationRequest.status,
+                rejectionReason: p.activationRequest.rejectionReason,
+              }
+            : null,
+        }))}
+        prospectStages={prospectStages.map((s) => ({
+          id: s.id,
+          name: s.name,
+          order: s.order,
+          isClientStage: s.isClientStage,
+        }))}
+        isMediator={session.user.role === "MEDIATOR"}
+        pendingActivations={pendingActivations.map((r) => ({
+          id: r.id,
+          prospectName: r.prospect.name,
+          clientName: r.prospect.clientName,
+          ownerName: r.prospect.owner.name,
+          razaoSocial: r.razaoSocial,
+          cnpj: r.cnpj,
+          valor: Number(r.valor),
+          condicaoPagamento: r.condicaoPagamento,
+          createdAt: r.createdAt.toISOString(),
+        }))}
       />
     </div>
   );

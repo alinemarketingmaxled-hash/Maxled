@@ -10,6 +10,12 @@ import { DateRangePicker } from "@/components/home/DateRangePicker";
 import { InProgressDealsPanel, type InProgressDeal } from "@/components/home/InProgressDealsPanel";
 import { GoalProgressBar } from "@/components/home/GoalProgressBar";
 import type { TaskRow } from "@/components/agenda/TaskList";
+import {
+  ProspectBoard,
+  type ProspectRow,
+  type ProspectStageDef,
+  type PendingActivation,
+} from "@/components/prospeccoes/ProspectBoard";
 
 type Kpis = {
   revenue: number;
@@ -45,6 +51,7 @@ function currency(v: number) {
 }
 
 const TABS = [
+  { key: "prospeccoes", label: "📋 Prospecções" },
   { key: "hoje", label: "☀ Hoje" },
   { key: "atrasos", label: "⏰ Atrasos" },
   { key: "desempenho", label: "📊 Desempenho" },
@@ -72,6 +79,10 @@ export function AnaliticaTabs({
   periodMode,
   selectedRangeFrom,
   selectedRangeTo,
+  prospects,
+  prospectStages,
+  isMediator,
+  pendingActivations,
 }: {
   dailyTasks: DailyTasks;
   overdueTasks: TaskRow[];
@@ -92,9 +103,13 @@ export function AnaliticaTabs({
   periodMode: "month" | "range";
   selectedRangeFrom: string;
   selectedRangeTo: string;
+  prospects: ProspectRow[];
+  prospectStages: ProspectStageDef[];
+  isMediator: boolean;
+  pendingActivations: PendingActivation[];
 }) {
   const router = useRouter();
-  const [tab, setTab] = useState<TabKey>("hoje");
+  const [tab, setTab] = useState<TabKey>("prospeccoes");
   const [periodUi, setPeriodUi] = useState<"month" | "range">(periodMode);
   const maxFunnel = Math.max(...funnel.map((f) => f.count), 1);
 
@@ -113,6 +128,15 @@ export function AnaliticaTabs({
           </button>
         ))}
       </div>
+
+      {tab === "prospeccoes" && (
+        <ProspectBoard
+          prospects={prospects}
+          stages={prospectStages}
+          isMediator={isMediator}
+          pendingActivations={pendingActivations}
+        />
+      )}
 
       {tab === "hoje" && (
         <>

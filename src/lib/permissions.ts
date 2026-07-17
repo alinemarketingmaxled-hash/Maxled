@@ -4,6 +4,7 @@ export type Module =
   | "analitica"
   | "vendas"
   | "negocios"
+  | "prospeccoes"
   | "agenda"
   | "social"
   | "ia"
@@ -37,6 +38,13 @@ const MATRIX: Record<Module, Record<Role, Permission>> = {
     MEDIATOR: { level: "edit", scope: "all" },
   },
   negocios: {
+    SELLER: { level: "edit", scope: "own" },
+    SUPPORT: { level: "view", scope: "own" },
+    MANAGER: { level: "edit", scope: "team" },
+    ADMIN: { level: "edit", scope: "all" },
+    MEDIATOR: { level: "edit", scope: "all" },
+  },
+  prospeccoes: {
     SELLER: { level: "edit", scope: "own" },
     SUPPORT: { level: "view", scope: "own" },
     MANAGER: { level: "edit", scope: "team" },

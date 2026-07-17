@@ -16,18 +16,19 @@ const ROLE_LABELS: Record<Role, string> = {
 const ROLE_ORDER: Role[] = ["MEDIATOR", "ADMIN", "MANAGER", "SELLER", "SUPPORT"];
 
 const MODULE_LABELS: Record<Module, string> = {
-  analitica: "Analítica",
+  analitica: "Início",
   vendas: "Clientes",
   negocios: "Negócios",
+  prospeccoes: "Prospecções",
   agenda: "Agenda",
-  social: "Rede Social",
+  social: "Comunicados",
   ia: "IA",
   perfil: "Perfil",
   config: "Config",
   activityLogs: "Logs",
 };
 const MODULE_ORDER: Module[] = [
-  "analitica", "vendas", "negocios", "agenda", "social", "ia", "perfil", "config", "activityLogs",
+  "analitica", "vendas", "negocios", "prospeccoes", "agenda", "social", "ia", "perfil", "config", "activityLogs",
 ];
 
 const ACTION_LABEL: Record<string, string> = {
