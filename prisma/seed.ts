@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import { prisma } from "../src/lib/prisma";
+import { ensureProspectStagesSeeded } from "../src/lib/prospect-stages";
 
 async function main() {
   const passwordHash = await bcrypt.hash("maxled123", 10);
@@ -75,26 +76,7 @@ async function main() {
     data: { autoAdvanceToStageId: closedStage.id },
   });
 
-  const prospectStageDefs = [
-    { id: "prospect-stage-prospeccao", name: "Prospecção", order: 0 },
-    { id: "prospect-stage-0", name: "Conversação", order: 1 },
-    { id: "prospect-stage-1", name: "Retorno", order: 2 },
-    { id: "prospect-stage-2", name: "Cotação", order: 3 },
-    { id: "prospect-stage-3", name: "Negociação", order: 4 },
-    { id: "prospect-stage-4", name: "Cliente Ativo", order: 5, isClientStage: true },
-  ];
-  for (const s of prospectStageDefs) {
-    await prisma.prospectStage.upsert({
-      where: { id: s.id },
-      update: { name: s.name, order: s.order, isClientStage: s.isClientStage ?? false },
-      create: {
-        id: s.id,
-        name: s.name,
-        order: s.order,
-        isClientStage: s.isClientStage ?? false,
-      },
-    });
-  }
+  await ensureProspectStagesSeeded();
 
   const firstStage = stages[0];
   const contact = await prisma.contact.upsert({
