@@ -280,19 +280,22 @@ model PostComment {
 }
 
 model Task {
-  id        String    @id @default(cuid())
-  ownerId   String
-  owner     User      @relation(fields: [ownerId], references: [id])
-  dealId    String?
-  deal      Deal?     @relation(fields: [dealId], references: [id])
-  title     String
-  dueDate   DateTime?
-  done      Boolean   @default(false)
-  doneAt    DateTime?
-  createdAt DateTime  @default(now())
+  id         String    @id @default(cuid())
+  ownerId    String
+  owner      User      @relation(fields: [ownerId], references: [id])
+  dealId     String?
+  deal       Deal?     @relation(fields: [dealId], references: [id])
+  prospectId String?
+  prospect   Prospect? @relation(fields: [prospectId], references: [id])
+  title      String
+  dueDate    DateTime?
+  done       Boolean   @default(false)
+  doneAt     DateTime?
+  createdAt  DateTime  @default(now())
 
   @@index([ownerId])
   @@index([dealId])
+  @@index([prospectId])
 }
 
 enum ProspectTemperature {
@@ -350,6 +353,7 @@ model Prospect {
 
   stageValues       ProspectStageValue[]
   activationRequest ClientActivationRequest?
+  scheduledTasks    Task[]
 
   @@index([ownerId])
   @@index([currentStageId])

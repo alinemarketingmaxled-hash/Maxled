@@ -103,6 +103,20 @@ export async function deleteProspect(session: Session, prospectId: string) {
   });
 }
 
+/** The board's columns unlock left-to-right: a stage can only be filled
+ * once the previous one (by order) is marked done for that prospect. */
+async function assertStageUnlocked(prospectId: string, stage: { order: number }) {
+  if (stage.order === 0) return;
+  const prevStage = await prisma.prospectStage.findFirst({ where: { order: stage.order - 1 } });
+  if (!prevStage) return;
+  const prevValue = await prisma.prospectStageValue.findUnique({
+    where: { prospectId_stageId: { prospectId, stageId: prevStage.id } },
+  });
+  if (!prevValue?.done) {
+    throw new Error(`Conclua a etapa "${prevStage.name}" antes de preencher esta.`);
+  }
+}
+
 export type StageValueInput = { date: Date | null; note: string | null; done: boolean };
 
 /** Fills/edits one cell of the sheet. Also bumps lastTouchedAt (resets the
@@ -120,6 +134,7 @@ export async function upsertProspectStageValue(
   });
   if (!prospect) throw new Error("Prospecção não encontrada ou sem permissão.");
   const stage = await prisma.prospectStage.findUniqueOrThrow({ where: { id: stageId } });
+  await assertStageUnlocked(prospectId, stage);
 
   const value = await prisma.prospectStageValue.upsert({
     where: { prospectId_stageId: { prospectId, stageId } },
@@ -136,13 +151,6 @@ export async function upsertProspectStageValue(
   });
 
   return value;
-}
-
-/** Adds a new column to the board — mediator-only, enforced by the caller
- * (server action), same pattern as Negócios' addable Kanban columns. */
-export async function addProspectStage(name: string) {
-  const last = await prisma.prospectStage.findFirst({ orderBy: { order: "desc" } });
-  return prisma.prospectStage.create({ data: { name, order: (last?.order ?? -1) + 1 } });
 }
 
 export type ActivationInput = {
@@ -168,6 +176,7 @@ export async function submitActivationRequest(session: Session, prospectId: stri
 
   const clientStage = await prisma.prospectStage.findFirst({ where: { isClientStage: true } });
   if (!clientStage) throw new Error('Coluna "Cliente Ativo" não configurada.');
+  await assertStageUnlocked(prospectId, clientStage);
 
   const request = await prisma.clientActivationRequest.upsert({
     where: { prospectId },

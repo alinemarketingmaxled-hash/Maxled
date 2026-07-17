@@ -39,10 +39,11 @@ export async function createTask(
   title: string,
   dueDate: Date | null,
   dealId: string | null = null,
+  prospectId: string | null = null,
 ) {
   if (!title.trim()) throw new Error("Descreva a tarefa.");
   return prisma.task.create({
-    data: { ownerId: session.user.id, title: title.trim(), dueDate, dealId },
+    data: { ownerId: session.user.id, title: title.trim(), dueDate, dealId, prospectId },
   });
 }
 

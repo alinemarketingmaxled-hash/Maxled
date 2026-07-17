@@ -7,10 +7,10 @@ import {
   updateProspectAction,
   deleteProspectAction,
   saveStageValueAction,
-  addProspectStageAction,
   submitActivationAction,
   approveActivationAction,
   rejectActivationAction,
+  scheduleTaskAction,
 } from "@/app/(app)/prospeccoes/actions";
 
 export type StageValue = { stageId: string; date: string | null; note: string | null; done: boolean };
@@ -64,6 +64,16 @@ function daysSince(iso: string) {
   return Math.floor((Date.now() - new Date(iso).getTime()) / (1000 * 60 * 60 * 24));
 }
 
+/** Columns unlock left-to-right: a stage is available once the previous
+ * one (by order) has been marked done for that prospect. */
+function isStageUnlocked(prospect: ProspectRow, stage: ProspectStageDef, stages: ProspectStageDef[]) {
+  const idx = stages.findIndex((s) => s.id === stage.id);
+  if (idx <= 0) return true;
+  const prevStage = stages[idx - 1];
+  const prevValue = prospect.stageValues.find((v) => v.stageId === prevStage.id);
+  return prevValue?.done ?? false;
+}
+
 export type ProspectOwner = { id: string; name: string | null };
 
 export function ProspectBoard({
@@ -81,7 +91,7 @@ export function ProspectBoard({
 }) {
   const router = useRouter();
   const [showNew, setShowNew] = useState(false);
-  const [showAddStage, setShowAddStage] = useState(false);
+  const [showSchedule, setShowSchedule] = useState(false);
   const [showQueue, setShowQueue] = useState(false);
   const [cell, setCell] = useState<{ prospect: ProspectRow; stage: ProspectStageDef } | null>(null);
   const [activationTarget, setActivationTarget] = useState<ProspectRow | null>(null);
@@ -104,6 +114,12 @@ export function ProspectBoard({
               Aprovações pendentes ({pendingActivations.length})
             </button>
           )}
+          <button
+            onClick={() => setShowSchedule(true)}
+            className="rounded-lg border border-gold-deep px-3.5 py-1.5 text-xs font-semibold text-ink hover:border-gold"
+          >
+            + Agendar
+          </button>
           <button
             onClick={() => setShowNew(true)}
             className="rounded-lg bg-gold-solid px-3.5 py-1.5 text-xs font-semibold text-black hover:bg-gold-solid-bright"
@@ -128,39 +144,6 @@ export function ProspectBoard({
                   {s.name}
                 </th>
               ))}
-              {isMediator && (
-                <th className="border-b border-l border-dashed border-gold-deep/18 px-3 py-2 text-left">
-                  {!showAddStage ? (
-                    <button
-                      onClick={() => setShowAddStage(true)}
-                      className="text-[10px] font-semibold text-gold-bright hover:underline"
-                    >
-                      + coluna
-                    </button>
-                  ) : (
-                    <form
-                      action={async (fd) => {
-                        const r = await addProspectStageAction(fd);
-                        if (!r.error) {
-                          setShowAddStage(false);
-                          await refresh();
-                        }
-                      }}
-                      className="flex gap-1"
-                    >
-                      <input
-                        name="name"
-                        autoFocus
-                        placeholder="Nome"
-                        className="w-20 rounded border border-gold-deep/40 bg-surface-2 px-1.5 py-1 text-[11px] text-ink outline-none focus:border-gold"
-                      />
-                      <button type="submit" className="text-[10px] font-semibold text-gold-bright">
-                        OK
-                      </button>
-                    </form>
-                  )}
-                </th>
-              )}
             </tr>
           </thead>
           <tbody>
@@ -192,13 +175,21 @@ export function ProspectBoard({
                   </td>
                   {stages.map((s) => {
                     const value = p.stageValues.find((v) => v.stageId === s.id);
+                    const unlocked = isStageUnlocked(p, s, stages);
+                    if (!unlocked) {
+                      return (
+                        <td key={s.id} className="border-b border-l border-dashed border-gold-deep/18 px-3 py-2.5 align-top">
+                          <span className="text-[11px] text-ink-faint">🔒 Conclua a etapa anterior</span>
+                        </td>
+                      );
+                    }
                     if (s.isClientStage) {
                       return (
                         <td key={s.id} className="border-b border-l border-dashed border-gold-deep/18 px-3 py-2.5 align-top">
                           {!p.activation ? (
                             <button
                               onClick={() => setActivationTarget(p)}
-                              className="text-left text-[11px] text-ink-faint hover:text-gold-bright hover:underline"
+                              className="text-left text-[11px] font-semibold text-gold-bright hover:underline"
                             >
                               Tornar cliente ativo
                             </button>
@@ -252,13 +243,12 @@ export function ProspectBoard({
                       </td>
                     );
                   })}
-                  {isMediator && <td className="border-b border-l border-dashed border-gold-deep/18" />}
                 </tr>
               );
             })}
             {prospects.length === 0 && (
               <tr>
-                <td colSpan={stages.length + 2} className="px-3 py-6 text-center text-xs text-ink-faint">
+                <td colSpan={stages.length + 1} className="px-3 py-6 text-center text-xs text-ink-faint">
                   Nenhuma prospecção ainda. Clique em &ldquo;+ Nova prospecção&rdquo; pra começar.
                 </td>
               </tr>
@@ -272,6 +262,17 @@ export function ProspectBoard({
           onClose={() => setShowNew(false)}
           onSaved={async () => {
             setShowNew(false);
+            await refresh();
+          }}
+        />
+      )}
+
+      {showSchedule && (
+        <ScheduleTaskModal
+          prospects={prospects}
+          onClose={() => setShowSchedule(false)}
+          onSaved={async () => {
+            setShowSchedule(false);
             await refresh();
           }}
         />
@@ -302,6 +303,10 @@ export function ProspectBoard({
             setCell(null);
             await refresh();
           }}
+          onCancelled={async () => {
+            setCell(null);
+            await refresh();
+          }}
         />
       )}
 
@@ -310,6 +315,10 @@ export function ProspectBoard({
           prospect={activationTarget}
           onClose={() => setActivationTarget(null)}
           onSaved={async () => {
+            setActivationTarget(null);
+            await refresh();
+          }}
+          onCancelled={async () => {
             setActivationTarget(null);
             await refresh();
           }}
@@ -428,6 +437,75 @@ function NewProspectModal({ onClose, onSaved }: { onClose: () => void; onSaved: 
             className="rounded-lg bg-gold-solid px-3.5 py-1.5 text-xs font-semibold text-black hover:bg-gold-solid-bright disabled:opacity-60"
           >
             {saving ? "Salvando…" : "Salvar"}
+          </button>
+        </div>
+      </form>
+    </ModalShell>
+  );
+}
+
+function ScheduleTaskModal({
+  prospects,
+  onClose,
+  onSaved,
+}: {
+  prospects: ProspectRow[];
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setSaving(true);
+    setError(null);
+    const fd = new FormData(e.currentTarget);
+    const r = await scheduleTaskAction(fd);
+    if (r.error) {
+      setError(r.error);
+      setSaving(false);
+      return;
+    }
+    onSaved();
+  }
+
+  return (
+    <ModalShell title="Agendar" onClose={onClose}>
+      <p className="mb-2.5 text-[11px] text-ink-faint">
+        Aparece na Agenda, e se não for concluída até o dia entra em &ldquo;Atrasados&rdquo; automaticamente.
+      </p>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">
+        {error && <p className="rounded-md bg-critical/10 px-2.5 py-1.5 text-xs text-critical">{error}</p>}
+        <label className="flex flex-col gap-1 text-xs">
+          <span className="text-ink-faint">O que fazer</span>
+          <input name="title" required placeholder="Ex.: Ligar de volta pro cliente" className={inputClass} />
+        </label>
+        <label className="flex flex-col gap-1 text-xs">
+          <span className="text-ink-faint">Data</span>
+          <input name="dueDate" type="date" required defaultValue={new Date().toISOString().slice(0, 10)} className={inputClass} />
+        </label>
+        <label className="flex flex-col gap-1 text-xs">
+          <span className="text-ink-faint">Vincular a uma prospecção (opcional)</span>
+          <select name="prospectId" defaultValue="" className={inputClass}>
+            <option value="">Nenhuma</option>
+            {prospects.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.clientName}
+              </option>
+            ))}
+          </select>
+        </label>
+        <div className="mt-1 flex justify-end gap-2">
+          <button type="button" onClick={onClose} className="rounded-lg border border-gold-deep px-3.5 py-1.5 text-xs font-semibold text-ink">
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            disabled={saving}
+            className="rounded-lg bg-gold-solid px-3.5 py-1.5 text-xs font-semibold text-black hover:bg-gold-solid-bright disabled:opacity-60"
+          >
+            {saving ? "Salvando…" : "Agendar"}
           </button>
         </div>
       </form>
@@ -571,14 +649,17 @@ function StageCellModal({
   stage,
   onClose,
   onSaved,
+  onCancelled,
 }: {
   prospect: ProspectRow;
   stage: ProspectStageDef;
   onClose: () => void;
   onSaved: () => void;
+  onCancelled: () => void;
 }) {
   const existing = prospect.stageValues.find((v) => v.stageId === stage.id);
   const [saving, setSaving] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -593,6 +674,18 @@ function StageCellModal({
       return;
     }
     onSaved();
+  }
+
+  async function handleCancelProspect() {
+    if (!confirm(`Cancelar a prospecção de "${prospect.clientName}"?`)) return;
+    setCancelling(true);
+    const r = await deleteProspectAction(prospect.id);
+    if (r.error) {
+      setError(r.error);
+      setCancelling(false);
+      return;
+    }
+    onCancelled();
   }
 
   return (
@@ -611,17 +704,27 @@ function StageCellModal({
           <input name="done" type="checkbox" defaultChecked={existing?.done ?? false} className="h-3.5 w-3.5" />
           Concluído
         </label>
-        <div className="mt-1 flex justify-end gap-2">
-          <button type="button" onClick={onClose} className="rounded-lg border border-gold-deep px-3.5 py-1.5 text-xs font-semibold text-ink">
-            Cancelar
-          </button>
+        <div className="mt-1 flex items-center justify-between gap-2">
           <button
-            type="submit"
-            disabled={saving}
-            className="rounded-lg bg-gold-solid px-3.5 py-1.5 text-xs font-semibold text-black hover:bg-gold-solid-bright disabled:opacity-60"
+            type="button"
+            onClick={handleCancelProspect}
+            disabled={cancelling}
+            className="rounded-lg border border-critical/50 px-3.5 py-1.5 text-xs font-semibold text-critical hover:border-critical disabled:opacity-60"
           >
-            {saving ? "Salvando…" : "Salvar"}
+            {cancelling ? "Cancelando…" : "Cancelar prospecção"}
           </button>
+          <div className="flex gap-2">
+            <button type="button" onClick={onClose} className="rounded-lg border border-gold-deep px-3.5 py-1.5 text-xs font-semibold text-ink">
+              Fechar
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="rounded-lg bg-gold-solid px-3.5 py-1.5 text-xs font-semibold text-black hover:bg-gold-solid-bright disabled:opacity-60"
+            >
+              {saving ? "Salvando…" : "Salvar"}
+            </button>
+          </div>
         </div>
       </form>
     </ModalShell>
@@ -632,12 +735,15 @@ function ActivationModal({
   prospect,
   onClose,
   onSaved,
+  onCancelled,
 }: {
   prospect: ProspectRow;
   onClose: () => void;
   onSaved: () => void;
+  onCancelled: () => void;
 }) {
   const [saving, setSaving] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -652,6 +758,18 @@ function ActivationModal({
       return;
     }
     onSaved();
+  }
+
+  async function handleCancelProspect() {
+    if (!confirm(`Cancelar a prospecção de "${prospect.clientName}"?`)) return;
+    setCancelling(true);
+    const r = await deleteProspectAction(prospect.id);
+    if (r.error) {
+      setError(r.error);
+      setCancelling(false);
+      return;
+    }
+    onCancelled();
   }
 
   return (
@@ -702,17 +820,27 @@ function ActivationModal({
             <input name="condicaoPagamento" required placeholder="Ex.: 30/60/90 dias" className={inputClass} />
           </label>
         </div>
-        <div className="mt-1 flex justify-end gap-2">
-          <button type="button" onClick={onClose} className="rounded-lg border border-gold-deep px-3.5 py-1.5 text-xs font-semibold text-ink">
-            Cancelar
-          </button>
+        <div className="mt-1 flex items-center justify-between gap-2">
           <button
-            type="submit"
-            disabled={saving}
-            className="rounded-lg bg-gold-solid px-3.5 py-1.5 text-xs font-semibold text-black hover:bg-gold-solid-bright disabled:opacity-60"
+            type="button"
+            onClick={handleCancelProspect}
+            disabled={cancelling}
+            className="rounded-lg border border-critical/50 px-3.5 py-1.5 text-xs font-semibold text-critical hover:border-critical disabled:opacity-60"
           >
-            {saving ? "Enviando…" : "Enviar para aprovação"}
+            {cancelling ? "Cancelando…" : "Cancelar prospecção"}
           </button>
+          <div className="flex gap-2">
+            <button type="button" onClick={onClose} className="rounded-lg border border-gold-deep px-3.5 py-1.5 text-xs font-semibold text-ink">
+              Fechar
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="rounded-lg bg-gold-solid px-3.5 py-1.5 text-xs font-semibold text-black hover:bg-gold-solid-bright disabled:opacity-60"
+            >
+              {saving ? "Enviando…" : "Enviar para aprovação"}
+            </button>
+          </div>
         </div>
       </form>
     </ModalShell>
