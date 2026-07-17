@@ -17,7 +17,7 @@ export default async function SocialPage() {
   return (
     <div className="mx-auto max-w-2xl">
       <div className="mb-4">
-        <h2 className="font-display text-[22px] text-ink">Rede Social Interna</h2>
+        <h2 className="font-display text-[22px] text-ink">Comunicados</h2>
         <p className="mt-0.5 text-[13px] text-ink-muted">
           Mural da equipe · todos podem postar, curtir e comentar
         </p>

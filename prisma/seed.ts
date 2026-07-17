@@ -75,6 +75,26 @@ async function main() {
     data: { autoAdvanceToStageId: closedStage.id },
   });
 
+  const prospectStageDefs = [
+    { name: "Conversação", order: 0 },
+    { name: "Retorno", order: 1 },
+    { name: "Cotação", order: 2 },
+    { name: "Negociação", order: 3 },
+    { name: "Cliente Ativo", order: 4, isClientStage: true },
+  ];
+  for (const s of prospectStageDefs) {
+    await prisma.prospectStage.upsert({
+      where: { id: `prospect-stage-${s.order}` },
+      update: {},
+      create: {
+        id: `prospect-stage-${s.order}`,
+        name: s.name,
+        order: s.order,
+        isClientStage: s.isClientStage ?? false,
+      },
+    });
+  }
+
   const firstStage = stages[0];
   const contact = await prisma.contact.upsert({
     where: { id: "seed-contact-1" },

@@ -178,6 +178,10 @@ export type ContactInput = {
   postalCode?: string | null;
   latitude?: number | null;
   longitude?: number | null;
+  inscricaoEstadual?: string | null;
+  emailFinanceiro?: string | null;
+  emailNfe?: string | null;
+  enderecoEntrega?: string | null;
   birthday?: Date | null;
   commercialPotential?: CommercialPotential | null;
   crmStatus?: CrmStatus | null;

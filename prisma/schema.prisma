@@ -45,6 +45,8 @@ model User {
   postLikes    PostLike[]
   postComments PostComment[]
   tasks        Task[]
+  prospects    Prospect[]                @relation("ProspectOwner")
+  activationReviews ClientActivationRequest[] @relation("ActivationReviewer")
 }
 
 enum PersonType {
@@ -97,6 +99,13 @@ model Contact {
   postalCode String?
   latitude   Float?
   longitude  Float?
+
+  // Dados fiscais/financeiros (mesmos campos do Sintegra), preenchidos ao
+  // aprovar uma prospecção como cliente ativo — ver ClientActivationRequest.
+  inscricaoEstadual String?
+  emailFinanceiro   String?
+  emailNfe          String?
+  enderecoEntrega   String? @db.Text
 
   birthday            DateTime?
   commercialPotential CommercialPotential?
@@ -280,4 +289,111 @@ model Task {
 
   @@index([ownerId])
   @@index([dealId])
+}
+
+enum ProspectTemperature {
+  QUENTE
+  MORNO
+  FRIO
+}
+
+enum ActivationStatus {
+  PENDENTE
+  APROVADO
+  RECUSADO
+}
+
+/** A coluna do quadro de Prospecções (Conversação, Retorno, Cotação,
+ * Negociação, Cliente Ativo por padrão). O mediador pode adicionar novas —
+ * mesmo padrão de coluna editável/adicionável já usado em PipelineStage. */
+model ProspectStage {
+  id            String   @id @default(cuid())
+  name          String
+  order         Int
+  isClientStage Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  prospects   Prospect[]
+  stageValues ProspectStageValue[]
+
+  @@index([order])
+}
+
+/** Uma linha do quadro (um prospect/lead em captação, antes de virar Contact). */
+model Prospect {
+  id          String              @id @default(cuid())
+  ownerId     String
+  owner       User                @relation("ProspectOwner", fields: [ownerId], references: [id])
+  name        String
+  clientName  String
+  phone       String?
+  email       String?
+  temperature ProspectTemperature @default(MORNO)
+  profile     String
+  notes       String?             @db.Text
+  contactDate DateTime
+
+  currentStageId String
+  currentStage   ProspectStage @relation(fields: [currentStageId], references: [id])
+
+  convertedContactId String?
+  convertedAt         DateTime?
+  lastTouchedAt        DateTime  @default(now())
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  stageValues       ProspectStageValue[]
+  activationRequest ClientActivationRequest?
+
+  @@index([ownerId])
+  @@index([currentStageId])
+  @@index([deletedAt])
+}
+
+/** Uma célula da planilha: o preenchimento (data + observação + concluído)
+ * de um prospect numa coluna específica. Uma por combinação prospect+coluna. */
+model ProspectStageValue {
+  id         String        @id @default(cuid())
+  prospectId String
+  prospect   Prospect      @relation(fields: [prospectId], references: [id])
+  stageId    String
+  stage      ProspectStage @relation(fields: [stageId], references: [id])
+  date       DateTime?
+  note       String?       @db.Text
+  done       Boolean       @default(false)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  @@unique([prospectId, stageId])
+  @@index([prospectId])
+}
+
+/** Preenchido ao mover um prospect pra coluna "Cliente Ativo" — mesmos
+ * dados exigidos no Sintegra. Fica pendente até um Mediador aprovar ou
+ * recusar; aprovar converte o Prospect num Contact + abre uma Negociação. */
+model ClientActivationRequest {
+  id         String   @id @default(cuid())
+  prospectId String   @unique
+  prospect   Prospect @relation(fields: [prospectId], references: [id])
+
+  razaoSocial         String
+  cnpj                String
+  emailFinanceiro     String
+  emailNfe            String
+  inscricaoEstadual   String
+  enderecoFaturamento String  @db.Text
+  enderecoEntrega     String  @db.Text
+  valor               Decimal @db.Decimal(12, 2)
+  condicaoPagamento   String
+
+  status          ActivationStatus @default(PENDENTE)
+  reviewerId      String?
+  reviewer        User?            @relation("ActivationReviewer", fields: [reviewerId], references: [id])
+  rejectionReason String?         @db.Text
+  createdAt       DateTime         @default(now())
+  decidedAt       DateTime?
+
+  @@index([status])
 }

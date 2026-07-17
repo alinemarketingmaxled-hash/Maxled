@@ -6,7 +6,7 @@ import type { Prisma } from "@/generated/prisma/client";
 
 export async function logActivity(params: {
   actorId: string;
-  entityType: "Contact" | "Deal" | "PipelineStage" | "User";
+  entityType: "Contact" | "Deal" | "PipelineStage" | "User" | "Prospect";
   entityId: string;
   action: "created" | "updated" | "deleted" | "restored" | "stage_changed" | "call_logged" | "unlocked";
   diff?: Prisma.InputJsonValue;
