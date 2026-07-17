@@ -79,18 +79,22 @@ function isStageUnlocked(prospect: ProspectRow, stage: ProspectStageDef, stages:
 
 export type ProspectOwner = { id: string; name: string | null };
 
+export type OpenDeal = { id: string; label: string };
+
 export function ProspectBoard({
   prospects,
   stages,
   isMediator,
   pendingActivations,
   owners,
+  openDeals,
 }: {
   prospects: ProspectRow[];
   stages: ProspectStageDef[];
   isMediator: boolean;
   pendingActivations: PendingActivation[];
   owners: ProspectOwner[];
+  openDeals: OpenDeal[];
 }) {
   const router = useRouter();
   const [showNew, setShowNew] = useState(false);
@@ -273,6 +277,7 @@ export function ProspectBoard({
       {showSchedule && (
         <ScheduleTaskModal
           prospects={prospects}
+          openDeals={openDeals}
           onClose={() => setShowSchedule(false)}
           onSaved={async () => {
             setShowSchedule(false);
@@ -449,10 +454,12 @@ function NewProspectModal({ onClose, onSaved }: { onClose: () => void; onSaved: 
 
 function ScheduleTaskModal({
   prospects,
+  openDeals,
   onClose,
   onSaved,
 }: {
   prospects: ProspectRow[];
+  openDeals: OpenDeal[];
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -489,14 +496,27 @@ function ScheduleTaskModal({
           <input name="dueDate" type="date" required defaultValue={new Date().toISOString().slice(0, 10)} className={inputClass} />
         </label>
         <label className="flex flex-col gap-1 text-xs">
-          <span className="text-ink-faint">Vincular a uma prospecção (opcional)</span>
-          <select name="prospectId" defaultValue="" className={inputClass}>
+          <span className="text-ink-faint">Vincular a (opcional)</span>
+          <select name="link" defaultValue="" className={inputClass}>
             <option value="">Nenhuma</option>
-            {prospects.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.clientName}
-              </option>
-            ))}
+            {prospects.length > 0 && (
+              <optgroup label="Prospecções">
+                {prospects.map((p) => (
+                  <option key={p.id} value={`prospect:${p.id}`}>
+                    {p.clientName}
+                  </option>
+                ))}
+              </optgroup>
+            )}
+            {openDeals.length > 0 && (
+              <optgroup label="Negócios">
+                {openDeals.map((d) => (
+                  <option key={d.id} value={`deal:${d.id}`}>
+                    {d.label}
+                  </option>
+                ))}
+              </optgroup>
+            )}
           </select>
         </label>
         <div className="mt-1 flex justify-end gap-2">

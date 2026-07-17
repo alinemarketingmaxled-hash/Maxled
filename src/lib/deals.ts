@@ -32,6 +32,20 @@ export async function listOnTheWayDeals(session: Session) {
 /** Open (not-yet-won) deals for the home page's "negociações em andamento"
  * panel — scoped like the rest of Analítica (own/team/all), not "negocios",
  * since that's the page it lives on. */
+/** Backs the "+ Agendar" link-to-negócio dropdown — open deals only,
+ * scoped like the rest of Negócios. */
+export async function listOpenDealsBrief(session: Session) {
+  const deals = await prisma.deal.findMany({
+    where: { deletedAt: null, stage: { isWon: false }, ...dealScopeWhere(session) },
+    orderBy: { createdAt: "desc" },
+    include: { contact: { select: { firstName: true, lastName: true, accountName: true } } },
+  });
+  return deals.map((d) => ({
+    id: d.id,
+    label: `${d.name} — ${d.contact.accountName || `${d.contact.firstName} ${d.contact.lastName}`}`,
+  }));
+}
+
 export async function getInProgressDeals(session: Session, limit = 8) {
   return prisma.deal.findMany({
     where: { deletedAt: null, stage: { isWon: false }, ...dealScopeWhere(session, "analitica") },

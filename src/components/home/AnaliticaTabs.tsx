@@ -77,6 +77,7 @@ export function AnaliticaTabs({
   isMediator,
   pendingActivations,
   prospectOwners,
+  openDeals,
 }: {
   dailyTasks: DailyTasks;
   overdueTasks: TaskRow[];
@@ -102,6 +103,7 @@ export function AnaliticaTabs({
   isMediator: boolean;
   pendingActivations: PendingActivation[];
   prospectOwners: ProspectOwner[];
+  openDeals: { id: string; label: string }[];
 }) {
   const router = useRouter();
   const [periodUi, setPeriodUi] = useState<"month" | "range">(periodMode);
@@ -118,6 +120,7 @@ export function AnaliticaTabs({
             isMediator={isMediator}
             pendingActivations={pendingActivations}
             owners={prospectOwners}
+            openDeals={openDeals}
           />
         </div>
         <div className="col-span-12 xl:col-span-3">

@@ -225,14 +225,17 @@ export async function scheduleTaskAction(formData: FormData): Promise<{ error?: 
   const session = await requireEdit();
   const title = (formData.get("title") as string)?.trim();
   const dueDateStr = (formData.get("dueDate") as string)?.trim();
-  const prospectId = (formData.get("prospectId") as string)?.trim() || null;
+  const linkValue = (formData.get("link") as string)?.trim() || "";
+  const [linkType, linkId] = linkValue.split(":");
+  const prospectId = linkType === "prospect" ? linkId : null;
+  const dealId = linkType === "deal" ? linkId : null;
 
   if (!title || !dueDateStr) return { error: "Escreva o que fazer e escolha uma data." };
   const dueDate = new Date(dueDateStr);
   if (Number.isNaN(dueDate.getTime())) return { error: "Data inválida." };
 
   try {
-    await createTask(session, title, dueDate, null, prospectId);
+    await createTask(session, title, dueDate, dealId, prospectId);
   } catch (e) {
     return { error: errorMessage(e) };
   }
