@@ -9,6 +9,7 @@ import { MonthPicker } from "@/components/home/MonthPicker";
 import { DateRangePicker } from "@/components/home/DateRangePicker";
 import { InProgressDealsPanel, type InProgressDeal } from "@/components/home/InProgressDealsPanel";
 import { GoalProgressBar } from "@/components/home/GoalProgressBar";
+import { HomeSidebar } from "@/components/home/HomeSidebar";
 import type { TaskRow } from "@/components/agenda/TaskList";
 import {
   ProspectBoard,
@@ -49,15 +50,6 @@ type CommissionTier = { y: number; value: number; pct: number | null };
 function currency(v: number) {
   return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 }
-
-const TABS = [
-  { key: "prospeccoes", label: "📋 Prospecções" },
-  { key: "hoje", label: "☀ Hoje" },
-  { key: "atrasos", label: "⏰ Atrasos" },
-  { key: "desempenho", label: "📊 Desempenho" },
-] as const;
-
-type TabKey = (typeof TABS)[number]["key"];
 
 export function AnaliticaTabs({
   dailyTasks,
@@ -109,45 +101,51 @@ export function AnaliticaTabs({
   pendingActivations: PendingActivation[];
 }) {
   const router = useRouter();
-  const [tab, setTab] = useState<TabKey>("prospeccoes");
   const [periodUi, setPeriodUi] = useState<"month" | "range">(periodMode);
+  const [showDetail, setShowDetail] = useState(false);
   const maxFunnel = Math.max(...funnel.map((f) => f.count), 1);
 
   return (
-    <div>
-      <div className="mb-4 flex gap-1.5 rounded-lg bg-surface-2 p-1">
-        {TABS.map((t) => (
-          <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
-            className={`flex-1 rounded-md px-4 py-2 text-[13px] font-semibold transition-colors ${
-              tab === t.key ? "bg-gold-solid text-black" : "text-ink-muted hover:text-ink"
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
+    <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-12 gap-4">
+        <div className="col-span-12 xl:col-span-9">
+          <ProspectBoard
+            prospects={prospects}
+            stages={prospectStages}
+            isMediator={isMediator}
+            pendingActivations={pendingActivations}
+          />
+        </div>
+        <div className="col-span-12 xl:col-span-3">
+          <HomeSidebar
+            kpis={kpis}
+            revenueByMonth={revenueByMonth}
+            polyline={polyline}
+            areaPath={areaPath}
+            commissionTiers={commissionTiers}
+            funnel={funnel}
+            goal={goal}
+            dailyTasks={dailyTasks}
+            overdueTasks={overdueTasks}
+            selectedMonth={selectedMonth}
+          />
+        </div>
       </div>
 
-      {tab === "prospeccoes" && (
-        <ProspectBoard
-          prospects={prospects}
-          stages={prospectStages}
-          isMediator={isMediator}
-          pendingActivations={pendingActivations}
-        />
-      )}
+      <InProgressDealsPanel deals={inProgressDeals} canEdit={canEditNegocios} />
+      <DailyTasksPanel tasks={dailyTasks} />
+      <OverdueTasksPanel tasks={overdueTasks} canEdit={canEditAgenda} />
 
-      {tab === "hoje" && (
-        <>
-          <DailyTasksPanel tasks={dailyTasks} />
-          <InProgressDealsPanel deals={inProgressDeals} canEdit={canEditNegocios} />
-        </>
-      )}
+      <div>
+        <button
+          onClick={() => setShowDetail((v) => !v)}
+          className="text-[12.5px] font-semibold text-gold-bright hover:underline"
+        >
+          {showDetail ? "Ocultar desempenho detalhado ▲" : "Ver desempenho detalhado ▼"}
+        </button>
+      </div>
 
-      {tab === "atrasos" && <OverdueTasksPanel tasks={overdueTasks} canEdit={canEditAgenda} />}
-
-      {tab === "desempenho" && (
+      {showDetail && (
         <div className="grid grid-cols-12 gap-4">
           <div className="col-span-12 flex items-center justify-between gap-3">
             {periodMode === "month" && !isCurrentMonth && (
