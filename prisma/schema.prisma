@@ -310,14 +310,17 @@ enum ActivationStatus {
   RECUSADO
 }
 
-/** A coluna do quadro de Prospecções (Conversação, Retorno, Cotação,
- * Negociação, Cliente Ativo por padrão). O mediador pode adicionar novas —
- * mesmo padrão de coluna editável/adicionável já usado em PipelineStage. */
+/** A coluna do quadro de Prospecções. As 6 primeiras (Prospecção,
+ * Conversação, Retorno, Cotação, Negociação, Cliente Ativo) são fixas —
+ * isCustom=false, não podem ser renomeadas nem excluídas. Qualquer usuário
+ * com acesso de edição pode acrescentar colunas extras (isCustom=true),
+ * que ficam sempre depois das fixas e são livremente renomeáveis/excluíveis. */
 model ProspectStage {
   id            String   @id @default(cuid())
   name          String
   order         Int
   isClientStage Boolean  @default(false)
+  isCustom      Boolean  @default(false)
   createdAt     DateTime @default(now())
 
   prospects   Prospect[]

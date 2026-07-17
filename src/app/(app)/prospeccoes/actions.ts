@@ -12,6 +12,9 @@ import {
   submitActivationRequest,
   approveActivation,
   rejectActivation,
+  addCustomProspectStage,
+  renameCustomProspectStage,
+  deleteCustomProspectStage,
 } from "@/lib/prospects";
 import { createTask } from "@/lib/tasks";
 import type { ProspectTemperature } from "@/generated/prisma/client";
@@ -241,5 +244,46 @@ export async function scheduleTaskAction(formData: FormData): Promise<{ error?: 
   }
   revalidatePath("/");
   revalidatePath("/agenda");
+  return { ok: true };
+}
+
+/** The 6 fixed columns can't be added/renamed/removed — only extra columns
+ * appended after them, which any editor of Prospecções can manage. */
+export async function addProspectStageAction(formData: FormData): Promise<{ error?: string; ok?: boolean }> {
+  await requireEdit();
+  const name = (formData.get("name") as string)?.trim();
+  if (!name) return { error: "Escreva um nome pra coluna." };
+  try {
+    await addCustomProspectStage(name);
+  } catch (e) {
+    return { error: errorMessage(e) };
+  }
+  revalidatePath("/");
+  return { ok: true };
+}
+
+export async function renameProspectStageAction(
+  stageId: string,
+  name: string,
+): Promise<{ error?: string; ok?: boolean }> {
+  await requireEdit();
+  if (!name.trim()) return { error: "Escreva um nome pra coluna." };
+  try {
+    await renameCustomProspectStage(stageId, name.trim());
+  } catch (e) {
+    return { error: errorMessage(e) };
+  }
+  revalidatePath("/");
+  return { ok: true };
+}
+
+export async function deleteProspectStageAction(stageId: string): Promise<{ error?: string; ok?: boolean }> {
+  await requireEdit();
+  try {
+    await deleteCustomProspectStage(stageId);
+  } catch (e) {
+    return { error: errorMessage(e) };
+  }
+  revalidatePath("/");
   return { ok: true };
 }

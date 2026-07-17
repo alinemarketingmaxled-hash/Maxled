@@ -11,6 +11,9 @@ import {
   approveActivationAction,
   rejectActivationAction,
   scheduleTaskAction,
+  addProspectStageAction,
+  renameProspectStageAction,
+  deleteProspectStageAction,
 } from "@/app/(app)/prospeccoes/actions";
 
 export type StageValue = { stageId: string; date: string | null; note: string | null; done: boolean };
@@ -32,7 +35,7 @@ export type ProspectRow = {
   stageValues: StageValue[];
   activation: Activation | null;
 };
-export type ProspectStageDef = { id: string; name: string; order: number; isClientStage: boolean };
+export type ProspectStageDef = { id: string; name: string; order: number; isClientStage: boolean; isCustom: boolean };
 export type PendingActivation = {
   id: string;
   prospectName: string;
@@ -67,9 +70,11 @@ function daysSince(iso: string) {
 /** Columns unlock left-to-right: a stage is available once the previous
  * one (by order) has been marked done for that prospect. "Cliente Ativo" is
  * exempt — it stays a visible button on every prospect, since a deal can
- * close out of order and shouldn't be hidden behind the sequence. */
+ * close out of order and shouldn't be hidden behind the sequence. Custom
+ * columns (added beyond the 6 fixed ones) are supplementary tracking a
+ * seller sets up for themselves, so they're always open too. */
 function isStageUnlocked(prospect: ProspectRow, stage: ProspectStageDef, stages: ProspectStageDef[]) {
-  if (stage.isClientStage) return true;
+  if (stage.isClientStage || stage.isCustom) return true;
   const idx = stages.findIndex((s) => s.id === stage.id);
   if (idx <= 0) return true;
   const prevStage = stages[idx - 1];
@@ -103,9 +108,24 @@ export function ProspectBoard({
   const [cell, setCell] = useState<{ prospect: ProspectRow; stage: ProspectStageDef } | null>(null);
   const [activationTarget, setActivationTarget] = useState<ProspectRow | null>(null);
   const [editTarget, setEditTarget] = useState<ProspectRow | null>(null);
+  const [addingColumn, setAddingColumn] = useState(false);
+  const [newColumnName, setNewColumnName] = useState("");
+  const [addingColumnBusy, setAddingColumnBusy] = useState(false);
 
   async function refresh() {
     router.refresh();
+  }
+
+  async function handleAddColumn() {
+    if (!newColumnName.trim()) return;
+    setAddingColumnBusy(true);
+    const fd = new FormData();
+    fd.set("name", newColumnName);
+    await addProspectStageAction(fd);
+    setNewColumnName("");
+    setAddingColumn(false);
+    setAddingColumnBusy(false);
+    await refresh();
   }
 
   return (
@@ -143,21 +163,63 @@ export function ProspectBoard({
               <th className="sticky left-0 z-10 border-b border-gold-deep/30 bg-surface px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-wide text-ink-faint">
                 Cliente
               </th>
-              {stages.map((s) => (
-                <th
-                  key={s.id}
-                  className="border-b border-l border-dashed border-gold-deep/18 px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-wide text-ink-faint"
-                >
-                  {s.name}
-                </th>
-              ))}
+              {stages.map((s) =>
+                s.isCustom ? (
+                  <CustomStageHeaderCell key={s.id} stage={s} onChanged={refresh} />
+                ) : (
+                  <th
+                    key={s.id}
+                    className="border-b border-l border-dashed border-gold-deep/18 px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-wide text-ink-faint"
+                  >
+                    {s.name}
+                  </th>
+                ),
+              )}
+              <th className="border-b border-l border-dashed border-gold-deep/18 px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-wide text-ink-faint">
+                {addingColumn ? (
+                  <div className="flex items-center gap-1 normal-case">
+                    <input
+                      autoFocus
+                      value={newColumnName}
+                      onChange={(e) => setNewColumnName(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleAddColumn()}
+                      placeholder="Nome da coluna"
+                      className="w-28 rounded-md border border-gold bg-surface-2 px-1.5 py-1 text-[11px] font-normal text-ink outline-none"
+                    />
+                    <button
+                      onClick={handleAddColumn}
+                      disabled={addingColumnBusy}
+                      className="text-[11px] font-semibold text-gold-bright hover:underline disabled:opacity-60"
+                    >
+                      ✓
+                    </button>
+                    <button
+                      onClick={() => {
+                        setAddingColumn(false);
+                        setNewColumnName("");
+                      }}
+                      className="text-[11px] text-ink-faint hover:text-ink"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setAddingColumn(true)}
+                    className="font-semibold normal-case text-gold-bright hover:underline"
+                  >
+                    + Coluna
+                  </button>
+                )}
+              </th>
             </tr>
           </thead>
           <tbody>
             {prospects.map((p) => {
               const atrasado = daysSince(p.lastTouchedAt) >= ATRASO_DAYS;
+              const recusado = p.activation?.status === "RECUSADO";
               return (
-                <tr key={p.id} className={atrasado ? "bg-critical/[0.06]" : undefined}>
+                <tr key={p.id} className={recusado ? "bg-critical/[0.12]" : atrasado ? "bg-critical/[0.06]" : undefined}>
                   <td className="sticky left-0 z-10 border-b border-dashed border-gold-deep/18 bg-surface px-3 py-2.5 align-top">
                     <button onClick={() => setEditTarget(p)} className="block w-full text-left hover:opacity-80">
                       <div className="font-semibold text-ink">{p.clientName}</div>
@@ -175,6 +237,11 @@ export function ProspectBoard({
                         {atrasado && (
                           <span className="rounded-full bg-critical/15 px-1.5 py-0.5 text-[10px] font-semibold text-critical">
                             Atrasado
+                          </span>
+                        )}
+                        {recusado && (
+                          <span className="rounded-full bg-critical/20 px-1.5 py-0.5 text-[10px] font-semibold text-critical">
+                            Recusado
                           </span>
                         )}
                       </div>
@@ -250,12 +317,13 @@ export function ProspectBoard({
                       </td>
                     );
                   })}
+                  <td className="border-b border-l border-dashed border-gold-deep/18 px-3 py-2.5" />
                 </tr>
               );
             })}
             {prospects.length === 0 && (
               <tr>
-                <td colSpan={stages.length + 1} className="px-3 py-6 text-center text-xs text-ink-faint">
+                <td colSpan={stages.length + 2} className="px-3 py-6 text-center text-xs text-ink-faint">
                   Nenhuma prospecção ainda. Clique em &ldquo;+ Nova prospecção&rdquo; pra começar.
                 </td>
               </tr>
@@ -343,6 +411,59 @@ export function ProspectBoard({
         />
       )}
     </div>
+  );
+}
+
+/** Header cell for a custom (non-fixed) column: click the name to rename it
+ * inline, same interaction as the Negócios Kanban's column headers. */
+function CustomStageHeaderCell({ stage, onChanged }: { stage: ProspectStageDef; onChanged: () => void }) {
+  const [editing, setEditing] = useState(false);
+  const [name, setName] = useState(stage.name);
+  const [busy, setBusy] = useState(false);
+
+  async function commitRename() {
+    setEditing(false);
+    if (name.trim() && name !== stage.name) {
+      await renameProspectStageAction(stage.id, name);
+      onChanged();
+    }
+  }
+
+  async function handleDelete() {
+    if (!confirm(`Excluir a coluna "${stage.name}"? O que estiver preenchido nela será perdido.`)) return;
+    setBusy(true);
+    await deleteProspectStageAction(stage.id);
+    setBusy(false);
+    onChanged();
+  }
+
+  return (
+    <th className="border-b border-l border-dashed border-gold-deep/18 px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-wide text-ink-faint">
+      <div className="flex items-center gap-1 normal-case">
+        {editing ? (
+          <input
+            autoFocus
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onBlur={commitRename}
+            onKeyDown={(e) => e.key === "Enter" && commitRename()}
+            className="w-24 rounded-md border border-gold bg-surface-2 px-1.5 py-0.5 text-[11px] font-normal text-ink outline-none"
+          />
+        ) : (
+          <button onClick={() => setEditing(true)} className="truncate text-left uppercase tracking-wide hover:text-ink">
+            {stage.name}
+          </button>
+        )}
+        <button
+          onClick={handleDelete}
+          disabled={busy}
+          aria-label={`Excluir coluna ${stage.name}`}
+          className="text-ink-faint hover:text-critical disabled:opacity-60"
+        >
+          ×
+        </button>
+      </div>
+    </th>
   );
 }
 
