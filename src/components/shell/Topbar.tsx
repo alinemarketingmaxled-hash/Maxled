@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LogoutButton } from "@/components/LogoutButton";
+import { SearchBar } from "@/components/shell/SearchBar";
 
 const ROLE_LABELS: Record<string, string> = {
   ADMIN: "Admin",
@@ -27,11 +28,7 @@ export function Topbar({
 
   return (
     <header className="sticky top-0 z-10 flex items-center gap-4 border-b border-gold-deep/30 bg-gradient-to-b from-surface to-ground px-6 py-3.5">
-      <input
-        placeholder="Buscar contatos, negócios…"
-        disabled
-        className="max-w-sm flex-1 rounded-lg border border-gold-deep/35 bg-surface-2 px-3 py-2 text-[13px] text-ink-faint outline-none"
-      />
+      <SearchBar />
       <div className="ml-auto flex items-center gap-3.5">
         <span className="text-xs text-ink-muted">{ROLE_LABELS[role] ?? role}</span>
         <Link href="/meu-perfil" title="Meu perfil">
