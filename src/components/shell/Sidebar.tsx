@@ -6,9 +6,18 @@ import type { Role } from "@/generated/prisma/client";
 import { canView } from "@/lib/permissions";
 import { Logo } from "@/components/shell/Logo";
 import { CommissionWidget, type CommissionSummary } from "@/components/shell/CommissionWidget";
+import { ComunicadosWidget, type ImportantPost } from "@/components/shell/ComunicadosWidget";
 import { NAV_ITEMS } from "./nav-items";
 
-export function Sidebar({ role, commission }: { role: Role; commission: CommissionSummary | null }) {
+export function Sidebar({
+  role,
+  commission,
+  importantPosts,
+}: {
+  role: Role;
+  commission: CommissionSummary | null;
+  importantPosts: ImportantPost[];
+}) {
   const pathname = usePathname();
 
   return (
@@ -45,7 +54,10 @@ export function Sidebar({ role, commission }: { role: Role; commission: Commissi
         })}
       </nav>
 
-      <CommissionWidget commission={commission} />
+      <div className="flex flex-col gap-3">
+        <CommissionWidget commission={commission} />
+        <ComunicadosWidget posts={importantPosts} />
+      </div>
 
       <div className="mt-auto border-t border-gold-deep/25 px-2 pt-2.5 text-[11px] text-ink-faint">
         Encriptado · Backup diário

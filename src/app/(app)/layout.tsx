@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getGoalProgress } from "@/lib/analytics";
+import { listImportantPosts } from "@/lib/social";
 import { Sidebar } from "@/components/shell/Sidebar";
 import { Topbar } from "@/components/shell/Topbar";
 import { CircuitBackground } from "@/components/shell/CircuitBackground";
@@ -14,12 +15,13 @@ export default async function AppLayout({
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const [me, goal] = await Promise.all([
+  const [me, goal, importantPosts] = await Promise.all([
     prisma.user.findUnique({
       where: { id: session.user.id },
       select: { name: true, avatarUrl: true },
     }),
     getGoalProgress(session),
+    listImportantPosts(),
   ]);
 
   return (
@@ -38,6 +40,12 @@ export default async function AppLayout({
               }
             : null
         }
+        importantPosts={importantPosts.map((p) => ({
+          id: p.id,
+          body: p.body,
+          authorName: p.authorName,
+          createdAt: p.createdAt.toISOString(),
+        }))}
       />
       <div className="relative z-10 flex flex-1 flex-col">
         <Topbar
