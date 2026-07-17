@@ -204,6 +204,7 @@ export async function getGoalProgress(session: Session, referenceDate: Date = ne
     select: { value: true },
   });
   const achieved = wonThisMonth.reduce((s, d) => s + Number(d.value), 0);
+  const dealsWon = wonThisMonth.length;
 
   const goal1 = user.goal1 ? Number(user.goal1) : null;
   const goal2 = user.goal2 ? Number(user.goal2) : null;
@@ -224,6 +225,7 @@ export async function getGoalProgress(session: Session, referenceDate: Date = ne
   return {
     name: user.name,
     achieved,
+    dealsWon,
     goal1,
     goal2,
     commissionPct1,

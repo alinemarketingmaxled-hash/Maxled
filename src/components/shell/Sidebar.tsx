@@ -5,9 +5,10 @@ import { usePathname } from "next/navigation";
 import type { Role } from "@/generated/prisma/client";
 import { canView } from "@/lib/permissions";
 import { Logo } from "@/components/shell/Logo";
+import { CommissionWidget, type CommissionSummary } from "@/components/shell/CommissionWidget";
 import { NAV_ITEMS } from "./nav-items";
 
-export function Sidebar({ role }: { role: Role }) {
+export function Sidebar({ role, commission }: { role: Role; commission: CommissionSummary | null }) {
   const pathname = usePathname();
 
   return (
@@ -43,6 +44,8 @@ export function Sidebar({ role }: { role: Role }) {
           );
         })}
       </nav>
+
+      <CommissionWidget commission={commission} />
 
       <div className="mt-auto border-t border-gold-deep/25 px-2 pt-2.5 text-[11px] text-ink-faint">
         Encriptado · Backup diário

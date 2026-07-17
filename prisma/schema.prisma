@@ -243,12 +243,16 @@ model Post {
   author    User     @relation(fields: [authorId], references: [id])
   body      String?
   imageUrl  String?  @db.Text
+  // Mediator-only flag (spec follow-up): highlights a post as an important
+  // announcement, surfacing it in the home page's "Comunicados" sidebar card.
+  important Boolean  @default(false)
   createdAt DateTime @default(now())
 
   likes    PostLike[]
   comments PostComment[]
 
   @@index([authorId])
+  @@index([important])
 }
 
 model PostLike {

@@ -32,6 +32,7 @@ export default async function SocialPage() {
             comments: p.comments.map((c) => ({ ...c, createdAt: c.createdAt.toISOString() })),
           }))}
           currentUserId={session.user.id}
+          isMediator={session.user.role === "MEDIATOR"}
         />
       </div>
     </div>

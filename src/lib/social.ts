@@ -22,6 +22,7 @@ export async function listPosts(session: Session, take = 30) {
     id: p.id,
     body: p.body,
     imageUrl: p.imageUrl,
+    important: p.important,
     createdAt: p.createdAt,
     author: p.author,
     likeCount: p.likes.length,
@@ -33,6 +34,36 @@ export async function listPosts(session: Session, take = 30) {
       author: c.author,
     })),
   }));
+}
+
+/** Powers the home page's "Comunicados" sidebar card — the most recent
+ * posts a Mediator has flagged as important, so nobody has to open the
+ * mural to catch a real announcement. */
+export async function listImportantPosts(limit = 4) {
+  const posts = await prisma.post.findMany({
+    where: { important: true },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+    include: { author: { select: { name: true } } },
+  });
+  return posts.map((p) => ({
+    id: p.id,
+    body: p.body,
+    createdAt: p.createdAt,
+    authorName: p.author.name,
+  }));
+}
+
+export async function toggleImportant(session: Session, postId: string) {
+  if (session.user.role !== "MEDIATOR") {
+    throw new Error("Apenas o mediador pode marcar um comunicado como importante.");
+  }
+  const post = await prisma.post.findUniqueOrThrow({ where: { id: postId } });
+  const updated = await prisma.post.update({
+    where: { id: postId },
+    data: { important: !post.important },
+  });
+  return updated.important;
 }
 
 export async function createPost(
