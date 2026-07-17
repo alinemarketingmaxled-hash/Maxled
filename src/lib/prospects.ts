@@ -16,7 +16,14 @@ export async function listProspectStages() {
   return prisma.prospectStage.findMany({ orderBy: { order: "asc" } });
 }
 
-export { ensureProspectStagesSeeded, areProspectStagesSeeded } from "@/lib/prospect-stages";
+export {
+  ensureProspectStagesSeeded,
+  areProspectStagesSeeded,
+  reconcileCustomProspectStages,
+  addCustomProspectStage,
+  renameCustomProspectStage,
+  deleteCustomProspectStage,
+} from "@/lib/prospect-stages";
 
 /** The spreadsheet-style board: every active (not yet converted) prospect the
  * user can see, with every stage cell it has ever filled in and its pending

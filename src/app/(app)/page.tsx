@@ -190,6 +190,7 @@ export default async function AnaliticaPage({
           name: s.name,
           order: s.order,
           isClientStage: s.isClientStage,
+          isCustom: s.isCustom,
         }))}
         isMediator={session.user.role === "MEDIATOR"}
         pendingActivations={pendingActivations.map((r) => ({
