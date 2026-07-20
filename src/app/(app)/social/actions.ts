@@ -10,10 +10,16 @@ export async function createPostAction(body: string, imageUrl: string) {
   revalidatePath("/social");
 }
 
-export async function deletePostAction(postId: string) {
+export async function deletePostAction(postId: string): Promise<{ error?: string; ok?: boolean }> {
   const session = await requireView("social");
-  await deletePost(session, postId);
+  try {
+    await deletePost(session, postId);
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erro inesperado ao excluir." };
+  }
   revalidatePath("/social");
+  revalidatePath("/");
+  return { ok: true };
 }
 
 export async function toggleLikeAction(postId: string) {

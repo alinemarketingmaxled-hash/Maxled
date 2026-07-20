@@ -57,6 +57,7 @@ function PostCard({
   const [important, setImportant] = useState(post.important);
   const [showComments, setShowComments] = useState(post.comments.length > 0);
   const [commentBody, setCommentBody] = useState("");
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   function handleLike() {
@@ -78,8 +79,13 @@ function PostCard({
 
   function handleDelete() {
     if (!confirm("Excluir esta publicação?")) return;
+    setDeleteError(null);
     startTransition(async () => {
-      await deletePostAction(post.id);
+      const res = await deletePostAction(post.id);
+      if (res.error) {
+        setDeleteError(res.error);
+        return;
+      }
       router.refresh();
     });
   }
@@ -122,13 +128,14 @@ function PostCard({
                   {important ? "Remover destaque" : "Marcar importante"}
                 </button>
               )}
-              {post.author.id === currentUserId && (
-                <button onClick={handleDelete} className="text-[11px] text-ink-faint hover:text-critical">
+              {(post.author.id === currentUserId || isMediator) && (
+                <button onClick={handleDelete} disabled={isPending} className="text-[11px] text-ink-faint hover:text-critical disabled:opacity-50">
                   Excluir
                 </button>
               )}
             </div>
           </div>
+          {deleteError && <p className="mt-1 text-[11px] text-critical">{deleteError}</p>}
           {post.body && <p className="mt-1.5 whitespace-pre-wrap text-[13px] text-ink">{post.body}</p>}
           {post.imageUrl && (
             // eslint-disable-next-line @next/next/no-img-element
