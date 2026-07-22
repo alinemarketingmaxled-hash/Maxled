@@ -14,10 +14,12 @@ export function Topbar({
   name,
   role,
   avatarUrl,
+  onMenuClick,
 }: {
   name: string;
   role: string;
   avatarUrl?: string | null;
+  onMenuClick?: () => void;
 }) {
   const initials = name
     .split(" ")
@@ -27,10 +29,19 @@ export function Topbar({
     .toUpperCase();
 
   return (
-    <header className="sticky top-0 z-10 flex items-center gap-4 border-b border-gold-deep/30 bg-gradient-to-b from-surface to-ground px-6 py-3.5">
+    <header className="sticky top-0 z-10 flex items-center gap-2.5 border-b border-gold-deep/30 bg-gradient-to-b from-surface to-ground px-3.5 py-3 sm:gap-4 sm:px-6 sm:py-3.5">
+      {onMenuClick && (
+        <button
+          onClick={onMenuClick}
+          aria-label="Abrir menu"
+          className="flex h-8 w-8 flex-none items-center justify-center rounded-md border border-gold-deep/40 text-ink-muted hover:border-gold hover:text-ink lg:hidden"
+        >
+          ☰
+        </button>
+      )}
       <SearchBar />
-      <div className="ml-auto flex items-center gap-3.5">
-        <span className="text-xs text-ink-muted">{ROLE_LABELS[role] ?? role}</span>
+      <div className="ml-auto flex items-center gap-2.5 sm:gap-3.5">
+        <span className="hidden text-xs text-ink-muted sm:inline">{ROLE_LABELS[role] ?? role}</span>
         <Link href="/meu-perfil" title="Meu perfil">
           {avatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element

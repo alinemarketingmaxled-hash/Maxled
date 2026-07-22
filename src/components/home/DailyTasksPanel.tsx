@@ -100,7 +100,7 @@ export function DailyTasksPanel({ tasks }: { tasks: DailyTasks }) {
           Gerado a partir dos seus clientes e negócios reais no CRM
         </p>
       </div>
-      <div className="grid grid-cols-3 gap-3.5">
+      <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-3">
         {SECTIONS.map((section) => {
           const items = tasks[section.key].filter((t) => !dismissed.has(t.contactId));
           return (

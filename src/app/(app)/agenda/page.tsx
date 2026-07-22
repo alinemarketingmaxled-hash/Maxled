@@ -45,7 +45,7 @@ export default async function AgendaPage() {
         </p>
       </div>
 
-      <div className="mb-4 grid grid-cols-[320px_1fr] gap-4">
+      <div className="mb-4 grid grid-cols-1 gap-4 lg:grid-cols-[320px_1fr]">
         <AgendaCalendar items={calendarItems} />
         <TaskList
           tasks={tasks.map((t) => ({

@@ -153,8 +153,8 @@ export function AnaliticaTabs({
       </div>
 
       {showDetail && (
-        <div className="grid grid-cols-12 gap-4">
-          <div className="col-span-12 flex items-center justify-between gap-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-12">
+          <div className="col-span-1 flex flex-wrap items-center justify-between gap-3 sm:col-span-2 xl:col-span-12">
             {periodMode === "month" && !isCurrentMonth && (
               <span className="rounded-full bg-warning/15 px-2.5 py-1 text-[11px] font-semibold text-warning">
                 Mostrando um mês anterior — os números do mês atual continuam intactos
@@ -198,7 +198,7 @@ export function AnaliticaTabs({
             </div>
           </div>
 
-          <div className="col-span-3 rounded-xl border border-gold-deep/28 bg-surface p-4">
+          <div className="col-span-1 rounded-xl border border-gold-deep/28 bg-surface p-4 xl:col-span-3">
             <div className="text-[11px] uppercase tracking-wide text-ink-muted">
               {periodMode === "range" ? "Receita no período" : "Receita do mês"}
             </div>
@@ -213,20 +213,20 @@ export function AnaliticaTabs({
               </span>
             )}
           </div>
-          <div className="col-span-3 rounded-xl border border-gold-deep/28 bg-surface p-4">
+          <div className="col-span-1 rounded-xl border border-gold-deep/28 bg-surface p-4 xl:col-span-3">
             <div className="text-[11px] uppercase tracking-wide text-ink-muted">Negócios fechados</div>
             <div className="mt-1.5 text-[26px] font-bold text-ink">{kpis.dealsWon}</div>
           </div>
-          <div className="col-span-3 rounded-xl border border-gold-deep/28 bg-surface p-4">
+          <div className="col-span-1 rounded-xl border border-gold-deep/28 bg-surface p-4 xl:col-span-3">
             <div className="text-[11px] uppercase tracking-wide text-ink-muted">Ticket médio</div>
             <div className="mt-1.5 text-[26px] font-bold text-ink">{currency(kpis.avgTicket)}</div>
           </div>
-          <div className="col-span-3 rounded-xl border border-gold-deep/28 bg-surface p-4">
+          <div className="col-span-1 rounded-xl border border-gold-deep/28 bg-surface p-4 xl:col-span-3">
             <div className="text-[11px] uppercase tracking-wide text-ink-muted">Taxa de conversão</div>
             <div className="mt-1.5 text-[26px] font-bold text-ink">{kpis.conversionRate.toFixed(1)}%</div>
           </div>
 
-          <div className="col-span-8 rounded-xl border border-gold-deep/28 bg-surface p-4">
+          <div className="col-span-1 rounded-xl border border-gold-deep/28 bg-surface p-4 xl:col-span-8">
             <div className="mb-2 flex items-center justify-between">
               <span className="text-[13px] font-semibold text-ink">
                 {periodMode === "range" ? "Receita — período selecionado" : "Receita — últimos 6 meses"}
@@ -286,7 +286,7 @@ export function AnaliticaTabs({
             </div>
           </div>
 
-          <div className="col-span-4 rounded-xl border border-gold-deep/28 bg-surface p-4">
+          <div className="col-span-1 rounded-xl border border-gold-deep/28 bg-surface p-4 xl:col-span-4">
             <div className="mb-3 text-[13px] font-semibold text-ink">Medidor de meta</div>
             {goal ? (
               <div className="flex flex-col gap-3">
@@ -335,7 +335,7 @@ export function AnaliticaTabs({
             )}
           </div>
 
-          <div className="col-span-12 rounded-xl border border-gold-deep/28 bg-surface p-4">
+          <div className="col-span-1 rounded-xl border border-gold-deep/28 bg-surface p-4 sm:col-span-2 xl:col-span-12">
             <div className="mb-3 text-[13px] font-semibold text-ink">Funil de vendas</div>
             <div className="flex flex-col gap-1.5">
               {funnel.map((stage, i) => {
@@ -357,7 +357,7 @@ export function AnaliticaTabs({
           </div>
 
           {teamPerformance && teamPerformance.length > 0 && (
-            <div className="col-span-12 rounded-xl border border-gold-deep/28 bg-surface p-4">
+            <div className="col-span-1 rounded-xl border border-gold-deep/28 bg-surface p-4 sm:col-span-2 xl:col-span-12">
               <div className="mb-3 text-[13px] font-semibold text-ink">
                 Faturamento e comissão por vendedor
               </div>
