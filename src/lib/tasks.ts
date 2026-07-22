@@ -34,6 +34,48 @@ export async function getOverdueTasks(session: Session) {
   });
 }
 
+/** Lightweight count backing the "Agenda" nav badge (Sidebar) — same scope
+ * as getOverdueTasks, just without fetching full rows on every page. */
+export async function getOverdueTaskCount(session: Session): Promise<number> {
+  return prisma.task.count({
+    where: {
+      ...scopeWhere(session),
+      done: false,
+      dueDate: { lt: new Date(new Date().setHours(0, 0, 0, 0)) },
+    },
+  });
+}
+
+const SELLER_OVERDUE_ALERT_THRESHOLD = 5;
+
+/** Mediator-only radar: sellers piling up overdue tasks/agendamentos (5+ in
+ * total, regardless of how old) — surfaced on Início so a mediator can step
+ * in before it gets worse. Scoped to MEDIATOR since it crosses every
+ * seller's data; returns [] for any other role. */
+export async function getOverdueSellerAlerts(
+  session: Session,
+): Promise<Array<{ ownerId: string; ownerName: string; count: number }>> {
+  if (session.user.role !== "MEDIATOR") return [];
+
+  const grouped = await prisma.task.groupBy({
+    by: ["ownerId"],
+    where: { done: false, dueDate: { lt: new Date(new Date().setHours(0, 0, 0, 0)) } },
+    _count: { _all: true },
+  });
+  const relevant = grouped.filter((g) => g._count._all >= SELLER_OVERDUE_ALERT_THRESHOLD);
+  if (relevant.length === 0) return [];
+
+  const owners = await prisma.user.findMany({
+    where: { id: { in: relevant.map((r) => r.ownerId) } },
+    select: { id: true, name: true },
+  });
+  const nameById = new Map(owners.map((o) => [o.id, o.name]));
+
+  return relevant
+    .map((r) => ({ ownerId: r.ownerId, ownerName: nameById.get(r.ownerId) ?? "—", count: r._count._all }))
+    .sort((a, b) => b.count - a.count);
+}
+
 export async function createTask(
   session: Session,
   title: string,

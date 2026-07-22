@@ -17,6 +17,7 @@ export function AppShell({
   avatarUrl,
   commission,
   importantPosts,
+  overdueCount,
   children,
 }: {
   role: Role;
@@ -24,6 +25,7 @@ export function AppShell({
   avatarUrl: string | null;
   commission: CommissionSummary | null;
   importantPosts: ImportantPost[];
+  overdueCount: number;
   children: React.ReactNode;
 }) {
   const [navOpen, setNavOpen] = useState(false);
@@ -35,6 +37,7 @@ export function AppShell({
         role={role}
         commission={commission}
         importantPosts={importantPosts}
+        overdueCount={overdueCount}
         open={navOpen}
         onClose={() => setNavOpen(false)}
       />

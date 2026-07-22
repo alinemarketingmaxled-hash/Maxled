@@ -11,7 +11,7 @@ import {
   type DateRange,
 } from "@/lib/analytics";
 import { getDailyTasks } from "@/lib/calls";
-import { getOverdueTasks } from "@/lib/tasks";
+import { getOverdueTasks, getOverdueSellerAlerts } from "@/lib/tasks";
 import { getInProgressDeals, listOpenDealsBrief } from "@/lib/deals";
 import { listProspects, listProspectStages, listPendingActivationRequests } from "@/lib/prospects";
 import { assignableOwners } from "@/app/(app)/vendas/actions";
@@ -75,6 +75,7 @@ export default async function AnaliticaPage({
     teamPerformance,
     dailyTasks,
     overdueTasks,
+    overdueSellerAlerts,
     inProgressDeals,
     prospects,
     prospectStages,
@@ -89,6 +90,7 @@ export default async function AnaliticaPage({
     getTeamPerformance(session, referenceDate),
     getDailyTasks(session),
     getOverdueTasks(session),
+    getOverdueSellerAlerts(session),
     getInProgressDeals(session),
     listProspects(session),
     listProspectStages(),
@@ -132,6 +134,7 @@ export default async function AnaliticaPage({
           dealId: t.dealId,
           dealName: t.deal?.name ?? null,
         }))}
+        overdueSellerAlerts={overdueSellerAlerts}
         canEditAgenda={canEdit(session.user.role, "agenda")}
         canEditNegocios={canEdit(session.user.role, "negocios")}
         inProgressDeals={inProgressDeals.map((d) => ({
