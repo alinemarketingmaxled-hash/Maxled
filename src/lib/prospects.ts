@@ -18,8 +18,7 @@ export async function listProspectStages() {
 
 export {
   ensureProspectStagesSeeded,
-  areProspectStagesSeeded,
-  reconcileCustomProspectStages,
+  healProspectStages,
   addCustomProspectStage,
   renameCustomProspectStage,
   deleteCustomProspectStage,

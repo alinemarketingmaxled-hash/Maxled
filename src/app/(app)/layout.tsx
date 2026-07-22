@@ -3,11 +3,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getGoalProgress } from "@/lib/analytics";
 import { listImportantPosts } from "@/lib/social";
-import {
-  areProspectStagesSeeded,
-  ensureProspectStagesSeeded,
-  reconcileCustomProspectStages,
-} from "@/lib/prospect-stages";
+import { healProspectStages } from "@/lib/prospect-stages";
 import { AppShell } from "@/components/shell/AppShell";
 
 export default async function AppLayout({
@@ -18,11 +14,6 @@ export default async function AppLayout({
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  if (!(await areProspectStagesSeeded())) {
-    await ensureProspectStagesSeeded();
-  }
-  await reconcileCustomProspectStages();
-
   const [me, goal, importantPosts] = await Promise.all([
     prisma.user.findUnique({
       where: { id: session.user.id },
@@ -30,6 +21,7 @@ export default async function AppLayout({
     }),
     getGoalProgress(session),
     listImportantPosts(),
+    healProspectStages(),
   ]);
 
   return (
