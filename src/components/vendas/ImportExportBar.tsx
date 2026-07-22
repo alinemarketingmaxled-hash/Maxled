@@ -15,7 +15,7 @@ export function ImportExportBar({ canEdit }: { canEdit: boolean }) {
     e.preventDefault();
     const file = fileRef.current?.files?.[0];
     if (!file) {
-      setError("Selecione um arquivo CSV.");
+      setError("Selecione um arquivo CSV ou Excel.");
       return;
     }
     setError(null);
@@ -59,7 +59,7 @@ export function ImportExportBar({ canEdit }: { canEdit: boolean }) {
               ref={fileRef}
               type="file"
               name="file"
-              accept=".csv,text/csv"
+              accept=".csv,text/csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
               className="text-xs text-ink-muted file:mr-2 file:rounded-md file:border file:border-gold-deep file:bg-surface-2 file:px-2.5 file:py-1 file:text-xs file:text-ink"
             />
             <button
@@ -67,7 +67,7 @@ export function ImportExportBar({ canEdit }: { canEdit: boolean }) {
               disabled={isImporting}
               className="rounded-lg border border-gold-deep px-3.5 py-1.5 text-xs font-semibold text-ink transition-colors hover:border-gold disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {isImporting ? "Importando…" : "⭱ Importar CSV"}
+              {isImporting ? "Importando…" : "⭱ Importar CSV/Excel"}
             </button>
           </form>
         )}

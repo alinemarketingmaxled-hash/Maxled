@@ -265,17 +265,15 @@ function guessFieldFromValues(values: string[], assigned: Set<TargetField>): Tar
 }
 
 /**
- * Smart CSV import: maps whatever headers a spreadsheet has (Portuguese,
+ * Smart tabular import: maps whatever headers a spreadsheet has (Portuguese,
  * English, reordered, or missing entirely) onto the real Contact fields —
  * by header name first, falling back to sniffing cell contents for columns
  * a header alone can't identify. Always returns the canonical
  * CONTACT_CSV_COLUMNS keys so callers don't need to know about aliases.
+ * Shared by the CSV and Excel importers — both just tokenize their own
+ * format into a plain string[][] and hand it here.
  */
-export function parseCsv(text: string): Record<string, string>[] {
-  const rows = tokenizeCsv(text);
-  if (rows.length === 0) return [];
-
-  const [rawHeaders, ...dataRows] = rows;
+export function mapRows(rawHeaders: string[], dataRows: string[][]): Record<string, string>[] {
   const columnField = assignColumns(rawHeaders);
 
   const assigned = new Set(columnField.filter((f): f is TargetField => f !== null));
@@ -312,4 +310,46 @@ export function parseCsv(text: string): Record<string, string>[] {
     }
     return obj;
   });
+}
+
+export function parseCsv(text: string): Record<string, string>[] {
+  const rows = tokenizeCsv(text);
+  if (rows.length === 0) return [];
+  const [rawHeaders, ...dataRows] = rows;
+  return mapRows(rawHeaders, dataRows);
+}
+
+/** Same smart import as parseCsv, for an uploaded .xlsx/.xls file — reads
+ * the first worksheet and feeds it through the identical header-matching
+ * logic, so a client's own Excel export works without reformatting. */
+export async function parseXlsx(buffer: ArrayBuffer): Promise<Record<string, string>[]> {
+  const ExcelJS = await import("exceljs");
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.load(buffer);
+  const sheet = workbook.worksheets[0];
+  if (!sheet) return [];
+
+  const allRows: string[][] = [];
+  sheet.eachRow((row) => {
+    const cells: string[] = [];
+    row.eachCell({ includeEmpty: true }, (cell) => {
+      const v = cell.value;
+      if (v === null || v === undefined) {
+        cells.push("");
+      } else if (v instanceof Date) {
+        cells.push(v.toLocaleDateString("pt-BR"));
+      } else if (typeof v === "object" && "text" in v) {
+        cells.push(String((v as { text: unknown }).text ?? ""));
+      } else if (typeof v === "object" && "result" in v) {
+        cells.push(String((v as { result: unknown }).result ?? ""));
+      } else {
+        cells.push(String(v));
+      }
+    });
+    if (cells.some((c) => c !== "")) allRows.push(cells);
+  });
+  if (allRows.length === 0) return [];
+
+  const [rawHeaders, ...dataRows] = allRows;
+  return mapRows(rawHeaders, dataRows);
 }

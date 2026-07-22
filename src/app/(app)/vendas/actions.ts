@@ -15,7 +15,7 @@ import {
 } from "@/lib/contacts";
 import { lookupCnpj, type CnpjLookupOutcome } from "@/lib/cnpj-lookup";
 import { prisma } from "@/lib/prisma";
-import { parseCsv, parseBrDate, type ImportSummary } from "@/lib/csv";
+import { parseCsv, parseXlsx, parseBrDate, type ImportSummary } from "@/lib/csv";
 
 const PERSON_TYPES: PersonType[] = ["FISICA", "JURIDICA"];
 const COMMERCIAL_POTENTIALS: CommercialPotential[] = ["ALTO", "MEDIO", "BAIXO"];
@@ -194,11 +194,12 @@ export async function importContactsAction(
 ): Promise<{ error?: string; summary?: ImportSummary }> {
   const session = await requireEdit();
   const file = formData.get("file") as File | null;
-  if (!file || file.size === 0) return { error: "Selecione um arquivo CSV." };
+  if (!file || file.size === 0) return { error: "Selecione um arquivo CSV ou Excel." };
+
+  const isExcel = /\.xlsx$/i.test(file.name) || file.type.includes("spreadsheetml");
 
   try {
-    const text = await file.text();
-    const rows = parseCsv(text);
+    const rows = isExcel ? await parseXlsx(await file.arrayBuffer()) : parseCsv(await file.text());
 
     const users = await prisma.user.findMany({ select: { id: true, email: true } });
     const userByEmail = new Map(users.map((u) => [u.email.toLowerCase(), u.id]));
