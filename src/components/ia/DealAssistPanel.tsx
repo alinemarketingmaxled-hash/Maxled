@@ -1,21 +1,19 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import type { DealAssistMode } from "@/lib/ai";
+import type { DealAssistMode, DealAssistResult } from "@/lib/ai";
 import { generateDealAssistAction } from "@/app/(app)/ia/actions";
 
 export function DealAssistPanel({
-  disabled,
   deals,
 }: {
-  disabled: boolean;
   deals: Array<{ id: string; label: string; phone: string | null }>;
 }) {
   const [isPending, startTransition] = useTransition();
   const [dealId, setDealId] = useState(deals[0]?.id ?? "");
   const [mode, setMode] = useState<DealAssistMode>("tips");
   const [context, setContext] = useState("");
-  const [result, setResult] = useState<string | null>(null);
+  const [result, setResult] = useState<DealAssistResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -34,7 +32,7 @@ export function DealAssistPanel({
 
   async function handleCopy() {
     if (!result) return;
-    await navigator.clipboard.writeText(result);
+    await navigator.clipboard.writeText(result.text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
@@ -43,7 +41,7 @@ export function DealAssistPanel({
     if (!result || !selectedDeal?.phone) return;
     const digits = selectedDeal.phone.replace(/\D/g, "");
     const number = digits.startsWith("55") ? digits : `55${digits}`;
-    window.open(`https://wa.me/${number}?text=${encodeURIComponent(result)}`, "_blank");
+    window.open(`https://wa.me/${number}?text=${encodeURIComponent(result.text)}`, "_blank");
   }
 
   return (
@@ -111,7 +109,7 @@ export function DealAssistPanel({
 
           <button
             onClick={handleGenerate}
-            disabled={disabled || isPending || !dealId}
+            disabled={isPending || !dealId}
             className="self-start rounded-lg bg-gold-solid px-4 py-2 text-xs font-semibold text-black shadow-[0_0_0_1px_rgba(201,162,39,0.4)] transition-colors hover:bg-gold-solid-bright disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isPending ? "Gerando…" : "Gerar com IA"}
@@ -125,10 +123,19 @@ export function DealAssistPanel({
 
           {result && (
             <div className="rounded-lg border border-gold/30 bg-gradient-to-br from-gold/10 via-surface-2 to-surface-2 p-3.5">
-              <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-gold-bright">
-                <span>✨</span> Resultado
+              <div className="mb-1.5 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-gold-bright">
+                  <span>✨</span> Resultado
+                </div>
+                <span
+                  className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
+                    result.source === "ai" ? "bg-gold/15 text-gold-bright" : "bg-surface-3 text-ink-faint"
+                  }`}
+                >
+                  {result.source === "ai" ? "IA (Claude)" : "Automático"}
+                </span>
               </div>
-              <p className="whitespace-pre-wrap text-[12.5px] text-ink">{result}</p>
+              <p className="whitespace-pre-wrap text-[12.5px] text-ink">{result.text}</p>
               {mode === "writing" && (
                 <div className="mt-2.5 flex flex-wrap items-center gap-2">
                   <button

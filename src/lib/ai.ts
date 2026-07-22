@@ -67,6 +67,7 @@ export async function listOpenDealsBrief(session: Session) {
 }
 
 export type SalesInsights = {
+  source: "ai" | "heuristic";
   forecast: { value: number; confidence: "baixa" | "média" | "alta"; reasoning: string };
   alerts: Array<{
     dealId: string;
@@ -81,12 +82,24 @@ export type SalesInsights = {
   generatedAt: string;
 };
 
-/**
- * Forecasting + opportunity alerts + cross-sell (spec §3.6) grounded strictly
- * in real pipeline/revenue data — Claude only ranks and explains ids we
- * already fetched, it never invents deals, contacts or numbers.
- */
-export async function getSalesInsights(session: Session): Promise<SalesInsights> {
+type DealBrief = {
+  id: string;
+  name: string;
+  value: number;
+  stage: string;
+  contact: string;
+  daysSinceUpdate: number;
+};
+
+type CrossSellBrief = {
+  id: string;
+  name: string;
+  wonDeals: number;
+  totalValue: number;
+  lastWonDaysAgo: number;
+};
+
+async function fetchInsightsData(session: Session) {
   const [openDeals, contactsWithWonDeals, revenueHistory] = await Promise.all([
     prisma.deal.findMany({
       where: { ...dealScopeWhere(session), deletedAt: null, stage: { isWon: false } },
@@ -111,21 +124,7 @@ export async function getSalesInsights(session: Session): Promise<SalesInsights>
     getRevenueByMonth(session, 6),
   ]);
 
-  if (openDeals.length === 0 && contactsWithWonDeals.length === 0) {
-    return {
-      forecast: {
-        value: 0,
-        confidence: "baixa",
-        reasoning: "Ainda não há negócios suficientes no CRM para calcular uma previsão.",
-      },
-      alerts: [],
-      crossSell: [],
-      tip: "Cadastre contatos em Vendas e crie negócios em Negócios para a IA começar a gerar insights reais.",
-      generatedAt: new Date().toISOString(),
-    };
-  }
-
-  const dealsPayload = openDeals.map((d) => ({
+  const dealsPayload: DealBrief[] = openDeals.map((d) => ({
     id: d.id,
     name: d.name,
     value: Number(d.value),
@@ -134,7 +133,7 @@ export async function getSalesInsights(session: Session): Promise<SalesInsights>
     daysSinceUpdate: daysSince(d.updatedAt),
   }));
 
-  const crossSellPayload = contactsWithWonDeals.map((c) => ({
+  const crossSellPayload: CrossSellBrief[] = contactsWithWonDeals.map((c) => ({
     id: c.id,
     name: c.accountName || `${c.firstName} ${c.lastName}`,
     wonDeals: c.deals.length,
@@ -142,6 +141,117 @@ export async function getSalesInsights(session: Session): Promise<SalesInsights>
     lastWonDaysAgo: Math.min(...c.deals.map((d) => daysSince(d.updatedAt))),
   }));
 
+  return { dealsPayload, crossSellPayload, revenueHistory };
+}
+
+/**
+ * Zero-cost fallback used whenever the real Claude call isn't available (no
+ * ANTHROPIC_API_KEY, or the account is out of credit) — plain arithmetic
+ * over the same real data, never invented numbers. Always labelled
+ * source:"heuristic" so the UI can be honest about it not being real AI.
+ */
+function heuristicSalesInsights(data: Awaited<ReturnType<typeof fetchInsightsData>>): SalesInsights {
+  const { dealsPayload, crossSellPayload, revenueHistory } = data;
+
+  const recentMonths = revenueHistory.slice(-3);
+  const nonZero = recentMonths.filter((m) => m.value > 0);
+  const avg = nonZero.length > 0 ? nonZero.reduce((s, m) => s + m.value, 0) / nonZero.length : 0;
+  const monthsLabel = nonZero.map((m) => m.label).join(", ") || "sem faturamento recente";
+
+  const alerts = [...dealsPayload]
+    .sort((a, b) => b.daysSinceUpdate - a.daysSinceUpdate)
+    .slice(0, 5)
+    .map((d) => ({
+      dealId: d.id,
+      dealName: d.name,
+      contactName: d.contact,
+      value: d.value,
+      priority: (d.daysSinceUpdate > 30 ? "alta" : d.daysSinceUpdate > 14 ? "média" : "baixa") as
+        | "alta"
+        | "média"
+        | "baixa",
+      reason: `Sem atualização há ${d.daysSinceUpdate} dia(s).`,
+    }));
+
+  const crossSell = [...crossSellPayload]
+    .sort((a, b) => b.totalValue - a.totalValue)
+    .slice(0, 3)
+    .map((c) => ({
+      contactId: c.id,
+      contactName: c.name,
+      reasoning: `Já fechou ${c.wonDeals} negócio(s) totalizando ${c.totalValue.toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+      })} — bom candidato a um novo contato.`,
+    }));
+
+  const staleCount = dealsPayload.filter((d) => d.daysSinceUpdate > 14).length;
+  const tip =
+    staleCount > 0
+      ? `Você tem ${staleCount} negócio(s) parados há mais de 14 dias — priorize retomar contato com eles esta semana.`
+      : "Seus negócios em aberto estão com contato em dia — continue o ritmo de acompanhamento.";
+
+  return {
+    source: "heuristic",
+    forecast: {
+      value: Math.round(avg),
+      confidence: "baixa",
+      reasoning:
+        nonZero.length > 0
+          ? `Média simples do faturamento dos últimos meses com vendas (${monthsLabel}). Cálculo automático, sem IA.`
+          : "Sem faturamento suficiente nos últimos meses para calcular uma média. Cálculo automático, sem IA.",
+    },
+    alerts,
+    crossSell,
+    tip,
+    generatedAt: new Date().toISOString(),
+  };
+}
+
+/**
+ * Forecasting + opportunity alerts + cross-sell (spec §3.6) grounded strictly
+ * in real pipeline/revenue data — Claude only ranks and explains ids we
+ * already fetched, it never invents deals, contacts or numbers.
+ *
+ * Falls back to heuristicSalesInsights() whenever the API key is missing or
+ * the Claude call fails (e.g. insufficient credit) — the seller always gets
+ * something useful, and the result is always labelled with its real source.
+ */
+export async function getSalesInsights(session: Session): Promise<SalesInsights> {
+  const data = await fetchInsightsData(session);
+  const { dealsPayload, crossSellPayload, revenueHistory } = data;
+
+  if (dealsPayload.length === 0 && crossSellPayload.length === 0) {
+    return {
+      source: "heuristic",
+      forecast: {
+        value: 0,
+        confidence: "baixa",
+        reasoning: "Ainda não há negócios suficientes no CRM para calcular uma previsão.",
+      },
+      alerts: [],
+      crossSell: [],
+      tip: "Cadastre contatos em Vendas e crie negócios em Negócios para começar a gerar insights.",
+      generatedAt: new Date().toISOString(),
+    };
+  }
+
+  if (isAiConfigured()) {
+    try {
+      return await getSalesInsightsFromAi(dealsPayload, crossSellPayload, revenueHistory);
+    } catch {
+      // Chave configurada mas a chamada falhou (ex: sem crédito) — cai no cálculo automático.
+    }
+  }
+
+  return heuristicSalesInsights(data);
+}
+
+async function getSalesInsightsFromAi(
+  dealsPayload: DealBrief[],
+  crossSellPayload: CrossSellBrief[],
+  revenueHistory: Awaited<ReturnType<typeof getRevenueByMonth>>,
+): Promise<SalesInsights> {
   const prompt = `Você é um analista de vendas para uma distribuidora B2B que usa o CRM Maxled.
 Analise SOMENTE os dados reais abaixo. Nunca invente negócios, clientes ou números que não estejam listados.
 
@@ -179,6 +289,7 @@ Limite "alerts" aos 5 negócios mais críticos (priorize os parados há mais tem
   const contactById = new Map(crossSellPayload.map((c) => [c.id, c]));
 
   return {
+    source: "ai",
     forecast: parsed.forecast,
     alerts: parsed.alerts
       .filter((a) => dealById.has(a.dealId))
@@ -207,17 +318,60 @@ Limite "alerts" aos 5 negócios mais críticos (priorize os parados há mais tem
 
 export type DealAssistMode = "tips" | "writing";
 
+export type DealAssistResult = { text: string; source: "ai" | "heuristic" };
+
+type DealSummary = {
+  name: string;
+  value: number;
+  stage: string;
+  contact: string;
+  contactFirstName: string;
+  daysSinceUpdate: number;
+  recentNotes: string[];
+};
+
+/** Zero-cost fallback for getDealAssist — deterministic templates over the
+ * same real deal data, never invented. Always labelled source:"heuristic". */
+function heuristicDealAssist(deal: DealSummary, mode: DealAssistMode, context?: string): string {
+  if (mode === "tips") {
+    const tips: string[] = [];
+    if (deal.daysSinceUpdate > 14) {
+      tips.push(`Esse negócio está sem atualização há ${deal.daysSinceUpdate} dias — vale retomar contato esta semana.`);
+    } else {
+      tips.push(`Atualizado recentemente (há ${deal.daysSinceUpdate} dia(s)) — bom momento para dar o próximo passo.`);
+    }
+    if (deal.recentNotes.length === 0) {
+      tips.push("Ainda não há notas registradas neste negócio — registre o histórico de conversas para acompanhar melhor.");
+    }
+    tips.push(`Confirme com "${deal.contact}" os próximos passos para avançar da etapa "${deal.stage}".`);
+    if (deal.value > 0) {
+      tips.push(`Negócio de valor considerável — priorize o acompanhamento próximo até o fechamento.`);
+    }
+    return tips.slice(0, 4).join("\n");
+  }
+
+  const greeting = deal.contactFirstName ? `Olá, ${deal.contactFirstName}! Tudo bem?` : "Olá! Tudo bem?";
+  const body = context?.trim()
+    ? context.trim()
+    : `Estou entrando em contato sobre o negócio "${deal.name}" (etapa atual: ${deal.stage}). Gostaria de saber se você tem alguma dúvida ou se posso ajudar em algo para seguirmos com a proposta.`;
+  return `${greeting}\n\n${body}\n\nFico à disposição!`;
+}
+
 /**
  * Writing assist + strategic tips per deal (spec §3.6), grounded in that
  * deal's real stage/value/notes — the two capabilities Claude can already
  * do well from data that exists today.
+ *
+ * Falls back to heuristicDealAssist() whenever the API key is missing or the
+ * Claude call fails (e.g. insufficient credit) — always labelled with its
+ * real source so the UI never claims a heuristic answer is real AI.
  */
 export async function getDealAssist(
   session: Session,
   dealId: string,
   mode: DealAssistMode,
   context?: string,
-): Promise<string> {
+): Promise<DealAssistResult> {
   const deal = await prisma.deal.findFirst({
     where: { id: dealId, deletedAt: null, ...dealScopeWhere(session) },
     include: {
@@ -228,15 +382,33 @@ export async function getDealAssist(
   });
   if (!deal) throw new Error("Negócio não encontrado ou sem permissão.");
 
-  const dealSummary = {
+  const dealSummary: DealSummary = {
     name: deal.name,
     value: Number(deal.value),
     stage: deal.stage.name,
     contact: deal.contact.accountName || `${deal.contact.firstName} ${deal.contact.lastName}`,
+    contactFirstName: deal.contact.firstName,
     daysSinceUpdate: daysSince(deal.updatedAt),
-    recentNotes: deal.notes.map((n) => n.body).filter(Boolean),
+    recentNotes: deal.notes.map((n) => n.body).filter((b): b is string => !!b),
   };
 
+  if (isAiConfigured()) {
+    try {
+      const text = await getDealAssistFromAi(dealSummary, mode, context);
+      return { text, source: "ai" };
+    } catch {
+      // Chave configurada mas a chamada falhou (ex: sem crédito) — cai no modelo de mensagem automático.
+    }
+  }
+
+  return { text: heuristicDealAssist(dealSummary, mode, context), source: "heuristic" };
+}
+
+async function getDealAssistFromAi(
+  dealSummary: DealSummary,
+  mode: DealAssistMode,
+  context?: string,
+): Promise<string> {
   const prompt =
     mode === "tips"
       ? `Você é um coach de vendas para um vendedor de uma distribuidora B2B. Com base SOMENTE nestes dados reais do negócio, dê de 2 a 4 dicas estratégicas curtas e práticas em português para avançar esse negócio. Não invente informações fora do que está aqui.

@@ -1,17 +1,14 @@
 "use server";
 
 import { requireView } from "@/lib/require-permission";
-import { isAiConfigured, getSalesInsights, getDealAssist, type DealAssistMode } from "@/lib/ai";
+import { getSalesInsights, getDealAssist, type DealAssistMode } from "@/lib/ai";
 
 function errorMessage(e: unknown): string {
-  return e instanceof Error ? e.message : "Erro inesperado ao falar com a IA.";
+  return e instanceof Error ? e.message : "Erro inesperado ao gerar a análise.";
 }
 
 export async function generateInsightsAction() {
   const session = await requireView("ia");
-  if (!isAiConfigured()) {
-    return { error: "IA ainda não configurada. Peça para o administrador cadastrar a ANTHROPIC_API_KEY." };
-  }
   try {
     return { data: await getSalesInsights(session) };
   } catch (e) {
@@ -25,9 +22,6 @@ export async function generateDealAssistAction(
   context: string,
 ) {
   const session = await requireView("ia");
-  if (!isAiConfigured()) {
-    return { error: "IA ainda não configurada. Peça para o administrador cadastrar a ANTHROPIC_API_KEY." };
-  }
   if (!dealId) return { error: "Escolha um negócio." };
   try {
     return { data: await getDealAssist(session, dealId, mode, context) };
