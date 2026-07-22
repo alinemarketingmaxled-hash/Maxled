@@ -67,7 +67,10 @@ export async function getBoard(session: Session) {
         orderBy: { order: "asc" },
         include: {
           deals: {
-            where: { deletedAt: null, ...dealScopeWhere(session) },
+            // Once a deal reaches a "won" stage it's done — it drops off
+            // the Kanban board and lives on only in the client's Histórico
+            // (ContactDetailPanel's deals list has no such filter).
+            where: { deletedAt: null, stage: { isWon: false }, ...dealScopeWhere(session) },
             orderBy: { createdAt: "desc" },
             include: {
               contact: {
