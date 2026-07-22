@@ -68,7 +68,7 @@ export default async function VendasPage({
 
       <ImportExportBar canEdit={editable} />
 
-      <div className="grid grid-cols-[280px_1fr] gap-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[280px_1fr]">
         <ContactListPanel contacts={contacts} selectedId={selectedId} />
 
         {isNew && (

@@ -8,9 +8,7 @@ import {
   ensureProspectStagesSeeded,
   reconcileCustomProspectStages,
 } from "@/lib/prospect-stages";
-import { Sidebar } from "@/components/shell/Sidebar";
-import { Topbar } from "@/components/shell/Topbar";
-import { CircuitBackground } from "@/components/shell/CircuitBackground";
+import { AppShell } from "@/components/shell/AppShell";
 
 export default async function AppLayout({
   children,
@@ -35,36 +33,29 @@ export default async function AppLayout({
   ]);
 
   return (
-    <div className="relative flex min-h-screen flex-1">
-      <CircuitBackground />
-      <Sidebar
-        role={session.user.role}
-        commission={
-          goal
-            ? {
-                achieved: goal.achieved,
-                dealsWon: goal.dealsWon,
-                goal1: goal.goal1,
-                commissionEarned: goal.commissionEarned,
-                effectiveCommissionPct: goal.effectiveCommissionPct,
-              }
-            : null
-        }
-        importantPosts={importantPosts.map((p) => ({
-          id: p.id,
-          body: p.body,
-          authorName: p.authorName,
-          createdAt: p.createdAt.toISOString(),
-        }))}
-      />
-      <div className="relative z-10 flex flex-1 flex-col">
-        <Topbar
-          name={me?.name ?? session.user.name ?? session.user.email ?? "Usuário"}
-          role={session.user.role}
-          avatarUrl={me?.avatarUrl ?? null}
-        />
-        <main className="flex-1 p-6">{children}</main>
-      </div>
-    </div>
+    <AppShell
+      role={session.user.role}
+      name={me?.name ?? session.user.name ?? session.user.email ?? "Usuário"}
+      avatarUrl={me?.avatarUrl ?? null}
+      commission={
+        goal
+          ? {
+              achieved: goal.achieved,
+              dealsWon: goal.dealsWon,
+              goal1: goal.goal1,
+              commissionEarned: goal.commissionEarned,
+              effectiveCommissionPct: goal.effectiveCommissionPct,
+            }
+          : null
+      }
+      importantPosts={importantPosts.map((p) => ({
+        id: p.id,
+        body: p.body,
+        authorName: p.authorName,
+        createdAt: p.createdAt.toISOString(),
+      }))}
+    >
+      {children}
+    </AppShell>
   );
 }

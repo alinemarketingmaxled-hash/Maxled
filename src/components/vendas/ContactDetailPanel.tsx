@@ -248,7 +248,7 @@ export function ContactDetailPanel({
 
       {tab === "geral" && (
         <>
-          <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+          <div className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2">
             <div>
               <h4 className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-gold">Identificação</h4>
               {fieldRow("Proprietário", contact.owner.name)}
@@ -296,7 +296,7 @@ export function ContactDetailPanel({
                 Prioridade {insights.prioridade}
               </span>
             </div>
-            <div className="grid grid-cols-2 gap-x-8 gap-y-1 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-x-8 gap-y-1 sm:grid-cols-3">
               {fieldRow("Valor comprado", formatCurrency(insights.valorComprado))}
               {fieldRow("Qtd. negócios ganhos", String(insights.quantidadeComprada))}
               {fieldRow("Ticket médio", formatCurrency(insights.ticketMedio))}
