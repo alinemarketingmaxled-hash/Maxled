@@ -13,12 +13,17 @@ export function Sidebar({
   role,
   commission,
   importantPosts,
+  overdueCount,
   open,
   onClose,
 }: {
   role: Role;
   commission: CommissionSummary | null;
   importantPosts: ImportantPost[];
+  /** Count of overdue tasks/agendamentos for this user's scope — shown as a
+   * badge on the Agenda nav item so overdue items act as a site-wide
+   * notification, visible from any page, not just Agenda/Início. */
+  overdueCount: number;
   /** Drawer visibility below the lg breakpoint. Ignored (always visible) at
    * lg and up, where the sidebar is a normal static column. */
   open: boolean;
@@ -73,6 +78,14 @@ export function Sidebar({
                 {item.module === "perfil" && role === "MEDIATOR" && (
                   <span className="ml-auto rounded-full bg-gold-deep px-1.5 py-0.5 text-[9.5px] uppercase tracking-wide text-ink">
                     Mediador
+                  </span>
+                )}
+                {item.module === "agenda" && overdueCount > 0 && (
+                  <span
+                    title={`${overdueCount} atrasado(s)`}
+                    className="ml-auto flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-critical px-1 text-[10px] font-bold text-white"
+                  >
+                    {overdueCount > 99 ? "99+" : overdueCount}
                   </span>
                 )}
               </Link>

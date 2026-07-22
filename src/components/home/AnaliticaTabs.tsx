@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { DailyTasks } from "@/lib/calls";
 import { DailyTasksPanel } from "@/components/home/DailyTasksPanel";
 import { OverdueTasksPanel } from "@/components/home/OverdueTasksPanel";
+import { OverdueSellerAlertsPanel, type OverdueSellerAlert } from "@/components/home/OverdueSellerAlertsPanel";
 import { useRouter } from "next/navigation";
 import { MonthPicker } from "@/components/home/MonthPicker";
 import { DateRangePicker } from "@/components/home/DateRangePicker";
@@ -55,6 +56,7 @@ function currency(v: number) {
 export function AnaliticaTabs({
   dailyTasks,
   overdueTasks,
+  overdueSellerAlerts,
   canEditAgenda,
   canEditNegocios,
   inProgressDeals,
@@ -81,6 +83,7 @@ export function AnaliticaTabs({
 }: {
   dailyTasks: DailyTasks;
   overdueTasks: TaskRow[];
+  overdueSellerAlerts: OverdueSellerAlert[];
   canEditAgenda: boolean;
   canEditNegocios: boolean;
   inProgressDeals: InProgressDeal[];
@@ -139,6 +142,7 @@ export function AnaliticaTabs({
         </div>
       </div>
 
+      <OverdueSellerAlertsPanel alerts={overdueSellerAlerts} />
       <InProgressDealsPanel deals={inProgressDeals} canEdit={canEditNegocios} />
       <DailyTasksPanel tasks={dailyTasks} />
       <OverdueTasksPanel tasks={overdueTasks} canEdit={canEditAgenda} />
