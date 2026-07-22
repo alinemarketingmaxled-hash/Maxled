@@ -79,9 +79,11 @@ export async function createPost(
   return prisma.post.create({ data: { authorId: session.user.id, body, imageUrl } });
 }
 
+/** Authors can delete their own posts; the mediator can also remove anyone
+ * else's, same moderation reach as marking a post important. */
 export async function deletePost(session: Session, postId: string) {
   const post = await prisma.post.findUniqueOrThrow({ where: { id: postId } });
-  if (post.authorId !== session.user.id) {
+  if (post.authorId !== session.user.id && session.user.role !== "MEDIATOR") {
     throw new Error("Você só pode excluir suas próprias publicações.");
   }
   await prisma.post.delete({ where: { id: postId } });
