@@ -5,8 +5,7 @@ import { DealAssistPanel } from "@/components/ia/DealAssistPanel";
 
 export default async function IaPage() {
   const session = await requireView("ia");
-  const configured = isAiConfigured();
-  const deals = configured ? await listOpenDealsBrief(session) : [];
+  const deals = await listOpenDealsBrief(session);
 
   return (
     <div>
@@ -17,18 +16,19 @@ export default async function IaPage() {
         </p>
       </div>
 
-      {!configured && (
+      {!isAiConfigured() && (
         <div className="mb-4 rounded-xl border border-dashed border-gold-deep/50 bg-surface px-6 py-5 text-center">
           <p className="text-sm text-ink-muted">
-            IA ainda não configurada. Cadastre a variável <code>ANTHROPIC_API_KEY</code> para
-            ativar previsões, alertas, cross-sell e o assistente de redação.
+            A IA real (Claude) ainda não está ativa nesta conta. Enquanto isso, as ferramentas
+            abaixo funcionam em <strong>modo automático</strong> — cálculos e sugestões a partir
+            dos seus dados reais, sem custo, sinalizados como &quot;análise automática&quot;.
           </p>
         </div>
       )}
 
       <div className="flex flex-col gap-4">
-        <InsightsPanel disabled={!configured} />
-        <DealAssistPanel disabled={!configured} deals={deals} />
+        <InsightsPanel />
+        <DealAssistPanel deals={deals} />
       </div>
 
       <div className="mt-4 rounded-xl border border-dashed border-gold-deep/40 bg-surface px-5 py-4">

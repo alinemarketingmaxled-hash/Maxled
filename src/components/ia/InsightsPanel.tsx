@@ -14,7 +14,7 @@ const PRIORITY_STYLE: Record<string, string> = {
   baixa: "border-l-info bg-info/10 text-info",
 };
 
-export function InsightsPanel({ disabled }: { disabled: boolean }) {
+export function InsightsPanel() {
   const [isPending, startTransition] = useTransition();
   const [insights, setInsights] = useState<SalesInsights | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -44,7 +44,7 @@ export function InsightsPanel({ disabled }: { disabled: boolean }) {
         </div>
         <button
           onClick={handleGenerate}
-          disabled={disabled || isPending}
+          disabled={isPending}
           className="flex-none rounded-lg bg-gold-solid px-4 py-2 text-xs font-semibold text-black shadow-[0_0_0_1px_rgba(201,162,39,0.4)] transition-colors hover:bg-gold-solid-bright disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isPending ? "Gerando…" : "Gerar insights com IA"}
@@ -67,6 +67,15 @@ export function InsightsPanel({ disabled }: { disabled: boolean }) {
 
       {insights && (
         <div className="flex flex-col gap-5">
+          <span
+            className={`self-start rounded-full px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-wide ${
+              insights.source === "ai"
+                ? "bg-gold/15 text-gold-bright"
+                : "bg-surface-3 text-ink-faint"
+            }`}
+          >
+            {insights.source === "ai" ? "✧ Gerado por IA (Claude)" : "⚙ Análise automática (sem custo)"}
+          </span>
           <div className="rounded-lg border border-gold/30 bg-gradient-to-br from-gold/10 via-surface-2 to-surface-2 p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-2.5">
