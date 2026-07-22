@@ -30,33 +30,44 @@ export async function ensureProspectStagesSeeded() {
   }
 }
 
-/** Cheap existence check for the layout's per-request self-heal — avoids
- * running the full reconcile on every single page load when the data is
- * already correct, which is the common case. */
-export async function areProspectStagesSeeded() {
-  const row = await prisma.prospectStage.findUnique({
-    where: { id: FIRST_CANONICAL_STAGE_ID },
-    select: { id: true },
+/** Single-query health check for the layout's per-request self-heal. Reads
+ * every stage row once (the table is tiny) and reports what, if anything,
+ * needs fixing — the caller only pays for a transaction on the rare request
+ * that actually needs one, instead of every request opening and immediately
+ * closing an empty transaction. */
+async function checkProspectStagesHealth() {
+  const all = await prisma.prospectStage.findMany({ orderBy: [{ order: "asc" }, { createdAt: "asc" }] });
+  const canonicalCorrect = PROSPECT_STAGE_DEFS.every((def) => {
+    const row = all.find((s) => s.id === def.id);
+    return (
+      row !== undefined &&
+      row.name === def.name &&
+      row.order === def.order &&
+      row.isClientStage === (def.isClientStage ?? false) &&
+      !row.isCustom
+    );
   });
-  return row !== null;
+  const strays = all.filter((s) => !CANONICAL_IDS.has(s.id));
+  return { canonicalCorrect, strays };
 }
 
 /** Cleans up leftover stage rows from before custom columns were flagged
  * (isCustom didn't exist yet) or from an earlier free-form "add column"
  * feature: any non-canonical row gets flagged isCustom + pushed to sort
  * after the 6 fixed ones, and rows sharing the same name are merged into
- * one, moving their prospect data along so nothing is lost. Idempotent —
- * a no-op once the data is clean. */
-export async function reconcileCustomProspectStages() {
+ * one, moving their prospect data along so nothing is lost.
+ *
+ * Every write uses the *Many variants (updateMany/deleteMany), which are
+ * no-ops instead of throwing when the target row is already gone — this
+ * function can run concurrently from more than one in-flight request (it
+ * fires on every page load), so a second run racing right behind a first
+ * one must not crash on rows the first run already fixed or removed. */
+async function reconcileStrayStages(strays: Awaited<ReturnType<typeof checkProspectStagesHealth>>["strays"]) {
   await prisma.$transaction(async (tx) => {
-    const all = await tx.prospectStage.findMany({ orderBy: [{ order: "asc" }, { createdAt: "asc" }] });
-    const strays = all.filter((s) => !CANONICAL_IDS.has(s.id));
-    if (strays.length === 0) return;
-
     let nextOrder = 6;
     for (const s of strays) {
       if (!s.isCustom || s.order !== nextOrder) {
-        await tx.prospectStage.update({ where: { id: s.id }, data: { isCustom: true, order: nextOrder } });
+        await tx.prospectStage.updateMany({ where: { id: s.id }, data: { isCustom: true, order: nextOrder } });
       }
       nextOrder += 1;
     }
@@ -79,16 +90,32 @@ export async function reconcileCustomProspectStages() {
             where: { prospectId_stageId: { prospectId: v.prospectId, stageId: keeper.id } },
           });
           if (clash) {
-            await tx.prospectStageValue.delete({ where: { id: v.id } });
+            await tx.prospectStageValue.deleteMany({ where: { id: v.id } });
           } else {
-            await tx.prospectStageValue.update({ where: { id: v.id }, data: { stageId: keeper.id } });
+            await tx.prospectStageValue.updateMany({ where: { id: v.id }, data: { stageId: keeper.id } });
           }
         }
         await tx.prospect.updateMany({ where: { currentStageId: loser.id }, data: { currentStageId: keeper.id } });
-        await tx.prospectStage.delete({ where: { id: loser.id } });
+        await tx.prospectStage.deleteMany({ where: { id: loser.id } });
       }
     }
   });
+}
+
+/** Request-path self-heal, called from the app layout on every request.
+ * Costs a single cheap read in the common case (data already correct) —
+ * writes only happen on the rare request that finds something to fix.
+ * Never throws: this runs on every page load, so a hiccup here (e.g. two
+ * requests racing to fix the same data) must not take the page down —
+ * worst case, healing is just retried on the next request. */
+export async function healProspectStages() {
+  try {
+    const { canonicalCorrect, strays } = await checkProspectStagesHealth();
+    if (!canonicalCorrect) await ensureProspectStagesSeeded();
+    if (strays.length > 0) await reconcileStrayStages(strays);
+  } catch (e) {
+    console.error("healProspectStages failed (will retry on next request):", e);
+  }
 }
 
 export type CustomProspectStageInput = { name: string };
