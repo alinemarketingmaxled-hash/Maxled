@@ -80,13 +80,19 @@ export async function createPost(
 }
 
 /** Authors can delete their own posts; the mediator can also remove anyone
- * else's, same moderation reach as marking a post important. */
+ * else's, same moderation reach as marking a post important. Likes and
+ * comments have no cascade on their FK to Post, so they're cleared out
+ * first — otherwise Postgres rejects the delete with a RESTRICT error. */
 export async function deletePost(session: Session, postId: string) {
   const post = await prisma.post.findUniqueOrThrow({ where: { id: postId } });
   if (post.authorId !== session.user.id && session.user.role !== "MEDIATOR") {
     throw new Error("Você só pode excluir suas próprias publicações.");
   }
-  await prisma.post.delete({ where: { id: postId } });
+  await prisma.$transaction([
+    prisma.postLike.deleteMany({ where: { postId } }),
+    prisma.postComment.deleteMany({ where: { postId } }),
+    prisma.post.delete({ where: { id: postId } }),
+  ]);
 }
 
 export async function toggleLike(session: Session, postId: string) {
