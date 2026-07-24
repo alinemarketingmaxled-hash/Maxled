@@ -312,11 +312,30 @@ export function mapRows(rawHeaders: string[], dataRows: string[][]): Record<stri
   });
 }
 
+/** Scans the first few rows for the one that best looks like a header row
+ * (matches the most known field aliases) — handles a title/instructions row
+ * sitting above the real headers, a common case in hand-made client
+ * spreadsheets. Falls back to row 0 (the old fixed assumption) when nothing
+ * scores well enough to be confident. */
+function findHeaderRowIndex(rows: string[][]): number {
+  let bestIdx = 0;
+  let bestScore = 0;
+  const limit = Math.min(rows.length, 5);
+  for (let i = 0; i < limit; i++) {
+    const score = assignColumns(rows[i]).filter((f) => f !== null).length;
+    if (score > bestScore) {
+      bestScore = score;
+      bestIdx = i;
+    }
+  }
+  return bestScore >= 2 ? bestIdx : 0;
+}
+
 export function parseCsv(text: string): Record<string, string>[] {
   const rows = tokenizeCsv(text);
   if (rows.length === 0) return [];
-  const [rawHeaders, ...dataRows] = rows;
-  return mapRows(rawHeaders, dataRows);
+  const headerIdx = findHeaderRowIndex(rows);
+  return mapRows(rows[headerIdx], rows.slice(headerIdx + 1));
 }
 
 /** Same smart import as parseCsv, for an uploaded .xlsx/.xls file — reads
@@ -350,6 +369,6 @@ export async function parseXlsx(buffer: ArrayBuffer): Promise<Record<string, str
   });
   if (allRows.length === 0) return [];
 
-  const [rawHeaders, ...dataRows] = allRows;
-  return mapRows(rawHeaders, dataRows);
+  const headerIdx = findHeaderRowIndex(allRows);
+  return mapRows(allRows[headerIdx], allRows.slice(headerIdx + 1));
 }
