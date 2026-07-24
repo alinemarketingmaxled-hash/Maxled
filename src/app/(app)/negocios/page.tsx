@@ -1,14 +1,15 @@
 import Link from "next/link";
 import { canEdit } from "@/lib/permissions";
-import { getBoard } from "@/lib/deals";
+import { getBoard, getRecentlyWonDeals } from "@/lib/deals";
 import { requireView } from "@/lib/require-permission";
 import { KanbanBoard } from "@/components/negocios/KanbanBoard";
+import { RecentClosedDealsPanel } from "@/components/negocios/RecentClosedDealsPanel";
 import { serializeDeal } from "@/lib/serialize-deal";
 
 export default async function NegociosPage() {
   const session = await requireView("negocios");
   const editable = canEdit(session.user.role, "negocios");
-  const pipeline = await getBoard(session);
+  const [pipeline, recentlyWon] = await Promise.all([getBoard(session), getRecentlyWonDeals(session)]);
   const stages = pipeline?.stages.map((stage) => ({
     id: stage.id,
     name: stage.name,
@@ -41,6 +42,20 @@ export default async function NegociosPage() {
           Nenhum pipeline configurado ainda.
         </div>
       )}
+
+      <div className="mt-4">
+        <RecentClosedDealsPanel
+          canEdit={editable}
+          deals={recentlyWon.map((d) => ({
+            id: d.id,
+            name: d.name,
+            value: Number(d.value),
+            contactName: d.contact.accountName || `${d.contact.firstName} ${d.contact.lastName}`,
+            ownerName: d.owner.name,
+            wonAt: d.updatedAt.toISOString(),
+          }))}
+        />
+      </div>
     </div>
   );
 }

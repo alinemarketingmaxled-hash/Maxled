@@ -94,6 +94,28 @@ export async function getBoard(session: Session) {
   return pipeline;
 }
 
+/** "Fechados recentemente" list on the Negócios page — won deals from the
+ * last `months`. Won deals no longer show on the Kanban board (see
+ * getBoard), so without this the only way to find/edit one is digging into
+ * the client's Histórico one contact at a time. */
+export async function getRecentlyWonDeals(session: Session, months = 3) {
+  const since = new Date();
+  since.setMonth(since.getMonth() - months);
+  return prisma.deal.findMany({
+    where: {
+      deletedAt: null,
+      stage: { isWon: true },
+      updatedAt: { gte: since },
+      ...dealScopeWhere(session),
+    },
+    orderBy: { updatedAt: "desc" },
+    include: {
+      contact: { select: { firstName: true, lastName: true, accountName: true } },
+      owner: { select: { name: true } },
+    },
+  });
+}
+
 export async function getDeal(session: Session, id: string) {
   return prisma.deal.findFirst({
     where: { id, deletedAt: null, ...dealScopeWhere(session) },
