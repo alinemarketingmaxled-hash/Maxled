@@ -64,11 +64,19 @@ export default async function ConfigPage() {
 
   return (
     <div>
-      <div className="mb-4">
-        <h2 className="font-display text-[22px] text-ink">Config</h2>
-        <p className="mt-0.5 text-[13px] text-ink-muted">
-          Permissões por módulo e registro de atividades
-        </p>
+      <div className="mb-4 flex items-baseline justify-between gap-4">
+        <div>
+          <h2 className="font-display text-[22px] text-ink">Config</h2>
+          <p className="mt-0.5 text-[13px] text-ink-muted">
+            Permissões por módulo e registro de atividades
+          </p>
+        </div>
+        <a
+          href="/api/full-export"
+          className="flex-none rounded-lg border border-gold-deep px-3.5 py-1.5 text-xs font-semibold text-ink transition-colors hover:border-gold"
+        >
+          ⭳ Exportar tudo (Excel completo)
+        </a>
       </div>
 
       <div className="mb-4 rounded-xl border border-gold-deep/30 bg-surface p-4">
