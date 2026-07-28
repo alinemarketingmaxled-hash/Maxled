@@ -14,6 +14,7 @@ export const CONTACT_CSV_COLUMNS = [
   "assistantPhone",
   "leadSource",
   "supplierName",
+  "profile",
   "jobTitle",
   "department",
   "street",
@@ -65,14 +66,14 @@ export function buildImportTemplate(): string {
   const headers = [
     "Proprietário (e-mail)", "Tipo de Pessoa", "Nome", "Sobrenome", "Empresa", "CNPJ", "E-mail",
     "Telefone", "Celular", "Telefone residencial", "Telefone do assistente",
-    "Origem do lead", "Fornecedor", "Cargo", "Departamento",
+    "Origem do lead", "Fornecedor", "Perfil", "Cargo", "Departamento",
     "Rua", "Número", "Cidade", "Estado", "CEP",
     "Data Aniversário", "Potencial Comercial", "Status CRM", "Próximo Contato", "Observações",
   ];
   const example = [
     "", "Jurídica", "João", "Silva", "Distribuidora ABC", "12.345.678/0001-90", "joao@abc.com.br",
     "1133334444", "11988887777", "", "",
-    "Indicação", "", "Comprador", "Compras",
+    "Indicação", "", "Indústria", "Comprador", "Compras",
     "Rua das Flores", "123", "São Paulo", "SP", "01310-100",
     "15/03/1980", "Alto", "Ativo", "20/07/2026", "Prefere contato pela manhã.",
   ];
@@ -148,6 +149,7 @@ const FIELD_ALIASES: Record<TargetField, string[]> = {
   assistantPhone: ["assistantPhone", "telefonedoassistente", "telefoneassistente", "assistente"],
   leadSource: ["leadSource", "origemdolead", "origem", "fonte"],
   supplierName: ["supplierName", "fornecedor", "nomefornecedor"],
+  profile: ["profile", "perfil", "tipodecliente", "categoria"],
   jobTitle: ["jobTitle", "cargo", "titulo"],
   department: ["department", "departamento", "setor"],
   street: ["street", "rua", "endereco", "logradouro"],

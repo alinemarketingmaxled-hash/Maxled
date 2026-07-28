@@ -91,6 +91,11 @@ model Contact {
   supplierName     String?
   jobTitle         String?
   department       String?
+  // Free-text category (e.g. "Indústria", "Fábrica", "Revenda") — kept as
+  // free text rather than an enum so new categories don't need a code
+  // deploy; the filter dropdown is built from whatever distinct values
+  // already exist (see listDistinctProfiles).
+  profile          String?
 
   street     String?
   number     String?

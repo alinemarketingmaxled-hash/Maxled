@@ -16,6 +16,8 @@ function Field({
   onChange,
   type = "text",
   required,
+  list,
+  listOptions,
 }: {
   label: string;
   name: string;
@@ -24,6 +26,10 @@ function Field({
   onChange?: (value: string) => void;
   type?: string;
   required?: boolean;
+  /** Id of a <datalist> to attach — pass listOptions to have this component
+   * render that datalist for you. */
+  list?: string;
+  listOptions?: string[];
 }) {
   const controlled = value !== undefined;
   return (
@@ -33,12 +39,20 @@ function Field({
         name={name}
         type={type}
         required={required}
+        list={list}
         {...(controlled
           ? { value, onChange: (e: React.ChangeEvent<HTMLInputElement>) => onChange?.(e.target.value) }
           : { defaultValue: defaultValue ?? "" })}
         step={type === "number" ? "any" : undefined}
         className="rounded-md border border-gold-deep/40 bg-surface-2 px-2.5 py-2 text-sm text-ink outline-none focus:border-gold"
       />
+      {list && listOptions && (
+        <datalist id={list}>
+          {listOptions.map((o) => (
+            <option key={o} value={o} />
+          ))}
+        </datalist>
+      )}
     </label>
   );
 }
@@ -84,10 +98,12 @@ export function ContactForm({
   contact,
   owners,
   action,
+  existingProfiles = [],
 }: {
   contact?: Contact | null;
   owners: Owner[];
   action: (formData: FormData) => Promise<{ error?: string; id?: string; ok?: boolean }>;
+  existingProfiles?: string[];
 }) {
   const router = useRouter();
   const cancelHref = contact ? `/vendas?id=${contact.id}` : "/vendas";
@@ -245,6 +261,13 @@ export function ContactForm({
         <div className="grid grid-cols-2 gap-3">
           <Field label="Fonte de cliente potencial" name="leadSource" defaultValue={contact?.leadSource} />
           <Field label="Nome fornecedor" name="supplierName" defaultValue={contact?.supplierName} />
+          <Field
+            label="Perfil (ex: Indústria, Fábrica, Revenda)"
+            name="profile"
+            defaultValue={contact?.profile}
+            list="profile-options"
+            listOptions={existingProfiles}
+          />
           <Select
             label="Potencial comercial"
             name="commercialPotential"

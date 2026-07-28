@@ -18,12 +18,43 @@ function contactScopeWhere(session: Session): Prisma.ContactWhereInput {
   return {};
 }
 
-export async function listContacts(session: Session) {
+export type ContactFilters = {
+  crmStatus?: CrmStatus;
+  commercialPotential?: CommercialPotential;
+  personType?: PersonType;
+  profile?: string;
+};
+
+function contactFiltersWhere(filters?: ContactFilters): Prisma.ContactWhereInput {
+  if (!filters) return {};
+  return {
+    ...(filters.crmStatus ? { crmStatus: filters.crmStatus } : {}),
+    ...(filters.commercialPotential ? { commercialPotential: filters.commercialPotential } : {}),
+    ...(filters.personType ? { personType: filters.personType } : {}),
+    ...(filters.profile ? { profile: filters.profile } : {}),
+  };
+}
+
+export async function listContacts(session: Session, filters?: ContactFilters) {
   return prisma.contact.findMany({
-    where: { deletedAt: null, ...contactScopeWhere(session) },
+    where: { deletedAt: null, ...contactScopeWhere(session), ...contactFiltersWhere(filters) },
     include: { owner: { select: { name: true, email: true } } },
     orderBy: { createdAt: "desc" },
   });
+}
+
+/** Distinct, non-empty "Perfil" values already in use — backs the filter
+ * dropdown on Vendas/Negócios so it's always in sync with whatever values
+ * people have typed into that free-text field, no code change needed to
+ * add a new category. */
+export async function listDistinctProfiles(session: Session): Promise<string[]> {
+  const rows = await prisma.contact.findMany({
+    where: { deletedAt: null, ...contactScopeWhere(session), profile: { not: null } },
+    select: { profile: true },
+    distinct: ["profile"],
+    orderBy: { profile: "asc" },
+  });
+  return rows.map((r) => r.profile).filter((p): p is string => !!p);
 }
 
 export async function getContact(session: Session, id: string) {
@@ -169,6 +200,7 @@ export type ContactInput = {
   assistantPhone?: string | null;
   leadSource?: string | null;
   supplierName?: string | null;
+  profile?: string | null;
   jobTitle?: string | null;
   department?: string | null;
   street?: string | null;

@@ -5,7 +5,7 @@ import type { FullExportData } from "@/lib/full-export";
 const CLIENTES_HEADERS = [
   "Proprietário", "Tipo de Pessoa", "Nome", "Sobrenome", "Empresa", "CNPJ", "E-mail",
   "Telefone", "Celular", "Telefone Residencial", "Telefone do Assistente",
-  "Origem do Lead", "Fornecedor", "Cargo", "Departamento",
+  "Origem do Lead", "Fornecedor", "Perfil", "Cargo", "Departamento",
   "Rua", "Número", "Cidade", "Estado", "CEP",
   "Inscrição Estadual", "E-mail Financeiro", "E-mail NF-e", "Endereço de Entrega",
   "Aniversário", "Potencial Comercial", "Status CRM", "Último Contato", "Próximo Contato",
@@ -39,7 +39,7 @@ export function buildFullExportWorkbook(data: FullExportData): ExcelJS.Workbook 
     clientesSheet.addRow([
       c.proprietario, c.tipoPessoa, c.nome, c.sobrenome, c.empresa, c.cnpj, c.email,
       c.telefone, c.celular, c.telefoneResidencial, c.telefoneAssistente,
-      c.origemLead, c.fornecedor, c.cargo, c.departamento,
+      c.origemLead, c.fornecedor, c.perfil, c.cargo, c.departamento,
       c.rua, c.numero, c.cidade, c.estado, c.cep,
       c.inscricaoEstadual, c.emailFinanceiro, c.emailNfe, c.enderecoEntrega,
       c.aniversario, c.potencialComercial, c.statusCrm, c.ultimoContato, c.proximoContato,
