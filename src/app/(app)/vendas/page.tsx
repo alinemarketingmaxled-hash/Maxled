@@ -1,24 +1,51 @@
 import Link from "next/link";
 import { canEdit } from "@/lib/permissions";
-import { listContacts, getContact, computeContactInsights, getAbcClasses } from "@/lib/contacts";
+import {
+  listContacts,
+  listDistinctProfiles,
+  getContact,
+  computeContactInsights,
+  getAbcClasses,
+  type ContactFilters,
+} from "@/lib/contacts";
 import { requireView } from "@/lib/require-permission";
 import { ContactListPanel } from "@/components/vendas/ContactListPanel";
 import { ContactDetailPanel } from "@/components/vendas/ContactDetailPanel";
 import { ContactForm } from "@/components/vendas/ContactForm";
 import { ImportExportBar } from "@/components/vendas/ImportExportBar";
+import { ContactCategoryFilters } from "@/components/shared/ContactCategoryFilters";
+import type { CrmStatus, CommercialPotential, PersonType } from "@/generated/prisma/client";
 import { createContactAction, updateContactAction, assignableOwners } from "./actions";
 
 export default async function VendasPage({
   searchParams,
 }: {
-  searchParams: Promise<{ id?: string; edit?: string; new?: string }>;
+  searchParams: Promise<{
+    id?: string;
+    edit?: string;
+    new?: string;
+    status?: string;
+    potencial?: string;
+    tipo?: string;
+    perfil?: string;
+  }>;
 }) {
   const session = await requireView("vendas");
   const params = await searchParams;
   const editable = canEdit(session.user.role, "vendas");
   const editableDeals = canEdit(session.user.role, "negocios");
 
-  const contacts = await listContacts(session);
+  const filters: ContactFilters = {
+    crmStatus: params.status as CrmStatus | undefined,
+    commercialPotential: params.potencial as CommercialPotential | undefined,
+    personType: params.tipo as PersonType | undefined,
+    profile: params.perfil,
+  };
+
+  const [contacts, profiles] = await Promise.all([
+    listContacts(session, filters),
+    listDistinctProfiles(session),
+  ]);
   const selectedId = params.id ?? contacts[0]?.id;
   const selected = selectedId ? await getContact(session, selectedId) : null;
   const owners = await assignableOwners(session);
@@ -67,6 +94,7 @@ export default async function VendasPage({
       </div>
 
       <ImportExportBar canEdit={editable} />
+      <ContactCategoryFilters profiles={profiles} />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[280px_1fr]">
         <ContactListPanel contacts={contacts} selectedId={selectedId} />
@@ -74,7 +102,7 @@ export default async function VendasPage({
         {isNew && (
           <div className="rounded-xl border border-gold-deep/30 bg-surface p-5">
             <h3 className="mb-4 font-display text-lg text-ink">Novo contato</h3>
-            <ContactForm owners={owners} action={createContactAction} />
+            <ContactForm owners={owners} action={createContactAction} existingProfiles={profiles} />
           </div>
         )}
 
@@ -87,6 +115,7 @@ export default async function VendasPage({
               contact={serializedContact}
               owners={owners}
               action={updateContactAction.bind(null, selected.id)}
+              existingProfiles={profiles}
             />
           </div>
         )}

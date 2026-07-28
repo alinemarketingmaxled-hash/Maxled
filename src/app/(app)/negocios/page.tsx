@@ -1,15 +1,35 @@
 import Link from "next/link";
 import { canEdit } from "@/lib/permissions";
-import { getBoard, getRecentlyWonDeals } from "@/lib/deals";
+import { getBoard, getRecentlyWonDeals, type DealContactFilters } from "@/lib/deals";
+import { listDistinctProfiles } from "@/lib/contacts";
 import { requireView } from "@/lib/require-permission";
 import { KanbanBoard } from "@/components/negocios/KanbanBoard";
 import { RecentClosedDealsPanel } from "@/components/negocios/RecentClosedDealsPanel";
+import { ContactCategoryFilters } from "@/components/shared/ContactCategoryFilters";
+import type { CrmStatus, CommercialPotential, PersonType } from "@/generated/prisma/client";
 import { serializeDeal } from "@/lib/serialize-deal";
 
-export default async function NegociosPage() {
+export default async function NegociosPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string; potencial?: string; tipo?: string; perfil?: string }>;
+}) {
   const session = await requireView("negocios");
+  const params = await searchParams;
   const editable = canEdit(session.user.role, "negocios");
-  const [pipeline, recentlyWon] = await Promise.all([getBoard(session), getRecentlyWonDeals(session)]);
+
+  const filters: DealContactFilters = {
+    crmStatus: params.status as CrmStatus | undefined,
+    commercialPotential: params.potencial as CommercialPotential | undefined,
+    personType: params.tipo as PersonType | undefined,
+    profile: params.perfil,
+  };
+
+  const [pipeline, recentlyWon, profiles] = await Promise.all([
+    getBoard(session, filters),
+    getRecentlyWonDeals(session),
+    listDistinctProfiles(session),
+  ]);
   const stages = pipeline?.stages.map((stage) => ({
     id: stage.id,
     name: stage.name,
@@ -34,6 +54,8 @@ export default async function NegociosPage() {
       <p className="-mt-2.5 mb-4 text-[13px] text-ink-muted">
         Kanban · colunas editáveis, adicionáveis e removíveis
       </p>
+
+      <ContactCategoryFilters profiles={profiles} />
 
       {pipeline && stages ? (
         <KanbanBoard stages={stages} pipelineId={pipeline.id} canEdit={editable} />

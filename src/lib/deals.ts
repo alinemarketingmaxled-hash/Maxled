@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getPermission, type Module } from "@/lib/permissions";
 import { logActivity } from "@/lib/activity-log";
 import { addBusinessDays } from "@/lib/business-days";
-import type { Prisma, PaymentStatus } from "@/generated/prisma/client";
+import type { Prisma, PaymentStatus, CrmStatus, CommercialPotential, PersonType } from "@/generated/prisma/client";
 
 /** See the note in lib/contacts.ts — "team" and "all" both see every deal until a team/hierarchy model exists. */
 function dealScopeWhere(session: Session, mod: Module = "negocios"): Prisma.DealWhereInput {
@@ -59,7 +59,25 @@ export async function getInProgressDeals(session: Session, limit = 8) {
   });
 }
 
-export async function getBoard(session: Session) {
+export type DealContactFilters = {
+  crmStatus?: CrmStatus;
+  commercialPotential?: CommercialPotential;
+  personType?: PersonType;
+  profile?: string;
+};
+
+function dealContactFiltersWhere(filters?: DealContactFilters): Prisma.DealWhereInput {
+  if (!filters) return {};
+  const contactWhere: Prisma.ContactWhereInput = {
+    ...(filters.crmStatus ? { crmStatus: filters.crmStatus } : {}),
+    ...(filters.commercialPotential ? { commercialPotential: filters.commercialPotential } : {}),
+    ...(filters.personType ? { personType: filters.personType } : {}),
+    ...(filters.profile ? { profile: filters.profile } : {}),
+  };
+  return Object.keys(contactWhere).length > 0 ? { contact: contactWhere } : {};
+}
+
+export async function getBoard(session: Session, contactFilters?: DealContactFilters) {
   const pipeline = await prisma.pipeline.findFirst({
     where: { isDefault: true },
     include: {
@@ -70,7 +88,12 @@ export async function getBoard(session: Session) {
             // Once a deal reaches a "won" stage it's done — it drops off
             // the Kanban board and lives on only in the client's Histórico
             // (ContactDetailPanel's deals list has no such filter).
-            where: { deletedAt: null, stage: { isWon: false }, ...dealScopeWhere(session) },
+            where: {
+              deletedAt: null,
+              stage: { isWon: false },
+              ...dealScopeWhere(session),
+              ...dealContactFiltersWhere(contactFilters),
+            },
             orderBy: { createdAt: "desc" },
             include: {
               contact: {

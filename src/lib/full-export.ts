@@ -49,6 +49,7 @@ export async function getFullExportData() {
       telefoneAssistente: c.assistantPhone ?? "",
       origemLead: c.leadSource ?? "",
       fornecedor: c.supplierName ?? "",
+      perfil: c.profile ?? "",
       cargo: c.jobTitle ?? "",
       departamento: c.department ?? "",
       rua: c.street ?? "",

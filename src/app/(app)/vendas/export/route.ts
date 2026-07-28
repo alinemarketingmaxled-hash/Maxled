@@ -26,6 +26,7 @@ export async function GET() {
       assistantPhone: c.assistantPhone,
       leadSource: c.leadSource,
       supplierName: c.supplierName,
+      profile: c.profile,
       jobTitle: c.jobTitle,
       department: c.department,
       street: c.street,
