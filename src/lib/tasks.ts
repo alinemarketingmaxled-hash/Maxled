@@ -10,9 +10,17 @@ function scopeWhere(session: Session): Prisma.TaskWhereInput {
   return {};
 }
 
-export async function listTasks(session: Session) {
+/** dueDateMonth backs the "ver outros meses" picker on Agenda — tasks
+ * without a due date are always included regardless of the filter, since
+ * they don't belong to any particular month. */
+export async function listTasks(session: Session, dueDateMonth?: { from: Date; to: Date }) {
   return prisma.task.findMany({
-    where: scopeWhere(session),
+    where: {
+      ...scopeWhere(session),
+      ...(dueDateMonth
+        ? { OR: [{ dueDate: { gte: dueDateMonth.from, lt: dueDateMonth.to } }, { dueDate: null }] }
+        : {}),
+    },
     orderBy: [{ done: "asc" }, { dueDate: "asc" }, { createdAt: "desc" }],
     include: { owner: { select: { name: true } } },
   });

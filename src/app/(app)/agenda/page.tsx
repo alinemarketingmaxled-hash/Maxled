@@ -6,6 +6,8 @@ import { listOnTheWayDeals } from "@/lib/deals";
 import { listTasks } from "@/lib/tasks";
 import { AgendaCalendar, type CalendarItem } from "@/components/agenda/AgendaCalendar";
 import { TaskList } from "@/components/agenda/TaskList";
+import { MonthFilter } from "@/components/shared/MonthFilter";
+import { parseMonthParam } from "@/lib/month-filter";
 
 const STEPS = [
   { n: 1, title: "Negócio movido", body: 'Card entra na coluna "A caminho" no Kanban.' },
@@ -14,10 +16,16 @@ const STEPS = [
   { n: 4, title: "Avanço automático", body: "No dia do prazo, o card avança de estágio sozinho." },
 ];
 
-export default async function AgendaPage() {
+export default async function AgendaPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ mes?: string }>;
+}) {
   const session = await requireView("agenda");
+  const params = await searchParams;
   const editable = canEdit(session.user.role, "agenda");
-  const [deals, tasks] = await Promise.all([listOnTheWayDeals(session), listTasks(session)]);
+  const dueDateMonth = parseMonthParam(params.mes) ?? undefined;
+  const [deals, tasks] = await Promise.all([listOnTheWayDeals(session), listTasks(session, dueDateMonth)]);
 
   const calendarItems: CalendarItem[] = [
     ...tasks
@@ -38,11 +46,17 @@ export default async function AgendaPage() {
 
   return (
     <div>
-      <div className="mb-4">
-        <h2 className="font-display text-[22px] text-ink">Agenda</h2>
-        <p className="mt-0.5 text-[13px] text-ink-muted">
-          Calendário, tarefas e automação de negócios &quot;a caminho&quot;
-        </p>
+      <div className="mb-4 flex flex-wrap items-baseline justify-between gap-3">
+        <div>
+          <h2 className="font-display text-[22px] text-ink">Agenda</h2>
+          <p className="mt-0.5 text-[13px] text-ink-muted">
+            Calendário, tarefas e automação de negócios &quot;a caminho&quot;
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-[12px] text-ink-faint">Tarefas de:</span>
+          <MonthFilter />
+        </div>
       </div>
 
       <div className="mb-4 grid grid-cols-1 gap-4 lg:grid-cols-[320px_1fr]">

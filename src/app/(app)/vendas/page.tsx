@@ -14,6 +14,8 @@ import { ContactDetailPanel } from "@/components/vendas/ContactDetailPanel";
 import { ContactForm } from "@/components/vendas/ContactForm";
 import { ImportExportBar } from "@/components/vendas/ImportExportBar";
 import { ContactCategoryFilters } from "@/components/shared/ContactCategoryFilters";
+import { MonthFilter } from "@/components/shared/MonthFilter";
+import { parseMonthParam } from "@/lib/month-filter";
 import type { CrmStatus, CommercialPotential, PersonType } from "@/generated/prisma/client";
 import { createContactAction, updateContactAction, assignableOwners } from "./actions";
 
@@ -28,6 +30,7 @@ export default async function VendasPage({
     potencial?: string;
     tipo?: string;
     perfil?: string;
+    mes?: string;
   }>;
 }) {
   const session = await requireView("vendas");
@@ -40,6 +43,7 @@ export default async function VendasPage({
     commercialPotential: params.potencial as CommercialPotential | undefined,
     personType: params.tipo as PersonType | undefined,
     profile: params.perfil,
+    createdMonth: parseMonthParam(params.mes) ?? undefined,
   };
 
   const [contacts, profiles] = await Promise.all([
@@ -94,6 +98,10 @@ export default async function VendasPage({
       </div>
 
       <ImportExportBar canEdit={editable} />
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <span className="text-[12px] text-ink-faint">Cadastrados em:</span>
+        <MonthFilter />
+      </div>
       <ContactCategoryFilters profiles={profiles} />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[280px_1fr]">
