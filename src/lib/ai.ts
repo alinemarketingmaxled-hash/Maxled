@@ -4,6 +4,7 @@ import type { Session } from "next-auth";
 import { prisma } from "@/lib/prisma";
 import { getPermission, type Module } from "@/lib/permissions";
 import { getRevenueByMonth } from "@/lib/analytics";
+import { computeContactInsights } from "@/lib/contacts";
 import type { Prisma } from "@/generated/prisma/client";
 
 const MODEL = "claude-opus-4-8";
@@ -63,6 +64,29 @@ export async function listOpenDealsBrief(session: Session) {
     id: d.id,
     label: `${d.name} — ${d.contact.accountName || `${d.contact.firstName} ${d.contact.lastName}`} (${d.stage.name})`,
     phone: d.contact.mobile ?? d.contact.phone,
+  }));
+}
+
+/** Backs the client picker on the "Assistente por cliente" panel — every
+ * contact, not just ones with an open deal (unlike listOpenDealsBrief),
+ * since the point here is to reach out to any client, deal or not. */
+export async function listContactsBrief(session: Session) {
+  const contacts = await prisma.contact.findMany({
+    where: { ...contactScopeWhere(session), deletedAt: null },
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      accountName: true,
+      mobile: true,
+      phone: true,
+    },
+  });
+  return contacts.map((c) => ({
+    id: c.id,
+    label: c.accountName || `${c.firstName} ${c.lastName}`,
+    phone: c.mobile ?? c.phone,
   }));
 }
 
@@ -419,6 +443,149 @@ Responda em texto corrido, sem JSON e sem markdown, direto ao ponto.`
       : `Você é um assistente de redação de vendas B2B. Escreva um rascunho de mensagem (WhatsApp ou e-mail, tom profissional e cordial, em português) para o cliente do negócio abaixo, considerando o contexto adicional informado pelo vendedor.
 
 Negócio: ${JSON.stringify(dealSummary)}
+
+Contexto do vendedor: ${context?.trim() || "(nenhum contexto adicional)"}
+
+Responda apenas com o texto da mensagem, pronto para copiar e enviar — sem JSON e sem explicações extras.`;
+
+  const response = await getClient().messages.create({
+    model: MODEL,
+    max_tokens: 1024,
+    thinking: { type: "adaptive" },
+    output_config: { effort: "low" },
+    messages: [{ role: "user", content: prompt }],
+  });
+
+  return extractText(response);
+}
+
+export type ContactAssistMode = "analysis" | "writing";
+
+export type ContactAssistResult = { text: string; source: "ai" | "heuristic" };
+
+type ContactSummary = {
+  name: string;
+  firstName: string;
+  empresa: string;
+  cnpj: string | null;
+  tipoPessoa: string | null;
+  potencialComercial: string | null;
+  statusCrm: string | null;
+  perfil: string | null;
+  valorComprado: number;
+  quantidadeComprada: number;
+  diasSemContato: number;
+  prioridade: string;
+  acaoRecomendada: string;
+  observacoes: string | null;
+  negociosAbertos: Array<{ nome: string; etapa: string; valor: number }>;
+};
+
+/** Zero-cost fallback for getContactAssist — deterministic templates over
+ * the same real client data (cadastro + computeContactInsights), never
+ * invented. Always labelled source:"heuristic". */
+function heuristicContactAssist(c: ContactSummary, mode: ContactAssistMode, context?: string): string {
+  if (mode === "analysis") {
+    const lines: string[] = [];
+    lines.push(
+      c.quantidadeComprada > 0
+        ? `Já comprou ${c.quantidadeComprada} vez(es), totalizando ${c.valorComprado.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}.`
+        : "Ainda não tem nenhuma compra registrada no histórico.",
+    );
+    lines.push(`Sem contato há ${c.diasSemContato} dia(s) — prioridade ${c.prioridade}.`);
+    lines.push(c.acaoRecomendada);
+    if (c.negociosAbertos.length > 0) {
+      const nomes = c.negociosAbertos.map((d) => `"${d.nome}" (${d.etapa})`).join(", ");
+      lines.push(`Negócio(s) em aberto: ${nomes}.`);
+    }
+    if (c.potencialComercial) lines.push(`Potencial comercial cadastrado: ${c.potencialComercial}.`);
+    return lines.join("\n");
+  }
+
+  const greeting = c.firstName ? `Olá, ${c.firstName}! Tudo bem?` : "Olá! Tudo bem?";
+  const body = context?.trim()
+    ? context.trim()
+    : c.quantidadeComprada > 0
+      ? `Estou entrando em contato para saber como você está e se posso ajudar com algo — faz ${c.diasSemContato} dias desde nosso último contato.`
+      : "Estou entrando em contato para me apresentar e entender se a Maxled pode ajudar com o que você precisa.";
+  return `${greeting}\n\n${body}\n\nFico à disposição!`;
+}
+
+/**
+ * Client-focused counterpart to getDealAssist — analyzes a client (not tied
+ * to any specific deal) using their real cadastro + purchase history
+ * (computeContactInsights, the same numbers shown on their Vendas profile)
+ * and either summarizes what to do next or drafts an outreach message.
+ *
+ * Same AI/heuristic fallback as the rest of lib/ai.ts — always labelled
+ * with its real source.
+ */
+export async function getContactAssist(
+  session: Session,
+  contactId: string,
+  mode: ContactAssistMode,
+  context?: string,
+): Promise<ContactAssistResult> {
+  const contact = await prisma.contact.findFirst({
+    where: { id: contactId, deletedAt: null, ...contactScopeWhere(session) },
+    include: {
+      deals: {
+        where: { deletedAt: null },
+        include: { stage: { select: { name: true, isWon: true, isOnTheWay: true } } },
+      },
+    },
+  });
+  if (!contact) throw new Error("Cliente não encontrado ou sem permissão.");
+
+  const insights = computeContactInsights(contact, null);
+
+  const summary: ContactSummary = {
+    name: contact.accountName || `${contact.firstName} ${contact.lastName}`,
+    firstName: contact.firstName,
+    empresa: contact.accountName || "",
+    cnpj: contact.cnpj,
+    tipoPessoa: contact.personType,
+    potencialComercial: contact.commercialPotential,
+    statusCrm: contact.crmStatus,
+    perfil: contact.profile,
+    valorComprado: insights.valorComprado,
+    quantidadeComprada: insights.quantidadeComprada,
+    diasSemContato: insights.diasSemContato ?? 0,
+    prioridade: insights.prioridade,
+    acaoRecomendada: insights.acaoRecomendada,
+    observacoes: contact.notes,
+    negociosAbertos: contact.deals
+      .filter((d) => !d.stage.isWon)
+      .map((d) => ({ nome: d.name, etapa: d.stage.name, valor: Number(d.value) })),
+  };
+
+  if (isAiConfigured()) {
+    try {
+      const text = await getContactAssistFromAi(summary, mode, context);
+      return { text, source: "ai" };
+    } catch {
+      // Chave configurada mas a chamada falhou (ex: sem crédito) — cai no modelo automático.
+    }
+  }
+
+  return { text: heuristicContactAssist(summary, mode, context), source: "heuristic" };
+}
+
+async function getContactAssistFromAi(
+  summary: ContactSummary,
+  mode: ContactAssistMode,
+  context?: string,
+): Promise<string> {
+  const prompt =
+    mode === "analysis"
+      ? `Você é um analista de vendas para uma distribuidora B2B. Com base SOMENTE nestes dados reais do cliente, escreva uma análise curta e prática em português (o que esse cliente representa, em que momento está, e o que o vendedor deveria fazer a seguir). Não invente informações fora do que está aqui.
+
+Cliente: ${JSON.stringify(summary)}
+
+Responda em texto corrido, sem JSON e sem markdown, direto ao ponto.`
+      : `Você é um assistente de redação de vendas B2B. Escreva um rascunho de mensagem (WhatsApp ou e-mail, tom profissional e cordial, em português) para este cliente, considerando o contexto adicional informado pelo vendedor.
+
+Cliente: ${JSON.stringify(summary)}
 
 Contexto do vendedor: ${context?.trim() || "(nenhum contexto adicional)"}
 

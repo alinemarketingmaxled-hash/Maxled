@@ -1,11 +1,12 @@
 import { requireView } from "@/lib/require-permission";
-import { isAiConfigured, listOpenDealsBrief } from "@/lib/ai";
+import { isAiConfigured, listOpenDealsBrief, listContactsBrief } from "@/lib/ai";
 import { InsightsPanel } from "@/components/ia/InsightsPanel";
 import { DealAssistPanel } from "@/components/ia/DealAssistPanel";
+import { ContactAssistPanel } from "@/components/ia/ContactAssistPanel";
 
 export default async function IaPage() {
   const session = await requireView("ia");
-  const deals = await listOpenDealsBrief(session);
+  const [deals, contacts] = await Promise.all([listOpenDealsBrief(session), listContactsBrief(session)]);
 
   return (
     <div>
@@ -28,6 +29,7 @@ export default async function IaPage() {
 
       <div className="flex flex-col gap-4">
         <InsightsPanel />
+        <ContactAssistPanel contacts={contacts} />
         <DealAssistPanel deals={deals} />
       </div>
 
