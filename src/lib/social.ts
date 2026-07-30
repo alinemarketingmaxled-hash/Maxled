@@ -54,6 +54,30 @@ export async function listImportantPosts(limit = 4) {
   }));
 }
 
+/** Backs the "Comunicados" nav badge — posts made by someone else since
+ * this user last opened the mural. Own posts don't count (no need to
+ * notify yourself), and a user who's never visited counts everything so
+ * far as unread, which is the right first impression. */
+export async function getUnreadPostCount(session: Session): Promise<number> {
+  const me = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { lastSeenSocialAt: true },
+  });
+  return prisma.post.count({
+    where: {
+      authorId: { not: session.user.id },
+      ...(me?.lastSeenSocialAt ? { createdAt: { gt: me.lastSeenSocialAt } } : {}),
+    },
+  });
+}
+
+export async function markSocialSeen(session: Session) {
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: { lastSeenSocialAt: new Date() },
+  });
+}
+
 export async function toggleImportant(session: Session, postId: string) {
   if (session.user.role !== "MEDIATOR") {
     throw new Error("Apenas o mediador pode marcar um comunicado como importante.");
@@ -77,6 +101,26 @@ export async function createPost(
     throw new Error("Imagem muito grande. Escolha uma foto menor.");
   }
   return prisma.post.create({ data: { authorId: session.user.id, body, imageUrl } });
+}
+
+/** Authors can edit their own posts; the mediator can also edit anyone
+ * else's, same reach as delete/moderation below. */
+export async function updatePost(
+  session: Session,
+  postId: string,
+  input: { body?: string | null; imageUrl?: string | null },
+) {
+  const post = await prisma.post.findUniqueOrThrow({ where: { id: postId } });
+  if (post.authorId !== session.user.id && session.user.role !== "MEDIATOR") {
+    throw new Error("Você só pode editar suas próprias publicações.");
+  }
+  const body = input.body?.trim() || null;
+  const imageUrl = input.imageUrl?.trim() || null;
+  if (!body && !imageUrl) throw new Error("Escreva algo ou adicione uma foto.");
+  if (imageUrl && imageUrl.length > MAX_IMAGE_LENGTH) {
+    throw new Error("Imagem muito grande. Escolha uma foto menor.");
+  }
+  return prisma.post.update({ where: { id: postId }, data: { body, imageUrl } });
 }
 
 /** Authors can delete their own posts; the mediator can also remove anyone
