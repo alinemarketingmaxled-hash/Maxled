@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getGoalProgress } from "@/lib/analytics";
-import { listImportantPosts } from "@/lib/social";
+import { listImportantPosts, getUnreadPostCount } from "@/lib/social";
 import { healProspectStages } from "@/lib/prospect-stages";
 import { getOverdueTaskCount } from "@/lib/tasks";
 import { AppShell } from "@/components/shell/AppShell";
@@ -15,7 +15,7 @@ export default async function AppLayout({
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const [me, goal, importantPosts, overdueCount] = await Promise.all([
+  const [me, goal, importantPosts, overdueCount, unreadPostCount] = await Promise.all([
     prisma.user.findUnique({
       where: { id: session.user.id },
       select: { name: true, avatarUrl: true },
@@ -23,6 +23,7 @@ export default async function AppLayout({
     getGoalProgress(session),
     listImportantPosts(),
     getOverdueTaskCount(session),
+    getUnreadPostCount(session),
     healProspectStages(),
   ]);
 
@@ -32,6 +33,7 @@ export default async function AppLayout({
       name={me?.name ?? session.user.name ?? session.user.email ?? "Usuário"}
       avatarUrl={me?.avatarUrl ?? null}
       overdueCount={overdueCount}
+      unreadPostCount={unreadPostCount}
       commission={
         goal
           ? {

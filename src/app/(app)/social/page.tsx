@@ -2,6 +2,7 @@ import { requireView } from "@/lib/require-permission";
 import { listPosts } from "@/lib/social";
 import { PostComposer } from "@/components/social/PostComposer";
 import { PostFeed } from "@/components/social/PostFeed";
+import { MarkSocialSeen } from "@/components/social/MarkSocialSeen";
 
 export default async function SocialPage() {
   const session = await requireView("social");
@@ -16,6 +17,7 @@ export default async function SocialPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
+      <MarkSocialSeen />
       <div className="mb-4">
         <h2 className="font-display text-[22px] text-ink">Comunicados</h2>
         <p className="mt-0.5 text-[13px] text-ink-muted">

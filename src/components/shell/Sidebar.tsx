@@ -14,6 +14,7 @@ export function Sidebar({
   commission,
   importantPosts,
   overdueCount,
+  unreadPostCount,
   open,
   onClose,
 }: {
@@ -24,6 +25,9 @@ export function Sidebar({
    * badge on the Agenda nav item so overdue items act as a site-wide
    * notification, visible from any page, not just Agenda/Início. */
   overdueCount: number;
+  /** Posts in Comunicados made by someone else since this user last opened
+   * it — same site-wide badge treatment as overdueCount. */
+  unreadPostCount: number;
   /** Drawer visibility below the lg breakpoint. Ignored (always visible) at
    * lg and up, where the sidebar is a normal static column. */
   open: boolean;
@@ -86,6 +90,14 @@ export function Sidebar({
                     className="ml-auto flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-critical px-1 text-[10px] font-bold text-white"
                   >
                     {overdueCount > 99 ? "99+" : overdueCount}
+                  </span>
+                )}
+                {item.module === "social" && unreadPostCount > 0 && (
+                  <span
+                    title={`${unreadPostCount} publicação(ões) nova(s)`}
+                    className="ml-auto flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-gold-solid px-1 text-[10px] font-bold text-black"
+                  >
+                    {unreadPostCount > 99 ? "99+" : unreadPostCount}
                   </span>
                 )}
               </Link>

@@ -1,10 +1,17 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { toggleLikeAction, deletePostAction, addCommentAction, toggleImportantAction } from "@/app/(app)/social/actions";
+import {
+  toggleLikeAction,
+  updatePostAction,
+  deletePostAction,
+  addCommentAction,
+  toggleImportantAction,
+} from "@/app/(app)/social/actions";
+import { resizeImageToDataUrl } from "@/lib/resize-image";
 
 type Author = { id: string; name: string; avatarUrl: string | null };
 type Comment = { id: string; body: string; createdAt: string; author: Author };
@@ -52,13 +59,55 @@ function PostCard({
   isMediator: boolean;
 }) {
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [likeCount, setLikeCount] = useState(post.likeCount);
   const [likedByMe, setLikedByMe] = useState(post.likedByMe);
   const [important, setImportant] = useState(post.important);
   const [showComments, setShowComments] = useState(post.comments.length > 0);
   const [commentBody, setCommentBody] = useState("");
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editBody, setEditBody] = useState(post.body ?? "");
+  const [editImageUrl, setEditImageUrl] = useState(post.imageUrl ?? "");
+  const [editError, setEditError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const canEditThis = post.author.id === currentUserId || isMediator;
+
+  function startEdit() {
+    setEditBody(post.body ?? "");
+    setEditImageUrl(post.imageUrl ?? "");
+    setEditError(null);
+    setIsEditing(true);
+  }
+
+  async function handleEditFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setEditError(null);
+    try {
+      const dataUrl = await resizeImageToDataUrl(file, 640, 0.8);
+      setEditImageUrl(dataUrl);
+    } catch (err) {
+      setEditError(err instanceof Error ? err.message : "Não foi possível processar a imagem.");
+    }
+  }
+
+  function handleSaveEdit() {
+    if (!editBody.trim() && !editImageUrl) {
+      setEditError("Escreva algo ou adicione uma foto.");
+      return;
+    }
+    setEditError(null);
+    startTransition(async () => {
+      const res = await updatePostAction(post.id, editBody, editImageUrl);
+      if (res.error) {
+        setEditError(res.error);
+        return;
+      }
+      setIsEditing(false);
+      router.refresh();
+    });
+  }
 
   function handleLike() {
     setLikedByMe((v) => !v);
@@ -128,7 +177,12 @@ function PostCard({
                   {important ? "Remover destaque" : "Marcar importante"}
                 </button>
               )}
-              {(post.author.id === currentUserId || isMediator) && (
+              {canEditThis && !isEditing && (
+                <button onClick={startEdit} className="text-[11px] text-ink-faint hover:text-gold-bright">
+                  Editar
+                </button>
+              )}
+              {canEditThis && (
                 <button onClick={handleDelete} disabled={isPending} className="text-[11px] text-ink-faint hover:text-critical disabled:opacity-50">
                   Excluir
                 </button>
@@ -136,14 +190,71 @@ function PostCard({
             </div>
           </div>
           {deleteError && <p className="mt-1 text-[11px] text-critical">{deleteError}</p>}
-          {post.body && <p className="mt-1.5 whitespace-pre-wrap text-[13px] text-ink">{post.body}</p>}
-          {post.imageUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={post.imageUrl}
-              alt=""
-              className="mt-2.5 max-h-96 w-full rounded-lg border border-gold-deep/25 object-cover"
-            />
+
+          {isEditing ? (
+            <div className="mt-1.5">
+              <textarea
+                value={editBody}
+                onChange={(e) => setEditBody(e.target.value)}
+                rows={2}
+                className="w-full rounded-md border border-gold-deep/40 bg-surface-2 px-3 py-2 text-[13px] text-ink outline-none focus:border-gold"
+              />
+              {editImageUrl && (
+                <div className="relative mt-2 inline-block">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={editImageUrl} alt="Prévia" className="max-h-48 rounded-lg border border-gold-deep/30" />
+                  <button
+                    onClick={() => setEditImageUrl("")}
+                    className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-surface-3 text-xs text-ink-muted hover:text-critical"
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
+              {editError && <p className="mt-1.5 text-[11.5px] text-critical">{editError}</p>}
+              <div className="mt-2.5 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="rounded-md border border-gold-deep px-3 py-1.5 text-[11.5px] font-semibold text-ink transition-colors hover:border-gold"
+                >
+                  📷 Foto
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleEditFileChange}
+                  className="hidden"
+                />
+                <button
+                  onClick={() => setIsEditing(false)}
+                  disabled={isPending}
+                  className="ml-auto rounded-lg px-3 py-1.5 text-[12px] font-semibold text-ink-faint hover:text-ink disabled:cursor-not-allowed"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleSaveEdit}
+                  disabled={isPending}
+                  className="rounded-lg bg-gold-solid px-4 py-1.5 text-[12px] font-semibold text-black transition-colors hover:bg-gold-solid-bright disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isPending ? "Salvando…" : "Salvar"}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              {post.body && <p className="mt-1.5 whitespace-pre-wrap text-[13px] text-ink">{post.body}</p>}
+              {post.imageUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={post.imageUrl}
+                  alt=""
+                  className="mt-2.5 max-h-96 w-full rounded-lg border border-gold-deep/25 bg-surface-2 object-contain"
+                />
+              )}
+            </>
           )}
 
           <div className="mt-3 flex items-center gap-4 border-t border-gold-deep/20 pt-2.5">
