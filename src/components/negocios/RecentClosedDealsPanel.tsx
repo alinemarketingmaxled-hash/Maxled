@@ -24,23 +24,30 @@ function currency(value: number) {
 export function RecentClosedDealsPanel({
   deals,
   canEdit,
+  monthFilterSlot,
 }: {
   deals: RecentClosedDeal[];
   canEdit: boolean;
+  /** The MonthFilter control, rendered top-right — kept as a slot instead of
+   * a hardcoded import so this stays a plain display component. */
+  monthFilterSlot?: React.ReactNode;
 }) {
   const [openDealId, setOpenDealId] = useState<string | null>(null);
 
   return (
     <div className="rounded-xl border border-gold-deep/30 bg-surface p-4">
-      <div className="mb-3">
-        <h3 className="font-display text-lg text-ink">Fechados nos últimos meses</h3>
-        <p className="mt-0.5 text-[12px] text-ink-muted">
-          Negócios ganhos que já saíram do quadro — clique para editar ou excluir
-        </p>
+      <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h3 className="font-display text-lg text-ink">Fechados</h3>
+          <p className="mt-0.5 text-[12px] text-ink-muted">
+            Negócios ganhos que já saíram do quadro — clique para editar ou excluir
+          </p>
+        </div>
+        {monthFilterSlot}
       </div>
 
       {deals.length === 0 ? (
-        <p className="text-[12.5px] text-ink-faint">Nenhum negócio fechado nos últimos meses.</p>
+        <p className="text-[12.5px] text-ink-faint">Nenhum negócio fechado nesse período.</p>
       ) : (
         <div className="flex flex-col gap-1.5">
           {deals.map((d) => (

@@ -23,6 +23,9 @@ export type ContactFilters = {
   commercialPotential?: CommercialPotential;
   personType?: PersonType;
   profile?: string;
+  /** Restricts to contacts registered (createdAt) within this month range —
+   * backs the "ver outros meses" picker on Vendas. */
+  createdMonth?: { from: Date; to: Date };
 };
 
 function contactFiltersWhere(filters?: ContactFilters): Prisma.ContactWhereInput {
@@ -32,6 +35,9 @@ function contactFiltersWhere(filters?: ContactFilters): Prisma.ContactWhereInput
     ...(filters.commercialPotential ? { commercialPotential: filters.commercialPotential } : {}),
     ...(filters.personType ? { personType: filters.personType } : {}),
     ...(filters.profile ? { profile: filters.profile } : {}),
+    ...(filters.createdMonth
+      ? { createdAt: { gte: filters.createdMonth.from, lt: filters.createdMonth.to } }
+      : {}),
   };
 }
 

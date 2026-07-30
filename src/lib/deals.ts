@@ -121,14 +121,25 @@ export async function getBoard(session: Session, contactFilters?: DealContactFil
  * last `months`. Won deals no longer show on the Kanban board (see
  * getBoard), so without this the only way to find/edit one is digging into
  * the client's Histórico one contact at a time. */
-export async function getRecentlyWonDeals(session: Session, months = 3) {
-  const since = new Date();
-  since.setMonth(since.getMonth() - months);
+/** `month` picks a single specific month (the "ver outros meses" filter on
+ * Negócios) instead of the default trailing-3-months window. */
+export async function getRecentlyWonDeals(
+  session: Session,
+  month?: { from: Date; to: Date },
+) {
+  let updatedAt: Prisma.DateTimeFilter;
+  if (month) {
+    updatedAt = { gte: month.from, lt: month.to };
+  } else {
+    const since = new Date();
+    since.setMonth(since.getMonth() - 3);
+    updatedAt = { gte: since };
+  }
   return prisma.deal.findMany({
     where: {
       deletedAt: null,
       stage: { isWon: true },
-      updatedAt: { gte: since },
+      updatedAt,
       ...dealScopeWhere(session),
     },
     orderBy: { updatedAt: "desc" },

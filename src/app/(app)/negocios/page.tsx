@@ -6,13 +6,21 @@ import { requireView } from "@/lib/require-permission";
 import { KanbanBoard } from "@/components/negocios/KanbanBoard";
 import { RecentClosedDealsPanel } from "@/components/negocios/RecentClosedDealsPanel";
 import { ContactCategoryFilters } from "@/components/shared/ContactCategoryFilters";
+import { MonthFilter } from "@/components/shared/MonthFilter";
+import { parseMonthParam } from "@/lib/month-filter";
 import type { CrmStatus, CommercialPotential, PersonType } from "@/generated/prisma/client";
 import { serializeDeal } from "@/lib/serialize-deal";
 
 export default async function NegociosPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; potencial?: string; tipo?: string; perfil?: string }>;
+  searchParams: Promise<{
+    status?: string;
+    potencial?: string;
+    tipo?: string;
+    perfil?: string;
+    mes?: string;
+  }>;
 }) {
   const session = await requireView("negocios");
   const params = await searchParams;
@@ -24,10 +32,11 @@ export default async function NegociosPage({
     personType: params.tipo as PersonType | undefined,
     profile: params.perfil,
   };
+  const wonMonth = parseMonthParam(params.mes) ?? undefined;
 
   const [pipeline, recentlyWon, profiles] = await Promise.all([
     getBoard(session, filters),
-    getRecentlyWonDeals(session),
+    getRecentlyWonDeals(session, wonMonth),
     listDistinctProfiles(session),
   ]);
   const stages = pipeline?.stages.map((stage) => ({
@@ -68,6 +77,12 @@ export default async function NegociosPage({
       <div className="mt-4">
         <RecentClosedDealsPanel
           canEdit={editable}
+          monthFilterSlot={
+            <div className="flex items-center gap-2">
+              <span className="text-[12px] text-ink-faint">Período:</span>
+              <MonthFilter defaultLabel="Últimos 3 meses" />
+            </div>
+          }
           deals={recentlyWon.map((d) => ({
             id: d.id,
             name: d.name,
