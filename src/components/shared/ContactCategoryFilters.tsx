@@ -17,12 +17,22 @@ const PERSON_TYPE_OPTIONS = [
   { value: "JURIDICA", label: "Jurídica" },
 ];
 
+export type ContactFilterField = "status" | "potencial" | "tipo" | "perfil";
+const ALL_FIELDS: ContactFilterField[] = ["status", "potencial", "tipo", "perfil"];
+
 /** Status/Potencial/Tipo de pessoa/Perfil filters shared by Vendas and
  * Negócios — both filter contacts (Negócios filters deals by their linked
  * contact) by the same four fields, so one component drives both. Filters
  * live in the URL (status/potencial/tipo/perfil) so they survive a refresh
- * and can be shared/bookmarked. */
-export function ContactCategoryFilters({ profiles }: { profiles: string[] }) {
+ * and can be shared/bookmarked. `fields` restricts which selects render —
+ * Vendas only wants Perfil, Negócios keeps all four (the default). */
+export function ContactCategoryFilters({
+  profiles,
+  fields = ALL_FIELDS,
+}: {
+  profiles: string[];
+  fields?: ContactFilterField[];
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -31,7 +41,7 @@ export function ContactCategoryFilters({ profiles }: { profiles: string[] }) {
   const potencial = searchParams.get("potencial") ?? "";
   const tipo = searchParams.get("tipo") ?? "";
   const perfil = searchParams.get("perfil") ?? "";
-  const hasActiveFilter = status || potencial || tipo || perfil;
+  const hasActiveFilter = fields.some((f) => searchParams.get(f));
 
   function setParam(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
@@ -42,10 +52,7 @@ export function ContactCategoryFilters({ profiles }: { profiles: string[] }) {
 
   function clearAll() {
     const params = new URLSearchParams(searchParams.toString());
-    params.delete("status");
-    params.delete("potencial");
-    params.delete("tipo");
-    params.delete("perfil");
+    fields.forEach((f) => params.delete(f));
     router.push(`${pathname}?${params.toString()}`);
   }
 
@@ -54,42 +61,50 @@ export function ContactCategoryFilters({ profiles }: { profiles: string[] }) {
 
   return (
     <div className="mb-3 flex flex-wrap items-center gap-2">
-      <select className={selectClass} value={status} onChange={(e) => setParam("status", e.target.value)}>
-        <option value="">Status: todos</option>
-        {STATUS_OPTIONS.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      </select>
-      <select
-        className={selectClass}
-        value={potencial}
-        onChange={(e) => setParam("potencial", e.target.value)}
-      >
-        <option value="">Potencial: todos</option>
-        {POTENTIAL_OPTIONS.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      </select>
-      <select className={selectClass} value={tipo} onChange={(e) => setParam("tipo", e.target.value)}>
-        <option value="">Tipo de pessoa: todos</option>
-        {PERSON_TYPE_OPTIONS.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      </select>
-      <select className={selectClass} value={perfil} onChange={(e) => setParam("perfil", e.target.value)}>
-        <option value="">Perfil: todos</option>
-        {profiles.map((p) => (
-          <option key={p} value={p}>
-            {p}
-          </option>
-        ))}
-      </select>
+      {fields.includes("status") && (
+        <select className={selectClass} value={status} onChange={(e) => setParam("status", e.target.value)}>
+          <option value="">Status: todos</option>
+          {STATUS_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+      )}
+      {fields.includes("potencial") && (
+        <select
+          className={selectClass}
+          value={potencial}
+          onChange={(e) => setParam("potencial", e.target.value)}
+        >
+          <option value="">Potencial: todos</option>
+          {POTENTIAL_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+      )}
+      {fields.includes("tipo") && (
+        <select className={selectClass} value={tipo} onChange={(e) => setParam("tipo", e.target.value)}>
+          <option value="">Tipo de pessoa: todos</option>
+          {PERSON_TYPE_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+      )}
+      {fields.includes("perfil") && (
+        <select className={selectClass} value={perfil} onChange={(e) => setParam("perfil", e.target.value)}>
+          <option value="">Perfil: todos</option>
+          {profiles.map((p) => (
+            <option key={p} value={p}>
+              {p}
+            </option>
+          ))}
+        </select>
+      )}
       {hasActiveFilter && (
         <button
           onClick={clearAll}

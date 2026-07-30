@@ -14,9 +14,6 @@ import { ContactDetailPanel } from "@/components/vendas/ContactDetailPanel";
 import { ContactForm } from "@/components/vendas/ContactForm";
 import { ImportExportBar } from "@/components/vendas/ImportExportBar";
 import { ContactCategoryFilters } from "@/components/shared/ContactCategoryFilters";
-import { MonthFilter } from "@/components/shared/MonthFilter";
-import { parseMonthParam } from "@/lib/month-filter";
-import type { CrmStatus, CommercialPotential, PersonType } from "@/generated/prisma/client";
 import { createContactAction, updateContactAction, assignableOwners } from "./actions";
 
 export default async function VendasPage({
@@ -26,11 +23,7 @@ export default async function VendasPage({
     id?: string;
     edit?: string;
     new?: string;
-    status?: string;
-    potencial?: string;
-    tipo?: string;
     perfil?: string;
-    mes?: string;
   }>;
 }) {
   const session = await requireView("vendas");
@@ -38,12 +31,10 @@ export default async function VendasPage({
   const editable = canEdit(session.user.role, "vendas");
   const editableDeals = canEdit(session.user.role, "negocios");
 
+  // Vendas keeps only the "type of client" filter — always shows every
+  // client regardless of when it was registered, per explicit request.
   const filters: ContactFilters = {
-    crmStatus: params.status as CrmStatus | undefined,
-    commercialPotential: params.potencial as CommercialPotential | undefined,
-    personType: params.tipo as PersonType | undefined,
     profile: params.perfil,
-    createdMonth: parseMonthParam(params.mes) ?? undefined,
   };
 
   const [contacts, profiles] = await Promise.all([
@@ -98,11 +89,7 @@ export default async function VendasPage({
       </div>
 
       <ImportExportBar canEdit={editable} />
-      <div className="mb-3 flex flex-wrap items-center gap-2">
-        <span className="text-[12px] text-ink-faint">Cadastrados em:</span>
-        <MonthFilter />
-      </div>
-      <ContactCategoryFilters profiles={profiles} />
+      <ContactCategoryFilters profiles={profiles} fields={["perfil"]} />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[280px_1fr]">
         <ContactListPanel contacts={contacts} selectedId={selectedId} />
