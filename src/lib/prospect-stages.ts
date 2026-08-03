@@ -4,12 +4,12 @@ import { prisma } from "@/lib/prisma";
  * imported by prisma/seed.ts, which runs as a plain Node/tsx script outside
  * of Next.js, where the "server-only" marker package throws on import. */
 const PROSPECT_STAGE_DEFS = [
-  { id: "prospect-stage-prospeccao", name: "Prospecção", order: 0 },
-  { id: "prospect-stage-0", name: "Conversação", order: 1 },
-  { id: "prospect-stage-1", name: "Retorno", order: 2 },
-  { id: "prospect-stage-2", name: "Cotação", order: 3 },
-  { id: "prospect-stage-3", name: "Negociação", order: 4 },
-  { id: "prospect-stage-4", name: "Cliente Ativo", order: 5, isClientStage: true },
+  { id: "prospect-stage-prospeccao", name: "Prospecção", order: 0, category: "Captação" },
+  { id: "prospect-stage-0", name: "Conversação", order: 1, category: "Captação" },
+  { id: "prospect-stage-1", name: "Retorno", order: 2, category: "Acompanhamento" },
+  { id: "prospect-stage-2", name: "Cotação", order: 3, category: "Acompanhamento" },
+  { id: "prospect-stage-3", name: "Negociação", order: 4, category: "Acompanhamento" },
+  { id: "prospect-stage-4", name: "Cliente Ativo", order: 5, category: "Cliente", isClientStage: true },
 ];
 const CANONICAL_IDS = new Set(PROSPECT_STAGE_DEFS.map((s) => s.id));
 const FIRST_CANONICAL_STAGE_ID = "prospect-stage-prospeccao";
@@ -24,8 +24,15 @@ export async function ensureProspectStagesSeeded() {
   for (const s of PROSPECT_STAGE_DEFS) {
     await prisma.prospectStage.upsert({
       where: { id: s.id },
-      update: { name: s.name, order: s.order, isClientStage: s.isClientStage ?? false, isCustom: false },
-      create: { id: s.id, name: s.name, order: s.order, isClientStage: s.isClientStage ?? false, isCustom: false },
+      update: { name: s.name, order: s.order, isClientStage: s.isClientStage ?? false, isCustom: false, category: s.category },
+      create: {
+        id: s.id,
+        name: s.name,
+        order: s.order,
+        isClientStage: s.isClientStage ?? false,
+        isCustom: false,
+        category: s.category,
+      },
     });
   }
 }
@@ -44,6 +51,7 @@ async function checkProspectStagesHealth() {
       row.name === def.name &&
       row.order === def.order &&
       row.isClientStage === (def.isClientStage ?? false) &&
+      row.category === def.category &&
       !row.isCustom
     );
   });

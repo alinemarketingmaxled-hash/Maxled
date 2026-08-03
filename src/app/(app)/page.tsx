@@ -13,7 +13,12 @@ import {
 import { getDailyTasks } from "@/lib/calls";
 import { getOverdueTasks, getOverdueSellerAlerts } from "@/lib/tasks";
 import { getInProgressDeals, listOpenDealsBrief } from "@/lib/deals";
-import { listProspects, listProspectStages, listPendingActivationRequests } from "@/lib/prospects";
+import {
+  listProspects,
+  listProspectStages,
+  listPendingActivationRequests,
+  listUnseenActivationDecisions,
+} from "@/lib/prospects";
 import { assignableOwners } from "@/app/(app)/vendas/actions";
 import { buildLineChart } from "@/lib/chart-utils";
 import { AnaliticaTabs } from "@/components/home/AnaliticaTabs";
@@ -82,6 +87,7 @@ export default async function AnaliticaPage({
     pendingActivations,
     prospectOwners,
     openDeals,
+    unseenActivationDecisions,
   ] = await Promise.all([
     range ? getKpisForRange(session, range) : getKpis(session, referenceDate),
     range ? getRevenueByMonthRange(session, range.from, range.to) : getRevenueByMonth(session),
@@ -97,6 +103,7 @@ export default async function AnaliticaPage({
     listPendingActivationRequests(session),
     assignableOwners(session),
     listOpenDealsBrief(session),
+    listUnseenActivationDecisions(session),
   ]);
 
   const goalTiers = [
@@ -194,6 +201,7 @@ export default async function AnaliticaPage({
           order: s.order,
           isClientStage: s.isClientStage,
           isCustom: s.isCustom,
+          category: s.category,
         }))}
         isMediator={session.user.role === "MEDIATOR"}
         pendingActivations={pendingActivations.map((r) => ({
@@ -209,6 +217,12 @@ export default async function AnaliticaPage({
         }))}
         prospectOwners={prospectOwners.map((o) => ({ id: o.id, name: o.name }))}
         openDeals={openDeals}
+        decidedNotices={unseenActivationDecisions.map((r) => ({
+          id: r.id,
+          clientName: r.prospect.clientName,
+          status: r.status as "APROVADO" | "RECUSADO",
+          rejectionReason: r.rejectionReason,
+        }))}
       />
     </div>
   );

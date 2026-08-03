@@ -15,6 +15,7 @@ import {
   addCustomProspectStage,
   renameCustomProspectStage,
   deleteCustomProspectStage,
+  markActivationDecisionsSeen,
 } from "@/lib/prospects";
 import { createTask } from "@/lib/tasks";
 import type { ProspectTemperature } from "@/generated/prisma/client";
@@ -286,4 +287,12 @@ export async function deleteProspectStageAction(stageId: string): Promise<{ erro
   }
   revalidatePath("/");
   return { ok: true };
+}
+
+/** Fire-and-forget from the client once the board's accepted/recusado
+ * banner actually renders — clears it for the next page load. */
+export async function markActivationDecisionsSeenAction(): Promise<void> {
+  const session = await auth();
+  if (!session?.user) return;
+  await markActivationDecisionsSeen(session);
 }
