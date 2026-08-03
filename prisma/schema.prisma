@@ -329,6 +329,10 @@ model ProspectStage {
   order         Int
   isClientStage Boolean  @default(false)
   isCustom      Boolean  @default(false)
+  /** Fase visual que agrupa as etapas no quadro (Captação/Acompanhamento/
+   * Cliente para as fixas, "Outros" para colunas extras) e alimenta o
+   * filtro por etapa pendente. */
+  category      String   @default("Outros")
   createdAt     DateTime @default(now())
 
   prospects   Prospect[]
@@ -413,6 +417,10 @@ model ClientActivationRequest {
   rejectionReason String?         @db.Text
   createdAt       DateTime         @default(now())
   decidedAt       DateTime?
+  /** Null enquanto o vendedor dono da prospecção ainda não viu o resultado
+   * (aprovado/recusado) — alimenta o aviso mostrado no quadro. Marcado ao
+   * carregar a página, não precisa disso para status PENDENTE. */
+  sellerSeenAt    DateTime?
 
   @@index([status])
 }

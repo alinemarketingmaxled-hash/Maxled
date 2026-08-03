@@ -304,6 +304,35 @@ export async function approveActivation(session: Session, requestId: string) {
   return { contact, deal };
 }
 
+/** Decided (aprovado/recusado) activation requests the owning seller hasn't
+ * seen yet — backs the banner shown on the Prospecções board. Scoped to
+ * requests for prospects owned by this user, so each seller only sees the
+ * outcome of their own submissions. */
+export async function listUnseenActivationDecisions(session: Session) {
+  return prisma.clientActivationRequest.findMany({
+    where: {
+      status: { in: ["APROVADO", "RECUSADO"] },
+      sellerSeenAt: null,
+      prospect: { ownerId: session.user.id },
+    },
+    orderBy: { decidedAt: "asc" },
+    include: { prospect: { select: { name: true, clientName: true } } },
+  });
+}
+
+/** Called once the board renders in the browser, so the banner clears on
+ * the next visit without needing the user to dismiss each one. */
+export async function markActivationDecisionsSeen(session: Session) {
+  await prisma.clientActivationRequest.updateMany({
+    where: {
+      status: { in: ["APROVADO", "RECUSADO"] },
+      sellerSeenAt: null,
+      prospect: { ownerId: session.user.id },
+    },
+    data: { sellerSeenAt: new Date() },
+  });
+}
+
 export async function rejectActivation(session: Session, requestId: string, reason: string) {
   if (session.user.role !== "MEDIATOR") throw new Error("Apenas o mediador pode recusar clientes.");
   if (!reason.trim()) throw new Error("Explique o motivo da recusa para o vendedor.");

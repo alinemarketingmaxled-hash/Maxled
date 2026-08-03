@@ -18,6 +18,7 @@ import {
   type ProspectStageDef,
   type PendingActivation,
   type ProspectOwner,
+  type DecidedActivationNotice,
 } from "@/components/prospeccoes/ProspectBoard";
 
 type Kpis = {
@@ -80,6 +81,7 @@ export function AnaliticaTabs({
   pendingActivations,
   prospectOwners,
   openDeals,
+  decidedNotices,
 }: {
   dailyTasks: DailyTasks;
   overdueTasks: TaskRow[];
@@ -107,6 +109,7 @@ export function AnaliticaTabs({
   pendingActivations: PendingActivation[];
   prospectOwners: ProspectOwner[];
   openDeals: { id: string; label: string }[];
+  decidedNotices: DecidedActivationNotice[];
 }) {
   const router = useRouter();
   const [periodUi, setPeriodUi] = useState<"month" | "range">(periodMode);
@@ -124,6 +127,7 @@ export function AnaliticaTabs({
             pendingActivations={pendingActivations}
             owners={prospectOwners}
             openDeals={openDeals}
+            decidedNotices={decidedNotices}
           />
         </div>
         <div className="col-span-12 xl:col-span-3">

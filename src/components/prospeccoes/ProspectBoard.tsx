@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   createProspectAction,
@@ -14,6 +14,7 @@ import {
   addProspectStageAction,
   renameProspectStageAction,
   deleteProspectStageAction,
+  markActivationDecisionsSeenAction,
 } from "@/app/(app)/prospeccoes/actions";
 
 export type StageValue = { stageId: string; date: string | null; note: string | null; done: boolean };
@@ -35,7 +36,20 @@ export type ProspectRow = {
   stageValues: StageValue[];
   activation: Activation | null;
 };
-export type ProspectStageDef = { id: string; name: string; order: number; isClientStage: boolean; isCustom: boolean };
+export type ProspectStageDef = {
+  id: string;
+  name: string;
+  order: number;
+  isClientStage: boolean;
+  isCustom: boolean;
+  category: string;
+};
+export type DecidedActivationNotice = {
+  id: string;
+  clientName: string;
+  status: "APROVADO" | "RECUSADO";
+  rejectionReason: string | null;
+};
 export type PendingActivation = {
   id: string;
   prospectName: string;
@@ -82,6 +96,20 @@ function isStageUnlocked(prospect: ProspectRow, stage: ProspectStageDef, stages:
   return prevValue?.done ?? false;
 }
 
+/** Groups consecutive stages sharing the same category into header spans —
+ * stage order is fixed left-to-right, so same-category stages are always
+ * contiguous (the 6 fixed stages) or trail off together (custom columns,
+ * all "Outros"). */
+function buildCategoryGroups(stages: ProspectStageDef[]) {
+  const groups: { category: string; span: number }[] = [];
+  for (const s of stages) {
+    const last = groups[groups.length - 1];
+    if (last && last.category === s.category) last.span += 1;
+    else groups.push({ category: s.category, span: 1 });
+  }
+  return groups;
+}
+
 export type ProspectOwner = { id: string; name: string | null };
 
 export type OpenDeal = { id: string; label: string };
@@ -93,6 +121,7 @@ export function ProspectBoard({
   pendingActivations,
   owners,
   openDeals,
+  decidedNotices,
 }: {
   prospects: ProspectRow[];
   stages: ProspectStageDef[];
@@ -100,6 +129,7 @@ export function ProspectBoard({
   pendingActivations: PendingActivation[];
   owners: ProspectOwner[];
   openDeals: OpenDeal[];
+  decidedNotices: DecidedActivationNotice[];
 }) {
   const router = useRouter();
   const [showNew, setShowNew] = useState(false);
@@ -111,6 +141,25 @@ export function ProspectBoard({
   const [addingColumn, setAddingColumn] = useState(false);
   const [newColumnName, setNewColumnName] = useState("");
   const [addingColumnBusy, setAddingColumnBusy] = useState(false);
+  const [missingStageFilter, setMissingStageFilter] = useState("");
+  const [dismissedNotices, setDismissedNotices] = useState<Set<string>>(new Set());
+
+  // Marks the seller's newly-decided (aprovado/recusado) activation
+  // requests as seen once the board actually renders in the browser — same
+  // pattern as MarkSocialSeen for Comunicados. Doesn't router.refresh(): the
+  // banner should stay visible for this visit even after it's marked seen,
+  // it just won't come back on the next page load.
+  useEffect(() => {
+    if (decidedNotices.length > 0) markActivationDecisionsSeenAction();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const categoryGroups = useMemo(() => buildCategoryGroups(stages), [stages]);
+  const filterableStages = stages.filter((s) => !s.isClientStage);
+  const visibleProspects = missingStageFilter
+    ? prospects.filter((p) => !p.stageValues.find((v) => v.stageId === missingStageFilter)?.done)
+    : prospects;
+  const visibleNotices = decidedNotices.filter((n) => !dismissedNotices.has(n.id));
 
   async function refresh() {
     router.refresh();
@@ -130,9 +179,49 @@ export function ProspectBoard({
 
   return (
     <div>
+      {visibleNotices.length > 0 && (
+        <div className="mb-3 flex flex-col gap-1.5">
+          {visibleNotices.map((n) => (
+            <div
+              key={n.id}
+              className={`flex items-center justify-between gap-3 rounded-lg border px-3.5 py-2.5 text-[12.5px] ${
+                n.status === "APROVADO"
+                  ? "border-good/40 bg-good/10 text-good"
+                  : "border-critical/40 bg-critical/10 text-critical"
+              }`}
+            >
+              <span>
+                {n.status === "APROVADO"
+                  ? `"${n.clientName}" foi aceito como cliente ativo! ✓`
+                  : `"${n.clientName}" foi recusado como cliente.${n.rejectionReason ? ` Motivo: ${n.rejectionReason}` : ""}`}
+              </span>
+              <button
+                onClick={() => setDismissedNotices((prev) => new Set(prev).add(n.id))}
+                aria-label="Dispensar aviso"
+                className="text-lg leading-none opacity-70 hover:opacity-100"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-[13px] font-semibold text-ink">Prospecções</h3>
         <div className="flex items-center gap-2">
+          <select
+            value={missingStageFilter}
+            onChange={(e) => setMissingStageFilter(e.target.value)}
+            className="rounded-lg border border-gold-deep/40 bg-surface-2 px-2.5 py-1.5 text-xs text-ink outline-none focus:border-gold"
+          >
+            <option value="">Falta: todas as etapas</option>
+            {filterableStages.map((s) => (
+              <option key={s.id} value={s.id}>
+                Falta: {s.name}
+              </option>
+            ))}
+          </select>
           {isMediator && pendingActivations.length > 0 && (
             <button
               onClick={() => setShowQueue(true)}
@@ -159,6 +248,19 @@ export function ProspectBoard({
       <div className="overflow-x-auto rounded-xl border border-gold-deep/28 bg-surface">
         <table className="w-full min-w-[900px] border-collapse text-[12px]">
           <thead>
+            <tr>
+              <th className="sticky left-0 z-10 border-b border-gold-deep/20 bg-surface px-3 py-1" />
+              {categoryGroups.map((g, i) => (
+                <th
+                  key={i}
+                  colSpan={g.span}
+                  className="border-b border-l border-dashed border-gold-deep/18 bg-surface-2/40 px-3 py-1 text-center text-[9.5px] font-semibold uppercase tracking-wide text-gold-bright/80"
+                >
+                  {g.category}
+                </th>
+              ))}
+              <th className="border-b border-l border-dashed border-gold-deep/18" />
+            </tr>
             <tr>
               <th className="sticky left-0 z-10 border-b border-gold-deep/30 bg-surface px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-wide text-ink-faint">
                 Cliente
@@ -215,7 +317,7 @@ export function ProspectBoard({
             </tr>
           </thead>
           <tbody>
-            {prospects.map((p) => {
+            {visibleProspects.map((p) => {
               const atrasado = daysSince(p.lastTouchedAt) >= ATRASO_DAYS;
               const recusado = p.activation?.status === "RECUSADO";
               return (
@@ -321,10 +423,12 @@ export function ProspectBoard({
                 </tr>
               );
             })}
-            {prospects.length === 0 && (
+            {visibleProspects.length === 0 && (
               <tr>
                 <td colSpan={stages.length + 2} className="px-3 py-6 text-center text-xs text-ink-faint">
-                  Nenhuma prospecção ainda. Clique em &ldquo;+ Nova prospecção&rdquo; pra começar.
+                  {prospects.length === 0
+                    ? "Nenhuma prospecção ainda. Clique em “+ Nova prospecção” pra começar."
+                    : "Nenhuma prospecção com essa etapa pendente."}
                 </td>
               </tr>
             )}
@@ -805,6 +909,9 @@ function StageCellModal({
   const [saving, setSaving] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState(existing?.done ?? false);
+  const [scheduleReturn, setScheduleReturn] = useState(false);
+  const [returnDate, setReturnDate] = useState("");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -816,6 +923,18 @@ function StageCellModal({
       setError(r.error);
       setSaving(false);
       return;
+    }
+    if (done && scheduleReturn && returnDate) {
+      const taskFd = new FormData();
+      taskFd.set("title", `Retorno — ${prospect.clientName} (${stage.name})`);
+      taskFd.set("dueDate", returnDate);
+      taskFd.set("link", `prospect:${prospect.id}`);
+      const taskResult = await scheduleTaskAction(taskFd);
+      if (taskResult.error) {
+        setError(taskResult.error);
+        setSaving(false);
+        return;
+      }
     }
     onSaved();
   }
@@ -845,9 +964,40 @@ function StageCellModal({
           <textarea name="note" rows={3} defaultValue={existing?.note ?? ""} className={inputClass} />
         </label>
         <label className="flex items-center gap-2 text-xs text-ink-muted">
-          <input name="done" type="checkbox" defaultChecked={existing?.done ?? false} className="h-3.5 w-3.5" />
+          <input
+            name="done"
+            type="checkbox"
+            checked={done}
+            onChange={(e) => setDone(e.target.checked)}
+            className="h-3.5 w-3.5"
+          />
           Concluído
         </label>
+        {done && (
+          <div className="rounded-md border border-gold-deep/25 bg-surface-2/50 p-2.5">
+            <label className="flex items-center gap-2 text-xs text-ink-muted">
+              <input
+                type="checkbox"
+                checked={scheduleReturn}
+                onChange={(e) => setScheduleReturn(e.target.checked)}
+                className="h-3.5 w-3.5"
+              />
+              Agendar um retorno
+            </label>
+            {scheduleReturn && (
+              <label className="mt-2 flex flex-col gap-1 text-xs">
+                <span className="text-ink-faint">Data do retorno</span>
+                <input
+                  type="date"
+                  required
+                  value={returnDate}
+                  onChange={(e) => setReturnDate(e.target.value)}
+                  className={inputClass}
+                />
+              </label>
+            )}
+          </div>
+        )}
         <div className="mt-1 flex items-center justify-between gap-2">
           <button
             type="button"
