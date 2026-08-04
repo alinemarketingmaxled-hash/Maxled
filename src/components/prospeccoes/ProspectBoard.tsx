@@ -15,7 +15,10 @@ import {
   renameProspectStageAction,
   deleteProspectStageAction,
   markActivationDecisionsSeenAction,
+  createFullClientAction,
+  lookupCepAction,
 } from "@/app/(app)/prospeccoes/actions";
+import { lookupCnpjAction } from "@/app/(app)/vendas/actions";
 
 export type StageValue = { stageId: string; date: string | null; note: string | null; done: boolean };
 export type Activation = { id: string; status: "PENDENTE" | "APROVADO" | "RECUSADO"; rejectionReason: string | null };
@@ -117,7 +120,7 @@ export type OpenDeal = { id: string; label: string };
 export function ProspectBoard({
   prospects,
   stages,
-  isMediator,
+  canApproveActivations,
   pendingActivations,
   owners,
   openDeals,
@@ -125,7 +128,7 @@ export function ProspectBoard({
 }: {
   prospects: ProspectRow[];
   stages: ProspectStageDef[];
-  isMediator: boolean;
+  canApproveActivations: boolean;
   pendingActivations: PendingActivation[];
   owners: ProspectOwner[];
   openDeals: OpenDeal[];
@@ -133,6 +136,7 @@ export function ProspectBoard({
 }) {
   const router = useRouter();
   const [showNew, setShowNew] = useState(false);
+  const [showFullClient, setShowFullClient] = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
   const [showQueue, setShowQueue] = useState(false);
   const [cell, setCell] = useState<{ prospect: ProspectRow; stage: ProspectStageDef } | null>(null);
@@ -222,7 +226,7 @@ export function ProspectBoard({
               </option>
             ))}
           </select>
-          {isMediator && pendingActivations.length > 0 && (
+          {canApproveActivations && pendingActivations.length > 0 && (
             <button
               onClick={() => setShowQueue(true)}
               className="rounded-lg border border-gold-deep px-3 py-1.5 text-xs font-semibold text-gold-bright hover:border-gold"
@@ -235,6 +239,12 @@ export function ProspectBoard({
             className="rounded-lg border border-gold-deep px-3.5 py-1.5 text-xs font-semibold text-ink hover:border-gold"
           >
             + Agendar
+          </button>
+          <button
+            onClick={() => setShowFullClient(true)}
+            className="rounded-lg border border-gold-deep px-3.5 py-1.5 text-xs font-semibold text-ink hover:border-gold"
+          >
+            + Cliente completo
           </button>
           <button
             onClick={() => setShowNew(true)}
@@ -371,7 +381,7 @@ export function ProspectBoard({
                             </button>
                           ) : p.activation.status === "PENDENTE" ? (
                             <span className="rounded-full bg-surface-3 px-1.5 py-0.5 text-[10.5px] font-semibold text-ink-faint">
-                              Em análise pelo mediador
+                              Em análise pelo Diretor
                             </span>
                           ) : p.activation.status === "RECUSADO" ? (
                             <div>
@@ -441,6 +451,16 @@ export function ProspectBoard({
           onClose={() => setShowNew(false)}
           onSaved={async () => {
             setShowNew(false);
+            await refresh();
+          }}
+        />
+      )}
+
+      {showFullClient && (
+        <NewFullClientModal
+          onClose={() => setShowFullClient(false)}
+          onSaved={async () => {
+            setShowFullClient(false);
             await refresh();
           }}
         />
@@ -670,6 +690,294 @@ function NewProspectModal({ onClose, onSaved }: { onClose: () => void; onSaved: 
             className="rounded-lg bg-gold-solid px-3.5 py-1.5 text-xs font-semibold text-black hover:bg-gold-solid-bright disabled:opacity-60"
           >
             {saving ? "Salvando…" : "Salvar"}
+          </button>
+        </div>
+      </form>
+    </ModalShell>
+  );
+}
+
+/** "+ Cliente completo" — every field to create a client from scratch
+ * (contact info + the Sintegra-style activation data) in one form. Saving
+ * skips the stage-by-stage board entirely and sends the request straight to
+ * the Diretor/Mediador's approval queue (createFullClientAction). CNPJ and
+ * CEP each have a lookup button that auto-fills what they can. */
+function NewFullClientModal({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const [razaoSocial, setRazaoSocial] = useState("");
+  const [razaoSocialTouched, setRazaoSocialTouched] = useState(false);
+
+  const [cnpj, setCnpj] = useState("");
+  const [cnpjError, setCnpjError] = useState<string | null>(null);
+  const [lookingUpCnpj, setLookingUpCnpj] = useState(false);
+
+  const [cep, setCep] = useState("");
+  const [cepError, setCepError] = useState<string | null>(null);
+  const [lookingUpCep, setLookingUpCep] = useState(false);
+
+  const [enderecoFaturamento, setEnderecoFaturamento] = useState("");
+  const [sameAddress, setSameAddress] = useState(true);
+  const [enderecoEntrega, setEnderecoEntrega] = useState("");
+
+  async function handleLookupCnpj() {
+    setCnpjError(null);
+    setLookingUpCnpj(true);
+    let outcome;
+    try {
+      outcome = await lookupCnpjAction(cnpj);
+    } catch {
+      setCnpjError("Não foi possível consultar o CNPJ agora. Tente de novo em instantes ou preencha manualmente.");
+      setLookingUpCnpj(false);
+      return;
+    }
+    setLookingUpCnpj(false);
+    if (!outcome.ok) {
+      setCnpjError(
+        outcome.reason === "invalid"
+          ? "CNPJ incompleto — digite os 14 números do CNPJ."
+          : outcome.reason === "not_found"
+            ? "CNPJ não encontrado na Receita Federal. Confira o número ou preencha manualmente."
+            : "Não foi possível consultar o CNPJ agora (falha de conexão). Tente de novo em instantes ou preencha manualmente.",
+      );
+      return;
+    }
+    const { result } = outcome;
+    if (result.accountName && !razaoSocialTouched) setRazaoSocial(result.accountName);
+    const composed = [result.street, result.number, result.city, result.state, result.postalCode]
+      .filter(Boolean)
+      .join(", ");
+    if (composed) {
+      setEnderecoFaturamento(composed);
+      if (sameAddress) setEnderecoEntrega(composed);
+    }
+  }
+
+  async function handleLookupCep() {
+    setCepError(null);
+    setLookingUpCep(true);
+    let outcome;
+    try {
+      outcome = await lookupCepAction(cep);
+    } catch {
+      setCepError("Não foi possível consultar o CEP agora. Tente de novo em instantes ou preencha manualmente.");
+      setLookingUpCep(false);
+      return;
+    }
+    setLookingUpCep(false);
+    if (!outcome.ok) {
+      setCepError(
+        outcome.reason === "invalid"
+          ? "CEP incompleto — digite os 8 números do CEP."
+          : outcome.reason === "not_found"
+            ? "CEP não encontrado. Confira o número ou preencha manualmente."
+            : "Não foi possível consultar o CEP agora (falha de conexão). Tente de novo em instantes ou preencha manualmente.",
+      );
+      return;
+    }
+    setEnderecoFaturamento(outcome.result.formattedAddress);
+    if (sameAddress) setEnderecoEntrega(outcome.result.formattedAddress);
+  }
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setSaving(true);
+    setError(null);
+    const fd = new FormData(e.currentTarget);
+    fd.set("enderecoEntrega", sameAddress ? enderecoFaturamento : enderecoEntrega);
+    const r = await createFullClientAction(fd);
+    if (r.error) {
+      setError(r.error);
+      setSaving(false);
+      return;
+    }
+    onSaved();
+  }
+
+  return (
+    <ModalShell title="Cliente completo" onClose={onClose}>
+      <p className="mb-2.5 text-[11px] text-ink-faint">
+        Preencha tudo de uma vez — dados do contato e os dados de aprovação (mesmos do Sintegra). Ao salvar, já vai
+        direto pra fila de aprovação do Diretor, sem passar pelas etapas do quadro.
+      </p>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">
+        {error && <p className="rounded-md bg-critical/10 px-2.5 py-1.5 text-xs text-critical">{error}</p>}
+
+        <h4 className="text-[11px] font-semibold uppercase tracking-wide text-gold">Contato</h4>
+        <label className="flex flex-col gap-1 text-xs">
+          <span className="text-ink-faint">Nome do contato</span>
+          <input name="name" required className={inputClass} />
+        </label>
+        <label className="flex flex-col gap-1 text-xs">
+          <span className="text-ink-faint">Cliente / empresa</span>
+          <input
+            name="clientName"
+            required
+            onChange={(e) => {
+              if (!razaoSocialTouched) setRazaoSocial(e.target.value);
+            }}
+            className={inputClass}
+          />
+        </label>
+        <div className="grid grid-cols-2 gap-2.5">
+          <label className="flex flex-col gap-1 text-xs">
+            <span className="text-ink-faint">Número</span>
+            <input name="phone" className={inputClass} />
+          </label>
+          <label className="flex flex-col gap-1 text-xs">
+            <span className="text-ink-faint">E-mail</span>
+            <input name="email" type="email" className={inputClass} />
+          </label>
+        </div>
+        <label className="flex flex-col gap-1 text-xs">
+          <span className="text-ink-faint">Perfil</span>
+          <input name="profile" list="profile-presets-full" required className={inputClass} />
+          <datalist id="profile-presets-full">
+            {PROFILE_PRESETS.map((p) => (
+              <option key={p} value={p} />
+            ))}
+          </datalist>
+        </label>
+        <label className="flex flex-col gap-1 text-xs">
+          <span className="text-ink-faint">Observação</span>
+          <textarea name="notes" rows={2} className={inputClass} />
+        </label>
+
+        <h4 className="mt-1 text-[11px] font-semibold uppercase tracking-wide text-gold">
+          Dados para aprovação (Sintegra)
+        </h4>
+        <label className="flex flex-col gap-1 text-xs">
+          <span className="text-ink-faint">Razão social</span>
+          <input
+            name="razaoSocial"
+            required
+            value={razaoSocial}
+            onChange={(e) => {
+              setRazaoSocial(e.target.value);
+              setRazaoSocialTouched(true);
+            }}
+            className={inputClass}
+          />
+        </label>
+        <div className="flex items-end gap-2">
+          <div className="flex-1">
+            <label className="flex flex-col gap-1 text-xs">
+              <span className="text-ink-faint">CNPJ</span>
+              <input
+                name="cnpj"
+                required
+                value={cnpj}
+                onChange={(e) => setCnpj(e.target.value)}
+                className={inputClass}
+              />
+            </label>
+          </div>
+          <button
+            type="button"
+            onClick={handleLookupCnpj}
+            disabled={!cnpj.replace(/\D/g, "") || lookingUpCnpj}
+            className="mb-[1px] shrink-0 rounded-md border border-gold-deep px-3 py-2 text-xs font-semibold text-ink transition-colors hover:border-gold disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {lookingUpCnpj ? "Buscando…" : "Buscar CNPJ"}
+          </button>
+        </div>
+        {cnpjError && <p className="-mt-1 text-[11px] text-critical">{cnpjError}</p>}
+        <div className="grid grid-cols-2 gap-2.5">
+          <label className="flex flex-col gap-1 text-xs">
+            <span className="text-ink-faint">E-mail financeiro</span>
+            <input name="emailFinanceiro" type="email" required className={inputClass} />
+          </label>
+          <label className="flex flex-col gap-1 text-xs">
+            <span className="text-ink-faint">E-mail NF-e</span>
+            <input name="emailNfe" type="email" required className={inputClass} />
+          </label>
+        </div>
+        <label className="flex flex-col gap-1 text-xs">
+          <span className="text-ink-faint">Inscrição estadual</span>
+          <input name="inscricaoEstadual" required className={inputClass} />
+        </label>
+        <div className="flex items-end gap-2">
+          <div className="flex-1">
+            <label className="flex flex-col gap-1 text-xs">
+              <span className="text-ink-faint">CEP</span>
+              <input
+                value={cep}
+                onChange={(e) => setCep(e.target.value)}
+                placeholder="Ex.: 01310-100"
+                className={inputClass}
+              />
+            </label>
+          </div>
+          <button
+            type="button"
+            onClick={handleLookupCep}
+            disabled={!cep.replace(/\D/g, "") || lookingUpCep}
+            className="mb-[1px] shrink-0 rounded-md border border-gold-deep px-3 py-2 text-xs font-semibold text-ink transition-colors hover:border-gold disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {lookingUpCep ? "Buscando…" : "Buscar CEP"}
+          </button>
+        </div>
+        {cepError && <p className="-mt-1 text-[11px] text-critical">{cepError}</p>}
+        <label className="flex flex-col gap-1 text-xs">
+          <span className="text-ink-faint">Endereço de faturamento</span>
+          <textarea
+            name="enderecoFaturamento"
+            rows={2}
+            required
+            value={enderecoFaturamento}
+            onChange={(e) => {
+              setEnderecoFaturamento(e.target.value);
+              if (sameAddress) setEnderecoEntrega(e.target.value);
+            }}
+            placeholder="Preenchido automaticamente ao buscar o CEP ou o CNPJ — complete com número/complemento"
+            className={inputClass}
+          />
+        </label>
+        <label className="flex items-center gap-2 text-xs text-ink-muted">
+          <input
+            type="checkbox"
+            checked={sameAddress}
+            onChange={(e) => {
+              setSameAddress(e.target.checked);
+              if (e.target.checked) setEnderecoEntrega(enderecoFaturamento);
+            }}
+            className="h-3.5 w-3.5"
+          />
+          Endereço de entrega igual ao de faturamento
+        </label>
+        {!sameAddress && (
+          <label className="flex flex-col gap-1 text-xs">
+            <span className="text-ink-faint">Endereço de entrega</span>
+            <textarea
+              rows={2}
+              required
+              value={enderecoEntrega}
+              onChange={(e) => setEnderecoEntrega(e.target.value)}
+              className={inputClass}
+            />
+          </label>
+        )}
+        <div className="grid grid-cols-2 gap-2.5">
+          <label className="flex flex-col gap-1 text-xs">
+            <span className="text-ink-faint">Valor (R$)</span>
+            <input name="valor" type="number" step="0.01" min="0" required className={inputClass} />
+          </label>
+          <label className="flex flex-col gap-1 text-xs">
+            <span className="text-ink-faint">Condição de pagamento</span>
+            <input name="condicaoPagamento" required placeholder="Ex.: 30/60/90 dias" className={inputClass} />
+          </label>
+        </div>
+        <div className="mt-1 flex justify-end gap-2">
+          <button type="button" onClick={onClose} className="rounded-lg border border-gold-deep px-3.5 py-1.5 text-xs font-semibold text-ink">
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            disabled={saving}
+            className="rounded-lg bg-gold-solid px-3.5 py-1.5 text-xs font-semibold text-black hover:bg-gold-solid-bright disabled:opacity-60"
+          >
+            {saving ? "Enviando…" : "Salvar e enviar para aprovação"}
           </button>
         </div>
       </form>
@@ -1069,7 +1377,7 @@ function ActivationModal({
   return (
     <ModalShell title={`Tornar cliente ativo — ${prospect.clientName}`} onClose={onClose}>
       <p className="mb-2.5 text-[11px] text-ink-faint">
-        Mesmos dados do Sintegra. Depois de enviar, um mediador precisa aprovar antes do cliente e a negociação
+        Mesmos dados do Sintegra. Depois de enviar, o Diretor precisa aprovar antes do cliente e a negociação
         aparecerem em Clientes/Negócios.
       </p>
       <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">

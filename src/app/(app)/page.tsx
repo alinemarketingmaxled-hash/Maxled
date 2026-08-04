@@ -1,5 +1,5 @@
 import { requireView } from "@/lib/require-permission";
-import { canEdit } from "@/lib/permissions";
+import { canEdit, canApproveClients } from "@/lib/permissions";
 import {
   getKpis,
   getKpisForRange,
@@ -203,7 +203,7 @@ export default async function AnaliticaPage({
           isCustom: s.isCustom,
           category: s.category,
         }))}
-        isMediator={session.user.role === "MEDIATOR"}
+        canApproveActivations={canApproveClients(session.user.role)}
         pendingActivations={pendingActivations.map((r) => ({
           id: r.id,
           prospectName: r.prospect.name,

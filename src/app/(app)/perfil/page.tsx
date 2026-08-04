@@ -5,7 +5,7 @@ import { listVendors, getTodaysBirthdays } from "@/lib/users";
 
 const ROLE_LABELS: Record<string, string> = {
   ADMIN: "Admin",
-  MANAGER: "Gerente",
+  MANAGER: "Diretor",
   SELLER: "Vendedor",
   SUPPORT: "Suporte",
   MEDIATOR: "Mediador",

@@ -1,7 +1,7 @@
 import "server-only";
 import type { Session } from "next-auth";
 import { prisma } from "@/lib/prisma";
-import { getPermission, type Module } from "@/lib/permissions";
+import { getPermission, canApproveClients, type Module } from "@/lib/permissions";
 import { logActivity } from "@/lib/activity-log";
 import { createContact } from "@/lib/contacts";
 import type { Prisma, ProspectTemperature } from "@/generated/prisma/client";
@@ -207,9 +207,25 @@ export async function submitActivationRequest(session: Session, prospectId: stri
   return request;
 }
 
-/** Mediator-only queue: every activation request awaiting a decision. */
+/** Backs the "+ Cliente completo" button — fills in every field (contact
+ * info + the Sintegra-style activation data) in one shot and sends it
+ * straight to the Diretor/Mediador's approval queue, skipping the
+ * stage-by-stage board entirely. Reuses createProspect +
+ * submitActivationRequest as-is, so it stays consistent with a prospect
+ * that reached "Cliente Ativo" the normal way. */
+export async function createProspectWithActivation(
+  session: Session,
+  prospectData: ProspectInput,
+  activationData: ActivationInput,
+) {
+  const prospect = await createProspect(session, prospectData);
+  return submitActivationRequest(session, prospect.id, activationData);
+}
+
+/** Queue of activation requests awaiting a decision — visible to whoever
+ * can approve clients (Diretor/MANAGER, plus Mediador as always). */
 export async function listPendingActivationRequests(session: Session) {
-  if (session.user.role !== "MEDIATOR") return [];
+  if (!canApproveClients(session.user.role)) return [];
   return prisma.clientActivationRequest.findMany({
     where: { status: "PENDENTE" },
     orderBy: { createdAt: "asc" },
@@ -224,7 +240,7 @@ export async function listPendingActivationRequests(session: Session) {
  * the mediator-approval step itself, per spec.
  */
 export async function approveActivation(session: Session, requestId: string) {
-  if (session.user.role !== "MEDIATOR") throw new Error("Apenas o mediador pode aprovar clientes.");
+  if (!canApproveClients(session.user.role)) throw new Error("Apenas o Diretor ou o Mediador podem aprovar clientes.");
 
   const request = await prisma.clientActivationRequest.findUniqueOrThrow({
     where: { id: requestId },
@@ -251,6 +267,7 @@ export async function approveActivation(session: Session, requestId: string) {
     emailNfe: request.emailNfe,
     enderecoEntrega: request.enderecoEntrega,
     crmStatus: "ATIVO",
+    profile: prospect.profile,
   });
 
   const firstStage = await prisma.pipelineStage.findFirst({
@@ -334,7 +351,7 @@ export async function markActivationDecisionsSeen(session: Session) {
 }
 
 export async function rejectActivation(session: Session, requestId: string, reason: string) {
-  if (session.user.role !== "MEDIATOR") throw new Error("Apenas o mediador pode recusar clientes.");
+  if (!canApproveClients(session.user.role)) throw new Error("Apenas o Diretor ou o Mediador podem recusar clientes.");
   if (!reason.trim()) throw new Error("Explique o motivo da recusa para o vendedor.");
 
   const request = await prisma.clientActivationRequest.findUniqueOrThrow({ where: { id: requestId } });

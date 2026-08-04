@@ -4,7 +4,7 @@ import { SearchBar } from "@/components/shell/SearchBar";
 
 const ROLE_LABELS: Record<string, string> = {
   ADMIN: "Admin",
-  MANAGER: "Gerente",
+  MANAGER: "Diretor",
   SELLER: "Vendedor",
   SUPPORT: "Suporte",
   MEDIATOR: "Mediador",
