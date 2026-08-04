@@ -92,6 +92,27 @@ export async function unlockVendor(actorId: string, id: string) {
   return vendor;
 }
 
+/** Persists a freshly-confirmed TOTP secret — only called after the setup
+ * flow (lib/mfa.ts) verifies the user actually scanned it correctly. */
+export async function enableMfa(userId: string, secret: string) {
+  await prisma.user.update({ where: { id: userId }, data: { mfaEnabled: true, mfaSecret: secret } });
+  await logActivity({ actorId: userId, entityType: "User", entityId: userId, action: "updated" });
+}
+
+export async function disableMfa(userId: string) {
+  await prisma.user.update({ where: { id: userId }, data: { mfaEnabled: false, mfaSecret: null } });
+  await logActivity({ actorId: userId, entityType: "User", entityId: userId, action: "updated" });
+}
+
+/** Mediador-only escape hatch for someone locked out of their authenticator
+ * app (lost/reset phone) — same reach as unlockVendor above. The vendor has
+ * to set MFA up again from scratch afterward. */
+export async function resetVendorMfa(actorId: string, id: string) {
+  const vendor = await prisma.user.update({ where: { id }, data: { mfaEnabled: false, mfaSecret: null } });
+  await logActivity({ actorId, entityType: "User", entityId: vendor.id, action: "updated" });
+  return vendor;
+}
+
 export type OwnProfileInput = {
   name: string;
   avatarUrl?: string | null;

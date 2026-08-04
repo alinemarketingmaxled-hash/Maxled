@@ -34,6 +34,10 @@ model User {
   personalGoal   Decimal?  @db.Decimal(12, 2)
   failedLoginAttempts Int       @default(0)
   lockedAt            DateTime?
+  // Verificação em duas etapas (TOTP) — mfaSecret fica null enquanto
+  // desativada; nunca exposta ao cliente depois de gravada.
+  mfaEnabled          Boolean   @default(false)
+  mfaSecret           String?
   // Last time this user opened Comunicados — anything posted after this by
   // someone else counts as unread for the Sidebar notification badge.
   lastSeenSocialAt    DateTime?

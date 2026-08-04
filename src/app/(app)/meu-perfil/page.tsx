@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { MyProfileForm } from "@/components/perfil/MyProfileForm";
+import { MfaSettings } from "@/components/perfil/MfaSettings";
 import { BackLink } from "@/components/shell/BackLink";
 import { AppearanceSettings } from "@/components/shell/AppearanceSettings";
 
@@ -19,7 +20,7 @@ export default async function MeuPerfilPage() {
 
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: session.user.id },
-    select: { name: true, avatarUrl: true, birthday: true, personalGoal: true, email: true, role: true },
+    select: { name: true, avatarUrl: true, birthday: true, personalGoal: true, email: true, role: true, mfaEnabled: true },
   });
 
   return (
@@ -39,7 +40,12 @@ export default async function MeuPerfilPage() {
           personalGoal: user.personalGoal ? Number(user.personalGoal) : null,
         }}
       />
-      <AppearanceSettings />
+      <div className="mt-4">
+        <MfaSettings enabled={user.mfaEnabled} />
+      </div>
+      <div className="mt-4">
+        <AppearanceSettings />
+      </div>
     </div>
   );
 }

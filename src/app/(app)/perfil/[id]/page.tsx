@@ -4,7 +4,7 @@ import { canEdit } from "@/lib/permissions";
 import { getVendor } from "@/lib/users";
 import { VendorForm } from "@/components/perfil/VendorForm";
 import { BackLink } from "@/components/shell/BackLink";
-import { updateVendorAction, deactivateVendorAction, unlockVendorAction } from "../actions";
+import { updateVendorAction, deactivateVendorAction, unlockVendorAction, resetVendorMfaAction } from "../actions";
 
 export default async function EditVendorPage({
   params,
@@ -45,6 +45,20 @@ export default async function EditVendorPage({
               className="rounded-lg border border-critical/50 px-3.5 py-1.5 text-xs font-semibold text-critical transition-colors hover:bg-critical/10"
             >
               Desbloquear acesso
+            </button>
+          </form>
+        </div>
+      )}
+
+      {vendor.mfaEnabled && (
+        <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-gold-deep/30 bg-surface px-4 py-3">
+          <span className="text-sm text-ink-muted">Verificação em duas etapas ativa nesta conta.</span>
+          <form action={resetVendorMfaAction.bind(null, vendor.id)}>
+            <button
+              type="submit"
+              className="rounded-lg border border-gold-deep px-3.5 py-1.5 text-xs font-semibold text-ink transition-colors hover:border-gold"
+            >
+              Desativar (perdeu o acesso ao app autenticador)
             </button>
           </form>
         </div>
