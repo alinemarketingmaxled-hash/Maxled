@@ -227,10 +227,15 @@ export type ContactInput = {
   notes?: string | null;
 };
 
-export async function createContact(session: Session, data: ContactInput) {
+/** actorId defaults to the caller (the normal case: whoever is creating the
+ * contact did the work) — approveActivation overrides it to the prospect's
+ * owner, since approving a client was the Diretor's action, not the
+ * seller's, and the activity feed should credit whoever actually gathered
+ * the client's info. */
+export async function createContact(session: Session, data: ContactInput, actorId: string = session.user.id) {
   const contact = await prisma.contact.create({ data });
   await logActivity({
-    actorId: session.user.id,
+    actorId,
     entityType: "Contact",
     entityId: contact.id,
     action: "created",
