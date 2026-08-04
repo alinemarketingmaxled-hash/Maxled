@@ -26,11 +26,20 @@ export async function logActivity(params: {
   });
 }
 
+export type ActivityFilters = { actorId?: string; action?: string };
+
 /** Powers the Config page's activity feed — scoped by the "activityLogs"
- * permission (own/team/all), same pattern as every other module. */
-export async function listActivity(session: Session, take = 100) {
+ * permission (own/team/all), same pattern as every other module. actorId/
+ * action narrow it further for the audit filters, on top of that scope —
+ * a "own" scoped seller filtering by actorId just gets their own logs back
+ * either way, since scopeWhere already pins actorId to themselves. */
+export async function listActivity(session: Session, filters: ActivityFilters = {}, take = 100) {
   const { scope } = getPermission(session.user.role, "activityLogs");
-  const where: Prisma.ActivityLogWhereInput = scope === "own" ? { actorId: session.user.id } : {};
+  const where: Prisma.ActivityLogWhereInput = {
+    ...(scope === "own" ? { actorId: session.user.id } : {}),
+    ...(filters.actorId ? { actorId: filters.actorId } : {}),
+    ...(filters.action ? { action: filters.action } : {}),
+  };
 
   return prisma.activityLog.findMany({
     where,

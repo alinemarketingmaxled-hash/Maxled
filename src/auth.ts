@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
+import { verifyMfaToken } from "@/lib/mfa";
 import type { Role } from "@/generated/prisma/client";
 
 const MAX_LOGIN_ATTEMPTS = 7;
@@ -13,6 +14,17 @@ export class AccountLockedError extends CredentialsSignin {
   code = "account_locked";
 }
 
+/** Password was correct but the account has MFA enabled and no code was
+ * submitted yet — LoginForm reads this code to switch to the "enter your
+ * authenticator code" step instead of showing a generic error. */
+export class MfaRequiredError extends CredentialsSignin {
+  code = "mfa_required";
+}
+
+export class MfaInvalidError extends CredentialsSignin {
+  code = "mfa_invalid";
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
   pages: { signIn: "/login" },
@@ -21,10 +33,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       credentials: {
         email: { label: "E-mail", type: "email" },
         password: { label: "Senha", type: "password" },
+        code: { label: "Código de verificação", type: "text" },
       },
       async authorize(credentials) {
         const email = credentials?.email;
         const password = credentials?.password;
+        const code = typeof credentials?.code === "string" ? credentials.code.trim() : "";
         if (typeof email !== "string" || typeof password !== "string") {
           return null;
         }
@@ -53,6 +67,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         if (user.failedLoginAttempts > 0) {
           await prisma.user.update({ where: { id: user.id }, data: { failedLoginAttempts: 0 } });
+        }
+
+        if (user.mfaEnabled && user.mfaSecret) {
+          if (!code) throw new MfaRequiredError();
+          if (!verifyMfaToken(user.mfaSecret, code, user.email)) throw new MfaInvalidError();
         }
 
         return {

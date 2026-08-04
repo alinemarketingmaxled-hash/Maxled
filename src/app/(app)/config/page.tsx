@@ -1,8 +1,10 @@
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { requireView } from "@/lib/require-permission";
-import { canView, getPermissionMatrix, type Module } from "@/lib/permissions";
+import { canView, getPermissionMatrix, getPermission, type Module } from "@/lib/permissions";
 import { listActivity } from "@/lib/activity-log";
+import { listVendors } from "@/lib/users";
+import { ActivityLogFilters } from "@/components/config/ActivityLogFilters";
 import type { Role } from "@/generated/prisma/client";
 
 const ROLE_LABELS: Record<Role, string> = {
@@ -55,11 +57,20 @@ function diffSummary(diff: unknown): string | null {
   return null;
 }
 
-export default async function ConfigPage() {
+export default async function ConfigPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ actorId?: string; action?: string }>;
+}) {
   const session = await requireView("config");
-  const [activity, matrix] = await Promise.all([
-    canView(session.user.role, "activityLogs") ? listActivity(session) : Promise.resolve([]),
+  const { actorId, action } = await searchParams;
+  const canSeeActivity = canView(session.user.role, "activityLogs");
+  const { scope } = getPermission(session.user.role, "activityLogs");
+
+  const [activity, matrix, actors] = await Promise.all([
+    canSeeActivity ? listActivity(session, { actorId, action }) : Promise.resolve([]),
     Promise.resolve(getPermissionMatrix()),
+    canSeeActivity && scope !== "own" ? listVendors() : Promise.resolve([]),
   ]);
 
   return (
@@ -131,8 +142,11 @@ export default async function ConfigPage() {
       {canView(session.user.role, "activityLogs") && (
         <div className="rounded-xl border border-gold-deep/30 bg-surface p-4">
           <h3 className="mb-3 text-[13px] font-semibold text-ink">Registro de atividades</h3>
+          <ActivityLogFilters actors={actors.map((a) => ({ id: a.id, name: a.name }))} />
           {activity.length === 0 ? (
-            <p className="text-[12px] text-ink-faint">Nenhuma atividade registrada ainda.</p>
+            <p className="text-[12px] text-ink-faint">
+              {actorId || action ? "Nenhuma atividade com esse filtro." : "Nenhuma atividade registrada ainda."}
+            </p>
           ) : (
             <ul className="flex flex-col gap-2">
               {activity.map((log) => {
