@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getPermission, canApproveClients, type Module } from "@/lib/permissions";
 import { logActivity } from "@/lib/activity-log";
 import { createContact } from "@/lib/contacts";
-import type { Prisma, ProspectTemperature } from "@/generated/prisma/client";
+import type { Prisma, ProspectTemperature, PersonType, CommercialPotential } from "@/generated/prisma/client";
 
 function prospectScopeWhere(session: Session, mod: Module = "prospeccoes"): Prisma.ProspectWhereInput {
   const { scope } = getPermission(session.user.role, mod);
@@ -171,6 +171,26 @@ export type ActivationInput = {
   enderecoEntrega: string;
   valor: number;
   condicaoPagamento: string;
+  // Restante dos campos de Contact (Vendas) — opcionais, coletados junto
+  // no "Cliente completo" pra não precisar editar o cliente de novo depois
+  // que a aprovação sair.
+  personType?: PersonType | null;
+  jobTitle?: string | null;
+  department?: string | null;
+  mobile?: string | null;
+  residentialPhone?: string | null;
+  assistantPhone?: string | null;
+  birthday?: Date | null;
+  leadSource?: string | null;
+  supplierName?: string | null;
+  commercialPotential?: CommercialPotential | null;
+  nextContactAt?: Date | null;
+  street?: string | null;
+  number?: string | null;
+  city?: string | null;
+  state?: string | null;
+  postalCode?: string | null;
+  notes?: string | null;
 };
 
 /** Seller/manager submits the sintegra-style form to request turning a
@@ -248,13 +268,32 @@ export async function approveActivation(session: Session, requestId: string) {
       cnpj: request.cnpj,
       email: prospect.email,
       phone: prospect.phone,
-      street: request.enderecoFaturamento,
       inscricaoEstadual: request.inscricaoEstadual,
       emailFinanceiro: request.emailFinanceiro,
       emailNfe: request.emailNfe,
       enderecoEntrega: request.enderecoEntrega,
       crmStatus: "ATIVO",
       profile: prospect.profile,
+      personType: request.personType,
+      jobTitle: request.jobTitle,
+      department: request.department,
+      mobile: request.mobile,
+      residentialPhone: request.residentialPhone,
+      assistantPhone: request.assistantPhone,
+      birthday: request.birthday,
+      leadSource: request.leadSource,
+      supplierName: request.supplierName,
+      commercialPotential: request.commercialPotential,
+      nextContactAt: request.nextContactAt,
+      // Cai pro endereço de faturamento (Sintegra) se o endereço próprio do
+      // contato não foi preenchido — mantém o comportamento de antes pra
+      // solicitações que já existiam antes desses campos existirem.
+      street: request.street || request.enderecoFaturamento,
+      number: request.number,
+      city: request.city,
+      state: request.state,
+      postalCode: request.postalCode,
+      notes: request.notes,
     },
     prospect.ownerId,
   );

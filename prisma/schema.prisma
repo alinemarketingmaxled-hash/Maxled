@@ -415,6 +415,28 @@ model ClientActivationRequest {
   valor               Decimal @db.Decimal(12, 2)
   condicaoPagamento   String
 
+  // Restante dos campos de Contact (Vendas) — opcionais, coletados junto
+  // no "Cliente completo" pra não precisar editar o cliente de novo depois
+  // que a aprovação sair. Sem isso o Contact criado só tinha os campos do
+  // Sintegra acima.
+  personType          PersonType?
+  jobTitle             String?
+  department           String?
+  mobile               String?
+  residentialPhone     String?
+  assistantPhone       String?
+  birthday             DateTime?
+  leadSource           String?
+  supplierName         String?
+  commercialPotential  CommercialPotential?
+  nextContactAt        DateTime?
+  street               String?
+  number               String?
+  city                 String?
+  state                String?
+  postalCode           String?
+  notes                String?              @db.Text
+
   status          ActivationStatus @default(PENDENTE)
   reviewerId      String?
   reviewer        User?            @relation("ActivationReviewer", fields: [reviewerId], references: [id])

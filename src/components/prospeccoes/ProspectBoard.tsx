@@ -1098,6 +1098,15 @@ function NegociacaoCellModal({
   const [enderecoFaturamento, setEnderecoFaturamento] = useState("");
   const [sameAddress, setSameAddress] = useState(true);
   const [enderecoEntrega, setEnderecoEntrega] = useState("");
+  // The contact's own address fields (Contact.street/number/city/state/
+  // postalCode) — separate from enderecoFaturamento/enderecoEntrega above,
+  // which are the Sintegra billing/delivery addresses. Both the CNPJ and
+  // CEP lookups fill these in too.
+  const [street, setStreet] = useState("");
+  const [number, setNumber] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [postalCode, setPostalCode] = useState("");
 
   async function handleLookupCnpj() {
     setCnpjError(null);
@@ -1130,6 +1139,11 @@ function NegociacaoCellModal({
       setEnderecoFaturamento(composed);
       if (sameAddress) setEnderecoEntrega(composed);
     }
+    if (result.street) setStreet(result.street);
+    if (result.number) setNumber(result.number);
+    if (result.city) setCity(result.city);
+    if (result.state) setState(result.state);
+    if (result.postalCode) setPostalCode(result.postalCode);
   }
 
   async function handleLookupCep() {
@@ -1156,6 +1170,10 @@ function NegociacaoCellModal({
     }
     setEnderecoFaturamento(outcome.result.formattedAddress);
     if (sameAddress) setEnderecoEntrega(outcome.result.formattedAddress);
+    if (outcome.result.street) setStreet(outcome.result.street);
+    setCity(outcome.result.city ?? "");
+    setState(outcome.result.state ?? "");
+    setPostalCode(outcome.result.postalCode);
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -1361,6 +1379,100 @@ function NegociacaoCellModal({
                 <input name="condicaoPagamento" required placeholder="Ex.: 30/60/90 dias" className={inputClass} />
               </label>
             </div>
+
+            <h5 className="mt-1 text-[10.5px] font-semibold uppercase tracking-wide text-gold">
+              Endereço do contato
+            </h5>
+            <div className="grid grid-cols-2 gap-2.5">
+              <label className="col-span-2 flex flex-col gap-1 text-xs">
+                <span className="text-ink-faint">Rua</span>
+                <input name="street" value={street} onChange={(e) => setStreet(e.target.value)} className={inputClass} />
+              </label>
+              <label className="flex flex-col gap-1 text-xs">
+                <span className="text-ink-faint">Número</span>
+                <input name="number" value={number} onChange={(e) => setNumber(e.target.value)} className={inputClass} />
+              </label>
+              <label className="flex flex-col gap-1 text-xs">
+                <span className="text-ink-faint">Cidade</span>
+                <input name="city" value={city} onChange={(e) => setCity(e.target.value)} className={inputClass} />
+              </label>
+              <label className="flex flex-col gap-1 text-xs">
+                <span className="text-ink-faint">Estado</span>
+                <input name="state" value={state} onChange={(e) => setState(e.target.value)} className={inputClass} />
+              </label>
+              <label className="flex flex-col gap-1 text-xs">
+                <span className="text-ink-faint">CEP</span>
+                <input
+                  name="postalCode"
+                  value={postalCode}
+                  onChange={(e) => setPostalCode(e.target.value)}
+                  className={inputClass}
+                />
+              </label>
+            </div>
+
+            <h5 className="mt-1 text-[10.5px] font-semibold uppercase tracking-wide text-gold">
+              Mais informações do cliente (opcional)
+            </h5>
+            <div className="grid grid-cols-2 gap-2.5">
+              <label className="flex flex-col gap-1 text-xs">
+                <span className="text-ink-faint">Tipo de pessoa</span>
+                <select name="personType" defaultValue="" className={inputClass}>
+                  <option value="">—</option>
+                  <option value="FISICA">Física</option>
+                  <option value="JURIDICA">Jurídica</option>
+                </select>
+              </label>
+              <label className="flex flex-col gap-1 text-xs">
+                <span className="text-ink-faint">Potencial comercial</span>
+                <select name="commercialPotential" defaultValue="" className={inputClass}>
+                  <option value="">—</option>
+                  <option value="ALTO">Alto</option>
+                  <option value="MEDIO">Médio</option>
+                  <option value="BAIXO">Baixo</option>
+                </select>
+              </label>
+              <label className="flex flex-col gap-1 text-xs">
+                <span className="text-ink-faint">Cargo</span>
+                <input name="jobTitle" className={inputClass} />
+              </label>
+              <label className="flex flex-col gap-1 text-xs">
+                <span className="text-ink-faint">Departamento</span>
+                <input name="department" className={inputClass} />
+              </label>
+              <label className="flex flex-col gap-1 text-xs">
+                <span className="text-ink-faint">Celular / WhatsApp</span>
+                <input name="mobile" className={inputClass} />
+              </label>
+              <label className="flex flex-col gap-1 text-xs">
+                <span className="text-ink-faint">Telefone residencial</span>
+                <input name="residentialPhone" className={inputClass} />
+              </label>
+              <label className="flex flex-col gap-1 text-xs">
+                <span className="text-ink-faint">Telefone do assistente</span>
+                <input name="assistantPhone" className={inputClass} />
+              </label>
+              <label className="flex flex-col gap-1 text-xs">
+                <span className="text-ink-faint">Data de aniversário</span>
+                <input name="birthday" type="date" className={inputClass} />
+              </label>
+              <label className="flex flex-col gap-1 text-xs">
+                <span className="text-ink-faint">Fonte do cliente potencial</span>
+                <input name="leadSource" className={inputClass} />
+              </label>
+              <label className="flex flex-col gap-1 text-xs">
+                <span className="text-ink-faint">Nome fornecedor</span>
+                <input name="supplierName" className={inputClass} />
+              </label>
+              <label className="col-span-2 flex flex-col gap-1 text-xs">
+                <span className="text-ink-faint">Próximo contato</span>
+                <input name="nextContactAt" type="date" className={inputClass} />
+              </label>
+            </div>
+            <label className="flex flex-col gap-1 text-xs">
+              <span className="text-ink-faint">Observações do cliente</span>
+              <textarea name="notes" rows={2} className={inputClass} />
+            </label>
           </div>
         )}
 
