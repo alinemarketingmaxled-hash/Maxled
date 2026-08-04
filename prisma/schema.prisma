@@ -435,6 +435,8 @@ model ClientActivationRequest {
   city                 String?
   state                String?
   postalCode           String?
+  latitude             Float?
+  longitude            Float?
   notes                String?              @db.Text
 
   status          ActivationStatus @default(PENDENTE)

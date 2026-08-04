@@ -178,6 +178,12 @@ function readActivationInput(
     const v = str(key);
     return v ? new Date(v) : null;
   };
+  const numVal = (key: string) => {
+    const v = str(key);
+    if (!v) return null;
+    const n = Number(v);
+    return Number.isNaN(n) ? null : n;
+  };
   const personType = str("personType") as PersonType | null;
   const commercialPotential = str("commercialPotential") as CommercialPotential | null;
 
@@ -209,6 +215,8 @@ function readActivationInput(
       city: str("city"),
       state: str("state"),
       postalCode: str("postalCode"),
+      latitude: numVal("latitude"),
+      longitude: numVal("longitude"),
       notes: str("notes"),
     },
   };
