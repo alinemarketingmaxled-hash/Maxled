@@ -19,7 +19,7 @@ import {
 } from "@/lib/prospects";
 import { createTask } from "@/lib/tasks";
 import { lookupCep, type CepLookupOutcome } from "@/lib/cep-lookup";
-import type { ProspectTemperature } from "@/generated/prisma/client";
+import type { ProspectTemperature, PersonType, CommercialPotential } from "@/generated/prisma/client";
 
 async function requireEdit() {
   const session = await auth();
@@ -172,6 +172,15 @@ function readActivationInput(
     return { ok: false, error: "Preencha todos os dados do cliente (mesmos campos do Sintegra) e um valor válido." };
   }
 
+  // Restante dos campos de Contact (Vendas) — todos opcionais.
+  const str = (key: string) => (formData.get(key) as string)?.trim() || null;
+  const dateVal = (key: string) => {
+    const v = str(key);
+    return v ? new Date(v) : null;
+  };
+  const personType = str("personType") as PersonType | null;
+  const commercialPotential = str("commercialPotential") as CommercialPotential | null;
+
   return {
     ok: true,
     data: {
@@ -184,6 +193,23 @@ function readActivationInput(
       enderecoEntrega,
       valor,
       condicaoPagamento,
+      personType,
+      jobTitle: str("jobTitle"),
+      department: str("department"),
+      mobile: str("mobile"),
+      residentialPhone: str("residentialPhone"),
+      assistantPhone: str("assistantPhone"),
+      birthday: dateVal("birthday"),
+      leadSource: str("leadSource"),
+      supplierName: str("supplierName"),
+      commercialPotential,
+      nextContactAt: dateVal("nextContactAt"),
+      street: str("street"),
+      number: str("number"),
+      city: str("city"),
+      state: str("state"),
+      postalCode: str("postalCode"),
+      notes: str("notes"),
     },
   };
 }
