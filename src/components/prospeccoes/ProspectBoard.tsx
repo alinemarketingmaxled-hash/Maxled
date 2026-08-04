@@ -15,7 +15,6 @@ import {
   renameProspectStageAction,
   deleteProspectStageAction,
   markActivationDecisionsSeenAction,
-  createFullClientAction,
   lookupCepAction,
 } from "@/app/(app)/prospeccoes/actions";
 import { lookupCnpjAction } from "@/app/(app)/vendas/actions";
@@ -85,18 +84,31 @@ function daysSince(iso: string) {
 }
 
 /** Columns unlock left-to-right: a stage is available once the previous
- * one (by order) has been marked done for that prospect. "Cliente Ativo" is
- * exempt — it stays a visible button on every prospect, since a deal can
- * close out of order and shouldn't be hidden behind the sequence. Custom
- * columns (added beyond the 6 fixed ones) are supplementary tracking a
- * seller sets up for themselves, so they're always open too. */
+ * one (by order) has been marked done for that prospect. "Cliente Ativo"
+ * follows the same rule now — it only opens once the stage right before it
+ * (normally Negociação) is done, unless a request was already submitted
+ * from before this rule existed, in which case it stays visible so its
+ * status doesn't disappear behind a lock. Custom columns (added beyond the
+ * 6 fixed ones) are supplementary tracking a seller sets up for
+ * themselves, so they're always open. */
 function isStageUnlocked(prospect: ProspectRow, stage: ProspectStageDef, stages: ProspectStageDef[]) {
-  if (stage.isClientStage || stage.isCustom) return true;
+  if (stage.isCustom) return true;
+  if (stage.isClientStage && prospect.activation) return true;
   const idx = stages.findIndex((s) => s.id === stage.id);
   if (idx <= 0) return true;
   const prevStage = stages[idx - 1];
   const prevValue = prospect.stageValues.find((v) => v.stageId === prevStage.id);
   return prevValue?.done ?? false;
+}
+
+/** The stage right before "Cliente Ativo" (normally Negociação) — its cell
+ * gets the extra "Cliente completo" flow (optional Sintegra-style data)
+ * since finishing it is what unlocks Cliente Ativo. Found positionally
+ * instead of hardcoding a stage id/name so it still works if the fixed
+ * stages are ever reordered or renamed. */
+function findPreClientStageId(stages: ProspectStageDef[]): string | null {
+  const idx = stages.findIndex((s) => s.isClientStage);
+  return idx > 0 ? stages[idx - 1].id : null;
 }
 
 /** Groups consecutive stages sharing the same category into header spans —
@@ -136,7 +148,6 @@ export function ProspectBoard({
 }) {
   const router = useRouter();
   const [showNew, setShowNew] = useState(false);
-  const [showFullClient, setShowFullClient] = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
   const [showQueue, setShowQueue] = useState(false);
   const [cell, setCell] = useState<{ prospect: ProspectRow; stage: ProspectStageDef } | null>(null);
@@ -159,6 +170,7 @@ export function ProspectBoard({
   }, []);
 
   const categoryGroups = useMemo(() => buildCategoryGroups(stages), [stages]);
+  const preClientStageId = useMemo(() => findPreClientStageId(stages), [stages]);
   const filterableStages = stages.filter((s) => !s.isClientStage);
   const visibleProspects = missingStageFilter
     ? prospects.filter((p) => !p.stageValues.find((v) => v.stageId === missingStageFilter)?.done)
@@ -239,12 +251,6 @@ export function ProspectBoard({
             className="rounded-lg border border-gold-deep px-3.5 py-1.5 text-xs font-semibold text-ink hover:border-gold"
           >
             + Agendar
-          </button>
-          <button
-            onClick={() => setShowFullClient(true)}
-            className="rounded-lg border border-gold-deep px-3.5 py-1.5 text-xs font-semibold text-ink hover:border-gold"
-          >
-            + Cliente completo
           </button>
           <button
             onClick={() => setShowNew(true)}
@@ -419,6 +425,10 @@ export function ProspectBoard({
                               </div>
                               <div className="truncate text-ink-faint">Obs.: {value.note || "—"}</div>
                             </div>
+                          ) : s.id === preClientStageId ? (
+                            <div className="text-[11.5px] font-semibold leading-snug text-gold-bright">
+                              + Cliente completo
+                            </div>
                           ) : (
                             <div className="text-[11.5px] leading-snug text-ink-faint">
                               <div>Data</div>
@@ -456,16 +466,6 @@ export function ProspectBoard({
         />
       )}
 
-      {showFullClient && (
-        <NewFullClientModal
-          onClose={() => setShowFullClient(false)}
-          onSaved={async () => {
-            setShowFullClient(false);
-            await refresh();
-          }}
-        />
-      )}
-
       {showSchedule && (
         <ScheduleTaskModal
           prospects={prospects}
@@ -494,7 +494,23 @@ export function ProspectBoard({
         />
       )}
 
-      {cell && (
+      {cell && cell.stage.id === preClientStageId && (
+        <NegociacaoCellModal
+          prospect={cell.prospect}
+          stage={cell.stage}
+          onClose={() => setCell(null)}
+          onSaved={async () => {
+            setCell(null);
+            await refresh();
+          }}
+          onCancelled={async () => {
+            setCell(null);
+            await refresh();
+          }}
+        />
+      )}
+
+      {cell && cell.stage.id !== preClientStageId && (
         <StageCellModal
           prospect={cell.prospect}
           stage={cell.stage}
@@ -690,294 +706,6 @@ function NewProspectModal({ onClose, onSaved }: { onClose: () => void; onSaved: 
             className="rounded-lg bg-gold-solid px-3.5 py-1.5 text-xs font-semibold text-black hover:bg-gold-solid-bright disabled:opacity-60"
           >
             {saving ? "Salvando…" : "Salvar"}
-          </button>
-        </div>
-      </form>
-    </ModalShell>
-  );
-}
-
-/** "+ Cliente completo" — every field to create a client from scratch
- * (contact info + the Sintegra-style activation data) in one form. Saving
- * skips the stage-by-stage board entirely and sends the request straight to
- * the Diretor/Mediador's approval queue (createFullClientAction). CNPJ and
- * CEP each have a lookup button that auto-fills what they can. */
-function NewFullClientModal({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const [razaoSocial, setRazaoSocial] = useState("");
-  const [razaoSocialTouched, setRazaoSocialTouched] = useState(false);
-
-  const [cnpj, setCnpj] = useState("");
-  const [cnpjError, setCnpjError] = useState<string | null>(null);
-  const [lookingUpCnpj, setLookingUpCnpj] = useState(false);
-
-  const [cep, setCep] = useState("");
-  const [cepError, setCepError] = useState<string | null>(null);
-  const [lookingUpCep, setLookingUpCep] = useState(false);
-
-  const [enderecoFaturamento, setEnderecoFaturamento] = useState("");
-  const [sameAddress, setSameAddress] = useState(true);
-  const [enderecoEntrega, setEnderecoEntrega] = useState("");
-
-  async function handleLookupCnpj() {
-    setCnpjError(null);
-    setLookingUpCnpj(true);
-    let outcome;
-    try {
-      outcome = await lookupCnpjAction(cnpj);
-    } catch {
-      setCnpjError("Não foi possível consultar o CNPJ agora. Tente de novo em instantes ou preencha manualmente.");
-      setLookingUpCnpj(false);
-      return;
-    }
-    setLookingUpCnpj(false);
-    if (!outcome.ok) {
-      setCnpjError(
-        outcome.reason === "invalid"
-          ? "CNPJ incompleto — digite os 14 números do CNPJ."
-          : outcome.reason === "not_found"
-            ? "CNPJ não encontrado na Receita Federal. Confira o número ou preencha manualmente."
-            : "Não foi possível consultar o CNPJ agora (falha de conexão). Tente de novo em instantes ou preencha manualmente.",
-      );
-      return;
-    }
-    const { result } = outcome;
-    if (result.accountName && !razaoSocialTouched) setRazaoSocial(result.accountName);
-    const composed = [result.street, result.number, result.city, result.state, result.postalCode]
-      .filter(Boolean)
-      .join(", ");
-    if (composed) {
-      setEnderecoFaturamento(composed);
-      if (sameAddress) setEnderecoEntrega(composed);
-    }
-  }
-
-  async function handleLookupCep() {
-    setCepError(null);
-    setLookingUpCep(true);
-    let outcome;
-    try {
-      outcome = await lookupCepAction(cep);
-    } catch {
-      setCepError("Não foi possível consultar o CEP agora. Tente de novo em instantes ou preencha manualmente.");
-      setLookingUpCep(false);
-      return;
-    }
-    setLookingUpCep(false);
-    if (!outcome.ok) {
-      setCepError(
-        outcome.reason === "invalid"
-          ? "CEP incompleto — digite os 8 números do CEP."
-          : outcome.reason === "not_found"
-            ? "CEP não encontrado. Confira o número ou preencha manualmente."
-            : "Não foi possível consultar o CEP agora (falha de conexão). Tente de novo em instantes ou preencha manualmente.",
-      );
-      return;
-    }
-    setEnderecoFaturamento(outcome.result.formattedAddress);
-    if (sameAddress) setEnderecoEntrega(outcome.result.formattedAddress);
-  }
-
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setSaving(true);
-    setError(null);
-    const fd = new FormData(e.currentTarget);
-    fd.set("enderecoEntrega", sameAddress ? enderecoFaturamento : enderecoEntrega);
-    const r = await createFullClientAction(fd);
-    if (r.error) {
-      setError(r.error);
-      setSaving(false);
-      return;
-    }
-    onSaved();
-  }
-
-  return (
-    <ModalShell title="Cliente completo" onClose={onClose}>
-      <p className="mb-2.5 text-[11px] text-ink-faint">
-        Preencha tudo de uma vez — dados do contato e os dados de aprovação (mesmos do Sintegra). Ao salvar, já vai
-        direto pra fila de aprovação do Diretor, sem passar pelas etapas do quadro.
-      </p>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">
-        {error && <p className="rounded-md bg-critical/10 px-2.5 py-1.5 text-xs text-critical">{error}</p>}
-
-        <h4 className="text-[11px] font-semibold uppercase tracking-wide text-gold">Contato</h4>
-        <label className="flex flex-col gap-1 text-xs">
-          <span className="text-ink-faint">Nome do contato</span>
-          <input name="name" required className={inputClass} />
-        </label>
-        <label className="flex flex-col gap-1 text-xs">
-          <span className="text-ink-faint">Cliente / empresa</span>
-          <input
-            name="clientName"
-            required
-            onChange={(e) => {
-              if (!razaoSocialTouched) setRazaoSocial(e.target.value);
-            }}
-            className={inputClass}
-          />
-        </label>
-        <div className="grid grid-cols-2 gap-2.5">
-          <label className="flex flex-col gap-1 text-xs">
-            <span className="text-ink-faint">Número</span>
-            <input name="phone" className={inputClass} />
-          </label>
-          <label className="flex flex-col gap-1 text-xs">
-            <span className="text-ink-faint">E-mail</span>
-            <input name="email" type="email" className={inputClass} />
-          </label>
-        </div>
-        <label className="flex flex-col gap-1 text-xs">
-          <span className="text-ink-faint">Perfil</span>
-          <input name="profile" list="profile-presets-full" required className={inputClass} />
-          <datalist id="profile-presets-full">
-            {PROFILE_PRESETS.map((p) => (
-              <option key={p} value={p} />
-            ))}
-          </datalist>
-        </label>
-        <label className="flex flex-col gap-1 text-xs">
-          <span className="text-ink-faint">Observação</span>
-          <textarea name="notes" rows={2} className={inputClass} />
-        </label>
-
-        <h4 className="mt-1 text-[11px] font-semibold uppercase tracking-wide text-gold">
-          Dados para aprovação (Sintegra)
-        </h4>
-        <label className="flex flex-col gap-1 text-xs">
-          <span className="text-ink-faint">Razão social</span>
-          <input
-            name="razaoSocial"
-            required
-            value={razaoSocial}
-            onChange={(e) => {
-              setRazaoSocial(e.target.value);
-              setRazaoSocialTouched(true);
-            }}
-            className={inputClass}
-          />
-        </label>
-        <div className="flex items-end gap-2">
-          <div className="flex-1">
-            <label className="flex flex-col gap-1 text-xs">
-              <span className="text-ink-faint">CNPJ</span>
-              <input
-                name="cnpj"
-                required
-                value={cnpj}
-                onChange={(e) => setCnpj(e.target.value)}
-                className={inputClass}
-              />
-            </label>
-          </div>
-          <button
-            type="button"
-            onClick={handleLookupCnpj}
-            disabled={!cnpj.replace(/\D/g, "") || lookingUpCnpj}
-            className="mb-[1px] shrink-0 rounded-md border border-gold-deep px-3 py-2 text-xs font-semibold text-ink transition-colors hover:border-gold disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {lookingUpCnpj ? "Buscando…" : "Buscar CNPJ"}
-          </button>
-        </div>
-        {cnpjError && <p className="-mt-1 text-[11px] text-critical">{cnpjError}</p>}
-        <div className="grid grid-cols-2 gap-2.5">
-          <label className="flex flex-col gap-1 text-xs">
-            <span className="text-ink-faint">E-mail financeiro</span>
-            <input name="emailFinanceiro" type="email" required className={inputClass} />
-          </label>
-          <label className="flex flex-col gap-1 text-xs">
-            <span className="text-ink-faint">E-mail NF-e</span>
-            <input name="emailNfe" type="email" required className={inputClass} />
-          </label>
-        </div>
-        <label className="flex flex-col gap-1 text-xs">
-          <span className="text-ink-faint">Inscrição estadual</span>
-          <input name="inscricaoEstadual" required className={inputClass} />
-        </label>
-        <div className="flex items-end gap-2">
-          <div className="flex-1">
-            <label className="flex flex-col gap-1 text-xs">
-              <span className="text-ink-faint">CEP</span>
-              <input
-                value={cep}
-                onChange={(e) => setCep(e.target.value)}
-                placeholder="Ex.: 01310-100"
-                className={inputClass}
-              />
-            </label>
-          </div>
-          <button
-            type="button"
-            onClick={handleLookupCep}
-            disabled={!cep.replace(/\D/g, "") || lookingUpCep}
-            className="mb-[1px] shrink-0 rounded-md border border-gold-deep px-3 py-2 text-xs font-semibold text-ink transition-colors hover:border-gold disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {lookingUpCep ? "Buscando…" : "Buscar CEP"}
-          </button>
-        </div>
-        {cepError && <p className="-mt-1 text-[11px] text-critical">{cepError}</p>}
-        <label className="flex flex-col gap-1 text-xs">
-          <span className="text-ink-faint">Endereço de faturamento</span>
-          <textarea
-            name="enderecoFaturamento"
-            rows={2}
-            required
-            value={enderecoFaturamento}
-            onChange={(e) => {
-              setEnderecoFaturamento(e.target.value);
-              if (sameAddress) setEnderecoEntrega(e.target.value);
-            }}
-            placeholder="Preenchido automaticamente ao buscar o CEP ou o CNPJ — complete com número/complemento"
-            className={inputClass}
-          />
-        </label>
-        <label className="flex items-center gap-2 text-xs text-ink-muted">
-          <input
-            type="checkbox"
-            checked={sameAddress}
-            onChange={(e) => {
-              setSameAddress(e.target.checked);
-              if (e.target.checked) setEnderecoEntrega(enderecoFaturamento);
-            }}
-            className="h-3.5 w-3.5"
-          />
-          Endereço de entrega igual ao de faturamento
-        </label>
-        {!sameAddress && (
-          <label className="flex flex-col gap-1 text-xs">
-            <span className="text-ink-faint">Endereço de entrega</span>
-            <textarea
-              rows={2}
-              required
-              value={enderecoEntrega}
-              onChange={(e) => setEnderecoEntrega(e.target.value)}
-              className={inputClass}
-            />
-          </label>
-        )}
-        <div className="grid grid-cols-2 gap-2.5">
-          <label className="flex flex-col gap-1 text-xs">
-            <span className="text-ink-faint">Valor (R$)</span>
-            <input name="valor" type="number" step="0.01" min="0" required className={inputClass} />
-          </label>
-          <label className="flex flex-col gap-1 text-xs">
-            <span className="text-ink-faint">Condição de pagamento</span>
-            <input name="condicaoPagamento" required placeholder="Ex.: 30/60/90 dias" className={inputClass} />
-          </label>
-        </div>
-        <div className="mt-1 flex justify-end gap-2">
-          <button type="button" onClick={onClose} className="rounded-lg border border-gold-deep px-3.5 py-1.5 text-xs font-semibold text-ink">
-            Cancelar
-          </button>
-          <button
-            type="submit"
-            disabled={saving}
-            className="rounded-lg bg-gold-solid px-3.5 py-1.5 text-xs font-semibold text-black hover:bg-gold-solid-bright disabled:opacity-60"
-          >
-            {saving ? "Enviando…" : "Salvar e enviar para aprovação"}
           </button>
         </div>
       </form>
@@ -1325,6 +1053,336 @@ function StageCellModal({
               className="rounded-lg bg-gold-solid px-3.5 py-1.5 text-xs font-semibold text-black hover:bg-gold-solid-bright disabled:opacity-60"
             >
               {saving ? "Salvando…" : "Salvar"}
+            </button>
+          </div>
+        </div>
+      </form>
+    </ModalShell>
+  );
+}
+
+/** The stage right before "Cliente Ativo" (findPreClientStageId, normally
+ * Negociação) — same Data/Observação/Concluído fields as any other stage,
+ * plus an optional "Cliente completo" section (Sintegra-style data, with
+ * CNPJ/CEP lookups). Checking "Enviar para aprovação como cliente" also
+ * submits it via submitActivationAction using the same FormData, which is
+ * what actually unlocks "Cliente Ativo" for this prospect. */
+function NegociacaoCellModal({
+  prospect,
+  stage,
+  onClose,
+  onSaved,
+  onCancelled,
+}: {
+  prospect: ProspectRow;
+  stage: ProspectStageDef;
+  onClose: () => void;
+  onSaved: () => void;
+  onCancelled: () => void;
+}) {
+  const existing = prospect.stageValues.find((v) => v.stageId === stage.id);
+  const [saving, setSaving] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState(existing?.done ?? false);
+  const [submitClient, setSubmitClient] = useState(false);
+
+  const [razaoSocial, setRazaoSocial] = useState(prospect.clientName);
+  const [razaoSocialTouched, setRazaoSocialTouched] = useState(false);
+  const [cnpj, setCnpj] = useState("");
+  const [cnpjError, setCnpjError] = useState<string | null>(null);
+  const [lookingUpCnpj, setLookingUpCnpj] = useState(false);
+  const [cep, setCep] = useState("");
+  const [cepError, setCepError] = useState<string | null>(null);
+  const [lookingUpCep, setLookingUpCep] = useState(false);
+  const [enderecoFaturamento, setEnderecoFaturamento] = useState("");
+  const [sameAddress, setSameAddress] = useState(true);
+  const [enderecoEntrega, setEnderecoEntrega] = useState("");
+
+  async function handleLookupCnpj() {
+    setCnpjError(null);
+    setLookingUpCnpj(true);
+    let outcome;
+    try {
+      outcome = await lookupCnpjAction(cnpj);
+    } catch {
+      setCnpjError("Não foi possível consultar o CNPJ agora. Tente de novo em instantes ou preencha manualmente.");
+      setLookingUpCnpj(false);
+      return;
+    }
+    setLookingUpCnpj(false);
+    if (!outcome.ok) {
+      setCnpjError(
+        outcome.reason === "invalid"
+          ? "CNPJ incompleto — digite os 14 números do CNPJ."
+          : outcome.reason === "not_found"
+            ? "CNPJ não encontrado na Receita Federal. Confira o número ou preencha manualmente."
+            : "Não foi possível consultar o CNPJ agora (falha de conexão). Tente de novo em instantes ou preencha manualmente.",
+      );
+      return;
+    }
+    const { result } = outcome;
+    if (result.accountName && !razaoSocialTouched) setRazaoSocial(result.accountName);
+    const composed = [result.street, result.number, result.city, result.state, result.postalCode]
+      .filter(Boolean)
+      .join(", ");
+    if (composed) {
+      setEnderecoFaturamento(composed);
+      if (sameAddress) setEnderecoEntrega(composed);
+    }
+  }
+
+  async function handleLookupCep() {
+    setCepError(null);
+    setLookingUpCep(true);
+    let outcome;
+    try {
+      outcome = await lookupCepAction(cep);
+    } catch {
+      setCepError("Não foi possível consultar o CEP agora. Tente de novo em instantes ou preencha manualmente.");
+      setLookingUpCep(false);
+      return;
+    }
+    setLookingUpCep(false);
+    if (!outcome.ok) {
+      setCepError(
+        outcome.reason === "invalid"
+          ? "CEP incompleto — digite os 8 números do CEP."
+          : outcome.reason === "not_found"
+            ? "CEP não encontrado. Confira o número ou preencha manualmente."
+            : "Não foi possível consultar o CEP agora (falha de conexão). Tente de novo em instantes ou preencha manualmente.",
+      );
+      return;
+    }
+    setEnderecoFaturamento(outcome.result.formattedAddress);
+    if (sameAddress) setEnderecoEntrega(outcome.result.formattedAddress);
+  }
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setSaving(true);
+    setError(null);
+    const fd = new FormData(e.currentTarget);
+    if (submitClient) fd.set("done", "on");
+    const stageResult = await saveStageValueAction(prospect.id, stage.id, fd);
+    if (stageResult.error) {
+      setError(stageResult.error);
+      setSaving(false);
+      return;
+    }
+    if (submitClient) {
+      fd.set("enderecoEntrega", sameAddress ? enderecoFaturamento : enderecoEntrega);
+      const activationResult = await submitActivationAction(prospect.id, fd);
+      if (activationResult.error) {
+        setError(activationResult.error);
+        setSaving(false);
+        return;
+      }
+    }
+    onSaved();
+  }
+
+  async function handleCancelProspect() {
+    if (!confirm(`Cancelar a prospecção de "${prospect.clientName}"?`)) return;
+    setCancelling(true);
+    const r = await deleteProspectAction(prospect.id);
+    if (r.error) {
+      setError(r.error);
+      setCancelling(false);
+      return;
+    }
+    onCancelled();
+  }
+
+  return (
+    <ModalShell title={`${stage.name} — ${prospect.clientName}`} onClose={onClose}>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">
+        {error && <p className="rounded-md bg-critical/10 px-2.5 py-1.5 text-xs text-critical">{error}</p>}
+        <label className="flex flex-col gap-1 text-xs">
+          <span className="text-ink-faint">Data</span>
+          <input name="date" type="date" defaultValue={existing?.date?.slice(0, 10) ?? ""} className={inputClass} />
+        </label>
+        <label className="flex flex-col gap-1 text-xs">
+          <span className="text-ink-faint">Observação</span>
+          <textarea name="note" rows={3} defaultValue={existing?.note ?? ""} className={inputClass} />
+        </label>
+        <label className="flex items-center gap-2 text-xs text-ink-muted">
+          <input
+            name="done"
+            type="checkbox"
+            checked={done}
+            onChange={(e) => setDone(e.target.checked)}
+            disabled={submitClient}
+            className="h-3.5 w-3.5"
+          />
+          Concluído
+        </label>
+
+        {prospect.activation ? (
+          <p className="rounded-md border border-gold-deep/25 bg-surface-2/50 p-2.5 text-[11px] text-ink-faint">
+            Já enviado para aprovação — veja o status na coluna Cliente Ativo.
+          </p>
+        ) : (
+          <label className="flex items-center gap-2 text-xs text-ink-muted">
+            <input
+              type="checkbox"
+              checked={submitClient}
+              onChange={(e) => {
+                setSubmitClient(e.target.checked);
+                if (e.target.checked) setDone(true);
+              }}
+              className="h-3.5 w-3.5"
+            />
+            Enviar para aprovação como cliente (Cliente completo)
+          </label>
+        )}
+
+        {submitClient && (
+          <div className="flex flex-col gap-2.5 rounded-md border border-gold-deep/25 bg-surface-2/50 p-2.5">
+            <p className="text-[11px] text-ink-faint">Mesmos dados do Sintegra — vai direto pro Diretor aprovar.</p>
+            <label className="flex flex-col gap-1 text-xs">
+              <span className="text-ink-faint">Razão social</span>
+              <input
+                name="razaoSocial"
+                required
+                value={razaoSocial}
+                onChange={(e) => {
+                  setRazaoSocial(e.target.value);
+                  setRazaoSocialTouched(true);
+                }}
+                className={inputClass}
+              />
+            </label>
+            <div className="flex items-end gap-2">
+              <div className="flex-1">
+                <label className="flex flex-col gap-1 text-xs">
+                  <span className="text-ink-faint">CNPJ</span>
+                  <input
+                    name="cnpj"
+                    required
+                    value={cnpj}
+                    onChange={(e) => setCnpj(e.target.value)}
+                    className={inputClass}
+                  />
+                </label>
+              </div>
+              <button
+                type="button"
+                onClick={handleLookupCnpj}
+                disabled={!cnpj.replace(/\D/g, "") || lookingUpCnpj}
+                className="mb-[1px] shrink-0 rounded-md border border-gold-deep px-3 py-2 text-xs font-semibold text-ink transition-colors hover:border-gold disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {lookingUpCnpj ? "Buscando…" : "Buscar CNPJ"}
+              </button>
+            </div>
+            {cnpjError && <p className="-mt-1 text-[11px] text-critical">{cnpjError}</p>}
+            <div className="grid grid-cols-2 gap-2.5">
+              <label className="flex flex-col gap-1 text-xs">
+                <span className="text-ink-faint">E-mail financeiro</span>
+                <input name="emailFinanceiro" type="email" required className={inputClass} />
+              </label>
+              <label className="flex flex-col gap-1 text-xs">
+                <span className="text-ink-faint">E-mail NF-e</span>
+                <input name="emailNfe" type="email" required className={inputClass} />
+              </label>
+            </div>
+            <label className="flex flex-col gap-1 text-xs">
+              <span className="text-ink-faint">Inscrição estadual</span>
+              <input name="inscricaoEstadual" required className={inputClass} />
+            </label>
+            <div className="flex items-end gap-2">
+              <div className="flex-1">
+                <label className="flex flex-col gap-1 text-xs">
+                  <span className="text-ink-faint">CEP</span>
+                  <input
+                    value={cep}
+                    onChange={(e) => setCep(e.target.value)}
+                    placeholder="Ex.: 01310-100"
+                    className={inputClass}
+                  />
+                </label>
+              </div>
+              <button
+                type="button"
+                onClick={handleLookupCep}
+                disabled={!cep.replace(/\D/g, "") || lookingUpCep}
+                className="mb-[1px] shrink-0 rounded-md border border-gold-deep px-3 py-2 text-xs font-semibold text-ink transition-colors hover:border-gold disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {lookingUpCep ? "Buscando…" : "Buscar CEP"}
+              </button>
+            </div>
+            {cepError && <p className="-mt-1 text-[11px] text-critical">{cepError}</p>}
+            <label className="flex flex-col gap-1 text-xs">
+              <span className="text-ink-faint">Endereço de faturamento</span>
+              <textarea
+                name="enderecoFaturamento"
+                rows={2}
+                required
+                value={enderecoFaturamento}
+                onChange={(e) => {
+                  setEnderecoFaturamento(e.target.value);
+                  if (sameAddress) setEnderecoEntrega(e.target.value);
+                }}
+                placeholder="Preenchido automaticamente ao buscar o CEP ou o CNPJ — complete com número/complemento"
+                className={inputClass}
+              />
+            </label>
+            <label className="flex items-center gap-2 text-xs text-ink-muted">
+              <input
+                type="checkbox"
+                checked={sameAddress}
+                onChange={(e) => {
+                  setSameAddress(e.target.checked);
+                  if (e.target.checked) setEnderecoEntrega(enderecoFaturamento);
+                }}
+                className="h-3.5 w-3.5"
+              />
+              Endereço de entrega igual ao de faturamento
+            </label>
+            {!sameAddress && (
+              <label className="flex flex-col gap-1 text-xs">
+                <span className="text-ink-faint">Endereço de entrega</span>
+                <textarea
+                  rows={2}
+                  required
+                  value={enderecoEntrega}
+                  onChange={(e) => setEnderecoEntrega(e.target.value)}
+                  className={inputClass}
+                />
+              </label>
+            )}
+            <div className="grid grid-cols-2 gap-2.5">
+              <label className="flex flex-col gap-1 text-xs">
+                <span className="text-ink-faint">Valor (R$)</span>
+                <input name="valor" type="number" step="0.01" min="0" required className={inputClass} />
+              </label>
+              <label className="flex flex-col gap-1 text-xs">
+                <span className="text-ink-faint">Condição de pagamento</span>
+                <input name="condicaoPagamento" required placeholder="Ex.: 30/60/90 dias" className={inputClass} />
+              </label>
+            </div>
+          </div>
+        )}
+
+        <div className="mt-1 flex items-center justify-between gap-2">
+          <button
+            type="button"
+            onClick={handleCancelProspect}
+            disabled={cancelling}
+            className="rounded-lg border border-critical/50 px-3.5 py-1.5 text-xs font-semibold text-critical hover:border-critical disabled:opacity-60"
+          >
+            {cancelling ? "Cancelando…" : "Cancelar prospecção"}
+          </button>
+          <div className="flex gap-2">
+            <button type="button" onClick={onClose} className="rounded-lg border border-gold-deep px-3.5 py-1.5 text-xs font-semibold text-ink">
+              Fechar
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="rounded-lg bg-gold-solid px-3.5 py-1.5 text-xs font-semibold text-black hover:bg-gold-solid-bright disabled:opacity-60"
+            >
+              {saving ? "Salvando…" : submitClient ? "Salvar e enviar para aprovação" : "Salvar"}
             </button>
           </div>
         </div>

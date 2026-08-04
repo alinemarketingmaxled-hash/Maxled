@@ -207,21 +207,6 @@ export async function submitActivationRequest(session: Session, prospectId: stri
   return request;
 }
 
-/** Backs the "+ Cliente completo" button — fills in every field (contact
- * info + the Sintegra-style activation data) in one shot and sends it
- * straight to the Diretor/Mediador's approval queue, skipping the
- * stage-by-stage board entirely. Reuses createProspect +
- * submitActivationRequest as-is, so it stays consistent with a prospect
- * that reached "Cliente Ativo" the normal way. */
-export async function createProspectWithActivation(
-  session: Session,
-  prospectData: ProspectInput,
-  activationData: ActivationInput,
-) {
-  const prospect = await createProspect(session, prospectData);
-  return submitActivationRequest(session, prospect.id, activationData);
-}
-
 /** Queue of activation requests awaiting a decision — visible to whoever
  * can approve clients (Diretor/MANAGER, plus Mediador as always). */
 export async function listPendingActivationRequests(session: Session) {
@@ -253,22 +238,26 @@ export async function approveActivation(session: Session, requestId: string) {
   const prospect = request.prospect;
   const [firstName, ...rest] = prospect.name.trim().split(/\s+/);
 
-  const contact = await createContact(session, {
-    ownerId: prospect.ownerId,
-    firstName: firstName || prospect.name,
-    lastName: rest.join(" ") || "-",
-    accountName: request.razaoSocial,
-    cnpj: request.cnpj,
-    email: prospect.email,
-    phone: prospect.phone,
-    street: request.enderecoFaturamento,
-    inscricaoEstadual: request.inscricaoEstadual,
-    emailFinanceiro: request.emailFinanceiro,
-    emailNfe: request.emailNfe,
-    enderecoEntrega: request.enderecoEntrega,
-    crmStatus: "ATIVO",
-    profile: prospect.profile,
-  });
+  const contact = await createContact(
+    session,
+    {
+      ownerId: prospect.ownerId,
+      firstName: firstName || prospect.name,
+      lastName: rest.join(" ") || "-",
+      accountName: request.razaoSocial,
+      cnpj: request.cnpj,
+      email: prospect.email,
+      phone: prospect.phone,
+      street: request.enderecoFaturamento,
+      inscricaoEstadual: request.inscricaoEstadual,
+      emailFinanceiro: request.emailFinanceiro,
+      emailNfe: request.emailNfe,
+      enderecoEntrega: request.enderecoEntrega,
+      crmStatus: "ATIVO",
+      profile: prospect.profile,
+    },
+    prospect.ownerId,
+  );
 
   const firstStage = await prisma.pipelineStage.findFirst({
     where: { pipeline: { isDefault: true } },
@@ -308,8 +297,11 @@ export async function approveActivation(session: Session, requestId: string) {
     data: { convertedContactId: contact.id, convertedAt: new Date() },
   });
 
+  // actorId is the seller (prospect.ownerId), not session.user.id — the
+  // Diretor/Mediador just approved it, the seller is who actually put the
+  // client together, and that's who the activity feed should credit.
   await logActivity({
-    actorId: session.user.id,
+    actorId: prospect.ownerId,
     entityType: "Deal",
     entityId: deal.id,
     action: "created",
