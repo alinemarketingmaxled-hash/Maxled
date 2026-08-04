@@ -190,6 +190,8 @@ export type ActivationInput = {
   city?: string | null;
   state?: string | null;
   postalCode?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   notes?: string | null;
 };
 
@@ -293,6 +295,8 @@ export async function approveActivation(session: Session, requestId: string) {
       city: request.city,
       state: request.state,
       postalCode: request.postalCode,
+      latitude: request.latitude,
+      longitude: request.longitude,
       notes: request.notes,
     },
     prospect.ownerId,

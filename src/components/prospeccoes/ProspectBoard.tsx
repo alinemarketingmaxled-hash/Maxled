@@ -1409,6 +1409,16 @@ function NegociacaoCellModal({
                   className={inputClass}
                 />
               </label>
+              <div className="col-span-2 grid grid-cols-2 gap-2.5">
+                <label className="flex flex-col gap-1 text-xs">
+                  <span className="text-ink-faint">Latitude</span>
+                  <input name="latitude" type="number" step="any" className={inputClass} />
+                </label>
+                <label className="flex flex-col gap-1 text-xs">
+                  <span className="text-ink-faint">Longitude</span>
+                  <input name="longitude" type="number" step="any" className={inputClass} />
+                </label>
+              </div>
             </div>
 
             <h5 className="mt-1 text-[10.5px] font-semibold uppercase tracking-wide text-gold">
