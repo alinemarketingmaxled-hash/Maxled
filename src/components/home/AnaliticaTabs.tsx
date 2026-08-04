@@ -77,7 +77,7 @@ export function AnaliticaTabs({
   selectedRangeTo,
   prospects,
   prospectStages,
-  isMediator,
+  canApproveActivations,
   pendingActivations,
   prospectOwners,
   openDeals,
@@ -105,7 +105,7 @@ export function AnaliticaTabs({
   selectedRangeTo: string;
   prospects: ProspectRow[];
   prospectStages: ProspectStageDef[];
-  isMediator: boolean;
+  canApproveActivations: boolean;
   pendingActivations: PendingActivation[];
   prospectOwners: ProspectOwner[];
   openDeals: { id: string; label: string }[];
@@ -123,7 +123,7 @@ export function AnaliticaTabs({
           <ProspectBoard
             prospects={prospects}
             stages={prospectStages}
-            isMediator={isMediator}
+            canApproveActivations={canApproveActivations}
             pendingActivations={pendingActivations}
             owners={prospectOwners}
             openDeals={openDeals}

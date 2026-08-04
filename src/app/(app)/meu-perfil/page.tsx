@@ -8,7 +8,7 @@ import { AppearanceSettings } from "@/components/shell/AppearanceSettings";
 
 const ROLE_LABELS: Record<string, string> = {
   ADMIN: "Admin",
-  MANAGER: "Gerente",
+  MANAGER: "Diretor",
   SELLER: "Vendedor",
   SUPPORT: "Suporte",
   MEDIATOR: "Mediador",

@@ -117,3 +117,11 @@ export function seesOtherUsers(role: Role, mod: Module): boolean {
   const scope = getPermission(role, mod).scope;
   return scope === "team" || scope === "all";
 }
+
+/** Who decides a "tornar cliente ativo" request from Prospecções: the
+ * Diretor (MANAGER role, labeled "Diretor" in the UI) is the one meant to
+ * approve/recusar day to day; Mediador keeps its usual blanket access on
+ * top, same as every other module. */
+export function canApproveClients(role: Role): boolean {
+  return role === "MEDIATOR" || role === "MANAGER";
+}

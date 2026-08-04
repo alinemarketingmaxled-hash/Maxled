@@ -10,6 +10,7 @@ import {
   deleteProspect,
   upsertProspectStageValue,
   submitActivationRequest,
+  createProspectWithActivation,
   approveActivation,
   rejectActivation,
   addCustomProspectStage,
@@ -18,6 +19,7 @@ import {
   markActivationDecisionsSeen,
 } from "@/lib/prospects";
 import { createTask } from "@/lib/tasks";
+import { lookupCep, type CepLookupOutcome } from "@/lib/cep-lookup";
 import type { ProspectTemperature } from "@/generated/prisma/client";
 
 async function requireEdit() {
@@ -143,11 +145,9 @@ export async function saveStageValueAction(
   return { ok: true };
 }
 
-export async function submitActivationAction(
-  prospectId: string,
+function readActivationInput(
   formData: FormData,
-): Promise<{ error?: string; ok?: boolean }> {
-  const session = await requireEdit();
+): { ok: false; error: string } | { ok: true; data: Parameters<typeof submitActivationRequest>[2] } {
   const razaoSocial = (formData.get("razaoSocial") as string)?.trim();
   const cnpj = (formData.get("cnpj") as string)?.trim();
   const emailFinanceiro = (formData.get("emailFinanceiro") as string)?.trim();
@@ -170,11 +170,12 @@ export async function submitActivationAction(
     Number.isNaN(valor) ||
     valor <= 0
   ) {
-    return { error: "Preencha todos os dados do cliente (mesmos campos do Sintegra) e um valor válido." };
+    return { ok: false, error: "Preencha todos os dados do cliente (mesmos campos do Sintegra) e um valor válido." };
   }
 
-  try {
-    await submitActivationRequest(session, prospectId, {
+  return {
+    ok: true,
+    data: {
       razaoSocial,
       cnpj,
       emailFinanceiro,
@@ -184,7 +185,67 @@ export async function submitActivationAction(
       enderecoEntrega,
       valor,
       condicaoPagamento,
-    });
+    },
+  };
+}
+
+export async function submitActivationAction(
+  prospectId: string,
+  formData: FormData,
+): Promise<{ error?: string; ok?: boolean }> {
+  const session = await requireEdit();
+  const input = readActivationInput(formData);
+  if (!input.ok) return { error: input.error };
+
+  try {
+    await submitActivationRequest(session, prospectId, input.data);
+  } catch (e) {
+    return { error: errorMessage(e) };
+  }
+  revalidatePath("/");
+  return { ok: true };
+}
+
+export async function lookupCepAction(cep: string): Promise<CepLookupOutcome> {
+  await requireEdit();
+  return lookupCep(cep);
+}
+
+/** Backs the "+ Cliente completo" button on Prospecções — one form with
+ * every field (contact info + Sintegra-style activation data), submitted
+ * straight to the approval queue instead of going through the board. */
+export async function createFullClientAction(formData: FormData): Promise<{ error?: string; ok?: boolean }> {
+  const session = await requireEdit();
+  const name = (formData.get("name") as string)?.trim();
+  const clientName = (formData.get("clientName") as string)?.trim();
+  const phone = (formData.get("phone") as string)?.trim() || null;
+  const email = (formData.get("email") as string)?.trim() || null;
+  const profile = (formData.get("profile") as string)?.trim();
+  const notes = (formData.get("notes") as string)?.trim() || null;
+
+  if (!name || !clientName || !profile) {
+    return { error: "Preencha nome, cliente e perfil." };
+  }
+
+  const activationInput = readActivationInput(formData);
+  if (!activationInput.ok) return { error: activationInput.error };
+
+  try {
+    await createProspectWithActivation(
+      session,
+      {
+        ownerId: session.user.id,
+        name,
+        clientName,
+        phone,
+        email,
+        temperature: "QUENTE",
+        profile,
+        notes,
+        contactDate: new Date(),
+      },
+      activationInput.data,
+    );
   } catch (e) {
     return { error: errorMessage(e) };
   }

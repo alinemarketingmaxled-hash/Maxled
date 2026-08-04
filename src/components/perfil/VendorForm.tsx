@@ -23,7 +23,7 @@ export type SerializedVendor = Omit<
 const ROLES: { value: string; label: string }[] = [
   { value: "SELLER", label: "Vendedor" },
   { value: "SUPPORT", label: "Suporte" },
-  { value: "MANAGER", label: "Gerente" },
+  { value: "MANAGER", label: "Diretor" },
   { value: "ADMIN", label: "Admin" },
   { value: "MEDIATOR", label: "Mediador" },
 ];
