@@ -14,6 +14,23 @@ const nextConfig: NextConfig = {
       dynamic: 30,
     },
   },
+  // Security headers (docs/SECURITY-AUDIT.md §6). TLS itself is already
+  // enforced by Vercel for every deployment — these just tell the browser
+  // to never downgrade, never sniff content types, never frame this app,
+  // and never leak the full referrer to a third-party origin.
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;
