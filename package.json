@@ -7,7 +7,12 @@
     "build": "prisma migrate deploy && next build",
     "postinstall": "prisma generate",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:unit": "vitest run src",
+    "test:unit:watch": "vitest src",
+    "test:integration": "vitest run test/integration",
+    "test:e2e": "playwright test",
+    "test": "npm run test:unit && npm run test:integration"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.111.0",
@@ -29,16 +34,19 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/pg": "^8.20.0",
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^17.4.2",
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
     "tailwindcss": "^4",
     "tsx": "^4.23.1",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.10"
   }
 }
