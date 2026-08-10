@@ -51,7 +51,7 @@ as the app grows.
 
 | Finding | Severity | Status |
 |---|---|---|
-| 🔴 `/api/cron/advance-deals` **fails open** if `CRON_SECRET` is unset | **Fixed in this PR** | The check was `if (secret) { ...validate... }` — if the env var is missing (e.g. a misconfigured deploy), the endpoint requires **no authorization at all**, letting anyone trigger deal-stage advancement. Its sibling route (`/api/cron/full-export`) already does this correctly (fails closed, 500 if unset). Changed `advance-deals` to match. |
+| 🔴 `/api/cron/advance-deals` **fails open** if `CRON_SECRET` is unset | Pendente | The check is `if (secret) { ...validate... }` — if the env var is missing (e.g. a misconfigured deploy), the endpoint requires **no authorization at all**, letting anyone trigger deal-stage advancement. Its sibling route (`/api/cron/full-export`) already does this correctly (fails closed, 500 if unset). **Recommended fix:** make `advance-deals` fail closed the same way — return 500 if `CRON_SECRET` is unset, instead of falling through to no-auth. Not applied to the codebase yet; this pass is documentation only. |
 | `/api/full-export` (browser-triggered) session-gated on `config` view permission | ✅ | Correct — separate code path from the cron variant, uses `auth()` + `canView`, not `CRON_SECRET` |
 | `/api/setup/seed` requires `AUTH_SECRET` as bearer/query token | 🟡 | See §1 note — accepted tradeoff, all writes are idempotent |
 
@@ -60,8 +60,8 @@ as the app grows.
 | Finding | Severity | Status |
 |---|---|---|
 | TLS enforced on all traffic | ✅ | Automatic via Vercel — every deployment gets HTTPS, HTTP requests are redirected |
-| `Strict-Transport-Security` (HSTS) header | 🔴 → ✅ | **Not present before this PR.** Added via `next.config.ts` `headers()`: `max-age=63072000; includeSubDomains; preload` (2-year max-age, matching HSTS preload-list requirements) |
-| `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` | 🔴 → ✅ | **Not present before this PR.** Added alongside HSTS — `nosniff`, `DENY`, `strict-origin-when-cross-origin` respectively |
+| `Strict-Transport-Security` (HSTS) header | 🔴 Ausente | Not currently sent by the app. TLS itself is already enforced by Vercel (HTTP redirected to HTTPS on every deployment), but without this header browsers have no instruction to always use HTTPS for this origin on their own, and the domain isn't eligible for HSTS preload. **Recommended fix:** add a `headers()` function in `next.config.ts` returning `Strict-Transport-Security: max-age=63072000; includeSubDomains; preload` for all routes (2-year max-age, matching preload-list requirements). Not applied yet — documentation only. |
+| `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` | 🔴 Ausentes | Not currently sent by the app. **Recommended fix:** add alongside HSTS in the same `headers()` function — `nosniff`, `DENY`, `strict-origin-when-cross-origin` respectively. Not applied yet. |
 | WAF / bot mitigation / edge rate limiting | 🟡 | Not implemented — requires an infrastructure decision (Cloudflare in front of Vercel, or Vercel's own Firewall product). See `PRD.md` §7.4. Application-level rate limiting (beyond the login lockout) is also not implemented. |
 
 ## 7. Dependency Vulnerabilities
@@ -88,8 +88,8 @@ or the eventual stable release when one ships is the real fix — not
 something to patch around manually.
 
 **Recommendation:** re-run `npm audit` on a monthly cadence (or wire it
-into CI once a test/CI pipeline exists — see the accompanying test-suite
-PR) and bump `next-auth` to stable once v5 leaves beta.
+into CI once a test/CI pipeline exists — see `TESTING-STRATEGY.md`) and
+bump `next-auth` to stable once v5 leaves beta.
 
 ## 8. Session Security
 
@@ -103,8 +103,10 @@ PR) and bump `next-auth` to stable once v5 leaves beta.
 ## 9. Summary
 
 No critical, actively-exploitable vulnerabilities in application code.
-Two real gaps were found and fixed in this pass (fail-open cron auth,
-missing security headers). The remaining 🟡 items are accepted tradeoffs
-appropriate to the app's current single-tenant, small-team scale —
-revisit them if that scale changes materially (see `PRD.md` §7 for the
-reasoning behind each).
+Two real gaps were found in this pass (fail-open cron auth, missing
+security headers) — both documented above with a recommended fix; this
+pass is documentation only, so neither has been applied to the codebase
+yet. The remaining 🟡 items are accepted tradeoffs appropriate to the
+app's current single-tenant, small-team scale — revisit them if that
+scale changes materially (see `PRD.md` §7 for the reasoning behind
+each).

@@ -229,8 +229,10 @@ no rate limiting on other endpoints yet.
 
 TLS termination is handled automatically by Vercel for every deployment
 — nothing to configure. `Strict-Transport-Security` (HSTS) and a small
-set of standard security headers were added in this pass via
-`next.config.ts` (see Security Audit §6 for the exact policy).
+set of standard security headers are **not currently sent** by the app;
+Security Audit §6 documents the exact recommended policy
+(`next.config.ts` `headers()`) as a pending fix, not yet applied — this
+pass is documentation only.
 
 ---
 
