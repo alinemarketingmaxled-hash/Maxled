@@ -36,3 +36,6 @@ Node host) by connecting this repository and setting `DATABASE_URL` /
 `AUTH_SECRET` as environment variables. A free managed Postgres instance
 (e.g. Neon or Supabase) works as the production database; point
 `DATABASE_URL` at it and run `npx prisma migrate deploy` once.
+
+Dark/light appearance is per-account, not a build-time setting — each user
+switches it under **Perfil → Aparência** once logged in.
