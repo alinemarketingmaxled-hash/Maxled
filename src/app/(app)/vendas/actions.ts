@@ -11,9 +11,12 @@ import {
   updateContact,
   softDeleteContact,
   listContacts,
+  findDuplicateContact,
   type ContactInput,
+  type ContactDuplicateMatch,
 } from "@/lib/contacts";
 import { lookupCnpj, type CnpjLookupOutcome } from "@/lib/cnpj-lookup";
+import { lookupCep, type CepLookupOutcome } from "@/lib/cep-lookup";
 import { prisma } from "@/lib/prisma";
 import { parseCsv, parseXlsx, parseBrDate, type ImportSummary } from "@/lib/csv";
 
@@ -163,6 +166,25 @@ export async function updateContactAction(
 export async function lookupCnpjAction(cnpj: string): Promise<CnpjLookupOutcome> {
   await requireEdit();
   return lookupCnpj(cnpj);
+}
+
+/** Backs the "Buscar CEP" button in ContactForm's Endereço section — same
+ * ViaCEP helper used on the Prospecção board's "Cliente completo" flow. */
+export async function lookupCepAction(cep: string): Promise<CepLookupOutcome> {
+  await requireEdit();
+  return lookupCep(cep);
+}
+
+/** Read-only advisory duplicate check for the "Novo contato" form — fired
+ * on blur of the E-mail/CNPJ fields. Never blocks the save; see
+ * findDuplicateContact in lib/contacts.ts. */
+export async function checkContactDuplicateAction(input: {
+  email?: string | null;
+  cnpj?: string | null;
+  excludeId?: string | null;
+}): Promise<{ email: ContactDuplicateMatch | null; cnpj: ContactDuplicateMatch | null }> {
+  const session = await requireEdit();
+  return findDuplicateContact(session, input);
 }
 
 export async function deleteContactAction(id: string) {

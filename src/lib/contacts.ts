@@ -266,6 +266,63 @@ export async function updateContact(
   return contact;
 }
 
+export type ContactDuplicateMatch = { id: string; name: string; accountName: string | null };
+
+/**
+ * Read-only advisory lookup for the "Novo contato" form — same spirit as
+ * the CSV import's email-based matching (importContactsAction), but for
+ * the manual form: checks for an existing contact with the same e-mail
+ * (case-insensitive) or the same CNPJ (compared digits-only, so formatting
+ * differences don't hide a real duplicate). Never blocks a save and never
+ * writes anything — this is advisory only, exactly like the import path.
+ */
+export async function findDuplicateContact(
+  session: Session,
+  { email, cnpj, excludeId }: { email?: string | null; cnpj?: string | null; excludeId?: string | null },
+): Promise<{ email: ContactDuplicateMatch | null; cnpj: ContactDuplicateMatch | null }> {
+  const scope = contactScopeWhere(session);
+  const trimmedEmail = email?.trim() || null;
+  const cnpjDigits = cnpj ? cnpj.replace(/\D/g, "") : "";
+
+  const [emailHit, cnpjCandidates] = await Promise.all([
+    trimmedEmail
+      ? prisma.contact.findFirst({
+          where: {
+            deletedAt: null,
+            ...scope,
+            email: { equals: trimmedEmail, mode: "insensitive" },
+            ...(excludeId ? { id: { not: excludeId } } : {}),
+          },
+          select: { id: true, firstName: true, lastName: true, accountName: true },
+        })
+      : Promise.resolve(null),
+    cnpjDigits.length > 0
+      ? prisma.contact.findMany({
+          where: {
+            deletedAt: null,
+            ...scope,
+            cnpj: { not: null },
+            ...(excludeId ? { id: { not: excludeId } } : {}),
+          },
+          select: { id: true, firstName: true, lastName: true, accountName: true, cnpj: true },
+        })
+      : Promise.resolve([]),
+  ]);
+
+  const cnpjHit = cnpjCandidates.find((c) => c.cnpj && c.cnpj.replace(/\D/g, "") === cnpjDigits) ?? null;
+
+  const toMatch = (row: { id: string; firstName: string; lastName: string; accountName: string | null }) => ({
+    id: row.id,
+    name: `${row.firstName} ${row.lastName}`.trim(),
+    accountName: row.accountName,
+  });
+
+  return {
+    email: emailHit ? toMatch(emailHit) : null,
+    cnpj: cnpjHit ? toMatch(cnpjHit) : null,
+  };
+}
+
 export async function softDeleteContact(session: Session, id: string) {
   const contact = await prisma.contact.update({
     where: { id },
