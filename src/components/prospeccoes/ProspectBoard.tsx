@@ -18,6 +18,7 @@ import {
   lookupCepAction,
 } from "@/app/(app)/prospeccoes/actions";
 import { lookupCnpjAction } from "@/app/(app)/vendas/actions";
+import { Avatar } from "@/components/shared/Avatar";
 
 export type StageValue = { stageId: string; date: string | null; note: string | null; done: boolean };
 export type Activation = { id: string; status: "PENDENTE" | "APROVADO" | "RECUSADO"; rejectionReason: string | null };
@@ -270,12 +271,12 @@ export function ProspectBoard({
                 <th
                   key={i}
                   colSpan={g.span}
-                  className="border-b border-l border-dashed border-gold-deep/18 bg-surface-2/40 px-3 py-1 text-center text-[9.5px] font-semibold uppercase tracking-wide text-gold-bright/80"
+                  className="border-b border-l border-gold-deep/10 bg-surface-2/40 px-3 py-1 text-center text-[9.5px] font-semibold uppercase tracking-wide text-gold-bright/80"
                 >
                   {g.category}
                 </th>
               ))}
-              <th className="border-b border-l border-dashed border-gold-deep/18" />
+              <th className="border-b border-l border-gold-deep/10" />
             </tr>
             <tr>
               <th className="sticky left-0 z-10 border-b border-gold-deep/30 bg-surface px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-wide text-ink-faint">
@@ -287,13 +288,13 @@ export function ProspectBoard({
                 ) : (
                   <th
                     key={s.id}
-                    className="border-b border-l border-dashed border-gold-deep/18 px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-wide text-ink-faint"
+                    className="border-b border-l border-gold-deep/10 px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-wide text-ink-faint"
                   >
                     {s.name}
                   </th>
                 ),
               )}
-              <th className="border-b border-l border-dashed border-gold-deep/18 px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-wide text-ink-faint">
+              <th className="border-b border-l border-gold-deep/10 px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-wide text-ink-faint">
                 {addingColumn ? (
                   <div className="flex items-center gap-1 normal-case">
                     <input
@@ -338,8 +339,10 @@ export function ProspectBoard({
               const recusado = p.activation?.status === "RECUSADO";
               return (
                 <tr key={p.id} className={recusado ? "bg-critical/[0.12]" : atrasado ? "bg-critical/[0.06]" : undefined}>
-                  <td className="sticky left-0 z-10 border-b border-dashed border-gold-deep/18 bg-surface px-3 py-2.5 align-top">
-                    <button onClick={() => setEditTarget(p)} className="block w-full text-left hover:opacity-80">
+                  <td className="sticky left-0 z-10 border-b border-gold-deep/10 bg-surface px-3 py-2.5 align-top">
+                    <button onClick={() => setEditTarget(p)} className="flex w-full items-start gap-2 text-left hover:opacity-80">
+                      <Avatar name={p.name} />
+                      <div className="min-w-0 flex-1">
                       <div className="font-semibold text-ink">{p.clientName}</div>
                       <div className="text-[11px] text-ink-muted">
                         {p.name}
@@ -363,6 +366,7 @@ export function ProspectBoard({
                           </span>
                         )}
                       </div>
+                      </div>
                     </button>
                   </td>
                   {stages.map((s) => {
@@ -370,14 +374,14 @@ export function ProspectBoard({
                     const unlocked = isStageUnlocked(p, s, stages);
                     if (!unlocked) {
                       return (
-                        <td key={s.id} className="border-b border-l border-dashed border-gold-deep/18 px-3 py-2.5 align-top">
+                        <td key={s.id} className="border-b border-l border-gold-deep/10 px-3 py-2.5 align-top">
                           <span className="text-[11px] text-ink-faint">🔒 Conclua a etapa anterior</span>
                         </td>
                       );
                     }
                     if (s.isClientStage) {
                       return (
-                        <td key={s.id} className="border-b border-l border-dashed border-gold-deep/18 px-3 py-2.5 align-top">
+                        <td key={s.id} className="border-b border-l border-gold-deep/10 px-3 py-2.5 align-top">
                           {!p.activation ? (
                             <button
                               onClick={() => setActivationTarget(p)}
@@ -413,7 +417,7 @@ export function ProspectBoard({
                       );
                     }
                     return (
-                      <td key={s.id} className="border-b border-l border-dashed border-gold-deep/18 px-3 py-2.5 align-top">
+                      <td key={s.id} className="border-b border-l border-gold-deep/10 px-3 py-2.5 align-top">
                         <button
                           onClick={() => setCell({ prospect: p, stage: s })}
                           className="block w-full text-left hover:opacity-80"
@@ -439,7 +443,7 @@ export function ProspectBoard({
                       </td>
                     );
                   })}
-                  <td className="border-b border-l border-dashed border-gold-deep/18 px-3 py-2.5" />
+                  <td className="border-b border-l border-gold-deep/10 px-3 py-2.5" />
                 </tr>
               );
             })}
@@ -578,7 +582,7 @@ function CustomStageHeaderCell({ stage, onChanged }: { stage: ProspectStageDef; 
   }
 
   return (
-    <th className="border-b border-l border-dashed border-gold-deep/18 px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-wide text-ink-faint">
+    <th className="border-b border-l border-gold-deep/10 px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-wide text-ink-faint">
       <div className="flex items-center gap-1 normal-case">
         {editing ? (
           <input

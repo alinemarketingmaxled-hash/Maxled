@@ -51,7 +51,7 @@ export function Sidebar({
       >
         <div className="flex items-center gap-2.5 px-2">
           <Logo size={34} />
-          <span className="font-display text-lg tracking-wide">
+          <span className="font-display text-lg">
             Maxled <span className="text-gold-bright">CRM</span>
           </span>
           <button
@@ -71,10 +71,10 @@ export function Sidebar({
                 key={item.href}
                 href={item.href}
                 onClick={onClose}
-                className={`flex items-center gap-2.5 rounded-lg border-l-[3px] px-3 py-2.5 text-[13.5px] transition-colors ${
+                className={`flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-[13.5px] transition-colors ${
                   active
-                    ? "border-gold bg-surface-2 text-gold-bright"
-                    : "border-transparent text-ink-muted hover:bg-surface-2 hover:text-ink"
+                    ? "bg-gold font-bold text-gold-contrast"
+                    : "text-ink-muted hover:bg-surface-2 hover:text-ink"
                 }`}
               >
                 <span className="w-[18px] flex-none opacity-90">{item.icon}</span>

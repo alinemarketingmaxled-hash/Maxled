@@ -20,6 +20,7 @@ type Goal = {
   goal2: number | null;
   commissionPct1: number | null;
   commissionPct2: number | null;
+  commissionStepValue: number | null;
   commissionEarned: number;
   effectiveCommissionPct: number | null;
   personalGoal: number | null;
@@ -101,6 +102,7 @@ export function HomeSidebar({
             goal2={goal.goal2}
             commissionPct1={goal.commissionPct1}
             commissionPct2={goal.commissionPct2}
+            commissionStepValue={goal.commissionStepValue}
           />
           <div className="mt-2 flex justify-between text-[11.5px]">
             <span className="text-ink-faint">

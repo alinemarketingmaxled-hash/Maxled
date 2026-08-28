@@ -32,7 +32,7 @@ export function CommissionWidget({ commission }: { commission: CommissionSummary
         </>
       )}
 
-      <div className="mt-2 flex justify-between border-t border-dashed border-gold-deep/25 pt-1.5 text-[11px]">
+      <div className="mt-2 flex justify-between border-t border-gold-deep/10 pt-1.5 text-[11px]">
         <span className="text-ink-faint">Negócios</span>
         <span className="font-semibold text-ink">{commission.dealsWon}</span>
       </div>
