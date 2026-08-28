@@ -37,6 +37,7 @@ type Goal = {
   goal2: number | null;
   commissionPct1: number | null;
   commissionPct2: number | null;
+  commissionStepValue: number | null;
   commissionEarned: number;
   effectiveCommissionPct: number | null;
   personalGoal: number | null;
@@ -306,8 +307,9 @@ export function AnaliticaTabs({
                       goal2={goal.goal2}
                       commissionPct1={goal.commissionPct1}
                       commissionPct2={goal.commissionPct2}
+                      commissionStepValue={goal.commissionStepValue}
                     />
-                    <div className="mt-1 flex justify-between gap-3 border-t border-dashed border-gold-deep/25 pt-2 text-[11.5px]">
+                    <div className="mt-1 flex justify-between gap-3 border-t border-gold-deep/10 pt-2 text-[11.5px]">
                       <span className="text-ink-faint">Comissão do mês</span>
                       <span className="font-semibold text-gold-bright">
                         {currency(goal.commissionEarned)}
@@ -321,7 +323,7 @@ export function AnaliticaTabs({
                   </div>
                 )}
                 {goal.personalGoal !== null && (
-                  <div className={goal.goal1 !== null ? "border-t border-dashed border-gold-deep/25 pt-3" : ""}>
+                  <div className={goal.goal1 !== null ? "border-t border-gold-deep/10 pt-3" : ""}>
                     <div className="mb-1 flex justify-between text-[11.5px]">
                       <span className="text-ink-faint">Minha meta pessoal</span>
                       <span className="text-ink">
@@ -373,7 +375,7 @@ export function AnaliticaTabs({
                 {teamPerformance.map((s) => (
                   <div
                     key={s.id}
-                    className="flex items-center justify-between gap-3 border-b border-dashed border-gold-deep/18 py-1.5 text-[12.5px] last:border-b-0"
+                    className="flex items-center justify-between gap-3 border-b border-gold-deep/10 py-1.5 text-[12.5px] last:border-b-0"
                   >
                     <span className="text-ink">{s.name}</span>
                     <div className="flex gap-6 tabular-nums">

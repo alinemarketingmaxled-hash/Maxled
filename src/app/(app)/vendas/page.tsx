@@ -97,7 +97,7 @@ export default async function VendasPage({
         {isNew && (
           <div className="rounded-xl border border-gold-deep/30 bg-surface p-5">
             <h3 className="mb-4 font-display text-lg text-ink">Novo contato</h3>
-            <ContactForm owners={owners} action={createContactAction} existingProfiles={profiles} />
+            <ContactForm owners={owners} action={createContactAction} />
           </div>
         )}
 
@@ -110,7 +110,6 @@ export default async function VendasPage({
               contact={serializedContact}
               owners={owners}
               action={updateContactAction.bind(null, selected.id)}
-              existingProfiles={profiles}
             />
           </div>
         )}

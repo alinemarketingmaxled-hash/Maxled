@@ -67,7 +67,7 @@ function callOutcome(diff: Prisma.JsonValue | null): string | null {
 
 function fieldRow(label: string, value: string | null | undefined) {
   return (
-    <div className="flex justify-between gap-3 border-b border-dashed border-gold-deep/20 py-1.5 text-[12.5px]">
+    <div className="flex justify-between gap-3 border-b border-gold-deep/10 py-1.5 text-[12.5px]">
       <span className="text-ink-faint">{label}</span>
       <span className="text-right text-ink">{value || "—"}</span>
     </div>

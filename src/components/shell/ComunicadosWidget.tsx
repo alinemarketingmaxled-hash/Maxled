@@ -18,7 +18,7 @@ export function ComunicadosWidget({ posts }: { posts: ImportantPost[] }) {
       ) : (
         <div className="flex flex-col gap-2">
           {posts.map((p) => (
-            <div key={p.id} className="border-b border-dashed border-gold-deep/25 pb-2 text-[11px] last:border-b-0 last:pb-0">
+            <div key={p.id} className="border-b border-gold-deep/10 pb-2 text-[11px] last:border-b-0 last:pb-0">
               <p className="line-clamp-2 text-ink">{p.body}</p>
               <p className="mt-0.5 text-[10px] text-ink-faint">
                 {p.authorName} · {new Date(p.createdAt).toLocaleDateString("pt-BR")}

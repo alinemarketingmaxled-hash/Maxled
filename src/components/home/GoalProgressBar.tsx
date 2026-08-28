@@ -13,12 +13,18 @@ export function GoalProgressBar({
   goal2,
   commissionPct1,
   commissionPct2,
+  commissionStepValue,
 }: {
   achieved: number;
   goal1: number;
   goal2: number | null;
   commissionPct1: number | null;
   commissionPct2: number | null;
+  /** Once achieved passes goal2, commission keeps climbing +0.02 points for
+   * every extra commissionStepValue in revenue — see computeCommission in
+   * lib/analytics.ts. Shown here as a one-line explainer so the escalator
+   * isn't a mystery; omitted when the user has no step value configured. */
+  commissionStepValue?: number | null;
 }) {
   const reachedGoal1 = achieved >= goal1;
   const reachedGoal2 = goal2 !== null && achieved >= goal2;
@@ -82,6 +88,13 @@ export function GoalProgressBar({
           </div>
         )}
       </div>
+
+      {goal2 !== null && commissionStepValue != null && commissionStepValue > 0 && (
+        <p className="mt-1 text-[10.5px] text-ink-faint">
+          Acima da Meta 2, a comissão sobe +0,02% a cada {currency(commissionStepValue)} vendido além dela — sem
+          teto.
+        </p>
+      )}
     </div>
   );
 }
