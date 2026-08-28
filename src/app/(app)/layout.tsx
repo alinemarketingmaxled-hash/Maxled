@@ -34,17 +34,13 @@ export default async function AppLayout({
       avatarUrl={me?.avatarUrl ?? null}
       overdueCount={overdueCount}
       unreadPostCount={unreadPostCount}
-      commission={
-        goal
-          ? {
-              achieved: goal.achieved,
-              dealsWon: goal.dealsWon,
-              goal1: goal.goal1,
-              commissionEarned: goal.commissionEarned,
-              effectiveCommissionPct: goal.effectiveCommissionPct,
-            }
-          : null
-      }
+      commission={{
+        achieved: goal?.achieved ?? 0,
+        dealsWon: goal?.dealsWon ?? 0,
+        goal1: goal?.goal1 ?? null,
+        commissionEarned: goal?.commissionEarned ?? 0,
+        effectiveCommissionPct: goal?.effectiveCommissionPct ?? null,
+      }}
       importantPosts={importantPosts.map((p) => ({
         id: p.id,
         body: p.body,

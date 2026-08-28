@@ -93,25 +93,29 @@ export function HomeSidebar({
         </div>
       </div>
 
-      {goal?.goal1 != null && (
-        <div className={CARD}>
-          <h3 className="mb-2.5 text-[13px] font-semibold text-ink">Meta do mês</h3>
-          <GoalProgressBar
-            achieved={goal.achieved}
-            goal1={goal.goal1}
-            goal2={goal.goal2}
-            commissionPct1={goal.commissionPct1}
-            commissionPct2={goal.commissionPct2}
-            commissionStepValue={goal.commissionStepValue}
-          />
-          <div className="mt-2 flex justify-between text-[11.5px]">
-            <span className="text-ink-faint">
-              Comissão{goal.effectiveCommissionPct !== null && ` (${goal.effectiveCommissionPct.toFixed(2)}%)`}
-            </span>
-            <span className="font-semibold text-gold-bright">{currency(goal.commissionEarned)}</span>
-          </div>
-        </div>
-      )}
+      <div className={CARD}>
+        <h3 className="mb-2.5 text-[13px] font-semibold text-ink">Meta do mês</h3>
+        {goal?.goal1 != null ? (
+          <>
+            <GoalProgressBar
+              achieved={goal.achieved}
+              goal1={goal.goal1}
+              goal2={goal.goal2}
+              commissionPct1={goal.commissionPct1}
+              commissionPct2={goal.commissionPct2}
+              commissionStepValue={goal.commissionStepValue}
+            />
+            <div className="mt-2 flex justify-between text-[11.5px]">
+              <span className="text-ink-faint">
+                Comissão{goal.effectiveCommissionPct !== null && ` (${goal.effectiveCommissionPct.toFixed(2)}%)`}
+              </span>
+              <span className="font-semibold text-gold-bright">{currency(goal.commissionEarned)}</span>
+            </div>
+          </>
+        ) : (
+          <p className="text-[11.5px] text-ink-faint">Nenhuma meta definida ainda — configure em Perfil.</p>
+        )}
+      </div>
 
       <div className={CARD}>
         <h3 className="mb-2.5 text-[13px] font-semibold text-ink">Receita — últimos 6 meses</h3>
