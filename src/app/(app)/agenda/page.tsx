@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { differenceInCalendarDays, format } from "date-fns";
+import { format } from "date-fns";
 import { requireView } from "@/lib/require-permission";
 import { canEdit } from "@/lib/permissions";
+import { businessDaysRemaining } from "@/lib/business-days";
 import { listOnTheWayDeals } from "@/lib/deals";
 import { listTasks } from "@/lib/tasks";
 import { AgendaCalendar, type CalendarItem } from "@/components/agenda/AgendaCalendar";
@@ -92,9 +93,7 @@ export default async function AgendaPage({
           </div>
         )}
         {deals.map((deal) => {
-          const daysLeft = deal.onTheWayDeadline
-            ? differenceInCalendarDays(new Date(deal.onTheWayDeadline), new Date())
-            : null;
+          const daysLeft = deal.onTheWayDeadline ? businessDaysRemaining(new Date(deal.onTheWayDeadline)) : null;
           return (
             <Link
               key={deal.id}
