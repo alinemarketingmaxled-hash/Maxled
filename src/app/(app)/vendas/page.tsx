@@ -4,6 +4,7 @@ import {
   listContacts,
   listDistinctProfiles,
   getContact,
+  getContactStats,
   computeContactInsights,
   getAbcClasses,
   type ContactFilters,
@@ -37,9 +38,10 @@ export default async function VendasPage({
     profile: params.perfil,
   };
 
-  const [contacts, profiles] = await Promise.all([
+  const [contacts, profiles, stats] = await Promise.all([
     listContacts(session, filters),
     listDistinctProfiles(session),
+    getContactStats(session),
   ]);
   const selectedId = params.id ?? contacts[0]?.id;
   const selected = selectedId ? await getContact(session, selectedId) : null;
@@ -86,6 +88,25 @@ export default async function VendasPage({
             ＋ Novo contato
           </Link>
         )}
+      </div>
+
+      <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="rounded-xl border border-gold-deep/30 bg-surface p-3.5">
+          <div className="text-[10.5px] uppercase tracking-wide text-ink-faint">Total</div>
+          <div className="font-display mt-1 text-[22px] font-bold text-ink">{stats.total}</div>
+        </div>
+        <div className="rounded-xl border border-gold-deep/30 bg-surface p-3.5">
+          <div className="text-[10.5px] uppercase tracking-wide text-ink-faint">Ativos</div>
+          <div className="font-display mt-1 text-[22px] font-bold text-good">{stats.ativos}</div>
+        </div>
+        <div className="rounded-xl border border-gold-deep/30 bg-surface p-3.5">
+          <div className="text-[10.5px] uppercase tracking-wide text-ink-faint">Leads</div>
+          <div className="font-display mt-1 text-[22px] font-bold text-ink-faint">{stats.leads}</div>
+        </div>
+        <div className="rounded-xl border border-gold-deep/30 bg-surface p-3.5">
+          <div className="text-[10.5px] uppercase tracking-wide text-ink-faint">Perfis diferentes</div>
+          <div className="font-display mt-1 text-[22px] font-bold text-ink">{stats.profiles}</div>
+        </div>
       </div>
 
       <ImportExportBar canEdit={editable} />
