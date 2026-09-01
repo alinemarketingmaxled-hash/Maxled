@@ -99,6 +99,10 @@ function readContactInput(formData: FormData, ownerId: string): ContactInput {
     crmStatus: readEnum(str("crmStatus"), CRM_STATUSES),
     nextContactAt: readDateInput(formData, "nextContactAt"),
     notes: str("notes"),
+    taxRegime: str("taxRegime"),
+    companySize: str("companySize"),
+    website: str("website"),
+    businessReferences: str("businessReferences"),
   };
 }
 

@@ -492,6 +492,26 @@ export function ContactForm({
 
       <section>
         <h4 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-gold">
+          Dados da empresa (opcional)
+        </h4>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Regime tributário" name="taxRegime" defaultValue={contact?.taxRegime} />
+          <Field label="Porte da empresa" name="companySize" defaultValue={contact?.companySize} />
+          <Field label="Site da empresa" name="website" defaultValue={contact?.website} />
+        </div>
+        <label className="mt-3 flex flex-col gap-1 text-xs">
+          <span className="text-ink-faint">Referências comerciais</span>
+          <textarea
+            name="businessReferences"
+            rows={2}
+            defaultValue={contact?.businessReferences ?? ""}
+            className="rounded-md border border-gold-deep/40 bg-surface-2 px-2.5 py-2 text-sm text-ink outline-none focus:border-gold"
+          />
+        </label>
+      </section>
+
+      <section>
+        <h4 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-gold">
           Observações
         </h4>
         <label className="flex flex-col gap-1 text-xs">

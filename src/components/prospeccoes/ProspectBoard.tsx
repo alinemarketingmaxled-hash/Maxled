@@ -1557,7 +1557,34 @@ function NegociacaoCellModal({
                 <span className="text-ink-faint">Próximo contato</span>
                 <input name="nextContactAt" type="date" className={inputClass} />
               </label>
+              <label className="flex flex-col gap-1 text-xs">
+                <span className="text-ink-faint">Regime tributário</span>
+                <input name="taxRegime" list="tax-regime-options" className={inputClass} />
+                <datalist id="tax-regime-options">
+                  <option value="Simples Nacional" />
+                  <option value="Lucro Presumido" />
+                  <option value="Lucro Real" />
+                </datalist>
+              </label>
+              <label className="flex flex-col gap-1 text-xs">
+                <span className="text-ink-faint">Porte da empresa</span>
+                <input name="companySize" list="company-size-options" className={inputClass} />
+                <datalist id="company-size-options">
+                  <option value="Microempresa" />
+                  <option value="Pequena" />
+                  <option value="Média" />
+                  <option value="Grande" />
+                </datalist>
+              </label>
+              <label className="col-span-2 flex flex-col gap-1 text-xs">
+                <span className="text-ink-faint">Site da empresa</span>
+                <input name="website" placeholder="https://" className={inputClass} />
+              </label>
             </div>
+            <label className="flex flex-col gap-1 text-xs">
+              <span className="text-ink-faint">Referências comerciais</span>
+              <textarea name="businessReferences" rows={2} className={inputClass} />
+            </label>
             <label className="flex flex-col gap-1 text-xs">
               <span className="text-ink-faint">Observações do cliente</span>
               <textarea name="notes" rows={2} className={inputClass} />

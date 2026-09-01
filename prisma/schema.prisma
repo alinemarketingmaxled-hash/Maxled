@@ -119,6 +119,15 @@ model Contact {
   emailNfe          String?
   enderecoEntrega   String? @db.Text
 
+  // Coletados no "Cliente completo" junto com o restante dos dados fiscais
+  // (pedido: "mais informações quando for tornar cliente"). Texto livre nos
+  // dois primeiros pelo mesmo motivo do profile acima: novas opções não
+  // exigem deploy.
+  taxRegime           String?
+  companySize         String?
+  website             String?
+  businessReferences  String? @db.Text
+
   birthday            DateTime?
   commercialPotential CommercialPotential?
   crmStatus           CrmStatus?
@@ -438,6 +447,10 @@ model ClientActivationRequest {
   latitude             Float?
   longitude            Float?
   notes                String?              @db.Text
+  taxRegime            String?
+  companySize          String?
+  website              String?
+  businessReferences   String?              @db.Text
 
   status          ActivationStatus @default(PENDENTE)
   reviewerId      String?
