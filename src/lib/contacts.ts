@@ -49,6 +49,24 @@ export async function listContacts(session: Session, filters?: ContactFilters) {
   });
 }
 
+/** Summary counts for the Clientes stat cards — always scoped to the whole
+ * base (ignores the page's Perfil filter, since these are meant to show the
+ * total picture regardless of what's currently filtered). */
+export async function getContactStats(session: Session) {
+  const scope = { deletedAt: null, ...contactScopeWhere(session) };
+  const [total, ativos, leads, distinctProfiles] = await Promise.all([
+    prisma.contact.count({ where: scope }),
+    prisma.contact.count({ where: { ...scope, crmStatus: "ATIVO" } }),
+    prisma.contact.count({ where: { ...scope, crmStatus: "LEAD" } }),
+    prisma.contact.findMany({
+      where: { ...scope, profile: { not: null } },
+      select: { profile: true },
+      distinct: ["profile"],
+    }),
+  ]);
+  return { total, ativos, leads, profiles: distinctProfiles.length };
+}
+
 /** Distinct, non-empty "Perfil" values already in use — backs the filter
  * dropdown on Vendas/Negócios so it's always in sync with whatever values
  * people have typed into that free-text field, no code change needed to
