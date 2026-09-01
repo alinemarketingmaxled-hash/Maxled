@@ -262,12 +262,53 @@ function StageColumn({
   );
 }
 
+/** Virtual column, not backed by a real pipeline stage: deals still open
+ * whose last update was before the start of this month. Cards can be
+ * dragged out into a real stage (DealCard is already draggable regardless
+ * of which column renders it) but this column itself isn't a drop target,
+ * since it doesn't correspond to a stageId a deal could actually move
+ * into. */
+function StaleDealsColumn({
+  deals,
+  canEdit,
+  onOpenDeal,
+}: {
+  deals: SerializedDeal[];
+  canEdit: boolean;
+  onOpenDeal: (dealId: string) => void;
+}) {
+  return (
+    <div
+      style={{ boxShadow: "inset 0 2.5px 0 0 var(--status-critical)" }}
+      className="flex w-60 flex-none flex-col gap-2 rounded-xl border border-critical/30 bg-surface p-2.5"
+    >
+      <div className="flex items-center gap-2 text-[12.5px] font-semibold text-critical">
+        <span className="h-2 w-2 flex-none rounded-full bg-critical" aria-hidden="true" />
+        Atrasados do mês
+        <span className="ml-auto rounded-full bg-surface-2 px-1.5 text-[10.5px] text-ink-faint">
+          {deals.length}
+        </span>
+      </div>
+      <p className="text-[10.5px] text-ink-faint">Sem atualização desde o mês passado.</p>
+      <div className="flex flex-col gap-1.5">
+        {deals.length === 0 ? (
+          <p className="text-[11px] text-ink-faint">Nenhum negócio atrasado no momento.</p>
+        ) : (
+          deals.map((deal) => <DealCard key={deal.id} deal={deal} canEdit={canEdit} onOpen={onOpenDeal} />)
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function KanbanBoard({
   stages,
+  staleDeals,
   pipelineId,
   canEdit,
 }: {
   stages: StageWithDeals[];
+  staleDeals: SerializedDeal[];
   pipelineId: string;
   canEdit: boolean;
 }) {
@@ -289,6 +330,7 @@ export function KanbanBoard({
   return (
     <>
       <div className="flex flex-wrap gap-3 pb-2">
+        <StaleDealsColumn deals={staleDeals} canEdit={canEdit} onOpenDeal={setOpenDealId} />
         {stages.map((stage, i) => (
           <StageColumn
             key={stage.id}

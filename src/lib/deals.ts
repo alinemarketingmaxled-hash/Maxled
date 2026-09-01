@@ -117,6 +117,43 @@ export async function getBoard(session: Session, contactFilters?: DealContactFil
   return pipeline;
 }
 
+function startOfMonth(d = new Date()) {
+  return new Date(d.getFullYear(), d.getMonth(), 1);
+}
+
+/** Deals that rolled over into the current month without any update since
+ * last month, shown as a virtual "Atrasados do mês" Kanban column (pedido:
+ * "se uma negociação virar o mês sem atualização, abre um quadrante e
+ * coloca atrasados do mês"). Doesn't touch stageId — this is a computed
+ * view across every open stage, not a real pipeline stage a deal moves
+ * into, so its real stage is never lost. */
+export async function getStaleDealsThisMonth(session: Session, contactFilters?: DealContactFilters) {
+  return prisma.deal.findMany({
+    where: {
+      deletedAt: null,
+      stage: { isWon: false },
+      updatedAt: { lt: startOfMonth() },
+      ...dealScopeWhere(session),
+      ...dealContactFiltersWhere(contactFilters),
+    },
+    orderBy: { updatedAt: "asc" },
+    include: {
+      contact: {
+        select: {
+          firstName: true,
+          lastName: true,
+          accountName: true,
+          phone: true,
+          mobile: true,
+          email: true,
+        },
+      },
+      owner: { select: { name: true } },
+      notes: true,
+    },
+  });
+}
+
 /** "Fechados recentemente" list on the Negócios page — won deals from the
  * last `months`. Won deals no longer show on the Kanban board (see
  * getBoard), so without this the only way to find/edit one is digging into
