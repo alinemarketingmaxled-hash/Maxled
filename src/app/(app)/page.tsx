@@ -126,7 +126,7 @@ export default async function AnaliticaPage({
       <div className="mb-4">
         <h2 className="font-display text-[22px] text-ink">Início</h2>
         <p className="mt-0.5 text-[13px] text-ink-muted">
-          Olá, {session.user.name ?? session.user.email} — indicadores em tempo real
+          Olá, {session.user.name ?? session.user.email}. Indicadores em tempo real
         </p>
       </div>
 

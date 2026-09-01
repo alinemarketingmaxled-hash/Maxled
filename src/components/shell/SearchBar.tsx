@@ -70,7 +70,7 @@ export function SearchBar() {
                   className="block px-3 py-2 text-[13px] text-ink hover:bg-surface-2"
                 >
                   {c.name}
-                  {c.accountName && <span className="text-ink-faint"> — {c.accountName}</span>}
+                  {c.accountName && <span className="text-ink-faint"> · {c.accountName}</span>}
                 </Link>
               ))}
             </div>

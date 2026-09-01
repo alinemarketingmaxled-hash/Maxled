@@ -289,7 +289,7 @@ export async function importContactsAction(
     if (rows.length > 0 && summary.created === 0 && summary.updated === 0) {
       return {
         error:
-          "Nenhum cliente foi importado — não conseguimos identificar as colunas de Nome e Sobrenome na planilha. " +
+          "Nenhum cliente foi importado. Não conseguimos identificar as colunas de Nome e Sobrenome na planilha. " +
           "Confira se a primeira linha tem os títulos das colunas (ex.: \"Nome\", \"Sobrenome\" ou \"Nome completo\"). " +
           "Dica: baixe o modelo em \"Baixar modelo de importação\" para ver o formato esperado.",
       };

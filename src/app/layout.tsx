@@ -6,7 +6,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Maxled CRM",
-  description: "CRM gold-and-black da Maxled — vendas, negócios, agenda e analítica.",
+  description: "CRM gold-and-black da Maxled: vendas, negócios, agenda e analítica.",
 };
 
 export default function RootLayout({

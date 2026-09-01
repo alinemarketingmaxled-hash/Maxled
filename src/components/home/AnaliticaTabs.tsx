@@ -166,12 +166,12 @@ export function AnaliticaTabs({
           <div className="col-span-1 flex flex-wrap items-center justify-between gap-3 sm:col-span-2 xl:col-span-12">
             {periodMode === "month" && !isCurrentMonth && (
               <span className="rounded-full bg-warning/15 px-2.5 py-1 text-[11px] font-semibold text-warning">
-                Mostrando um mês anterior — os números do mês atual continuam intactos
+                Mostrando um mês anterior, os números do mês atual continuam intactos
               </span>
             )}
             {periodMode === "range" && (
               <span className="rounded-full bg-warning/15 px-2.5 py-1 text-[11px] font-semibold text-warning">
-                Mostrando um período personalizado — meta e comissão continuam referentes ao mês atual
+                Mostrando um período personalizado, meta e comissão continuam referentes ao mês atual
               </span>
             )}
             <div className="ml-auto flex items-center gap-2">
@@ -238,7 +238,7 @@ export function AnaliticaTabs({
           <div className="col-span-1 rounded-xl border border-gold-deep/28 bg-surface p-4 xl:col-span-8">
             <div className="mb-2 flex items-center justify-between">
               <span className="text-[13px] font-semibold text-ink">
-                {periodMode === "range" ? "Receita — período selecionado" : "Receita — últimos 6 meses"}
+                {periodMode === "range" ? "Receita no período selecionado" : "Receita nos últimos 6 meses"}
               </span>
               {commissionTiers.length > 0 && (
                 <span className="text-[10px] text-ink-faint">

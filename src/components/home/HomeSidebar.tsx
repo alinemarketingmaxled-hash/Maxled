@@ -113,12 +113,12 @@ export function HomeSidebar({
             </div>
           </>
         ) : (
-          <p className="text-[11.5px] text-ink-faint">Nenhuma meta definida ainda — configure em Perfil.</p>
+          <p className="text-[11.5px] text-ink-faint">Nenhuma meta definida ainda, configure em Perfil.</p>
         )}
       </div>
 
       <div className={CARD}>
-        <h3 className="mb-2.5 text-[13px] font-semibold text-ink">Receita — últimos 6 meses</h3>
+        <h3 className="mb-2.5 text-[13px] font-semibold text-ink">Receita nos últimos 6 meses</h3>
         <svg viewBox="0 0 300 100" className="h-[80px] w-full" preserveAspectRatio="none">
           <path d={areaPath} fill="url(#sidebarGrad)" opacity="0.5" />
           {commissionTiers.map((tier, i) => (

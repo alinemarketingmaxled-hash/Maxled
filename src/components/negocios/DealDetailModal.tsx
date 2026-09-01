@@ -125,7 +125,7 @@ export function DealDetailModal({
                 <h2 className="font-display text-lg text-ink">{detail.name}</h2>
                 <p className="text-xs text-ink-muted">
                   {detail.contactName}
-                  {detail.accountName ? ` — ${detail.accountName}` : ""}
+                  {detail.accountName ? ` · ${detail.accountName}` : ""}
                 </p>
               </div>
               <div className="flex-none text-right">

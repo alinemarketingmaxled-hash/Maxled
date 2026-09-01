@@ -40,7 +40,7 @@ export function RecentClosedDealsPanel({
         <div>
           <h3 className="font-display text-lg text-ink">Fechados</h3>
           <p className="mt-0.5 text-[12px] text-ink-muted">
-            Negócios ganhos que já saíram do quadro — clique para editar ou excluir
+            Negócios ganhos que já saíram do quadro. Clique para editar ou excluir
           </p>
         </div>
         {monthFilterSlot}
@@ -59,7 +59,7 @@ export function RecentClosedDealsPanel({
               <div className="min-w-0 flex-1">
                 <div className="truncate text-[12.5px] font-semibold text-ink">{d.name}</div>
                 <div className="truncate text-[11px] text-ink-faint">
-                  {d.contactName} · {d.ownerName ?? "—"}
+                  {d.contactName} · {d.ownerName ?? "-"}
                 </div>
               </div>
               <span className="flex-none text-[12px] text-ink-faint">

@@ -106,7 +106,7 @@ export default async function AgendaPage({
                 <div className="text-[11px] text-ink-faint">
                   {deal.contact.accountName ?? `${deal.contact.firstName} ${deal.contact.lastName}`} ·{" "}
                   {deal.owner.name} · a caminho desde{" "}
-                  {deal.onTheWaySince ? new Date(deal.onTheWaySince).toLocaleDateString("pt-BR") : "—"}
+                  {deal.onTheWaySince ? new Date(deal.onTheWaySince).toLocaleDateString("pt-BR") : "-"}
                 </div>
               </div>
               <span

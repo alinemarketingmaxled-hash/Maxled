@@ -60,8 +60,8 @@ export function MfaSettings({ enabled }: { enabled: boolean }) {
           <h3 className="text-sm font-semibold text-ink">Verificação em duas etapas</h3>
           <p className="mt-0.5 text-[12px] text-ink-muted">
             {enabled
-              ? "Ativa — o login pede um código do app autenticador além da senha."
-              : "Desativada — pra mais segurança, ative usando um app autenticador (Google Authenticator, Authy, etc.)."}
+              ? "Ativa: o login pede um código do app autenticador além da senha."
+              : "Desativada. Pra mais segurança, ative usando um app autenticador (Google Authenticator, Authy, etc.)."}
           </p>
         </div>
         {enabled ? (

@@ -130,7 +130,7 @@ export function MyProfileForm({
           className="rounded-md border border-gold-deep/40 bg-surface-2 px-2.5 py-2 text-sm text-ink outline-none focus:border-gold"
         />
         <span className="text-[10.5px] text-ink-faint">
-          É só sua — não afeta a meta oficial nem a comissão definida pelo Mediador.
+          É só sua, não afeta a meta oficial nem a comissão definida pelo Mediador.
         </span>
       </label>
 

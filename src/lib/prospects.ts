@@ -313,7 +313,7 @@ export async function approveActivation(session: Session, requestId: string) {
       ownerId: prospect.ownerId,
       contactId: contact.id,
       stageId: firstStage.id,
-      name: `${prospect.clientName} — Negociação`,
+      name: `${prospect.clientName} · Negociação`,
       value: request.valor,
       paymentMethod: request.condicaoPagamento,
     },

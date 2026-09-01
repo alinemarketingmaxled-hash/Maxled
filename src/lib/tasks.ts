@@ -80,7 +80,7 @@ export async function getOverdueSellerAlerts(
   const nameById = new Map(owners.map((o) => [o.id, o.name]));
 
   return relevant
-    .map((r) => ({ ownerId: r.ownerId, ownerName: nameById.get(r.ownerId) ?? "—", count: r._count._all }))
+    .map((r) => ({ ownerId: r.ownerId, ownerName: nameById.get(r.ownerId) ?? "-", count: r._count._all }))
     .sort((a, b) => b.count - a.count);
 }
 

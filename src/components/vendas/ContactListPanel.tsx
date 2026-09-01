@@ -37,7 +37,7 @@ export function ContactListPanel({
               <div className="truncate text-[12.5px] font-semibold text-ink">
                 {c.firstName} {c.lastName}
               </div>
-              <div className="truncate text-[10.5px] text-ink-faint">{c.accountName ?? "—"}</div>
+              <div className="truncate text-[10.5px] text-ink-faint">{c.accountName ?? "-"}</div>
             </div>
           </Link>
         );

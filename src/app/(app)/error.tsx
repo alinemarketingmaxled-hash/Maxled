@@ -20,7 +20,7 @@ export default function AppError({
     <div className="flex flex-1 flex-col items-center justify-center gap-4 p-10 text-center">
       <h2 className="font-display text-xl text-ink">Algo deu errado</h2>
       <p className="max-w-sm text-sm text-ink-muted">
-        Essa parte do CRM travou de forma inesperada. Tente novamente — se continuar
+        Essa parte do CRM travou de forma inesperada. Tente novamente; se continuar
         acontecendo, me avise o que você estava fazendo.
       </p>
       <button
