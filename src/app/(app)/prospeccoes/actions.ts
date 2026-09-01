@@ -218,6 +218,10 @@ function readActivationInput(
       latitude: numVal("latitude"),
       longitude: numVal("longitude"),
       notes: str("notes"),
+      taxRegime: str("taxRegime"),
+      companySize: str("companySize"),
+      website: str("website"),
+      businessReferences: str("businessReferences"),
     },
   };
 }

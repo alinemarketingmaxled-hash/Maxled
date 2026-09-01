@@ -243,6 +243,10 @@ export type ContactInput = {
   crmStatus?: CrmStatus | null;
   nextContactAt?: Date | null;
   notes?: string | null;
+  taxRegime?: string | null;
+  companySize?: string | null;
+  website?: string | null;
+  businessReferences?: string | null;
 };
 
 /** actorId defaults to the caller (the normal case: whoever is creating the

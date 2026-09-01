@@ -193,6 +193,10 @@ export type ActivationInput = {
   latitude?: number | null;
   longitude?: number | null;
   notes?: string | null;
+  taxRegime?: string | null;
+  companySize?: string | null;
+  website?: string | null;
+  businessReferences?: string | null;
 };
 
 /** Seller/manager submits the sintegra-style form to request turning a
@@ -298,6 +302,10 @@ export async function approveActivation(session: Session, requestId: string) {
       latitude: request.latitude,
       longitude: request.longitude,
       notes: request.notes,
+      taxRegime: request.taxRegime,
+      companySize: request.companySize,
+      website: request.website,
+      businessReferences: request.businessReferences,
     },
     prospect.ownerId,
   );
