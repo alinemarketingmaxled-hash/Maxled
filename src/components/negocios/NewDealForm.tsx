@@ -111,7 +111,7 @@ export function NewDealForm({
       )}
 
       <div className="flex flex-col gap-1 text-xs">
-        <span className="text-ink-faint">Empresa / cliente — também será o título do negócio</span>
+        <span className="text-ink-faint">Empresa / cliente (também será o título do negócio)</span>
         {selected ? (
           <div className="rounded-md border border-gold-deep/40 bg-surface-2 p-2.5">
             <input
@@ -125,10 +125,10 @@ export function NewDealForm({
               </span>
               <span>
                 Telefone:{" "}
-                <span className="text-ink">{selected.phone ?? selected.mobile ?? "—"}</span>
+                <span className="text-ink">{selected.phone ?? selected.mobile ?? "-"}</span>
               </span>
               <span>
-                CNPJ: <span className="text-ink">{selected.cnpj ?? "—"}</span>
+                CNPJ: <span className="text-ink">{selected.cnpj ?? "-"}</span>
               </span>
             </div>
             <button

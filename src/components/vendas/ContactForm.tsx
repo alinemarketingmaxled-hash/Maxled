@@ -98,7 +98,7 @@ function Select({
         defaultValue={defaultValue ?? ""}
         className="rounded-md border border-gold-deep/40 bg-surface-2 px-2.5 py-2 text-sm text-ink outline-none focus:border-gold"
       >
-        <option value="">—</option>
+        <option value="">-</option>
         {options.map((o) => (
           <option key={o.value} value={o.value}>
             {o.label}
@@ -113,7 +113,7 @@ function DuplicateWarning({ match, label }: { match: ContactDuplicateMatch; labe
   return (
     <p className="col-span-2 -mt-2 rounded-md border border-warning/40 bg-warning/10 px-2.5 py-1.5 text-[11px] text-warning">
       Já existe um contato com este {label}: {match.name}
-      {match.accountName ? ` (${match.accountName})` : ""} —{" "}
+      {match.accountName ? ` (${match.accountName})` : ""}.{" "}
       <Link href={`/vendas?id=${match.id}`} className="font-semibold underline">
         abrir contato existente
       </Link>
@@ -223,7 +223,7 @@ export function ContactForm({
       if (!outcome.ok) {
         setCnpjError(
           outcome.reason === "invalid"
-            ? "CNPJ incompleto — digite os 14 números do CNPJ."
+            ? "CNPJ incompleto. Digite os 14 números do CNPJ."
             : outcome.reason === "not_found"
               ? "CNPJ não encontrado na Receita Federal. Confira o número ou preencha manualmente."
               : "Não foi possível consultar o CNPJ agora (falha de conexão). Tente de novo em instantes ou preencha manualmente.",
@@ -254,7 +254,7 @@ export function ContactForm({
       if (!outcome.ok) {
         setCepError(
           outcome.reason === "invalid"
-            ? "CEP incompleto — digite os 8 números do CEP."
+            ? "CEP incompleto. Digite os 8 números do CEP."
             : outcome.reason === "not_found"
               ? "CEP não encontrado. Confira o número ou preencha manualmente."
               : "Não foi possível consultar o CEP agora (falha de conexão). Tente de novo em instantes ou preencha manualmente.",
@@ -300,7 +300,7 @@ export function ContactForm({
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-6">
       <p className="-mt-2 rounded-md bg-surface-2 px-3 py-2 text-[11.5px] text-ink-muted">
-        Cadastro rápido: preencha Nome, Sobrenome e um jeito de contato (e-mail ou celular) — o resto pode ser
+        Cadastro rápido: preencha Nome, Sobrenome e um jeito de contato (e-mail ou celular). O resto pode ser
         completado depois.
       </p>
 
@@ -420,7 +420,7 @@ export function ContactForm({
               onChange={(e) => setProfileSelect(e.target.value)}
               className="rounded-md border border-gold-deep/40 bg-surface-2 px-2.5 py-2 text-sm text-ink outline-none focus:border-gold"
             >
-              <option value="">—</option>
+              <option value="">-</option>
               {FIXED_PROFILES.map((p) => (
                 <option key={p} value={p}>
                   {p}

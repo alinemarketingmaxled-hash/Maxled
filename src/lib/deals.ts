@@ -42,7 +42,7 @@ export async function listOpenDealsBrief(session: Session) {
   });
   return deals.map((d) => ({
     id: d.id,
-    label: `${d.name} — ${d.contact.accountName || `${d.contact.firstName} ${d.contact.lastName}`}`,
+    label: `${d.name} · ${d.contact.accountName || `${d.contact.firstName} ${d.contact.lastName}`}`,
   }));
 }
 
@@ -277,7 +277,7 @@ export async function moveDeal(session: Session, dealId: string, newStageId: str
       action: "updated",
       dealId,
       diff: {
-        note: "Lembrete: envie a mensagem de pós-venda pelo WhatsApp (abra a conversa pelo ícone 📱 na ficha do cliente).",
+        note: "Lembrete: envie a mensagem de pós-venda pelo WhatsApp (abra a conversa pelo botão de WhatsApp na ficha do cliente).",
         deadline: data.onTheWayDeadline,
       } as Prisma.InputJsonValue,
     });

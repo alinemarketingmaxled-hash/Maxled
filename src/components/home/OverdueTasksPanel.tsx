@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toggleTaskAction, deleteTaskAction } from "@/app/(app)/agenda/actions";
 import type { TaskRow } from "@/components/agenda/TaskList";
+import { ClockIcon, LinkIcon } from "@/components/shared/Icons";
 
 export function OverdueTasksPanel({ tasks, canEdit }: { tasks: TaskRow[]; canEdit: boolean }) {
   const router = useRouter();
@@ -32,14 +33,16 @@ export function OverdueTasksPanel({ tasks, canEdit }: { tasks: TaskRow[]; canEdi
   return (
     <div className="rounded-xl border border-critical/30 bg-surface p-4">
       <div className="mb-3">
-        <h3 className="font-display text-lg text-ink">⏰ Atrasos</h3>
+        <h3 className="flex items-center gap-1.5 font-display text-lg text-ink">
+          <ClockIcon className="h-4 w-4" /> Atrasos
+        </h3>
         <p className="mt-0.5 text-[12px] text-ink-muted">
           Tarefas com prazo vencido que ainda não foram concluídas
         </p>
       </div>
 
       {visible.length === 0 ? (
-        <p className="text-[12.5px] text-ink-faint">Nada atrasado — tudo em dia!</p>
+        <p className="text-[12.5px] text-ink-faint">Nada atrasado, tudo em dia!</p>
       ) : (
         <div className="flex flex-col gap-2">
           {visible.map((t) => (
@@ -50,15 +53,15 @@ export function OverdueTasksPanel({ tasks, canEdit }: { tasks: TaskRow[]; canEdi
               <div className="min-w-0 flex-1">
                 <div className="truncate text-[13px] font-semibold text-ink">{t.title}</div>
                 <div className="text-[11px] text-critical">
-                  Venceu em {t.dueDate ? new Date(t.dueDate).toLocaleDateString("pt-BR") : "—"} ·{" "}
+                  Venceu em {t.dueDate ? new Date(t.dueDate).toLocaleDateString("pt-BR") : "-"} ·{" "}
                   {t.ownerName}
                 </div>
                 {t.dealId && (
                   <Link
                     href={`/negocios/${t.dealId}`}
-                    className="mt-0.5 inline-block text-[11px] text-gold-bright hover:underline"
+                    className="mt-0.5 inline-flex items-center gap-1 text-[11px] text-gold-bright hover:underline"
                   >
-                    🔗 {t.dealName}
+                    <LinkIcon className="h-3 w-3" /> {t.dealName}
                   </Link>
                 )}
               </div>

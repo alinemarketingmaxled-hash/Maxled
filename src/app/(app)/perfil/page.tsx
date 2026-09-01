@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireView } from "@/lib/require-permission";
 import { canEdit } from "@/lib/permissions";
 import { listVendors, getTodaysBirthdays } from "@/lib/users";
+import { GiftIcon } from "@/components/shared/Icons";
 
 const ROLE_LABELS: Record<string, string> = {
   ADMIN: "Admin",
@@ -12,7 +13,7 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 function currency(v: number | null) {
-  if (v === null) return "—";
+  if (v === null) return "-";
   return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 }
 
@@ -25,7 +26,7 @@ export default async function PerfilPage() {
     <div>
       <div className="mb-4 flex items-baseline justify-between gap-4">
         <div>
-          <h2 className="font-display text-[22px] text-ink">Perfil — Mediador</h2>
+          <h2 className="font-display text-[22px] text-ink">Perfil do Mediador</h2>
           <p className="mt-0.5 text-[13px] text-ink-muted">
             Acesso total a todos os perfis · cadastro de vendedores
           </p>
@@ -41,8 +42,8 @@ export default async function PerfilPage() {
       </div>
 
       {birthdaysToday.length > 0 && (
-        <div className="mb-4 rounded-xl border border-gold bg-gold/10 px-4 py-2.5 text-sm text-ink">
-          🎂 Aniversário hoje: {birthdaysToday.map((v) => v.name).join(", ")}
+        <div className="mb-4 flex items-center gap-1.5 rounded-xl border border-gold bg-gold/10 px-4 py-2.5 text-sm text-ink">
+          <GiftIcon className="h-4 w-4" /> Aniversário hoje: {birthdaysToday.map((v) => v.name).join(", ")}
         </div>
       )}
 
@@ -68,7 +69,7 @@ export default async function PerfilPage() {
                   {ROLE_LABELS[v.role] ?? v.role}
                 </td>
                 <td className="border-b border-dashed border-gold-deep/18 px-3 py-2.5 text-ink-muted">
-                  {v.jobTitle ?? "—"}
+                  {v.jobTitle ?? "-"}
                 </td>
                 <td className="border-b border-dashed border-gold-deep/18 px-3 py-2.5 text-ink tabular-nums">
                   {currency(v.goal1 ? Number(v.goal1) : null)}
@@ -77,11 +78,11 @@ export default async function PerfilPage() {
                   {currency(v.goal2 ? Number(v.goal2) : null)}
                 </td>
                 <td className="border-b border-dashed border-gold-deep/18 px-3 py-2.5 text-ink-muted tabular-nums">
-                  {v.commissionPct1 ? `${Number(v.commissionPct1)}%` : "—"} /{" "}
-                  {v.commissionPct2 ? `${Number(v.commissionPct2)}%` : "—"}
+                  {v.commissionPct1 ? `${Number(v.commissionPct1)}%` : "-"} /{" "}
+                  {v.commissionPct2 ? `${Number(v.commissionPct2)}%` : "-"}
                 </td>
                 <td className="border-b border-dashed border-gold-deep/18 px-3 py-2.5 text-ink-muted tabular-nums">
-                  {v.birthday ? v.birthday.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }) : "—"}
+                  {v.birthday ? v.birthday.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }) : "-"}
                 </td>
                 <td className="border-b border-dashed border-gold-deep/18 px-3 py-2.5 text-right">
                   {editable && (

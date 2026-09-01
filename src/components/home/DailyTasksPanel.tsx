@@ -2,21 +2,23 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import type { ComponentType } from "react";
 import type { CallTask, DailyTasks } from "@/lib/calls";
 import { logCallOutcomeAction } from "@/app/(app)/actions";
+import { PhoneIcon, ClipboardIcon, AlertTriangleIcon, type IconProps } from "@/components/shared/Icons";
 
-const SECTIONS: Array<{ key: keyof DailyTasks; title: string; icon: string; empty: string }> = [
-  { key: "toCall", title: "Clientes a ligar", icon: "☎", empty: "Nenhuma ligação pendente hoje." },
+const SECTIONS: Array<{ key: keyof DailyTasks; title: string; icon: ComponentType<IconProps>; empty: string }> = [
+  { key: "toCall", title: "Clientes a ligar", icon: PhoneIcon, empty: "Nenhuma ligação pendente hoje." },
   {
     key: "toQuote",
     title: "Clientes a enviar pedido / cotação",
-    icon: "📄",
+    icon: ClipboardIcon,
     empty: "Nenhum pedido ou cotação pendente.",
   },
   {
     key: "urgent",
     title: "Ligar urgentemente (6+ meses sem contato)",
-    icon: "⚠",
+    icon: AlertTriangleIcon,
     empty: "Nenhum cliente parado há 6 meses ou mais.",
   },
 ];
@@ -106,7 +108,7 @@ export function DailyTasksPanel({ tasks }: { tasks: DailyTasks }) {
           return (
             <div key={section.key}>
               <div className="mb-2 flex items-center gap-1.5 text-[11.5px] font-semibold uppercase tracking-wide text-ink-faint">
-                <span>{section.icon}</span>
+                <section.icon className="h-3.5 w-3.5" />
                 {section.title}
                 {items.length > 0 && (
                   <span className="ml-auto rounded-full bg-surface-2 px-1.5 text-[10.5px] text-ink-muted">

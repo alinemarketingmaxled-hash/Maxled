@@ -109,7 +109,7 @@ export async function getDailyTasks(session: Session): Promise<DailyTasks> {
         contactId: c.id,
         contactName: c.accountName || `${c.firstName} ${c.lastName}`,
         phone: c.mobile ?? c.phone,
-        reason: `Cliente sem contato há ${months} meses — risco de perda`,
+        reason: `Cliente sem contato há ${months} meses, risco de perda`,
       };
     })
     .sort((a, b) => b.reason.localeCompare(a.reason));

@@ -12,6 +12,7 @@ import {
   deleteStageAction,
 } from "@/app/(app)/negocios/actions";
 import { DealDetailModal } from "@/components/negocios/DealDetailModal";
+import { StarIcon, PaperclipIcon, PhoneIcon, MailIcon } from "@/components/shared/Icons";
 
 type StageWithDeals = {
   id: string;
@@ -106,11 +107,13 @@ function DealCard({
         {deal.owner.name}
         {hasFlaggedNote && (
           <span className="ml-auto text-gold-bright" title="Tem mensagem marcada">
-            ★
+            <StarIcon filled className="h-3 w-3" />
           </span>
         )}
         {deal.notes.length > 0 && (
-          <span className={hasFlaggedNote ? "" : "ml-auto"}>📎 {deal.notes.length}</span>
+          <span className={`flex items-center gap-1 ${hasFlaggedNote ? "" : "ml-auto"}`}>
+            <PaperclipIcon className="h-3 w-3" /> {deal.notes.length}
+          </span>
         )}
         {daysLeft !== null && (
           <span
@@ -135,7 +138,7 @@ function DealCard({
               }}
               className="flex items-center gap-1 rounded-md bg-surface-3 px-1.5 py-0.5 text-[10px] text-ink-muted hover:text-gold-bright"
             >
-              📞 Ligar
+              <PhoneIcon className="h-3 w-3" /> Ligar
             </button>
           )}
           {deal.contact.email && (
@@ -149,7 +152,7 @@ function DealCard({
               }}
               className="flex items-center gap-1 rounded-md bg-surface-3 px-1.5 py-0.5 text-[10px] text-ink-muted hover:text-gold-bright"
             >
-              ✉️ E-mail
+              <MailIcon className="h-3 w-3" /> E-mail
             </button>
           )}
         </div>

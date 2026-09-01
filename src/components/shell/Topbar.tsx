@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { LogoutButton } from "@/components/LogoutButton";
 import { SearchBar } from "@/components/shell/SearchBar";
+import { MenuIcon } from "@/components/shared/Icons";
 
 const ROLE_LABELS: Record<string, string> = {
   ADMIN: "Admin",
@@ -36,7 +37,7 @@ export function Topbar({
           aria-label="Abrir menu"
           className="flex h-8 w-8 flex-none items-center justify-center rounded-md border border-gold-deep/40 text-ink-muted hover:border-gold hover:text-ink lg:hidden"
         >
-          ☰
+          <MenuIcon className="h-4 w-4" />
         </button>
       )}
       <SearchBar />

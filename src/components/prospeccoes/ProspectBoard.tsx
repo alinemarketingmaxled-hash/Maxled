@@ -19,6 +19,7 @@ import {
 } from "@/app/(app)/prospeccoes/actions";
 import { lookupCnpjAction } from "@/app/(app)/vendas/actions";
 import { Avatar } from "@/components/shared/Avatar";
+import { CheckIcon, LockIcon } from "@/components/shared/Icons";
 
 export type StageValue = { stageId: string; date: string | null; note: string | null; done: boolean };
 export type Activation = { id: string; status: "PENDENTE" | "APROVADO" | "RECUSADO"; rejectionReason: string | null };
@@ -74,25 +75,6 @@ const TEMP_CLASS: Record<ProspectRow["temperature"], string> = {
 const PROFILE_PRESETS = ["Indústria", "Pessoa física", "Distribuidor", "Outro"];
 const ATRASO_DAYS = 7;
 
-/** Small inline icons for the board's cell states — green check for a
- * filled/done stage, muted lock for one not unlocked yet. Colored via
- * currentColor + a text-* class so they follow the same light/dark theme
- * tokens as the rest of the app instead of a hardcoded hex. */
-function CheckIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 16 16" width="12" height="12" fill="none" className={className} aria-hidden="true">
-      <path d="M3 8.5L6.2 11.5L13 4.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-function LockIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 16 16" width="12" height="12" fill="none" className={className} aria-hidden="true">
-      <rect x="3.5" y="7" width="9" height="6.5" rx="1.3" stroke="currentColor" strokeWidth="1.4" />
-      <path d="M5.3 7V5A2.7 2.7 0 0 1 8 2.3v0A2.7 2.7 0 0 1 10.7 5v2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-    </svg>
-  );
-}
 
 function currency(v: number) {
   return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -227,10 +209,14 @@ export function ProspectBoard({
                   : "border-critical/40 bg-critical/10 text-critical"
               }`}
             >
-              <span>
-                {n.status === "APROVADO"
-                  ? `"${n.clientName}" foi aceito como cliente ativo! ✓`
-                  : `"${n.clientName}" foi recusado como cliente.${n.rejectionReason ? ` Motivo: ${n.rejectionReason}` : ""}`}
+              <span className="inline-flex items-center gap-1">
+                {n.status === "APROVADO" ? (
+                  <>
+                    {`"${n.clientName}" foi aceito como cliente ativo!`} <CheckIcon className="h-3.5 w-3.5" />
+                  </>
+                ) : (
+                  `"${n.clientName}" foi recusado como cliente.${n.rejectionReason ? ` Motivo: ${n.rejectionReason}` : ""}`
+                )}
               </span>
               <button
                 onClick={() => setDismissedNotices((prev) => new Set(prev).add(n.id))}
@@ -330,7 +316,7 @@ export function ProspectBoard({
                       disabled={addingColumnBusy}
                       className="text-[11px] font-semibold text-gold-bright hover:underline disabled:opacity-60"
                     >
-                      ✓
+                      <CheckIcon className="h-3 w-3" />
                     </button>
                     <button
                       onClick={() => {
@@ -396,7 +382,7 @@ export function ProspectBoard({
                       return (
                         <td key={s.id} className="border-b border-l border-gold-deep/10 px-3 py-2.5 align-top">
                           <span className="flex items-center gap-1 text-[11px] text-ink-faint">
-                            <LockIcon className="text-ink-faint" /> Conclua a etapa anterior
+                            <LockIcon className="h-3 w-3" /> Conclua a etapa anterior
                           </span>
                         </td>
                       );
@@ -431,8 +417,8 @@ export function ProspectBoard({
                               </button>
                             </div>
                           ) : (
-                            <span className="rounded-full bg-good/15 px-1.5 py-0.5 text-[10.5px] font-semibold text-good">
-                              Convertido ✓
+                            <span className="flex items-center gap-1 rounded-full bg-good/15 px-1.5 py-0.5 text-[10.5px] font-semibold text-good">
+                              Convertido <CheckIcon className="h-3 w-3" />
                             </span>
                           )}
                         </td>
@@ -447,10 +433,9 @@ export function ProspectBoard({
                           {value?.date || value?.note ? (
                             <div className="text-[11.5px] leading-snug">
                               <div className="flex items-center gap-1 text-ink-muted">
-                                Data: {formatDate(value.date) ?? "—"}
-                                {value.done && <CheckIcon className="text-good" />}
+                                Data: {formatDate(value.date) ?? "-"} {value.done && <CheckIcon className="h-3 w-3 text-good" />}
                               </div>
-                              <div className="truncate text-ink-faint">Obs.: {value.note || "—"}</div>
+                              <div className="truncate text-ink-faint">Obs.: {value.note || "-"}</div>
                             </div>
                           ) : s.id === preClientStageId ? (
                             <div className="text-[11.5px] font-semibold leading-snug text-gold-bright">
@@ -869,7 +854,7 @@ function EditProspectModal({
   }
 
   return (
-    <ModalShell title={`Editar — ${prospect.clientName}`} onClose={onClose}>
+    <ModalShell title={`Editar: ${prospect.clientName}`} onClose={onClose}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">
         {error && <p className="rounded-md bg-critical/10 px-2.5 py-1.5 text-xs text-critical">{error}</p>}
         <label className="flex flex-col gap-1 text-xs">
@@ -990,7 +975,7 @@ function StageCellModal({
     }
     if (done && scheduleReturn && returnDate) {
       const taskFd = new FormData();
-      taskFd.set("title", `Retorno — ${prospect.clientName} (${stage.name})`);
+      taskFd.set("title", `Retorno: ${prospect.clientName} (${stage.name})`);
       taskFd.set("dueDate", returnDate);
       taskFd.set("link", `prospect:${prospect.id}`);
       const taskResult = await scheduleTaskAction(taskFd);
@@ -1016,7 +1001,7 @@ function StageCellModal({
   }
 
   return (
-    <ModalShell title={`${stage.name} — ${prospect.clientName}`} onClose={onClose}>
+    <ModalShell title={`${stage.name}: ${prospect.clientName}`} onClose={onClose}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">
         {error && <p className="rounded-md bg-critical/10 px-2.5 py-1.5 text-xs text-critical">{error}</p>}
         <label className="flex flex-col gap-1 text-xs">
@@ -1191,7 +1176,7 @@ function NegociacaoCellModal({
     if (!outcome.ok) {
       setCnpjError(
         outcome.reason === "invalid"
-          ? "CNPJ incompleto — digite os 14 números do CNPJ."
+          ? "CNPJ incompleto. Digite os 14 números do CNPJ."
           : outcome.reason === "not_found"
             ? "CNPJ não encontrado na Receita Federal. Confira o número ou preencha manualmente."
             : "Não foi possível consultar o CNPJ agora (falha de conexão). Tente de novo em instantes ou preencha manualmente.",
@@ -1229,7 +1214,7 @@ function NegociacaoCellModal({
     if (!outcome.ok) {
       setCepError(
         outcome.reason === "invalid"
-          ? "CEP incompleto — digite os 8 números do CEP."
+          ? "CEP incompleto. Digite os 8 números do CEP."
           : outcome.reason === "not_found"
             ? "CEP não encontrado. Confira o número ou preencha manualmente."
             : "Não foi possível consultar o CEP agora (falha de conexão). Tente de novo em instantes ou preencha manualmente.",
@@ -1281,7 +1266,7 @@ function NegociacaoCellModal({
   }
 
   return (
-    <ModalShell title={`${stage.name} — ${prospect.clientName}`} onClose={onClose}>
+    <ModalShell title={`${stage.name}: ${prospect.clientName}`} onClose={onClose}>
       <StageProgressDots prospect={prospect} currentStageId={stage.id} stages={stages} />
       <form onSubmit={handleSubmit} className="mt-2 flex flex-col gap-2.5">
         {error && <p className="rounded-md bg-critical/10 px-2.5 py-1.5 text-xs text-critical">{error}</p>}
@@ -1307,7 +1292,7 @@ function NegociacaoCellModal({
 
         {prospect.activation ? (
           <p className="rounded-md border border-gold-deep/25 bg-surface-2/50 p-2.5 text-[11px] text-ink-faint">
-            Já enviado para aprovação — veja o status na coluna Cliente Ativo.
+            Já enviado para aprovação. Veja o status na coluna Cliente Ativo.
           </p>
         ) : (
           <label className="flex items-center gap-2 text-xs text-ink-muted">
@@ -1326,7 +1311,7 @@ function NegociacaoCellModal({
 
         {submitClient && (
           <div className="flex flex-col gap-2.5 rounded-md border border-gold-deep/25 bg-surface-2/50 p-2.5">
-            <p className="text-[11px] text-ink-faint">Mesmos dados do Sintegra — vai direto pro Diretor aprovar.</p>
+            <p className="text-[11px] text-ink-faint">Mesmos dados do Sintegra. Vai direto pro Diretor aprovar.</p>
             <label className="flex flex-col gap-1 text-xs">
               <span className="text-ink-faint">Razão social</span>
               <input
@@ -1410,7 +1395,7 @@ function NegociacaoCellModal({
                   setEnderecoFaturamento(e.target.value);
                   if (sameAddress) setEnderecoEntrega(e.target.value);
                 }}
-                placeholder="Preenchido automaticamente ao buscar o CEP ou o CNPJ — complete com número/complemento"
+                placeholder="Preenchido automaticamente ao buscar o CEP ou o CNPJ (complete com número/complemento)"
                 className={inputClass}
               />
             </label>
@@ -1522,7 +1507,7 @@ function NegociacaoCellModal({
               <label className="flex flex-col gap-1 text-xs">
                 <span className="text-ink-faint">Tipo de pessoa</span>
                 <select name="personType" defaultValue="" className={inputClass}>
-                  <option value="">—</option>
+                  <option value="">-</option>
                   <option value="FISICA">Física</option>
                   <option value="JURIDICA">Jurídica</option>
                 </select>
@@ -1530,7 +1515,7 @@ function NegociacaoCellModal({
               <label className="flex flex-col gap-1 text-xs">
                 <span className="text-ink-faint">Potencial comercial</span>
                 <select name="commercialPotential" defaultValue="" className={inputClass}>
-                  <option value="">—</option>
+                  <option value="">-</option>
                   <option value="ALTO">Alto</option>
                   <option value="MEDIO">Médio</option>
                   <option value="BAIXO">Baixo</option>
@@ -1649,7 +1634,7 @@ function ActivationModal({
   }
 
   return (
-    <ModalShell title={`Tornar cliente ativo — ${prospect.clientName}`} onClose={onClose}>
+    <ModalShell title={`Tornar cliente ativo: ${prospect.clientName}`} onClose={onClose}>
       <p className="mb-2.5 text-[11px] text-ink-faint">
         Mesmos dados do Sintegra. Depois de enviar, o Diretor precisa aprovar antes do cliente e a negociação
         aparecerem em Clientes/Negócios.

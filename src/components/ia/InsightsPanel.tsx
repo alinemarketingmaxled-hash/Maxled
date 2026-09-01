@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import type { SalesInsights } from "@/lib/ai";
 import { generateInsightsAction } from "@/app/(app)/ia/actions";
+import { SparkleIcon, GearIcon, TrendingUpIcon, AlertTriangleIcon, RepeatIcon, LightbulbIcon } from "@/components/shared/Icons";
 
 function currency(value: number) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -33,7 +34,7 @@ export function InsightsPanel() {
       <div className="mb-5 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 flex-none items-center justify-center rounded-full border border-gold-deep bg-surface-3 text-lg text-gold-bright">
-            ✧
+            <SparkleIcon className="h-4 w-4" />
           </div>
           <div>
             <h3 className="font-display text-lg text-ink">Previsão &amp; oportunidades</h3>
@@ -68,19 +69,27 @@ export function InsightsPanel() {
       {insights && (
         <div className="flex flex-col gap-5">
           <span
-            className={`self-start rounded-full px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-wide ${
+            className={`inline-flex w-fit items-center gap-1 self-start rounded-full px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-wide ${
               insights.source === "ai"
                 ? "bg-gold/15 text-gold-bright"
                 : "bg-surface-3 text-ink-faint"
             }`}
           >
-            {insights.source === "ai" ? "✧ Gerado por IA (Claude)" : "⚙ Análise automática (sem custo)"}
+            {insights.source === "ai" ? (
+              <>
+                <SparkleIcon className="h-3 w-3" /> Gerado por IA (Claude)
+              </>
+            ) : (
+              <>
+                <GearIcon className="h-3 w-3" /> Análise automática (sem custo)
+              </>
+            )}
           </span>
           <div className="rounded-lg border border-gold/30 bg-gradient-to-br from-gold/10 via-surface-2 to-surface-2 p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-2.5">
                 <span className="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-surface-3 text-base">
-                  📈
+                  <TrendingUpIcon className="h-4 w-4" />
                 </span>
                 <span className="text-[11.5px] font-semibold uppercase tracking-wide text-ink-faint">
                   Previsão próximo mês
@@ -98,7 +107,7 @@ export function InsightsPanel() {
 
           <div>
             <h4 className="mb-2 flex items-center gap-1.5 text-[11.5px] font-semibold uppercase tracking-wide text-ink-faint">
-              <span>⚠</span> Negócios que precisam de atenção
+              <AlertTriangleIcon className="h-3.5 w-3.5" /> Negócios que precisam de atenção
             </h4>
             {insights.alerts.length === 0 ? (
               <p className="text-[12.5px] text-ink-faint">Nenhum alerta no momento.</p>
@@ -125,7 +134,7 @@ export function InsightsPanel() {
 
           <div>
             <h4 className="mb-2 flex items-center gap-1.5 text-[11.5px] font-semibold uppercase tracking-wide text-ink-faint">
-              <span>🔁</span> Oportunidades de cross-sell
+              <RepeatIcon className="h-3.5 w-3.5" /> Oportunidades de cross-sell
             </h4>
             {insights.crossSell.length === 0 ? (
               <p className="text-[12.5px] text-ink-faint">Nenhuma sugestão no momento.</p>
@@ -145,7 +154,7 @@ export function InsightsPanel() {
           </div>
 
           <div className="flex items-start gap-2.5 rounded-lg border border-gold/40 bg-gold/10 p-3.5">
-            <span className="mt-0.5 flex-none text-base">💡</span>
+            <LightbulbIcon className="mt-0.5 h-4 w-4 flex-none" />
             <div>
               <span className="text-[11.5px] font-semibold uppercase tracking-wide text-gold-bright">
                 Dica estratégica

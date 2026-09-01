@@ -62,7 +62,7 @@ export async function listOpenDealsBrief(session: Session) {
   });
   return deals.map((d) => ({
     id: d.id,
-    label: `${d.name} — ${d.contact.accountName || `${d.contact.firstName} ${d.contact.lastName}`} (${d.stage.name})`,
+    label: `${d.name} · ${d.contact.accountName || `${d.contact.firstName} ${d.contact.lastName}`} (${d.stage.name})`,
     phone: d.contact.mobile ?? d.contact.phone,
   }));
 }
@@ -206,14 +206,14 @@ function heuristicSalesInsights(data: Awaited<ReturnType<typeof fetchInsightsDat
       reasoning: `Já fechou ${c.wonDeals} negócio(s) totalizando ${c.totalValue.toLocaleString("pt-BR", {
         style: "currency",
         currency: "BRL",
-      })} — bom candidato a um novo contato.`,
+      })}, bom candidato a um novo contato.`,
     }));
 
   const staleCount = dealsPayload.filter((d) => d.daysSinceUpdate > 14).length;
   const tip =
     staleCount > 0
-      ? `Você tem ${staleCount} negócio(s) parados há mais de 14 dias — priorize retomar contato com eles esta semana.`
-      : "Seus negócios em aberto estão com contato em dia — continue o ritmo de acompanhamento.";
+      ? `Você tem ${staleCount} negócio(s) parados há mais de 14 dias. Priorize retomar contato com eles esta semana.`
+      : "Seus negócios em aberto estão com contato em dia. Continue o ritmo de acompanhamento.";
 
   return {
     source: "heuristic",
@@ -360,16 +360,16 @@ function heuristicDealAssist(deal: DealSummary, mode: DealAssistMode, context?: 
   if (mode === "tips") {
     const tips: string[] = [];
     if (deal.daysSinceUpdate > 14) {
-      tips.push(`Esse negócio está sem atualização há ${deal.daysSinceUpdate} dias — vale retomar contato esta semana.`);
+      tips.push(`Esse negócio está sem atualização há ${deal.daysSinceUpdate} dias. Vale retomar contato esta semana.`);
     } else {
-      tips.push(`Atualizado recentemente (há ${deal.daysSinceUpdate} dia(s)) — bom momento para dar o próximo passo.`);
+      tips.push(`Atualizado recentemente (há ${deal.daysSinceUpdate} dia(s)). Bom momento para dar o próximo passo.`);
     }
     if (deal.recentNotes.length === 0) {
-      tips.push("Ainda não há notas registradas neste negócio — registre o histórico de conversas para acompanhar melhor.");
+      tips.push("Ainda não há notas registradas neste negócio. Registre o histórico de conversas para acompanhar melhor.");
     }
     tips.push(`Confirme com "${deal.contact}" os próximos passos para avançar da etapa "${deal.stage}".`);
     if (deal.value > 0) {
-      tips.push(`Negócio de valor considerável — priorize o acompanhamento próximo até o fechamento.`);
+      tips.push(`Negócio de valor considerável. Priorize o acompanhamento próximo até o fechamento.`);
     }
     return tips.slice(0, 4).join("\n");
   }
@@ -492,7 +492,7 @@ function heuristicContactAssist(c: ContactSummary, mode: ContactAssistMode, cont
         ? `Já comprou ${c.quantidadeComprada} vez(es), totalizando ${c.valorComprado.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}.`
         : "Ainda não tem nenhuma compra registrada no histórico.",
     );
-    lines.push(`Sem contato há ${c.diasSemContato} dia(s) — prioridade ${c.prioridade}.`);
+    lines.push(`Sem contato há ${c.diasSemContato} dia(s), prioridade ${c.prioridade}.`);
     lines.push(c.acaoRecomendada);
     if (c.negociosAbertos.length > 0) {
       const nomes = c.negociosAbertos.map((d) => `"${d.nome}" (${d.etapa})`).join(", ");
@@ -506,7 +506,7 @@ function heuristicContactAssist(c: ContactSummary, mode: ContactAssistMode, cont
   const body = context?.trim()
     ? context.trim()
     : c.quantidadeComprada > 0
-      ? `Estou entrando em contato para saber como você está e se posso ajudar com algo — faz ${c.diasSemContato} dias desde nosso último contato.`
+      ? `Estou entrando em contato para saber como você está e se posso ajudar com algo. Faz ${c.diasSemContato} dias desde nosso último contato.`
       : "Estou entrando em contato para me apresentar e entender se a Maxled pode ajudar com o que você precisa.";
   return `${greeting}\n\n${body}\n\nFico à disposição!`;
 }

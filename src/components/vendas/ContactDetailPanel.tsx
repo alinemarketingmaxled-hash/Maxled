@@ -11,6 +11,7 @@ import { deleteContactAction } from "@/app/(app)/vendas/actions";
 import { addPastSaleAction } from "@/app/(app)/negocios/actions";
 import { WhatsAppSendBox } from "@/components/vendas/WhatsAppSendBox";
 import { DealDetailModal } from "@/components/negocios/DealDetailModal";
+import { MailIcon, SmartphoneIcon } from "@/components/shared/Icons";
 
 /** deals.value is typed as `number`, not Prisma's Decimal — Client
  * Components can't receive Decimal instances from a Server Component
@@ -45,7 +46,7 @@ function formatCurrency(value: number): string {
 }
 
 function formatDate(date: Date | null): string {
-  return date ? date.toLocaleDateString("pt-BR") : "—";
+  return date ? date.toLocaleDateString("pt-BR") : "-";
 }
 
 const ACTION_LABEL: Record<string, string> = {
@@ -69,7 +70,7 @@ function fieldRow(label: string, value: string | null | undefined) {
   return (
     <div className="flex justify-between gap-3 border-b border-gold-deep/10 py-1.5 text-[12.5px]">
       <span className="text-ink-faint">{label}</span>
-      <span className="text-right text-ink">{value || "—"}</span>
+      <span className="text-right text-ink">{value || "-"}</span>
     </div>
   );
 }
@@ -120,7 +121,7 @@ function PastSaleForm({ contactId, ownerId }: { contactId: string; ownerId: stri
     >
       <input type="hidden" name="ownerId" value={ownerId} />
       <p className="text-[11px] text-ink-faint">
-        Para clientes que já compravam antes de entrar no CRM — a venda aparece no histórico e nos
+        Para clientes que já compravam antes de entrar no CRM: a venda aparece no histórico e nos
         relatórios do mês em que ela realmente aconteceu.
       </p>
       <div className="grid grid-cols-3 gap-2">
@@ -202,7 +203,7 @@ export function ContactDetailPanel({
             {contact.firstName} {contact.lastName}
           </h3>
           <p className="text-xs text-ink-muted">
-            {contact.jobTitle ?? "—"} · {contact.accountName ?? "—"}
+            {contact.jobTitle ?? "-"} · {contact.accountName ?? "-"}
           </p>
         </div>
         <div className="ml-auto flex gap-2">
@@ -212,7 +213,7 @@ export function ContactDetailPanel({
               title="Enviar e-mail"
               className="flex h-8 w-8 items-center justify-center rounded-md bg-surface-3 text-ink-muted transition-colors hover:text-gold-bright"
             >
-              ✉
+              <MailIcon className="h-4 w-4" />
             </a>
           )}
           {waNumber && (
@@ -223,7 +224,7 @@ export function ContactDetailPanel({
               title="Abrir WhatsApp"
               className="flex h-8 w-8 items-center justify-center rounded-md bg-surface-3 text-ink-muted transition-colors hover:text-gold-bright"
             >
-              📱
+              <SmartphoneIcon className="h-4 w-4" />
             </a>
           )}
         </div>
@@ -374,7 +375,7 @@ export function ContactDetailPanel({
                   >
                     <span className="mt-1 h-1.5 w-1.5 flex-none rounded-full bg-gold" />
                     <span>
-                      <b className="text-ink">{deal.name}</b> — {formatCurrency(deal.value)} · estágio{" "}
+                      <b className="text-ink">{deal.name}</b> · {formatCurrency(deal.value)} · estágio{" "}
                       {deal.stage.name}
                       <span className="ml-1.5 text-ink-faint">· {formatDate(deal.updatedAt)}</span>
                     </span>

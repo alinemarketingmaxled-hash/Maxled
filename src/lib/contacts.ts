@@ -158,7 +158,7 @@ export function computeContactInsights(
 
   if (diasSemContato > 180 && quantidadeComprada > 0) {
     prioridade = "alta";
-    acaoRecomendada = "Ligar urgentemente — cliente sem contato há mais de 6 meses.";
+    acaoRecomendada = "Ligar urgentemente: cliente sem contato há mais de 6 meses.";
   } else if (openDeal && !openDeal.stage.isOnTheWay) {
     prioridade = "média";
     acaoRecomendada = `Dar andamento ao negócio em "${openDeal.stage.name}".`;

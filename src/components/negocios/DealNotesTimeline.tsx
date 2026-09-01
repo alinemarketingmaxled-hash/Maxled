@@ -6,6 +6,7 @@ import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { addDealNoteAction, toggleDealNoteFlagAction } from "@/app/(app)/negocios/actions";
 import { resizeImageToDataUrl } from "@/lib/resize-image";
+import { PaperclipIcon, PhoneIcon, StarIcon } from "@/components/shared/Icons";
 
 export type TimelineNote = {
   id: string;
@@ -28,7 +29,7 @@ const ACTION_LABEL: Record<string, string> = {
   updated: "atualizou este negócio",
 };
 
-const CALL_PREFIX = "📞 Ligação: ";
+const CALL_PREFIX = "Ligação: ";
 
 /** Shared by the Kanban quick-view modal and the standalone deal page — both
  * show the same note/activity history and need the same "mark a message"
@@ -131,7 +132,7 @@ export function DealNotesTimeline({
               title="Anexar foto/print"
               className="flex cursor-pointer items-center rounded-md border border-gold-deep/40 bg-surface-2 px-2.5 text-xs text-ink-muted hover:text-gold-bright"
             >
-              📎
+              <PaperclipIcon className="h-3.5 w-3.5" />
               <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
             </label>
             <button
@@ -164,15 +165,15 @@ export function DealNotesTimeline({
           <input
             value={callNote}
             onChange={(e) => setCallNote(e.target.value)}
-            placeholder="Registro rápido de ligação — o que foi tratado?"
+            placeholder="Registro rápido de ligação: o que foi tratado?"
             className="flex-1 rounded-md border border-gold-deep/25 bg-surface-2/70 px-2.5 py-1.5 text-[11px] text-ink outline-none focus:border-gold"
           />
           <button
             type="submit"
             disabled={savingCall}
-            className="rounded-md border border-gold-deep/40 px-3 py-1.5 text-[11px] font-semibold text-ink-muted hover:border-gold hover:text-gold-bright disabled:opacity-60"
+            className="flex items-center gap-1 rounded-md border border-gold-deep/40 px-3 py-1.5 text-[11px] font-semibold text-ink-muted hover:border-gold hover:text-gold-bright disabled:opacity-60"
           >
-            📞 Registrar
+            <PhoneIcon className="h-3.5 w-3.5" /> Registrar
           </button>
         </form>
       )}
@@ -208,7 +209,7 @@ export function DealNotesTimeline({
                   note.flagged ? "text-gold-bright" : "text-ink-faint hover:text-gold-bright"
                 }`}
               >
-                {note.flagged ? "★" : "☆"}
+                <StarIcon filled={note.flagged} className="h-3.5 w-3.5" />
               </button>
             )}
           </li>

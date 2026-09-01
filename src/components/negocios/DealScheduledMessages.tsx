@@ -7,6 +7,7 @@ import {
   toggleDealMessageAction,
   deleteDealMessageAction,
 } from "@/app/(app)/negocios/actions";
+import { CalendarIcon, CheckIcon } from "@/components/shared/Icons";
 
 export type ScheduledMessage = { id: string; title: string; dueDate: string | null; done: boolean };
 
@@ -112,7 +113,11 @@ export function DealScheduledMessages({
           >
             <div className="min-w-0 flex-1">
               {m.title}
-              {m.dueDate && <div className="mt-1 text-[10px] text-ink-faint">📅 {formatDate(m.dueDate)}</div>}
+              {m.dueDate && (
+                <div className="mt-1 flex items-center gap-1 text-[10px] text-ink-faint">
+                  <CalendarIcon className="h-3 w-3" /> {formatDate(m.dueDate)}
+                </div>
+              )}
             </div>
             {canEdit && (
               <div className="flex flex-none gap-2">
@@ -121,7 +126,7 @@ export function DealScheduledMessages({
                   title="Marcar como enviada"
                   className="text-ink-faint hover:text-good"
                 >
-                  ✓
+                  <CheckIcon className="h-3.5 w-3.5" />
                 </button>
                 <button
                   onClick={() => handleDelete(m.id)}

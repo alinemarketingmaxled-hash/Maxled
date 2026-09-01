@@ -4,6 +4,7 @@ import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createPostAction } from "@/app/(app)/social/actions";
 import { resizeImageToDataUrl } from "@/lib/resize-image";
+import { CameraIcon } from "@/components/shared/Icons";
 
 export function PostComposer({ authorInitials }: { authorInitials: string }) {
   const router = useRouter();
@@ -74,9 +75,9 @@ export function PostComposer({ authorInitials }: { authorInitials: string }) {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="rounded-md border border-gold-deep px-3 py-1.5 text-[11.5px] font-semibold text-ink transition-colors hover:border-gold"
+              className="flex items-center gap-1.5 rounded-md border border-gold-deep px-3 py-1.5 text-[11.5px] font-semibold text-ink transition-colors hover:border-gold"
             >
-              📷 Foto
+              <CameraIcon className="h-3.5 w-3.5" /> Foto
             </button>
             <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
             <button

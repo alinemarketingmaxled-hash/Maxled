@@ -3,6 +3,7 @@
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createTaskAction, toggleTaskAction, deleteTaskAction } from "@/app/(app)/agenda/actions";
+import { CheckIcon } from "@/components/shared/Icons";
 
 // getDay() indices (0=Dom…6=Sáb) for the Mon–Fri pills — weekend tasks stay
 // visible under "Todos" only, since the pill row mirrors the work week.
@@ -168,7 +169,7 @@ export function TaskList({ tasks, canEdit }: { tasks: TaskRow[]; canEdit: boolea
                   onClick={() => canEdit && handleToggle(t.id)}
                   className="flex h-4 w-4 flex-none items-center justify-center rounded border border-gold-deep bg-gold-solid text-[10px] text-black"
                 >
-                  ✓
+                  <CheckIcon className="h-2.5 w-2.5" />
                 </button>
                 <span className="flex-1 text-[12.5px] text-ink line-through">{t.title}</span>
                 {canEdit && (

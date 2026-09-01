@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import type { DealAssistMode, DealAssistResult } from "@/lib/ai";
 import { generateDealAssistAction } from "@/app/(app)/ia/actions";
+import { PencilIcon, LightbulbIcon, MailIcon, SparkleIcon, MessageCircleIcon } from "@/components/shared/Icons";
 
 export function DealAssistPanel({
   deals,
@@ -48,7 +49,7 @@ export function DealAssistPanel({
     <div className="relative overflow-hidden rounded-xl border border-gold-deep/30 bg-surface p-5 before:absolute before:inset-x-0 before:top-0 before:h-[3px] before:bg-gradient-to-r before:from-gold-deep before:via-gold-bright before:to-gold-deep">
       <div className="mb-5 flex items-center gap-3">
         <div className="flex h-10 w-10 flex-none items-center justify-center rounded-full border border-gold-deep bg-surface-3 text-lg text-gold-bright">
-          ✎
+          <PencilIcon className="h-4 w-4" />
         </div>
         <div>
           <h3 className="font-display text-lg text-ink">Assistente de redação &amp; dicas</h3>
@@ -81,19 +82,19 @@ export function DealAssistPanel({
           <div className="flex gap-1.5 rounded-lg bg-surface-2 p-1">
             <button
               onClick={() => setMode("tips")}
-              className={`flex-1 rounded-md px-3 py-1.5 text-[12px] font-semibold transition-colors ${
+              className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-[12px] font-semibold transition-colors ${
                 mode === "tips" ? "bg-gold-solid text-black" : "text-ink-muted hover:text-ink"
               }`}
             >
-              💡 Dicas estratégicas
+              <LightbulbIcon className="h-3.5 w-3.5" /> Dicas estratégicas
             </button>
             <button
               onClick={() => setMode("writing")}
-              className={`flex-1 rounded-md px-3 py-1.5 text-[12px] font-semibold transition-colors ${
+              className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-[12px] font-semibold transition-colors ${
                 mode === "writing" ? "bg-gold-solid text-black" : "text-ink-muted hover:text-ink"
               }`}
             >
-              ✉ Rascunho de mensagem
+              <MailIcon className="h-3.5 w-3.5" /> Rascunho de mensagem
             </button>
           </div>
 
@@ -125,7 +126,7 @@ export function DealAssistPanel({
             <div className="rounded-lg border border-gold/30 bg-gradient-to-br from-gold/10 via-surface-2 to-surface-2 p-3.5">
               <div className="mb-1.5 flex items-center justify-between gap-2">
                 <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-gold-bright">
-                  <span>✨</span> Resultado
+                  <SparkleIcon className="h-3.5 w-3.5" /> Resultado
                 </div>
                 <span
                   className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
@@ -148,9 +149,9 @@ export function DealAssistPanel({
                     onClick={handleOpenWhatsApp}
                     disabled={!selectedDeal?.phone}
                     title={!selectedDeal?.phone ? "Este cliente não tem telefone cadastrado" : undefined}
-                    className="rounded-md bg-good/15 px-2.5 py-1 text-[11.5px] font-semibold text-good transition-colors hover:bg-good/25 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="flex items-center gap-1.5 rounded-md bg-good/15 px-2.5 py-1 text-[11.5px] font-semibold text-good transition-colors hover:bg-good/25 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    📲 Abrir no WhatsApp
+                    <MessageCircleIcon className="h-3.5 w-3.5" /> Abrir no WhatsApp
                   </button>
                 </div>
               )}
