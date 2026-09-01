@@ -77,7 +77,7 @@ export function Sidebar({
                     : "text-ink-muted hover:bg-surface-2 hover:text-ink"
                 }`}
               >
-                <span className="w-[18px] flex-none opacity-90">{item.icon}</span>
+                <item.icon className="h-[18px] w-[18px] flex-none opacity-90" />
                 {item.label}
                 {item.module === "perfil" && role === "MEDIATOR" && (
                   <span className="ml-auto rounded-full bg-gold-deep px-1.5 py-0.5 text-[9.5px] uppercase tracking-wide text-ink">
