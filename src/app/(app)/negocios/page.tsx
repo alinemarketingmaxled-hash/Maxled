@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { canEdit } from "@/lib/permissions";
-import { getBoard, getRecentlyWonDeals, type DealContactFilters } from "@/lib/deals";
+import { getBoard, getRecentlyWonDeals, getStaleDealsThisMonth, type DealContactFilters } from "@/lib/deals";
 import { listDistinctProfiles } from "@/lib/contacts";
 import { requireView } from "@/lib/require-permission";
 import { KanbanBoard } from "@/components/negocios/KanbanBoard";
@@ -34,9 +34,10 @@ export default async function NegociosPage({
   };
   const wonMonth = parseMonthParam(params.mes) ?? undefined;
 
-  const [pipeline, recentlyWon, profiles] = await Promise.all([
+  const [pipeline, recentlyWon, staleDeals, profiles] = await Promise.all([
     getBoard(session, filters),
     getRecentlyWonDeals(session, wonMonth),
+    getStaleDealsThisMonth(session, filters),
     listDistinctProfiles(session),
   ]);
   const stages = pipeline?.stages.map((stage) => ({
@@ -68,7 +69,12 @@ export default async function NegociosPage({
       <ContactCategoryFilters profiles={profiles} />
 
       {pipeline && stages ? (
-        <KanbanBoard stages={stages} pipelineId={pipeline.id} canEdit={editable} />
+        <KanbanBoard
+          stages={stages}
+          staleDeals={staleDeals.map(serializeDeal)}
+          pipelineId={pipeline.id}
+          canEdit={editable}
+        />
       ) : (
         <div className="rounded-xl border border-dashed border-gold-deep/40 bg-surface px-6 py-10 text-center text-sm text-ink-muted">
           Nenhum pipeline configurado ainda.
