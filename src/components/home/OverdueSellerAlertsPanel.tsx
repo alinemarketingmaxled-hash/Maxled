@@ -1,3 +1,5 @@
+import { AlertTriangleIcon } from "@/components/shared/Icons";
+
 export type OverdueSellerAlert = { ownerId: string; ownerName: string; count: number };
 
 /** Mediator-only radar for sellers piling up overdue tasks/agendamentos —
@@ -9,9 +11,11 @@ export function OverdueSellerAlertsPanel({ alerts }: { alerts: OverdueSellerAler
   return (
     <div className="rounded-xl border border-critical/40 bg-critical/[0.06] p-4">
       <div className="mb-2.5">
-        <h3 className="font-display text-lg text-critical">⚠ Vendedores com muitos atrasos</h3>
+        <h3 className="flex items-center gap-1.5 font-display text-lg text-critical">
+          <AlertTriangleIcon className="h-4 w-4" /> Vendedores com muitos atrasos
+        </h3>
         <p className="mt-0.5 text-[12px] text-ink-muted">
-          5 ou mais tarefas/agendamentos atrasados no total — vale dar uma olhada
+          5 ou mais tarefas/agendamentos atrasados no total, vale dar uma olhada
         </p>
       </div>
       <div className="flex flex-wrap gap-2">

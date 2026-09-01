@@ -12,6 +12,7 @@ import {
   toggleImportantAction,
 } from "@/app/(app)/social/actions";
 import { resizeImageToDataUrl } from "@/lib/resize-image";
+import { CameraIcon, StarIcon, MessageCircleIcon } from "@/components/shared/Icons";
 
 type Author = { id: string; name: string; avatarUrl: string | null };
 type Comment = { id: string; body: string; createdAt: string; author: Author };
@@ -163,8 +164,8 @@ function PostCard({
               {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ptBR })}
             </span>
             {important && (
-              <span className="rounded-full bg-gold-solid/20 px-1.5 py-0.5 text-[10px] font-semibold text-gold-bright">
-                ★ Importante
+              <span className="flex items-center gap-1 rounded-full bg-gold-solid/20 px-1.5 py-0.5 text-[10px] font-semibold text-gold-bright">
+                <StarIcon filled className="h-3 w-3" /> Importante
               </span>
             )}
             <div className="ml-auto flex items-center gap-2.5">
@@ -216,9 +217,9 @@ function PostCard({
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="rounded-md border border-gold-deep px-3 py-1.5 text-[11.5px] font-semibold text-ink transition-colors hover:border-gold"
+                  className="flex items-center gap-1.5 rounded-md border border-gold-deep px-3 py-1.5 text-[11.5px] font-semibold text-ink transition-colors hover:border-gold"
                 >
-                  📷 Foto
+                  <CameraIcon className="h-3.5 w-3.5" /> Foto
                 </button>
                 <input
                   ref={fileInputRef}
@@ -265,13 +266,13 @@ function PostCard({
                 likedByMe ? "text-gold-bright" : "text-ink-faint hover:text-ink"
               }`}
             >
-              {likedByMe ? "★" : "☆"} {likeCount > 0 && likeCount}
+              <StarIcon filled={likedByMe} className="h-3.5 w-3.5" /> {likeCount > 0 && likeCount}
             </button>
             <button
               onClick={() => setShowComments((v) => !v)}
-              className="text-[12px] font-semibold text-ink-faint hover:text-ink"
+              className="flex items-center gap-1.5 text-[12px] font-semibold text-ink-faint hover:text-ink"
             >
-              💬 {post.comments.length > 0 ? post.comments.length : "Comentar"}
+              <MessageCircleIcon className="h-3.5 w-3.5" /> {post.comments.length > 0 ? post.comments.length : "Comentar"}
             </button>
           </div>
 

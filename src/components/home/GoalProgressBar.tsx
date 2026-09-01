@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ConfettiBurst } from "@/components/home/ConfettiBurst";
+import { TrophyIcon } from "@/components/shared/Icons";
 
 function currency(value: number) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
@@ -54,8 +55,8 @@ export function GoalProgressBar({
       {showConfetti && <ConfettiBurst />}
 
       {reachedGoal1 && (
-        <div className="mb-3 rounded-md bg-good/15 px-2.5 py-1.5 text-center text-[12px] font-semibold text-good">
-          🎉 Parabéns! Meta 1 batida!
+        <div className="mb-3 flex items-center justify-center gap-1.5 rounded-md bg-good/15 px-2.5 py-1.5 text-center text-[12px] font-semibold text-good">
+          <TrophyIcon className="h-4 w-4" /> Parabéns! Meta 1 batida!
         </div>
       )}
 
@@ -91,7 +92,7 @@ export function GoalProgressBar({
 
       {goal2 !== null && commissionStepValue != null && commissionStepValue > 0 && (
         <p className="mt-1 text-[10.5px] text-ink-faint">
-          Acima da Meta 2, a comissão sobe +0,02% a cada {currency(commissionStepValue)} vendido além dela — sem
+          Acima da Meta 2, a comissão sobe +0,02% a cada {currency(commissionStepValue)} vendido além dela, sem
           teto.
         </p>
       )}

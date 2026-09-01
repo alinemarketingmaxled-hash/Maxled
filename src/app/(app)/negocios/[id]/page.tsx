@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ChevronLeftIcon } from "@/components/shared/Icons";
 import { canEdit } from "@/lib/permissions";
 import { requireView } from "@/lib/require-permission";
 import { getDeal, getDealInstallments } from "@/lib/deals";
@@ -32,8 +33,8 @@ export default async function DealDetailPage({
 
   return (
     <div className="max-w-2xl">
-      <Link href="/negocios" className="mb-4 inline-block text-xs text-ink-muted hover:text-gold-bright">
-        ← Voltar ao quadro
+      <Link href="/negocios" className="mb-4 inline-flex items-center gap-1 text-xs text-ink-muted hover:text-gold-bright">
+        <ChevronLeftIcon className="h-3.5 w-3.5" /> Voltar ao quadro
       </Link>
 
       <div className="rounded-xl border border-gold-deep/30 bg-surface p-5">
@@ -42,7 +43,7 @@ export default async function DealDetailPage({
             <h2 className="font-display text-lg text-ink">{deal.name}</h2>
             <p className="text-xs text-ink-muted">
               {deal.contact.firstName} {deal.contact.lastName}
-              {deal.contact.accountName ? ` — ${deal.contact.accountName}` : ""}
+              {deal.contact.accountName ? ` · ${deal.contact.accountName}` : ""}
             </p>
           </div>
           <div className="text-right">

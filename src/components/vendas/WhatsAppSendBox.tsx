@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { MessageCircleIcon } from "@/components/shared/Icons";
 
 function buildWaLink(phone: string, text: string) {
   const digits = phone.replace(/\D/g, "");
@@ -20,7 +21,7 @@ export function WhatsAppSendBox({ phone }: { phone: string | null }) {
         onClick={() => setOpen(true)}
         className="mb-4 flex items-center gap-1.5 text-[12px] font-semibold text-ink-muted transition-colors hover:text-gold-bright"
       >
-        📲 Enviar mensagem por WhatsApp
+        <MessageCircleIcon className="h-3.5 w-3.5" /> Enviar mensagem por WhatsApp
       </button>
     );
   }

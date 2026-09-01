@@ -5,6 +5,7 @@ import { canView, getPermissionMatrix, getPermission, type Module } from "@/lib/
 import { listActivity } from "@/lib/activity-log";
 import { listVendors } from "@/lib/users";
 import { ActivityLogFilters } from "@/components/config/ActivityLogFilters";
+import { DownloadIcon } from "@/components/shared/Icons";
 import type { Role } from "@/generated/prisma/client";
 
 const ROLE_LABELS: Record<Role, string> = {
@@ -84,9 +85,9 @@ export default async function ConfigPage({
         </div>
         <a
           href="/api/full-export"
-          className="flex-none rounded-lg border border-gold-deep px-3.5 py-1.5 text-xs font-semibold text-ink transition-colors hover:border-gold"
+          className="flex flex-none items-center gap-1.5 rounded-lg border border-gold-deep px-3.5 py-1.5 text-xs font-semibold text-ink transition-colors hover:border-gold"
         >
-          ⭳ Exportar tudo (Excel completo)
+          <DownloadIcon className="h-3.5 w-3.5" /> Exportar tudo (Excel completo)
         </a>
       </div>
 
@@ -124,7 +125,7 @@ export default async function ConfigPage({
                           perm.level === "none" ? "text-ink-faint" : "text-ink-muted"
                         }`}
                       >
-                        {perm.level === "none" ? "—" : `${perm.level === "edit" ? "editar" : "ver"} · ${perm.scope}`}
+                        {perm.level === "none" ? "-" : `${perm.level === "edit" ? "editar" : "ver"} · ${perm.scope}`}
                       </td>
                     );
                   })}
@@ -135,7 +136,7 @@ export default async function ConfigPage({
         </div>
         <p className="mt-3 text-[11px] text-ink-faint">
           O Mediador sempre tem acesso total a tudo. Os demais perfis só acessam o que está
-          listado aqui — &ldquo;ver&rdquo; é somente leitura, &ldquo;editar&rdquo; permite criar e alterar.
+          listado aqui: &ldquo;ver&rdquo; é somente leitura, &ldquo;editar&rdquo; permite criar e alterar.
         </p>
       </div>
 

@@ -3,6 +3,7 @@
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { importContactsAction } from "@/app/(app)/vendas/actions";
+import { DownloadIcon, ClipboardIcon, UploadIcon } from "@/components/shared/Icons";
 
 export function ImportExportBar({ canEdit }: { canEdit: boolean }) {
   const router = useRouter();
@@ -41,16 +42,16 @@ export function ImportExportBar({ canEdit }: { canEdit: boolean }) {
       <div className="flex flex-wrap items-center gap-3">
         <a
           href="/vendas/export"
-          className="rounded-lg border border-gold-deep px-3.5 py-1.5 text-xs font-semibold text-ink transition-colors hover:border-gold"
+          className="flex items-center gap-1.5 rounded-lg border border-gold-deep px-3.5 py-1.5 text-xs font-semibold text-ink transition-colors hover:border-gold"
         >
-          ⭳ Exportar tabela
+          <DownloadIcon className="h-3.5 w-3.5" /> Exportar tabela
         </a>
         {canEdit && (
           <a
             href="/vendas/import-template"
-            className="rounded-lg border border-gold-deep px-3.5 py-1.5 text-xs font-semibold text-ink transition-colors hover:border-gold"
+            className="flex items-center gap-1.5 rounded-lg border border-gold-deep px-3.5 py-1.5 text-xs font-semibold text-ink transition-colors hover:border-gold"
           >
-            📋 Baixar modelo de importação
+            <ClipboardIcon className="h-3.5 w-3.5" /> Baixar modelo de importação
           </a>
         )}
         {canEdit && (
@@ -65,9 +66,15 @@ export function ImportExportBar({ canEdit }: { canEdit: boolean }) {
             <button
               type="submit"
               disabled={isImporting}
-              className="rounded-lg border border-gold-deep px-3.5 py-1.5 text-xs font-semibold text-ink transition-colors hover:border-gold disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex items-center gap-1.5 rounded-lg border border-gold-deep px-3.5 py-1.5 text-xs font-semibold text-ink transition-colors hover:border-gold disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {isImporting ? "Importando…" : "⭱ Importar CSV/Excel"}
+              {isImporting ? (
+                "Importando…"
+              ) : (
+                <>
+                  <UploadIcon className="h-3.5 w-3.5" /> Importar CSV/Excel
+                </>
+              )}
             </button>
           </form>
         )}
