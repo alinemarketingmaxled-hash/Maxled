@@ -44,6 +44,7 @@ export default async function NegociosPage({
     name: stage.name,
     order: stage.order,
     isOnTheWay: stage.isOnTheWay,
+    color: stage.color,
     deals: stage.deals.map(serializeDeal),
   }));
 
