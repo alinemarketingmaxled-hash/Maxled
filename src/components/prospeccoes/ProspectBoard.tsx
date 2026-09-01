@@ -75,6 +75,7 @@ const TEMP_CLASS: Record<ProspectRow["temperature"], string> = {
 const PROFILE_PRESETS = ["Indústria", "Pessoa física", "Distribuidor", "Outro"];
 const ATRASO_DAYS = 7;
 
+
 function currency(v: number) {
   return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
@@ -509,6 +510,7 @@ export function ProspectBoard({
         <NegociacaoCellModal
           prospect={cell.prospect}
           stage={cell.stage}
+          stages={stages}
           onClose={() => setCell(null)}
           onSaved={async () => {
             setCell(null);
@@ -1078,15 +1080,53 @@ function StageCellModal({
  * CNPJ/CEP lookups). Checking "Enviar para aprovação como cliente" also
  * submits it via submitActivationAction using the same FormData, which is
  * what actually unlocks "Cliente Ativo" for this prospect. */
+/** 6-dot progress row across the fixed (non-custom) stages: green for a
+ * stage already marked done for this prospect, gold for the one being
+ * edited right now, grey for the ones still ahead — driven entirely by the
+ * real stage order + ProspectStageValue.done, not a hardcoded count. */
+function StageProgressDots({
+  prospect,
+  currentStageId,
+  stages,
+}: {
+  prospect: ProspectRow;
+  currentStageId: string;
+  stages: ProspectStageDef[];
+}) {
+  const fixedStages = stages.filter((s) => !s.isCustom).sort((a, b) => a.order - b.order);
+  return (
+    <div className="flex items-center py-0.5">
+      {fixedStages.map((s, i) => {
+        const isCurrent = s.id === currentStageId;
+        const isDone = !isCurrent && (prospect.stageValues.find((v) => v.stageId === s.id)?.done ?? false);
+        return (
+          <div key={s.id} className="flex flex-1 items-center last:flex-none" title={s.name}>
+            <span
+              className={`h-2.5 w-2.5 flex-none rounded-full ${
+                isDone ? "bg-good" : isCurrent ? "bg-gold-solid" : "bg-surface-3"
+              }`}
+            />
+            {i < fixedStages.length - 1 && (
+              <span className={`h-px flex-1 ${isDone ? "bg-good/50" : "bg-gold-deep/20"}`} />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function NegociacaoCellModal({
   prospect,
   stage,
+  stages,
   onClose,
   onSaved,
   onCancelled,
 }: {
   prospect: ProspectRow;
   stage: ProspectStageDef;
+  stages: ProspectStageDef[];
   onClose: () => void;
   onSaved: () => void;
   onCancelled: () => void;
@@ -1118,6 +1158,8 @@ function NegociacaoCellModal({
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [postalCode, setPostalCode] = useState("");
+  const [valor, setValor] = useState("");
+  const [condicaoPagamento, setCondicaoPagamento] = useState("");
 
   async function handleLookupCnpj() {
     setCnpjError(null);
@@ -1225,7 +1267,8 @@ function NegociacaoCellModal({
 
   return (
     <ModalShell title={`${stage.name}: ${prospect.clientName}`} onClose={onClose}>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">
+      <StageProgressDots prospect={prospect} currentStageId={stage.id} stages={stages} />
+      <form onSubmit={handleSubmit} className="mt-2 flex flex-col gap-2.5">
         {error && <p className="rounded-md bg-critical/10 px-2.5 py-1.5 text-xs text-critical">{error}</p>}
         <label className="flex flex-col gap-1 text-xs">
           <span className="text-ink-faint">Data</span>
@@ -1383,13 +1426,38 @@ function NegociacaoCellModal({
             <div className="grid grid-cols-2 gap-2.5">
               <label className="flex flex-col gap-1 text-xs">
                 <span className="text-ink-faint">Valor (R$)</span>
-                <input name="valor" type="number" step="0.01" min="0" required className={inputClass} />
+                <input
+                  name="valor"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  required
+                  value={valor}
+                  onChange={(e) => setValor(e.target.value)}
+                  className={inputClass}
+                />
               </label>
               <label className="flex flex-col gap-1 text-xs">
                 <span className="text-ink-faint">Condição de pagamento</span>
-                <input name="condicaoPagamento" required placeholder="Ex.: 30/60/90 dias" className={inputClass} />
+                <input
+                  name="condicaoPagamento"
+                  required
+                  placeholder="Ex.: 30/60/90 dias"
+                  value={condicaoPagamento}
+                  onChange={(e) => setCondicaoPagamento(e.target.value)}
+                  className={inputClass}
+                />
               </label>
             </div>
+            {(valor || condicaoPagamento) && (
+              <p className="rounded-md border border-gold-deep/25 bg-surface-2/50 px-2.5 py-1.5 text-[11.5px] text-ink-muted">
+                <span className="text-ink-faint">Resumo do negócio: </span>
+                <span className="font-semibold text-gold-bright">
+                  {valor ? currency(Number(valor)) : "—"}
+                </span>
+                {condicaoPagamento && ` · ${condicaoPagamento}`}
+              </p>
+            )}
 
             <h5 className="mt-1 text-[10.5px] font-semibold uppercase tracking-wide text-gold">
               Endereço do contato

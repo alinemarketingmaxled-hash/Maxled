@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import type { Contact } from "@/generated/prisma/client";
 import {
   lookupCnpjAction,
@@ -49,7 +49,10 @@ function Field({
   const controlled = value !== undefined;
   return (
     <label className="flex flex-col gap-1 text-xs">
-      <span className="text-ink-faint">{label}</span>
+      <span className="text-ink-faint">
+        {label}
+        {required && <span className="text-gold-bright"> *</span>}
+      </span>
       <input
         name={name}
         type={type}
@@ -164,6 +167,16 @@ export function ContactForm({
   const [profileOther, setProfileOther] = useState(() => (isCustomProfile ? contact!.profile! : ""));
 
   const hasSecondaryPhone = !!(contact?.phone || contact?.residentialPhone || contact?.assistantPhone);
+
+  // Esc closes the form the same way the "Cancelar" link does — back to the
+  // client list or, when editing, to that client's detail view.
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") router.push(cancelHref);
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [router, cancelHref]);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -497,20 +510,23 @@ export function ContactForm({
         </div>
       )}
 
-      <div className="flex justify-end gap-2">
-        <Link
-          href={cancelHref}
-          className="rounded-lg border border-gold-deep px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:border-gold"
-        >
-          Cancelar
-        </Link>
-        <button
-          type="submit"
-          disabled={isSaving}
-          className="rounded-lg bg-gold-solid px-5 py-2.5 text-sm font-semibold text-black transition-colors hover:bg-gold-solid-bright disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {isSaving ? "Salvando…" : contact ? "Salvar alterações" : "Criar contato"}
-        </button>
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-[11px] text-ink-faint">* campos obrigatórios · Esc para fechar</p>
+        <div className="flex gap-2">
+          <Link
+            href={cancelHref}
+            className="rounded-lg border border-gold-deep px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:border-gold"
+          >
+            Cancelar
+          </Link>
+          <button
+            type="submit"
+            disabled={isSaving}
+            className="rounded-lg bg-gold-solid px-5 py-2.5 text-sm font-semibold text-black transition-colors hover:bg-gold-solid-bright disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isSaving ? "Salvando…" : contact ? "Salvar alterações" : "Criar contato"}
+          </button>
+        </div>
       </div>
     </form>
   );

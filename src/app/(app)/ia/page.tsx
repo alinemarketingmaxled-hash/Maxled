@@ -10,11 +10,20 @@ export default async function IaPage() {
 
   return (
     <div>
-      <div className="mb-4">
-        <h2 className="font-display text-[22px] text-ink">Inteligência Artificial</h2>
-        <p className="mt-0.5 text-[13px] text-ink-muted">
-          Sugestões, previsões e alertas, sempre com justificativa baseada nos seus dados reais
-        </p>
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="font-display text-[22px] text-ink">Inteligência Artificial</h2>
+          <p className="mt-0.5 text-[13px] text-ink-muted">
+            Sugestões, previsões e alertas, sempre com justificativa baseada nos seus dados reais
+          </p>
+        </div>
+        <span
+          className={`flex-none rounded-full px-2.5 py-1 text-[10.5px] font-semibold ${
+            isAiConfigured() ? "bg-good/15 text-good" : "bg-surface-3 text-ink-faint"
+          }`}
+        >
+          {isAiConfigured() ? "● fonte: IA" : "● fonte: heurística"}
+        </span>
       </div>
 
       {!isAiConfigured() && (

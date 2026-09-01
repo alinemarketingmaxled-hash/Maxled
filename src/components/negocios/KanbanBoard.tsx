@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { differenceInCalendarDays } from "date-fns";
+import { businessDaysRemaining } from "@/lib/business-days";
 import type { SerializedDeal } from "@/lib/serialize-deal";
 import {
   moveDealAction,
@@ -19,8 +19,25 @@ type StageWithDeals = {
   name: string;
   order: number;
   isOnTheWay: boolean;
+  color: string | null;
   deals: SerializedDeal[];
 };
+
+/** Fallback accent palette by stage order, used whenever a stage has no
+ * explicit PipelineStage.color set (stages are user-renamable, so this is
+ * keyed by position rather than by name). */
+const STAGE_ACCENT_PALETTE = ["#C98500", "#3987E5", "#D55181", "#008300", "#E66767", "#199E70"];
+
+function stageAccent(stage: { color: string | null; order: number }): string {
+  return stage.color || STAGE_ACCENT_PALETTE[stage.order % STAGE_ACCENT_PALETTE.length];
+}
+
+/** Business-day countdown label for an "A caminho" card, e.g. "Prazo: 2
+ * dias úteis" — computed from the deal's real onTheWayDeadline, matching
+ * the unit (business days) the deadline was itself set in. */
+function onTheWayCountdownLabel(daysLeft: number): string {
+  return daysLeft <= 0 ? "Prazo: vence hoje" : `Prazo: ${daysLeft} dia${daysLeft > 1 ? "s" : ""} útil${daysLeft > 1 ? "eis" : ""}`;
+}
 
 function currency(value: number) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -48,9 +65,7 @@ function DealCard({
     .join("")
     .toUpperCase();
 
-  const daysLeft = deal.onTheWayDeadline
-    ? differenceInCalendarDays(new Date(deal.onTheWayDeadline), new Date())
-    : null;
+  const daysLeft = deal.onTheWayDeadline ? businessDaysRemaining(new Date(deal.onTheWayDeadline)) : null;
   const hasFlaggedNote = deal.notes.some((n) => n.flagged);
 
   return (
@@ -106,7 +121,7 @@ function DealCard({
               daysLeft <= 0 ? "bg-critical/15 text-critical" : "bg-warning/15 text-warning"
             }`}
           >
-            {daysLeft <= 0 ? "vence hoje" : `${daysLeft} dia${daysLeft > 1 ? "s" : ""}`}
+            {onTheWayCountdownLabel(daysLeft)}
           </span>
         )}
       </div>
@@ -190,6 +205,8 @@ function StageColumn({
     router.refresh();
   }
 
+  const accent = stageAccent(stage);
+
   return (
     <div
       onDragOver={(e) => {
@@ -199,11 +216,13 @@ function StageColumn({
       }}
       onDragLeave={() => setDragOver(false)}
       onDrop={canEdit ? handleDrop : undefined}
+      style={{ boxShadow: `inset 0 2.5px 0 0 ${accent}` }}
       className={`flex w-60 flex-none flex-col gap-2 rounded-xl border p-2.5 transition-colors ${
         isDragOver ? "border-gold bg-surface-2" : "border-gold-deep/28 bg-surface"
       }`}
     >
       <div className="flex items-center gap-2 text-[12.5px] font-semibold text-ink-muted">
+        <span className="h-2 w-2 flex-none rounded-full" style={{ backgroundColor: accent }} aria-hidden="true" />
         {editing ? (
           <input
             autoFocus

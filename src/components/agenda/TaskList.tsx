@@ -1,9 +1,19 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createTaskAction, toggleTaskAction, deleteTaskAction } from "@/app/(app)/agenda/actions";
 import { CheckIcon } from "@/components/shared/Icons";
+
+// getDay() indices (0=Dom…6=Sáb) for the Mon–Fri pills — weekend tasks stay
+// visible under "Todos" only, since the pill row mirrors the work week.
+const WEEKDAY_PILLS: { label: string; day: number }[] = [
+  { label: "Seg", day: 1 },
+  { label: "Ter", day: 2 },
+  { label: "Qua", day: 3 },
+  { label: "Qui", day: 4 },
+  { label: "Sex", day: 5 },
+];
 
 export type TaskRow = {
   id: string;
@@ -20,6 +30,7 @@ export function TaskList({ tasks, canEdit }: { tasks: TaskRow[]; canEdit: boolea
   const [title, setTitle] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [isPending, startTransition] = useTransition();
+  const [dayFilter, setDayFilter] = useState<number | null>(null);
 
   function handleAdd() {
     if (!title.trim()) return;
@@ -45,8 +56,13 @@ export function TaskList({ tasks, canEdit }: { tasks: TaskRow[]; canEdit: boolea
     });
   }
 
-  const pending = tasks.filter((t) => !t.done);
-  const done = tasks.filter((t) => t.done);
+  const visibleTasks = useMemo(
+    () =>
+      dayFilter === null ? tasks : tasks.filter((t) => t.dueDate && new Date(t.dueDate).getDay() === dayFilter),
+    [tasks, dayFilter],
+  );
+  const pending = visibleTasks.filter((t) => !t.done);
+  const done = visibleTasks.filter((t) => t.done);
 
   const startOfToday = new Date();
   startOfToday.setHours(0, 0, 0, 0);
@@ -57,6 +73,28 @@ export function TaskList({ tasks, canEdit }: { tasks: TaskRow[]; canEdit: boolea
   return (
     <div className="rounded-xl border border-gold-deep/30 bg-surface p-4">
       <h3 className="mb-3 text-[13px] font-semibold text-ink">Tarefas</h3>
+
+      <div className="mb-3 flex flex-wrap gap-1">
+        <button
+          onClick={() => setDayFilter(null)}
+          className={`rounded-full px-2.5 py-1 text-[11px] font-semibold transition-colors ${
+            dayFilter === null ? "bg-gold-solid text-black" : "bg-surface-2 text-ink-faint hover:text-ink"
+          }`}
+        >
+          Todos
+        </button>
+        {WEEKDAY_PILLS.map((w) => (
+          <button
+            key={w.day}
+            onClick={() => setDayFilter(dayFilter === w.day ? null : w.day)}
+            className={`rounded-full px-2.5 py-1 text-[11px] font-semibold transition-colors ${
+              dayFilter === w.day ? "bg-gold-solid text-black" : "bg-surface-2 text-ink-faint hover:text-ink"
+            }`}
+          >
+            {w.label}
+          </button>
+        ))}
+      </div>
 
       {canEdit && (
         <div className="mb-3 flex gap-2">
@@ -85,6 +123,9 @@ export function TaskList({ tasks, canEdit }: { tasks: TaskRow[]; canEdit: boolea
 
       <div className="flex flex-col gap-1.5">
         {tasks.length === 0 && <p className="text-[11.5px] text-ink-faint">Nenhuma tarefa ainda.</p>}
+        {tasks.length > 0 && visibleTasks.length === 0 && (
+          <p className="text-[11.5px] text-ink-faint">Nenhuma tarefa nesse dia.</p>
+        )}
         {pending.map((t) => {
           const overdue = isOverdue(t);
           return (
