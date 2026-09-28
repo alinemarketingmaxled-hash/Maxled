@@ -305,3 +305,11 @@ export function MessageCircleIcon(props: IconProps) {
     </svg>
   );
 }
+
+export function DumbbellIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M6.5 6.5v11M17.5 6.5v11M3 9v6M21 9v6M6.5 12h11" />
+    </svg>
+  );
+}

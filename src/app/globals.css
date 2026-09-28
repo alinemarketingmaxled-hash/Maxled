@@ -181,3 +181,98 @@ body {
     opacity: 0;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Maxled Fit (/fit) — visual próprio, separado do CRM: grafite + verde-limão.
+   Tema escuro por padrão; o claro (menta) é escolhido em Fit → Perfil e fica
+   num cookie lido pelo layout (data-fit-theme), sem flash no primeiro paint.
+--------------------------------------------------------------------------- */
+.fit {
+  --fit-bg: #111214;
+  --fit-card: #1f2024;
+  --fit-card-2: #2a2b30;
+  --fit-card-3: #34353b;
+  --fit-strong: #0a0a0b;
+  --fit-lime: #d6f94b;
+  --fit-lime-soft: rgba(214, 249, 75, 0.14);
+  /* Lime used as TEXT/icon color — darkened in the light theme for contrast. */
+  --fit-accent: #d6f94b;
+  --fit-on-lime: #111214;
+  --fit-ink: #f4f5f0;
+  --fit-muted: #a1a2a8;
+  --fit-faint: #6c6d73;
+  --fit-line: rgba(255, 255, 255, 0.07);
+  --fit-good: #7ee08a;
+  --fit-warn: #ffb547;
+  --fit-bad: #ff6b6b;
+  --fit-info: #7cc4ff;
+  color-scheme: dark;
+  background: var(--fit-bg);
+  color: var(--fit-ink);
+}
+.fit[data-fit-theme="light"] {
+  --fit-bg: #e9f2d4;
+  --fit-card: #ffffff;
+  --fit-card-2: #f3f8e6;
+  --fit-card-3: #dde9c2;
+  --fit-strong: #151618;
+  --fit-lime: #a9cf46;
+  --fit-lime-soft: rgba(135, 170, 40, 0.16);
+  --fit-accent: #4d6a0c;
+  --fit-on-lime: #111214;
+  --fit-ink: #151618;
+  --fit-muted: #555a4a;
+  --fit-faint: #7d8270;
+  --fit-line: rgba(20, 30, 0, 0.08);
+  --fit-good: #2f8a3c;
+  --fit-warn: #b86a00;
+  --fit-bad: #c0392b;
+  --fit-info: #1d6fb8;
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-fit-bg: var(--fit-bg);
+  --color-fit-card: var(--fit-card);
+  --color-fit-card-2: var(--fit-card-2);
+  --color-fit-card-3: var(--fit-card-3);
+  --color-fit-strong: var(--fit-strong);
+  --color-fit-lime: var(--fit-lime);
+  --color-fit-lime-soft: var(--fit-lime-soft);
+  --color-fit-accent: var(--fit-accent);
+  --color-fit-on-lime: var(--fit-on-lime);
+  --color-fit-ink: var(--fit-ink);
+  --color-fit-muted: var(--fit-muted);
+  --color-fit-faint: var(--fit-faint);
+  --color-fit-line: var(--fit-line);
+  --color-fit-good: var(--fit-good);
+  --color-fit-warn: var(--fit-warn);
+  --color-fit-bad: var(--fit-bad);
+  --color-fit-info: var(--fit-info);
+}
+
+.fit input[type="number"]::-webkit-inner-spin-button,
+.fit input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.fit input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+@keyframes fit-pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  60% { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); }
+}
+.fit-pop { animation: fit-pop 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.2) both; }
+
+@keyframes fit-rise {
+  from { transform: translateY(12px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.fit-rise { animation: fit-rise 0.35s ease-out both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fit-pop, .fit-rise { animation: none; }
+}

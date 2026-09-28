@@ -47,7 +47,10 @@ export function LoginForm() {
       return;
     }
 
-    router.push("/");
+    // Only same-origin paths — never an absolute URL an attacker could plant.
+    const callbackUrl = new URLSearchParams(window.location.search).get("callbackUrl");
+    const target = callbackUrl && /^\/(?![\/\\])/.test(callbackUrl) ? callbackUrl : "/";
+    router.push(target);
     router.refresh();
   }
 

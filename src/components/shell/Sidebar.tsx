@@ -7,6 +7,7 @@ import { canView } from "@/lib/permissions";
 import { Logo } from "@/components/shell/Logo";
 import { CommissionWidget, type CommissionSummary } from "@/components/shell/CommissionWidget";
 import { ComunicadosWidget, type ImportantPost } from "@/components/shell/ComunicadosWidget";
+import { DumbbellIcon } from "@/components/shared/Icons";
 import { NAV_ITEMS } from "./nav-items";
 
 export function Sidebar({
@@ -104,6 +105,18 @@ export function Sidebar({
             );
           })}
         </nav>
+
+        {/* Maxled Fit lives outside the CRM shell (own layout at /fit),
+            open to every logged-in user regardless of CRM role. */}
+        <Link
+          href="/fit"
+          onClick={onClose}
+          className="flex items-center gap-2.5 rounded-lg border border-gold-deep/40 px-3 py-2.5 text-[13.5px] text-ink-muted transition-colors hover:bg-surface-2 hover:text-ink"
+        >
+          <DumbbellIcon className="h-[18px] w-[18px] flex-none opacity-90" />
+          Maxled Fit
+          <span className="ml-auto rounded-full bg-[#d6f94b] px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wide text-black">Novo</span>
+        </Link>
 
         <div className="flex flex-col gap-3">
           <CommissionWidget commission={commission} />

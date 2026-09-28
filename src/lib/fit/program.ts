@@ -1,0 +1,609 @@
+import { EXERCISES, canDo, getExercise, type Exercise, type Pattern } from "./exercises";
+import type { Adjustments } from "./bio";
+import type { Equipment, FitAnswers, Goal, Level, Muscle } from "./types";
+import { MUSCLE_LABEL } from "./types";
+
+export type PhaseKind = "adaptacao" | "volume" | "intensidade" | "forca" | "metabolico" | "pico";
+
+export const PHASE_INFO: Record<PhaseKind, { label: string; description: string }> = {
+  adaptacao: { label: "Adaptação", description: "Aprender os movimentos, fortalecer articulações e criar o hábito." },
+  volume: { label: "Volume", description: "Mais séries por músculo para estimular crescimento." },
+  intensidade: { label: "Intensidade", description: "Cargas mais altas, menos repetições, perto da falha." },
+  forca: { label: "Força", description: "Poucas repetições pesadas nos exercícios básicos." },
+  metabolico: { label: "Metabólico", description: "Descansos curtos, bi-sets e cardio para queimar mais." },
+  pico: { label: "Pico", description: "Consolidar ganhos de força com volume reduzido." },
+};
+
+type PhaseParams = {
+  compoundReps: [number, number];
+  isoReps: [number, number];
+  compoundRest: number;
+  isoRest: number;
+  rir: number;
+  compoundSets: number;
+  isoSets: number;
+  superset: boolean;
+};
+
+const PHASE_PARAMS: Record<PhaseKind, PhaseParams> = {
+  adaptacao: { compoundReps: [12, 15], isoReps: [12, 15], compoundRest: 60, isoRest: 45, rir: 3, compoundSets: 3, isoSets: 2, superset: false },
+  volume: { compoundReps: [8, 12], isoReps: [12, 15], compoundRest: 90, isoRest: 60, rir: 2, compoundSets: 4, isoSets: 3, superset: false },
+  intensidade: { compoundReps: [6, 8], isoReps: [10, 12], compoundRest: 120, isoRest: 75, rir: 1, compoundSets: 4, isoSets: 3, superset: false },
+  forca: { compoundReps: [3, 5], isoReps: [8, 10], compoundRest: 180, isoRest: 90, rir: 2, compoundSets: 5, isoSets: 3, superset: false },
+  metabolico: { compoundReps: [10, 15], isoReps: [15, 20], compoundRest: 45, isoRest: 30, rir: 2, compoundSets: 3, isoSets: 3, superset: true },
+  pico: { compoundReps: [2, 4], isoReps: [8, 10], compoundRest: 180, isoRest: 90, rir: 1, compoundSets: 4, isoSets: 2, superset: false },
+};
+
+const PHASE_SEQUENCE: Record<Goal, PhaseKind[]> = {
+  hipertrofia: ["volume", "intensidade", "volume", "forca", "volume", "intensidade"],
+  forca: ["volume", "forca", "intensidade", "pico", "forca", "pico"],
+  emagrecimento: ["metabolico", "volume", "metabolico", "intensidade", "metabolico", "volume"],
+  recomposicao: ["volume", "metabolico", "intensidade", "volume", "metabolico", "intensidade"],
+  condicionamento: ["metabolico", "volume", "metabolico", "intensidade", "metabolico", "metabolico"],
+  saude: ["adaptacao", "volume", "adaptacao", "volume", "metabolico", "volume"],
+};
+
+const BLOCK_WEEKS = 4;
+
+export type Block = { index: number; kind: PhaseKind; fromWeek: number; toWeek: number };
+
+export function buildBlocks(goal: Goal, level: Level, totalWeeks: number): Block[] {
+  const seq = [...PHASE_SEQUENCE[goal]];
+  if (level === "iniciante" && seq[0] !== "adaptacao") seq.unshift("adaptacao");
+  const blocks: Block[] = [];
+  for (let w = 1, i = 0; w <= totalWeeks; w += BLOCK_WEEKS, i++) {
+    blocks.push({ index: i, kind: seq[i % seq.length], fromWeek: w, toWeek: Math.min(totalWeeks, w + BLOCK_WEEKS - 1) });
+  }
+  return blocks;
+}
+
+type Slot = { pattern: Pattern; muscle?: Muscle; priority: number };
+
+type DayTemplate = { key: string; title: string; focus: Muscle[]; slots: Slot[] };
+
+const s = (pattern: Pattern, priority: number, muscle?: Muscle): Slot => ({ pattern, priority, muscle });
+
+const T: Record<string, DayTemplate> = {
+  fullA: {
+    key: "fullA",
+    title: "Corpo inteiro A",
+    focus: ["quadriceps", "peito", "costas"],
+    slots: [s("agachar", 1), s("empurrar_h", 1), s("puxar_h", 1), s("dobrar_quadril", 2), s("isolado_ombro", 3, "ombros"), s("core", 2), s("isolado_braco", 4, "biceps")],
+  },
+  fullB: {
+    key: "fullB",
+    title: "Corpo inteiro B",
+    focus: ["posterior", "ombros", "costas"],
+    slots: [s("dobrar_quadril", 1), s("empurrar_v", 1), s("puxar_v", 1), s("unilateral_perna", 2), s("empurrar_h", 3), s("core", 2), s("isolado_braco", 4, "triceps")],
+  },
+  fullC: {
+    key: "fullC",
+    title: "Corpo inteiro C",
+    focus: ["gluteos", "peito", "costas"],
+    slots: [s("unilateral_perna", 1), s("empurrar_h", 1), s("puxar_v", 1), s("dobrar_quadril", 2, "gluteos"), s("puxar_h", 3), s("isolado_perna", 4, "panturrilha"), s("core", 2)],
+  },
+  upperA: {
+    key: "upperA",
+    title: "Superiores A",
+    focus: ["peito", "costas", "ombros"],
+    slots: [s("empurrar_h", 1), s("puxar_h", 1), s("empurrar_v", 2), s("puxar_v", 2), s("isolado_ombro", 3, "ombros"), s("isolado_braco", 3, "biceps"), s("isolado_braco", 4, "triceps")],
+  },
+  lowerA: {
+    key: "lowerA",
+    title: "Inferiores A",
+    focus: ["quadriceps", "gluteos"],
+    slots: [s("agachar", 1), s("dobrar_quadril", 1), s("unilateral_perna", 2), s("isolado_perna", 3, "quadriceps"), s("isolado_perna", 3, "panturrilha"), s("core", 2)],
+  },
+  upperB: {
+    key: "upperB",
+    title: "Superiores B",
+    focus: ["costas", "ombros", "biceps"],
+    slots: [s("puxar_v", 1), s("empurrar_v", 1), s("puxar_h", 2), s("empurrar_h", 2), s("isolado_ombro", 3, "ombros"), s("isolado_braco", 3, "triceps"), s("isolado_braco", 4, "biceps")],
+  },
+  lowerB: {
+    key: "lowerB",
+    title: "Inferiores B",
+    focus: ["posterior", "gluteos"],
+    slots: [s("dobrar_quadril", 1), s("unilateral_perna", 1), s("agachar", 2), s("isolado_perna", 3, "posterior"), s("isolado_perna", 3, "gluteos"), s("core", 2)],
+  },
+  push: {
+    key: "push",
+    title: "Empurrar — peito, ombro e tríceps",
+    focus: ["peito", "ombros", "triceps"],
+    slots: [s("empurrar_h", 1), s("empurrar_v", 1), s("empurrar_h", 2), s("isolado_ombro", 2, "ombros"), s("isolado_braco", 3, "triceps"), s("isolado_braco", 4, "triceps"), s("core", 4)],
+  },
+  pull: {
+    key: "pull",
+    title: "Puxar — costas e bíceps",
+    focus: ["costas", "biceps"],
+    slots: [s("puxar_v", 1), s("puxar_h", 1), s("puxar_h", 2), s("isolado_ombro", 3, "ombros"), s("isolado_braco", 2, "biceps"), s("isolado_braco", 4, "biceps"), s("core", 4)],
+  },
+  legs: {
+    key: "legs",
+    title: "Pernas completas",
+    focus: ["quadriceps", "posterior", "gluteos"],
+    slots: [s("agachar", 1), s("dobrar_quadril", 1), s("unilateral_perna", 2), s("isolado_perna", 3, "quadriceps"), s("isolado_perna", 3, "posterior"), s("isolado_perna", 4, "panturrilha"), s("core", 3)],
+  },
+  circuit: {
+    key: "circuit",
+    title: "Circuito metabólico",
+    focus: ["cardio", "core"],
+    slots: [s("condicionamento", 1), s("agachar", 1), s("empurrar_h", 1), s("puxar_h", 2), s("condicionamento", 2), s("unilateral_perna", 2), s("core", 3)],
+  },
+  mobility: {
+    key: "mobility",
+    title: "Mobilidade e core",
+    focus: ["core"],
+    slots: [s("mobilidade", 1), s("mobilidade", 1), s("core", 1), s("dobrar_quadril", 2), s("mobilidade", 2), s("core", 3)],
+  },
+};
+
+function templatesFor(days: number, level: Level, goal: Goal): DayTemplate[] {
+  const metabolic = goal === "emagrecimento" || goal === "condicionamento";
+  switch (Math.min(6, Math.max(1, days))) {
+    case 1:
+      return [T.fullA];
+    case 2:
+      return [T.fullA, T.fullB];
+    case 3:
+      if (level === "iniciante" || goal === "saude" || metabolic) return [T.fullA, T.fullB, T.fullC];
+      return [T.push, T.pull, T.legs];
+    case 4:
+      if (goal === "saude") return [T.fullA, T.mobility, T.fullB, T.fullC];
+      if (metabolic) return [T.upperA, T.lowerA, T.circuit, T.fullB];
+      return [T.upperA, T.lowerA, T.upperB, T.lowerB];
+    case 5:
+      if (metabolic) return [T.upperA, T.lowerA, T.circuit, T.upperB, T.lowerB];
+      if (goal === "saude") return [T.fullA, T.mobility, T.fullB, T.circuit, T.fullC];
+      return [T.push, T.pull, T.legs, T.upperA, T.lowerB];
+    default:
+      if (metabolic) return [T.push, T.pull, T.legs, T.circuit, T.upperB, T.lowerB];
+      return [T.push, T.pull, T.legs, T.push, T.pull, T.legs].map((t, i) =>
+        i < 3 ? t : { ...t, key: `${t.key}2`, title: `${t.title} (variação)` },
+      );
+  }
+}
+
+/** Weekday indices (0 = segunda) for each training day. */
+export function trainingWeekdays(days: number): number[] {
+  switch (Math.min(6, Math.max(1, days))) {
+    case 1:
+      return [2];
+    case 2:
+      return [0, 3];
+    case 3:
+      return [0, 2, 4];
+    case 4:
+      return [0, 1, 3, 4];
+    case 5:
+      return [0, 1, 2, 3, 4];
+    default:
+      return [0, 1, 2, 3, 4, 5];
+  }
+}
+
+export const WEEKDAY_SHORT = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
+export const WEEKDAY_LONG = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
+
+export type PlannedExercise = {
+  exerciseId: string;
+  name: string;
+  muscle: Muscle;
+  sets: number;
+  /** Display string: "8-12" or "30-45s". */
+  reps: string;
+  repMin: number;
+  repMax: number;
+  unit: "reps" | "seg";
+  restSec: number;
+  rir: number;
+  tempo: string;
+  /** Exercises sharing a letter are done back to back (bi-set). */
+  group: string | null;
+  note: string | null;
+  cues: string[];
+  alternatives: { id: string; name: string }[];
+};
+
+export type CardioBlock = { minutes: number; title: string; description: string; exerciseId: string | null };
+
+export type DayPlan = {
+  index: number;
+  key: string;
+  weekday: number;
+  title: string;
+  focus: Muscle[];
+  warmup: string[];
+  exercises: PlannedExercise[];
+  cardio: CardioBlock | null;
+  cooldown: string[];
+  estMinutes: number;
+  estKcal: number;
+};
+
+export type WeekPlan = {
+  week: number;
+  totalWeeks: number;
+  block: Block;
+  phase: PhaseKind;
+  deload: boolean;
+  goal: Goal;
+  days: DayPlan[];
+  notes: string[];
+};
+
+const LEVEL_MAX_DIFF: Record<Level, number> = { iniciante: 1, intermediario: 2, avancado: 3 };
+
+/** Rich equipment usually allows better loading for strength/hypertrophy. */
+function loadScore(ex: Exercise, owned: Set<Equipment>): number {
+  if (ex.equipment.length === 0) return 0;
+  const reqs = owned.has("academia") ? ex.equipment : ex.equipment.filter((r) => r.every((i) => owned.has(i)));
+  let best = 0;
+  for (const r of reqs) {
+    let v = 1;
+    if (r.includes("academia")) v = 3;
+    else if (r.includes("barra")) v = 3;
+    else if (r.includes("halteres") || r.includes("kettlebell")) v = 2;
+    best = Math.max(best, v);
+  }
+  return best;
+}
+
+function hash(str: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+/** Go-to exercises coaches reach for first; boosted when available. */
+const STAPLES = new Set([
+  "supino_barra",
+  "supino_halteres",
+  "flexao",
+  "agachamento_barra",
+  "agachamento_goblet",
+  "leg_press",
+  "terra",
+  "stiff_halteres",
+  "hip_thrust",
+  "ponte_gluteo",
+  "remada_curvada_barra",
+  "remada_unilateral",
+  "remada_baixa",
+  "puxada_frente",
+  "barra_fixa",
+  "remada_invertida",
+  "desenvolvimento_halteres",
+  "elevacao_lateral",
+  "rosca_direta_halteres",
+  "triceps_polia",
+  "triceps_frances",
+  "afundo",
+  "bulgaro",
+  "mesa_flexora",
+  "cadeira_extensora",
+  "panturrilha_pe",
+  "prancha",
+  "dead_bug",
+]);
+
+function candidatesFor(slot: Slot, answers: FitAnswers, owned: Set<Equipment>, maxDiff: number): Exercise[] {
+  const limits = new Set(answers.limitations);
+  const base = EXERCISES.filter(
+    (e) =>
+      e.pattern === slot.pattern &&
+      (!slot.muscle || e.muscle === slot.muscle) &&
+      canDo(e, owned) &&
+      !e.avoid.some((l) => limits.has(l)),
+  );
+  const fit = base.filter((e) => e.difficulty <= maxDiff);
+  return fit.length ? fit : base.filter((e) => e.difficulty <= maxDiff + 1);
+}
+
+function pickExercise(
+  slot: Slot,
+  answers: FitAnswers,
+  owned: Set<Equipment>,
+  usedToday: Set<string>,
+  usedWeek: Map<string, number>,
+  seed: string,
+  goal: Goal,
+): { chosen: Exercise; alternatives: Exercise[] } | null {
+  const maxDiff = LEVEL_MAX_DIFF[answers.level];
+  const pool = candidatesFor(slot, answers, owned, maxDiff).filter((e) => !usedToday.has(e.id));
+  if (pool.length === 0) return null;
+  const wantsLoad = goal === "hipertrofia" || goal === "forca" || goal === "recomposicao";
+  const scored = pool
+    .map((e) => {
+      let score = 0;
+      // Anything at or under the user's level is fine; staples win ties.
+      score += e.difficulty <= maxDiff ? 2 + (e.difficulty === maxDiff && maxDiff < 3 ? 1 : 0) : -4;
+      if (STAPLES.has(e.id)) score += 3;
+      if (slot.priority <= 2 && e.compound) score += 3;
+      score += loadScore(e, owned) * (wantsLoad ? 2 : 1);
+      score -= (usedWeek.get(e.id) ?? 0) * 4;
+      if (answers.focusMuscles.includes(e.muscle)) score += 1;
+      // Small deterministic jitter so two equal options rotate between blocks.
+      score += (hash(seed + e.id) % 100) / 100;
+      return { e, score };
+    })
+    .sort((a, b) => b.score - a.score);
+  return { chosen: scored[0].e, alternatives: scored.slice(1, 4).map((x) => x.e) };
+}
+
+function range([a, b]: [number, number], shift: number): [number, number] {
+  if (shift === 0) return [a, b];
+  if (shift < 0) return [Math.max(3, a - 2), Math.max(5, b - 3)];
+  return [a + 2, b + 3];
+}
+
+function exerciseMinutes(p: PlannedExercise): number {
+  const avg = (p.repMin + p.repMax) / 2;
+  const work = p.unit === "seg" ? avg : avg * 3;
+  return (p.sets * (work + p.restSec)) / 60 + 0.75;
+}
+
+function cardioFor(
+  answers: FitAnswers,
+  goal: Goal,
+  adj: Adjustments,
+  owned: Set<Equipment>,
+  phase: PhaseKind,
+  deload: boolean,
+): CardioBlock | null {
+  let minutes =
+    goal === "emagrecimento" ? 20 : goal === "condicionamento" ? 20 : goal === "recomposicao" ? 10 : goal === "saude" ? 10 : 0;
+  if (phase === "metabolico") minutes += 5;
+  if (answers.likesCardio) minutes += 5;
+  minutes += adj.cardioMinutes;
+  if (deload) minutes = Math.round(minutes * 0.6);
+  if (minutes <= 0) return null;
+  const limits = new Set(answers.limitations);
+  const lowImpact = limits.has("joelho") || limits.has("gestante") || limits.has("hipertensao");
+  const hiit = !lowImpact && (phase === "metabolico" || adj.density) && answers.level !== "iniciante";
+  // Beyond ~20 min, straight HIIT stops paying off; split into mixed work.
+  if (hiit && minutes > 20) {
+    const machine = owned.has("cardio_maquina") || owned.has("academia");
+    return {
+      minutes,
+      title: "Cardio misto",
+      description: `15 min intervalado (${machine ? "30s forte / 60s leve na esteira ou bike" : "40s ativo / 20s pausa: polichinelo, skipping, shadow boxing"}) + ${minutes - 15} min em ritmo moderado contínuo`,
+      exerciseId: machine ? "esteira_intervalado" : "polichinelo",
+    };
+  }
+  if (owned.has("cardio_maquina") || owned.has("academia")) {
+    return hiit
+      ? { minutes, title: "HIIT na esteira/bike", description: `${Math.round(minutes / 1.5)} tiros de 30s forte + 60s leve`, exerciseId: "esteira_intervalado" }
+      : { minutes, title: "Cardio contínuo", description: "Caminhada inclinada ou bike em ritmo que ainda dá para conversar (zona 2)", exerciseId: "caminhada_inclinada" };
+  }
+  if (owned.has("corda") && !limits.has("joelho")) {
+    return { minutes, title: "Pular corda", description: hiit ? "40s pulando / 20s descanso" : "Blocos de 2 min com 30s de pausa", exerciseId: "corda" };
+  }
+  return hiit
+    ? { minutes, title: "HIIT peso corporal", description: "Polichinelo, skipping e shadow boxing — 40s ativo / 20s pausa", exerciseId: "polichinelo" }
+    : { minutes, title: "Caminhada rápida", description: "Ao ar livre ou no lugar, ritmo acelerado constante", exerciseId: null };
+}
+
+function warmupFor(t: DayTemplate, answers: FitAnswers): string[] {
+  const list = ["3-5 min de cardio leve para elevar a temperatura"];
+  const lower = t.focus.some((m) => ["quadriceps", "posterior", "gluteos"].includes(m));
+  const upper = t.focus.some((m) => ["peito", "costas", "ombros"].includes(m));
+  if (lower) list.push("Mobilidade de quadril 90/90 e agachamento profundo sustentado (1 min cada)");
+  if (upper) list.push("Rotação torácica e deslocamento de ombro (10 cada)");
+  list.push("1-2 séries leves do primeiro exercício");
+  if (answers.timeOfDay === "manha") list.push("De manhã as articulações estão mais rígidas: gaste 2 min extras aquecendo");
+  return list;
+}
+
+/** Generates one week of training. Pure and deterministic: the same inputs
+ * always produce the same plan, so the server can regenerate it on every
+ * request (and the session player can trust exercise IDs). */
+export function generateWeek(answers: FitAnswers, adj: Adjustments, week: number): WeekPlan {
+  const goal = adj.goalOverride ?? answers.goal;
+  const totalWeeks = Math.max(4, answers.programWeeks);
+  const blocks = buildBlocks(goal, answers.level, totalWeeks);
+  const w = Math.min(Math.max(1, week), totalWeeks);
+  const block = blocks.find((b) => w >= b.fromWeek && w <= b.toWeek) ?? blocks[blocks.length - 1];
+  const weekInBlock = w - block.fromWeek + 1;
+  const blockLen = block.toWeek - block.fromWeek + 1;
+  const deload =
+    adj.deload || (blockLen === BLOCK_WEEKS && weekInBlock === BLOCK_WEEKS && !(answers.level === "iniciante" && block.index === 0));
+  const phase = block.kind;
+  const params = PHASE_PARAMS[phase];
+  const owned = new Set<Equipment>([...answers.equipment, "peso_corporal"]);
+  const templates = templatesFor(answers.daysPerWeek, answers.level, goal);
+  const weekdays = trainingWeekdays(answers.daysPerWeek);
+  const usedWeek = new Map<string, number>();
+  const limits = new Set(answers.limitations);
+  const notes: string[] = [];
+
+  // Beginners progress RIR more slowly; everyone ramps within the block.
+  const rirRamp = deload ? 4 : Math.max(0, params.rir + (weekInBlock === 1 ? 1 : weekInBlock >= 3 ? -1 : 0));
+  const safeRir = limits.has("hipertensao") || limits.has("gestante") ? Math.max(2, rirRamp) : rirRamp;
+
+  const days: DayPlan[] = templates.map((t, i) => {
+    const usedToday = new Set<string>();
+    const seed = `${t.key}|${block.index}|${answers.sex}`;
+    // Focus muscles get an extra isolation slot when possible.
+    const extra: Slot[] = answers.focusMuscles
+      .filter((m) => t.focus.includes(m) || t.key.startsWith("full"))
+      .slice(0, 2)
+      .map((m) => ({
+        pattern:
+          m === "peito"
+            ? "empurrar_h"
+            : m === "costas"
+              ? "puxar_h"
+              : m === "ombros"
+                ? "isolado_ombro"
+                : m === "biceps" || m === "triceps"
+                  ? "isolado_braco"
+                  : m === "core"
+                    ? "core"
+                    : m === "cardio"
+                      ? "condicionamento"
+                      : "isolado_perna",
+        muscle: m === "cardio" ? undefined : m,
+        priority: 3,
+      }));
+
+    const planned: PlannedExercise[] = [];
+    for (const slot of [...t.slots, ...extra]) {
+      const pick = pickExercise(slot, answers, owned, usedToday, usedWeek, seed + planned.length, goal);
+      if (!pick) continue;
+      const ex = pick.chosen;
+      usedToday.add(ex.id);
+      usedWeek.set(ex.id, (usedWeek.get(ex.id) ?? 0) + 1);
+      const isCompound = ex.compound && slot.priority <= 2 && !["core", "condicionamento", "mobilidade"].includes(ex.pattern);
+      let [lo, hi] = range(isCompound ? params.compoundReps : params.isoReps, adj.repShift);
+      if (ex.pattern === "condicionamento" || ex.pattern === "mobilidade") [lo, hi] = [10, 15];
+      const timed = ex.unit === "seg";
+      if (timed) [lo, hi] = ex.pattern === "condicionamento" ? [30, 45] : phase === "adaptacao" ? [20, 30] : [30, 45];
+      let sets = isCompound ? params.compoundSets : params.isoSets;
+      if (answers.level === "iniciante") sets = Math.min(sets, 3);
+      if (answers.level === "avancado" && isCompound) sets += 1;
+      if (answers.focusMuscles.includes(ex.muscle) && !isCompound) sets += 1;
+      sets = Math.round(sets * adj.volume);
+      if (deload) sets = Math.max(1, Math.round(sets * 0.6));
+      sets = Math.min(5, Math.max(deload ? 1 : 2, sets));
+      let rest = isCompound ? params.compoundRest : params.isoRest;
+      if (adj.density) rest = Math.round(rest * 0.75);
+      if (ex.pattern === "mobilidade") rest = 20;
+
+      const note: string[] = [];
+      if (limits.has("hipertensao") && ex.compound) note.push("Não prenda a respiração: solte o ar na subida.");
+      if (limits.has("lombar") && ex.pattern === "dobrar_quadril") note.push("Amplitude só até onde a coluna fica neutra.");
+      if (limits.has("joelho") && (ex.pattern === "agachar" || ex.pattern === "unilateral_perna")) note.push("Amplitude confortável, sem dor no joelho.");
+      if (weekInBlock === 1 && !deload && isCompound && ex.equipment.length > 0) note.push("Semana 1 do bloco: encontre a carga certa, sem ir à falha.");
+
+      planned.push({
+        exerciseId: ex.id,
+        name: ex.name,
+        muscle: ex.muscle,
+        sets,
+        reps: timed ? `${lo}-${hi}s` : `${lo}-${hi}`,
+        repMin: lo,
+        repMax: hi,
+        unit: timed ? "seg" : "reps",
+        restSec: rest,
+        rir: ex.pattern === "mobilidade" ? 4 : safeRir,
+        tempo: phase === "adaptacao" || deload ? "3-1-1" : phase === "forca" || phase === "pico" ? "2-1-X" : "2-0-1",
+        group: null,
+        note: note.join(" ") || null,
+        cues: ex.cues,
+        alternatives: pick.alternatives.map((a) => ({ id: a.id, name: a.name })),
+      });
+    }
+
+    // Bi-sets on metabolic phases / density: pair isolation work.
+    if (params.superset || adj.density) {
+      let letter = 65;
+      const iso = planned.filter((p, idx) => idx >= 2);
+      for (let k = 0; k + 1 < iso.length; k += 2) {
+        const g = String.fromCharCode(letter++);
+        iso[k].group = g;
+        iso[k + 1].group = g;
+        iso[k].restSec = Math.min(iso[k].restSec, 15);
+      }
+    }
+
+    const cardio = t.key === "mobility" ? null : cardioFor(answers, goal, adj, owned, phase, deload);
+    const warmup = warmupFor(t, answers);
+    const cooldown = ["Alongamento leve dos músculos trabalhados (3-5 min)", "Respiração diafragmática: 1 min"];
+
+    // Fit the session into the time the user has, in order of what hurts
+    // the plan least: extra isolation work, then cardio length, then sets
+    // on accessories, then more exercises, and finally the cardio itself.
+    const budget = answers.sessionMinutes;
+    const slotsAll = [...t.slots, ...extra];
+    let items = planned.map((p, idx) => ({ p, prio: slotsAll[idx]?.priority ?? 4, idx }));
+    let finalCardio = cardio;
+    const minutesOf = () => 5 + 2 + (finalCardio?.minutes ?? 0) + items.reduce((acc, it) => acc + exerciseMinutes(it.p), 0);
+    const dropOne = (minPrio: number, keep: number) => {
+      if (items.length <= keep) return false;
+      const victim = [...items].filter((it) => it.prio >= minPrio).sort((a, b) => b.prio - a.prio || b.idx - a.idx)[0];
+      if (!victim) return false;
+      items = items.filter((it) => it !== victim);
+      return true;
+    };
+    while (minutesOf() > budget && dropOne(4, 4));
+    if (minutesOf() > budget && finalCardio && finalCardio.minutes > 8) {
+      finalCardio = { ...finalCardio, minutes: Math.max(8, finalCardio.minutes - Math.ceil(minutesOf() - budget)) };
+    }
+    while (minutesOf() > budget && dropOne(3, 4));
+    for (const it of [...items].reverse()) {
+      if (minutesOf() <= budget) break;
+      if (it.p.sets > 2) it.p = { ...it.p, sets: it.p.sets - 1 };
+    }
+    while (minutesOf() > budget && dropOne(1, 3));
+    if (minutesOf() > budget && finalCardio) finalCardio = null;
+    for (const it of items) {
+      if (minutesOf() <= budget) break;
+      if (it.p.sets > 2) it.p = { ...it.p, sets: it.p.sets - 1 };
+    }
+    // Last resort for very short sessions with long strength rests.
+    for (const cap of [120, 90, 60]) {
+      if (minutesOf() <= budget) break;
+      for (const it of items) if (it.p.restSec > cap) it.p = { ...it.p, restSec: cap };
+    }
+    let finalList = items.sort((a, b) => a.idx - b.idx).map((it) => it.p);
+    const total = minutesOf();
+    // Drop orphaned bi-set partners.
+    finalList = finalList.map((p) =>
+      p.group && finalList.filter((q) => q.group === p.group).length < 2 ? { ...p, group: null } : p,
+    );
+
+    const bodyKg = answers.weightKg;
+    const met = phase === "metabolico" || adj.density ? 6.5 : 5;
+    const estKcal = Math.round((met * 3.5 * bodyKg) / 200 * (total - (finalCardio?.minutes ?? 0)) + (finalCardio ? (8 * 3.5 * bodyKg) / 200 * finalCardio.minutes : 0));
+
+    return {
+      index: i,
+      key: t.key,
+      weekday: weekdays[i] ?? i,
+      title: t.title,
+      focus: t.focus,
+      warmup,
+      exercises: finalList,
+      cardio: finalCardio,
+      cooldown,
+      estMinutes: Math.round(total),
+      estKcal,
+    };
+  });
+
+  if (deload) notes.push("Semana de descarga: menos séries e mais longe da falha. É aqui que o corpo consolida os ganhos.");
+  if (limits.has("gestante")) notes.push("Gestante: siga o plano apenas com liberação do seu médico e evite exercícios deitada de barriga para cima após o 1º trimestre.");
+  if (limits.has("hipertensao")) notes.push("Hipertensão: mantenha a respiração fluindo e evite ir à falha. Meça a pressão antes de treinar.");
+  if (answers.timeOfDay === "noite" && days.some((d) => d.cardio?.title.includes("HIIT"))) {
+    notes.push("Treinando à noite: faça o HIIT até 2-3h antes de dormir para não atrapalhar o sono.");
+  }
+  if (answers.sleepHours < 7) notes.push(`Você dorme ${answers.sleepHours}h. Chegar a 7-9h acelera muito os resultados.`);
+
+  return { week: w, totalWeeks, block, phase, deload, goal, days, notes };
+}
+
+export function currentWeek(startedAt: Date, totalWeeks: number, now = new Date()): number {
+  const days = Math.floor((now.getTime() - startedAt.getTime()) / 86_400_000);
+  return Math.min(Math.max(4, totalWeeks), Math.max(1, Math.floor(days / 7) + 1));
+}
+
+export { weekdayIndex } from "./time";
+
+export function weeklyVolume(week: WeekPlan): { muscle: Muscle; label: string; sets: number }[] {
+  const map = new Map<Muscle, number>();
+  for (const day of week.days) {
+    for (const p of day.exercises) {
+      map.set(p.muscle, (map.get(p.muscle) ?? 0) + p.sets);
+      const ex = getExercise(p.exerciseId);
+      for (const m of ex?.secondary ?? []) map.set(m, (map.get(m) ?? 0) + p.sets * 0.5);
+    }
+  }
+  return [...map.entries()]
+    .filter(([m]) => m !== "cardio")
+    .map(([muscle, sets]) => ({ muscle, label: MUSCLE_LABEL[muscle], sets: Math.round(sets) }))
+    .sort((a, b) => b.sets - a.sets);
+}

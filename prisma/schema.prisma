@@ -54,6 +54,9 @@ model User {
   tasks        Task[]
   prospects    Prospect[]                @relation("ProspectOwner")
   activationReviews ClientActivationRequest[] @relation("ActivationReviewer")
+  fitProfile        FitProfile?
+  fitBioRecords     FitBioRecord[]
+  fitWorkoutLogs    FitWorkoutLog[]
 }
 
 enum PersonType {
@@ -464,4 +467,66 @@ model ClientActivationRequest {
   sellerSeenAt    DateTime?
 
   @@index([status])
+}
+
+// ---------------------------------------------------------------------------
+// Maxled Fit — app de treino (/fit). O perfil guarda as respostas do
+// questionário; o programa de treino é derivado dessas respostas + do
+// histórico de bioimpedância a cada render (ver src/lib/fit/program.ts),
+// então não há tabela de "treino gerado" para ficar desatualizada.
+// ---------------------------------------------------------------------------
+
+model FitProfile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  answers   Json
+  startedAt DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model FitBioRecord {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  measuredAt   DateTime
+  // "manual" | "laudo" (foto do laudo da balança) | "foto" (estimativa por foto do corpo)
+  source       String   @default("manual")
+  weightKg     Float
+  bodyFatPct   Float?
+  muscleMassKg Float?
+  leanMassKg   Float?
+  visceralFat  Float?
+  waterPct     Float?
+  boneMassKg   Float?
+  bmrKcal      Int?
+  metabolicAge Int?
+  waistCm      Float?
+  hipCm        Float?
+  chestCm      Float?
+  armCm        Float?
+  thighCm      Float?
+  notes        String?  @db.Text
+  createdAt    DateTime @default(now())
+
+  @@index([userId, measuredAt])
+}
+
+model FitWorkoutLog {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  performedAt DateTime @default(now())
+  weekNumber  Int
+  dayIndex    Int
+  title       String
+  durationMin Int?
+  rpe         Int?
+  // [{ exerciseId, sets: [{ reps, loadKg, done }] }]
+  entries     Json
+  notes       String?  @db.Text
+  createdAt   DateTime @default(now())
+
+  @@index([userId, performedAt])
 }
