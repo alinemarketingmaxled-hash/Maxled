@@ -59,6 +59,8 @@ const GYM: Equipment[][] = [["academia"]];
 const KB: Equipment[][] = [["kettlebell"]];
 const BAND: Equipment[][] = [["elastico"]];
 const PULLUP: Equipment[][] = [["barra_fixa"]];
+/** A machine: full gym, or the user marked that specific aparelho. */
+const M = (...machines: Equipment[]): Equipment[][] => [["academia"], ...machines.map((m) => [m])];
 
 const DEFS: Def[] = [
   // ---------------- Peito ----------------
@@ -71,9 +73,9 @@ const DEFS: Def[] = [
   ["supino_halteres_chao", "Supino no chão com halteres", "peito", ["triceps"], "empurrar_h", DB, 1, true, [], ["Deitado no chão, cotovelos tocam o solo", "Ótimo para quem não tem banco"]],
   ["supino_inclinado_halteres", "Supino inclinado com halteres", "peito", ["ombros", "triceps"], "empurrar_h", [["halteres", "banco"], ["academia"]], 2, true, [], ["Banco a 30°", "Foco na parte superior do peito"]],
   ["supino_barra", "Supino reto com barra", "peito", ["triceps", "ombros"], "empurrar_h", [...BB_BENCH, ...GYM], 2, true, ["ombro"], ["Pés firmes, arco leve na lombar", "Barra desce na linha do mamilo", "Use sempre alguém para ajudar em cargas altas"]],
-  ["supino_maquina", "Supino na máquina", "peito", ["triceps"], "empurrar_h", GYM, 1, true, [], ["Ajuste o banco: pegadas na linha do peito", "Controle a volta"]],
+  ["supino_maquina", "Supino na máquina", "peito", ["triceps"], "empurrar_h", M("maquinas_peito_ombro"), 1, true, [], ["Ajuste o banco: pegadas na linha do peito", "Controle a volta"]],
   ["crucifixo_halteres", "Crucifixo com halteres", "peito", [], "empurrar_h", [["halteres", "banco"], ["academia"]], 1, false, ["ombro"], ["Cotovelos levemente flexionados", "Abra até sentir alongar, sem dor"]],
-  ["crossover", "Crossover na polia", "peito", [], "empurrar_h", GYM, 1, false, [], ["Passo à frente, tronco levemente inclinado", "Junte as mãos na frente do peito"]],
+  ["crossover", "Crossover na polia", "peito", [], "empurrar_h", M("polia"), 1, false, [], ["Passo à frente, tronco levemente inclinado", "Junte as mãos na frente do peito"]],
   ["crucifixo_elastico", "Crucifixo com elástico", "peito", [], "empurrar_h", BAND, 1, false, [], ["Elástico preso atrás na altura do peito", "Abrace uma árvore imaginária"]],
   ["mergulho_paralelas", "Mergulho nas paralelas", "peito", ["triceps", "ombros"], "empurrar_h", [["paralelas"], ["academia"]], 3, true, ["ombro"], ["Tronco inclinado à frente para peito", "Desça até o ombro na linha do cotovelo"]],
   ["flexao_trx", "Flexão no TRX", "peito", ["core", "triceps"], "empurrar_h", [["trx"]], 2, true, ["ombro"], ["Alças na altura do quadril", "Core bem firme"]],
@@ -83,23 +85,23 @@ const DEFS: Def[] = [
   ["barra_supinada", "Barra fixa supinada", "costas", ["biceps"], "puxar_v", [...PULLUP, ...GYM], 2, true, ["ombro"], ["Palmas para você", "Queixo passa a barra"]],
   ["barra_negativa", "Barra fixa negativa", "costas", ["biceps"], "puxar_v", [...PULLUP, ...GYM], 1, true, ["ombro"], ["Suba com ajuda de um apoio", "Desça em 4-5 segundos"]],
   ["barra_elastico", "Barra fixa assistida com elástico", "costas", ["biceps"], "puxar_v", [["barra_fixa", "elastico"]], 1, true, ["ombro"], ["Elástico no joelho ou pé", "Mesma técnica da barra"]],
-  ["puxada_frente", "Puxada frontal", "costas", ["biceps"], "puxar_v", GYM, 1, true, [], ["Peito aberto, leve inclinação para trás", "Puxe até o alto do peito"]],
+  ["puxada_frente", "Puxada frontal", "costas", ["biceps"], "puxar_v", M("polia", "maquinas_costas"), 1, true, [], ["Peito aberto, leve inclinação para trás", "Puxe até o alto do peito"]],
   ["puxada_elastico", "Puxada alta com elástico", "costas", ["biceps"], "puxar_v", BAND, 1, true, [], ["Elástico preso no alto da porta", "Cotovelos descem para os bolsos"]],
   ["remada_curvada_barra", "Remada curvada com barra", "costas", ["biceps", "posterior"], "puxar_h", [...BB, ...GYM], 2, true, ["lombar"], ["Quadril para trás, coluna neutra", "Puxe a barra até o umbigo"]],
   ["remada_unilateral", "Remada unilateral com halter", "costas", ["biceps"], "puxar_h", [...DB, ...GYM], 1, true, [], ["Mão e joelho apoiados", "Leve o cotovelo em direção ao quadril"]],
   ["remada_curvada_halteres", "Remada curvada com halteres", "costas", ["biceps"], "puxar_h", [...DB, ...GYM], 2, true, ["lombar"], ["Tronco a ~45°", "Aperte as escápulas no topo"]],
-  ["remada_baixa", "Remada baixa na polia", "costas", ["biceps"], "puxar_h", GYM, 1, true, [], ["Coluna ereta", "Puxe o triângulo até o abdômen"]],
+  ["remada_baixa", "Remada baixa na polia", "costas", ["biceps"], "puxar_h", M("polia"), 1, true, [], ["Coluna ereta", "Puxe o triângulo até o abdômen"]],
   ["remada_elastico", "Remada com elástico", "costas", ["biceps"], "puxar_h", BAND, 1, true, [], ["Sentado com pernas estendidas", "Cotovelos rentes ao corpo"]],
   ["remada_invertida", "Remada invertida", "costas", ["biceps", "core"], "puxar_h", [["trx"], ["barra_fixa"], ["academia"]], 1, true, [], ["Corpo reto como prancha", "Peito vai até as mãos", "Quanto mais em pé, mais fácil"]],
   ["remada_toalha", "Remada isométrica com toalha na porta", "costas", ["biceps"], "puxar_h", BW, 1, true, [], ["Toalha presa na maçaneta", "Incline o corpo para trás e puxe"]],
   ["superman", "Superman", "costas", ["gluteos"], "puxar_h", BW, 1, false, [], ["Deitado de bruços, eleve braços e pernas", "Segure 2 segundos no alto"]],
-  ["pulldown_braco_estendido", "Pulldown com braços estendidos", "costas", [], "puxar_v", [...GYM, ...BAND], 1, false, [], ["Braços quase retos", "Leve as mãos até as coxas"]],
+  ["pulldown_braco_estendido", "Pulldown com braços estendidos", "costas", [], "puxar_v", [...M("polia"), ...BAND], 1, false, [], ["Braços quase retos", "Leve as mãos até as coxas"]],
   ["kb_remada", "Remada com kettlebell", "costas", ["biceps"], "puxar_h", KB, 1, true, [], ["Mesma técnica da remada unilateral"]],
 
   // ---------------- Ombros ----------------
   ["desenvolvimento_halteres", "Desenvolvimento com halteres", "ombros", ["triceps"], "empurrar_v", [...DB, ...GYM], 1, true, ["ombro", "cervical"], ["Sentado ou em pé, abdômen firme", "Empurre até quase estender os braços"]],
   ["desenvolvimento_barra", "Desenvolvimento militar com barra", "ombros", ["triceps", "core"], "empurrar_v", [...BB, ...GYM], 2, true, ["ombro", "lombar", "cervical"], ["Em pé, glúteo contraído", "Cabeça passa para frente quando a barra sobe"]],
-  ["desenvolvimento_maquina", "Desenvolvimento na máquina", "ombros", ["triceps"], "empurrar_v", GYM, 1, true, ["cervical"], ["Pegadas na linha do queixo"]],
+  ["desenvolvimento_maquina", "Desenvolvimento na máquina", "ombros", ["triceps"], "empurrar_v", M("maquinas_peito_ombro"), 1, true, ["cervical"], ["Pegadas na linha do queixo"]],
   ["pike_pushup", "Flexão pike", "ombros", ["triceps"], "empurrar_v", BW, 2, true, ["punho", "ombro", "hipertensao"], ["Quadril alto em V invertido", "Cabeça desce à frente das mãos"]],
   ["desenvolvimento_elastico", "Desenvolvimento com elástico", "ombros", ["triceps"], "empurrar_v", BAND, 1, true, [], ["Pise no elástico", "Empurre para cima sem arquear"]],
   ["kb_press", "Press com kettlebell", "ombros", ["triceps", "core"], "empurrar_v", KB, 2, true, ["ombro"], ["Kettlebell apoiado no antebraço", "Suba girando levemente"]],
@@ -107,7 +109,7 @@ const DEFS: Def[] = [
   ["elevacao_lateral_elastico", "Elevação lateral com elástico", "ombros", [], "isolado_ombro", BAND, 1, false, [], ["Pise no elástico, suba até a linha do ombro"]],
   ["elevacao_frontal", "Elevação frontal", "ombros", [], "isolado_ombro", [...DB, ...GYM], 1, false, [], ["Braços retos até a altura dos olhos"]],
   ["crucifixo_inverso", "Crucifixo inverso", "ombros", ["costas"], "isolado_ombro", [...DB, ...GYM], 1, false, [], ["Tronco inclinado", "Abra os braços apertando as escápulas"]],
-  ["face_pull", "Face pull", "ombros", ["costas"], "isolado_ombro", [...GYM, ...BAND], 1, false, [], ["Puxe a corda em direção ao rosto", "Cotovelos altos, gire para fora"]],
+  ["face_pull", "Face pull", "ombros", ["costas"], "isolado_ombro", [...M("polia"), ...BAND], 1, false, [], ["Puxe a corda em direção ao rosto", "Cotovelos altos, gire para fora"]],
   ["y_raise", "Y-raise deitado", "ombros", ["costas"], "isolado_ombro", BW, 1, false, [], ["De bruços, braços em Y", "Polegar para cima"]],
 
   // ---------------- Braços ----------------
@@ -118,7 +120,7 @@ const DEFS: Def[] = [
   ["rosca_concentrada", "Rosca concentrada", "biceps", [], "isolado_braco", [...DB, ...GYM], 1, false, [], ["Cotovelo apoiado na coxa"]],
   ["rosca_toalha", "Rosca isométrica com toalha", "biceps", [], "isolado_braco", BW, 1, false, [], ["Pise na toalha e puxe com força", "Segure a contração"], "seg"],
   ["triceps_frances", "Tríceps francês com halter", "triceps", [], "isolado_braco", [...DB, ...GYM], 1, false, ["ombro"], ["Cotovelos apontando para cima", "Desça atrás da cabeça"]],
-  ["triceps_polia", "Tríceps na polia", "triceps", [], "isolado_braco", GYM, 1, false, [], ["Cotovelos colados", "Estenda totalmente"]],
+  ["triceps_polia", "Tríceps na polia", "triceps", [], "isolado_braco", M("polia"), 1, false, [], ["Cotovelos colados", "Estenda totalmente"]],
   ["triceps_banco", "Mergulho no banco", "triceps", ["peito"], "isolado_braco", BW, 1, false, ["ombro", "punho"], ["Mãos no banco/cadeira", "Desça até 90° no cotovelo"]],
   ["triceps_elastico", "Tríceps com elástico", "triceps", [], "isolado_braco", BAND, 1, false, [], ["Elástico preso no alto", "Estenda os braços para baixo"]],
   ["triceps_testa", "Tríceps testa", "triceps", [], "isolado_braco", [...DB_BENCH, ...BB_BENCH, ...GYM], 2, false, ["punho"], ["Desça até próximo da testa", "Cotovelos fixos"]],
@@ -128,8 +130,8 @@ const DEFS: Def[] = [
   ["agachamento_goblet", "Agachamento goblet", "quadriceps", ["gluteos", "core"], "agachar", [...DB, ...KB, ...GYM], 1, true, [], ["Halter/kettlebell junto ao peito", "Cotovelos entre os joelhos no fundo"]],
   ["agachamento_barra", "Agachamento com barra", "quadriceps", ["gluteos", "posterior", "core"], "agachar", [...BB, ...GYM], 2, true, ["lombar", "joelho"], ["Barra no trapézio", "Respire e trave o abdômen antes de descer", "Profundidade até coxa paralela ou abaixo"]],
   ["agachamento_frontal", "Agachamento frontal", "quadriceps", ["core"], "agachar", [...BB, ...GYM], 3, true, ["punho", "lombar"], ["Barra apoiada nos ombros", "Tronco bem ereto"]],
-  ["leg_press", "Leg press 45°", "quadriceps", ["gluteos"], "agachar", GYM, 1, true, [], ["Lombar sempre apoiada", "Não trave os joelhos no topo"]],
-  ["hack", "Agachamento hack", "quadriceps", ["gluteos"], "agachar", GYM, 2, true, ["joelho"], ["Costas apoiadas", "Desça controlado"]],
+  ["leg_press", "Leg press 45°", "quadriceps", ["gluteos"], "agachar", M("leg_press"), 1, true, [], ["Lombar sempre apoiada", "Não trave os joelhos no topo"]],
+  ["hack", "Agachamento hack", "quadriceps", ["gluteos"], "agachar", M("leg_press"), 2, true, ["joelho"], ["Costas apoiadas", "Desça controlado"]],
   ["agachamento_sumo", "Agachamento sumô", "gluteos", ["quadriceps", "posterior"], "agachar", [...DB, ...KB, ...GYM, ...BW], 1, true, [], ["Pés afastados e apontados para fora", "Tronco ereto"]],
   ["agachamento_isometrico", "Agachamento isométrico na parede", "quadriceps", [], "agachar", BW, 1, false, [], ["Costas na parede, joelhos a 90°", "Segure o tempo"], "seg"],
   ["agachamento_salto", "Agachamento com salto", "quadriceps", ["gluteos", "cardio"], "agachar", BW, 2, true, ["joelho", "gestante"], ["Aterrisse macio", "Emende direto na próxima"]],
@@ -155,15 +157,15 @@ const DEFS: Def[] = [
   ["ponte_gluteo", "Ponte de glúteo", "gluteos", ["posterior"], "dobrar_quadril", BW, 1, false, [], ["Deitado, pés próximos ao quadril", "Suba contraindo o glúteo"]],
   ["ponte_unilateral", "Ponte de glúteo unilateral", "gluteos", ["posterior"], "dobrar_quadril", BW, 2, false, [], ["Uma perna estendida no ar"]],
   ["good_morning_elastico", "Good morning com elástico", "posterior", ["gluteos"], "dobrar_quadril", BAND, 1, true, [], ["Elástico sob os pés e atrás do pescoço", "Incline o tronco com coluna neutra"]],
-  ["mesa_flexora", "Mesa flexora", "posterior", [], "isolado_perna", GYM, 1, false, [], ["Quadril colado no banco", "Controle a volta"]],
-  ["cadeira_extensora", "Cadeira extensora", "quadriceps", [], "isolado_perna", GYM, 1, false, ["joelho"], ["Segure 1 segundo em cima"]],
-  ["cadeira_abdutora", "Cadeira abdutora", "gluteos", [], "isolado_perna", GYM, 1, false, [], ["Tronco levemente à frente para mais glúteo"]],
+  ["mesa_flexora", "Mesa flexora", "posterior", [], "isolado_perna", M("extensora_flexora"), 1, false, [], ["Quadril colado no banco", "Controle a volta"]],
+  ["cadeira_extensora", "Cadeira extensora", "quadriceps", [], "isolado_perna", M("extensora_flexora"), 1, false, ["joelho"], ["Segure 1 segundo em cima"]],
+  ["cadeira_abdutora", "Cadeira abdutora", "gluteos", [], "isolado_perna", M("abdutora"), 1, false, [], ["Tronco levemente à frente para mais glúteo"]],
   ["abducao_elastico", "Abdução com mini band", "gluteos", [], "isolado_perna", BAND, 1, false, [], ["Deitado de lado ou em pé", "Movimento controlado"]],
   ["flexora_bola", "Flexão de joelho na bola suíça", "posterior", ["gluteos", "core"], "isolado_perna", [["bola_suica"]], 2, false, [], ["Quadril elevado", "Puxe a bola com os calcanhares"]],
   ["nordica", "Flexão nórdica", "posterior", [], "isolado_perna", BW, 3, false, ["joelho"], ["Pés presos", "Desça o mais devagar possível"]],
   ["panturrilha_pe", "Elevação de panturrilha em pé", "panturrilha", [], "isolado_perna", BW, 1, false, [], ["Use um degrau para amplitude", "Pausa em cima e embaixo"]],
   ["panturrilha_unilateral", "Panturrilha unilateral com halter", "panturrilha", [], "isolado_perna", [...DB, ...GYM], 2, false, [], ["Segure num apoio", "Amplitude total"]],
-  ["panturrilha_maquina", "Panturrilha na máquina", "panturrilha", [], "isolado_perna", GYM, 1, false, [], ["Joelhos estendidos"]],
+  ["panturrilha_maquina", "Panturrilha na máquina", "panturrilha", [], "isolado_perna", M("panturrilha_maquina"), 1, false, [], ["Joelhos estendidos"]],
 
   // ---------------- Core ----------------
   ["prancha", "Prancha", "core", [], "core", BW, 1, false, ["gestante"], ["Cotovelos sob os ombros", "Glúteo e abdômen contraídos", "Não deixe o quadril cair"], "seg"],
@@ -174,7 +176,7 @@ const DEFS: Def[] = [
   ["elevacao_pernas", "Elevação de pernas", "core", [], "core", BW, 2, false, ["lombar", "gestante"], ["Lombar colada no chão", "Desça devagar"]],
   ["elevacao_pernas_barra", "Elevação de pernas na barra", "core", [], "core", [...PULLUP, ...GYM], 3, false, ["ombro"], ["Sem balanço", "Suba os joelhos ao peito ou pernas estendidas"]],
   ["mountain_climber", "Mountain climber", "core", ["cardio"], "core", BW, 1, false, ["punho"], ["Posição de prancha alta", "Joelhos ao peito alternando rápido"]],
-  ["pallof", "Pallof press", "core", [], "core", [...BAND, ...GYM], 1, false, [], ["De lado para a âncora", "Empurre à frente sem deixar girar"]],
+  ["pallof", "Pallof press", "core", [], "core", [...BAND, ...M("polia")], 1, false, [], ["De lado para a âncora", "Empurre à frente sem deixar girar"]],
   ["abdominal_bicicleta", "Abdominal bicicleta", "core", [], "core", BW, 1, false, ["cervical", "gestante"], ["Cotovelo vai ao joelho oposto", "Ritmo controlado"]],
   ["hollow_hold", "Hollow hold", "core", [], "core", BW, 2, false, ["lombar", "gestante"], ["Lombar no chão, pernas e braços estendidos", "Segure a posição de canoa"], "seg"],
   ["roda_abdominal", "Roda abdominal", "core", ["ombros"], "core", GYM, 3, false, ["lombar", "gestante"], ["De joelhos", "Estenda só até onde a lombar aguenta"]],
@@ -193,6 +195,42 @@ const DEFS: Def[] = [
   ["thruster_halteres", "Thruster com halteres", "cardio", ["quadriceps", "ombros"], "condicionamento", [...DB, ...GYM], 2, true, ["ombro"], ["Agachamento + desenvolvimento num só movimento"]],
   ["patinador", "Salto do patinador", "cardio", ["gluteos"], "condicionamento", BW, 2, false, ["joelho", "gestante"], ["Salte de lado em uma perna", "Equilíbrio na aterrissagem"], "seg"],
   ["caminhada_inclinada", "Caminhada inclinada", "cardio", ["gluteos", "panturrilha"], "condicionamento", [["cardio_maquina"], ["academia"]], 1, false, [], ["Inclinação 8-12%", "Não segure no apoio"], "seg"],
+
+  // ---------------- Aparelhos ----------------
+  ["peck_deck", "Voador (peck deck)", "peito", [], "empurrar_h", M("maquinas_peito_ombro"), 1, false, [], ["Cotovelos na altura dos ombros", "Feche os braços apertando o peito", "Volte devagar até sentir alongar"]],
+  ["supino_inclinado_maquina", "Supino inclinado na máquina", "peito", ["ombros", "triceps"], "empurrar_h", M("maquinas_peito_ombro"), 1, true, [], ["Pegadas na linha da parte alta do peito", "Empurre sem tirar as costas do encosto"]],
+  ["crossover_baixo", "Crossover polia baixa", "peito", ["ombros"], "empurrar_h", M("polia"), 1, false, [], ["Polias embaixo, mãos sobem até a altura do queixo", "Foco na parte superior do peito"]],
+  ["supino_smith", "Supino reto no Smith", "peito", ["triceps", "ombros"], "empurrar_h", M("smith"), 1, true, ["ombro"], ["Banco centralizado sob a barra", "Barra desce na linha do mamilo", "Trave de segurança ajustada"]],
+  ["supino_inclinado_smith", "Supino inclinado no Smith", "peito", ["ombros", "triceps"], "empurrar_h", M("smith"), 2, true, ["ombro"], ["Banco a 30°", "Barra desce na parte alta do peito"]],
+  ["puxada_supinada", "Puxada supinada na polia", "costas", ["biceps"], "puxar_v", M("polia", "maquinas_costas"), 1, true, [], ["Palmas para você, pegada na largura dos ombros", "Puxe até o queixo, cotovelos para baixo"]],
+  ["puxada_triangulo", "Puxada com triângulo", "costas", ["biceps"], "puxar_v", M("polia", "maquinas_costas"), 1, true, [], ["Pegada neutra fechada", "Leve o triângulo até o alto do peito"]],
+  ["remada_articulada", "Remada articulada", "costas", ["biceps"], "puxar_h", M("maquinas_costas"), 1, true, [], ["Peito apoiado no encosto", "Puxe levando os cotovelos para trás", "Aperte as escápulas"]],
+  ["puxada_articulada", "Puxada alta articulada", "costas", ["biceps"], "puxar_v", M("maquinas_costas"), 1, true, [], ["Ajuste o banco para as coxas ficarem presas", "Puxe até a linha do peito"]],
+  ["remada_unilateral_polia", "Remada unilateral na polia", "costas", ["biceps"], "puxar_h", M("polia"), 1, true, [], ["Sentado, um braço de cada vez", "Gire levemente o tronco no alongamento"]],
+  ["remada_smith", "Remada curvada no Smith", "costas", ["biceps"], "puxar_h", M("smith"), 2, true, ["lombar"], ["Tronco inclinado a ~45°", "Barra sobe até o umbigo"]],
+  ["voador_inverso", "Voador inverso (crucifixo inverso na máquina)", "ombros", ["costas"], "isolado_ombro", M("maquinas_peito_ombro"), 1, false, [], ["Peito apoiado no encosto", "Abra os braços até a linha do corpo"]],
+  ["elevacao_lateral_polia", "Elevação lateral na polia", "ombros", [], "isolado_ombro", M("polia"), 1, false, [], ["Polia baixa, cabo passando pela frente do corpo", "Suba até a linha do ombro"]],
+  ["desenvolvimento_smith", "Desenvolvimento no Smith", "ombros", ["triceps"], "empurrar_v", M("smith"), 1, true, ["ombro", "cervical"], ["Sentado, barra desce à frente do rosto", "Empurre até quase estender"]],
+  ["rosca_polia", "Rosca direta na polia", "biceps", [], "isolado_braco", M("polia"), 1, false, [], ["Cotovelos fixos ao lado do corpo", "Tensão constante na subida e descida"]],
+  ["rosca_scott_polia", "Rosca Scott na polia", "biceps", [], "isolado_braco", M("polia"), 1, false, [], ["Braços apoiados no banco Scott", "Não estenda totalmente o cotovelo no fim"]],
+  ["rosca_martelo_corda", "Rosca martelo na corda", "biceps", [], "isolado_braco", M("polia"), 1, false, [], ["Corda na polia baixa, pegada neutra", "Cotovelos parados"]],
+  ["triceps_corda", "Tríceps na corda", "triceps", [], "isolado_braco", M("polia"), 1, false, [], ["Cotovelos colados no corpo", "Abra a corda no final do movimento"]],
+  ["triceps_frances_polia", "Tríceps francês na polia", "triceps", [], "isolado_braco", M("polia"), 1, false, ["ombro"], ["De costas para a polia, corda atrás da cabeça", "Estenda os braços à frente"]],
+  ["agachamento_smith", "Agachamento no Smith", "quadriceps", ["gluteos"], "agachar", M("smith"), 1, true, [], ["Pés um pouco à frente da barra", "Desça até a coxa paralela", "Trave de segurança ajustada"]],
+  ["leg_press_fechado", "Leg press com pés juntos", "quadriceps", [], "agachar", M("leg_press"), 1, true, ["joelho"], ["Pés mais baixos e próximos na plataforma", "Foco no quadríceps"]],
+  ["bulgaro_smith", "Agachamento búlgaro no Smith", "quadriceps", ["gluteos"], "unilateral_perna", M("smith"), 2, true, ["joelho"], ["Pé de trás apoiado no banco", "Barra guia o movimento: foque na perna da frente"]],
+  ["stiff_smith", "Stiff no Smith", "posterior", ["gluteos"], "dobrar_quadril", M("smith"), 1, true, ["lombar"], ["Joelhos semiflexionados", "Barra desliza pelas coxas"]],
+  ["hip_thrust_smith", "Elevação de quadril no Smith", "gluteos", ["posterior"], "dobrar_quadril", M("smith"), 1, true, [], ["Deitado no chão, barra sobre o quadril com proteção", "Suba contraindo o glúteo"]],
+  ["cadeira_flexora", "Cadeira flexora (sentado)", "posterior", [], "isolado_perna", M("extensora_flexora"), 1, false, [], ["Joelho alinhado ao eixo da máquina", "Puxe até o máximo e volte devagar"]],
+  ["coice_polia", "Glúteo na polia (coice)", "gluteos", ["posterior"], "isolado_perna", M("polia"), 1, false, [], ["Tornozeleira na polia baixa", "Leve a perna para trás sem arquear a lombar"]],
+  ["panturrilha_leg_press", "Panturrilha no leg press", "panturrilha", [], "isolado_perna", M("leg_press"), 1, false, [], ["Só a ponta dos pés na plataforma", "Amplitude total, sem travar os joelhos"]],
+  ["panturrilha_sentado", "Panturrilha sentado (máquina)", "panturrilha", [], "isolado_perna", M("panturrilha_maquina"), 1, false, [], ["Joelhos a 90°", "Pausa de 1 segundo em cima"]],
+  ["abdominal_polia", "Abdominal na polia (crunch ajoelhado)", "core", [], "core", M("polia"), 1, false, ["cervical"], ["Ajoelhado, corda junto à cabeça", "Enrole o tronco levando os cotovelos aos joelhos"]],
+  ["abdominal_maquina", "Abdominal na máquina", "core", [], "core", GYM, 1, false, ["cervical", "gestante"], ["Ajuste a carga leve", "Movimento curto e controlado"]],
+  ["hiperextensao", "Extensão lombar no banco romano", "costas", ["gluteos", "posterior"], "dobrar_quadril", GYM, 1, false, [], ["Quadril apoiado na almofada", "Suba só até alinhar o corpo, sem hiperestender"]],
+  ["bike_ergometrica", "Bike ergométrica", "cardio", ["quadriceps"], "condicionamento", [["cardio_maquina"], ["academia"]], 1, false, [], ["Banco na altura do quadril", "Cadência constante"], "seg"],
+  ["eliptico", "Elíptico", "cardio", [], "condicionamento", [["cardio_maquina"], ["academia"]], 1, false, [], ["Postura ereta", "Use braços e pernas"], "seg"],
+  ["escada", "Escada / simulador de escada", "cardio", ["gluteos", "panturrilha"], "condicionamento", GYM, 2, false, ["joelho"], ["Não se apoie no corrimão", "Passos completos"], "seg"],
 
   // ---------------- Mobilidade ----------------
   ["mob_quadril", "Mobilidade de quadril 90/90", "gluteos", [], "mobilidade", BW, 1, false, [], ["Sentado, pernas em 90°", "Gire de um lado para outro"], "seg"],
@@ -230,4 +268,16 @@ export function canDo(ex: Exercise, owned: Set<Equipment>): boolean {
   if (ex.equipment.length === 0) return true;
   if (owned.has("academia")) return true;
   return ex.equipment.some((req) => req.every((item) => owned.has(item)));
+}
+
+/** "Halteres + Banco ou Academia completa" — human description of what an exercise needs. */
+export function equipmentText(ex: Exercise, labels: Record<Equipment, string>): string {
+  if (ex.equipment.length === 0) return "Peso corporal";
+  return ex.equipment.map((req) => req.map((e) => labels[e]).join(" + ")).join(" ou ");
+}
+
+/** Needs a gym machine (as opposed to free weights / bodyweight). */
+export function isMachine(ex: Exercise, machines: Equipment[]): boolean {
+  return ex.equipment.some((req) => req.some((e) => machines.includes(e) && e !== "cardio_maquina")) ||
+    (ex.equipment.length === 1 && ex.equipment[0].length === 1 && ex.equipment[0][0] === "academia");
 }

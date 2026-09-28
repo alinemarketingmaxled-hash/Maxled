@@ -31,7 +31,17 @@ export type Equipment =
   | "trx"
   | "bola_suica"
   | "corda"
-  | "cardio_maquina";
+  | "cardio_maquina"
+  // Aparelhos de academia — for gyms that don't have everything (condomínio,
+  // studio, home gym). "academia" still implies all of them.
+  | "polia"
+  | "leg_press"
+  | "extensora_flexora"
+  | "abdutora"
+  | "smith"
+  | "maquinas_peito_ombro"
+  | "maquinas_costas"
+  | "panturrilha_maquina";
 
 export type Limitation = "joelho" | "lombar" | "ombro" | "punho" | "quadril" | "cervical" | "hipertensao" | "gestante";
 
@@ -164,7 +174,28 @@ export const EQUIPMENT_LABEL: Record<Equipment, string> = {
   bola_suica: "Bola suíça",
   corda: "Corda de pular",
   cardio_maquina: "Esteira / bike / elíptico",
+  polia: "Polia / cross-over / puxador",
+  leg_press: "Leg press / hack",
+  extensora_flexora: "Cadeira extensora e flexora",
+  abdutora: "Cadeira abdutora",
+  smith: "Smith",
+  maquinas_peito_ombro: "Supino máquina / voador / desenvolvimento máquina",
+  maquinas_costas: "Remada e puxada articuladas",
+  panturrilha_maquina: "Panturrilha em pé / sentado (máquina)",
 };
+
+/** Equipment shown in the "Aparelhos" group of the questionnaire. */
+export const MACHINES: Equipment[] = [
+  "polia",
+  "leg_press",
+  "extensora_flexora",
+  "abdutora",
+  "smith",
+  "maquinas_peito_ombro",
+  "maquinas_costas",
+  "panturrilha_maquina",
+  "cardio_maquina",
+];
 
 export const LIMITATION_LABEL: Record<Limitation, string> = {
   joelho: "Joelho",

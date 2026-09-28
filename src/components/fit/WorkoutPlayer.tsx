@@ -9,7 +9,7 @@ import type { CardioBlock, PlannedExercise } from "@/lib/fit/program";
 import type { LoadSuggestion } from "@/lib/fit/progression";
 import { MUSCLE_LABEL } from "@/lib/fit/types";
 import { ArrowLeftI, ArrowRightI, CheckI, ExitI, PauseI, PlayI, PlusI, SwapI } from "./FitIcons";
-import { ExerciseArt } from "./ui";
+import { ExerciseMedia } from "./ui";
 
 export type PlayerExercise = {
   plan: PlannedExercise;
@@ -480,12 +480,20 @@ export function WorkoutPlayer({
 
       <div className="relative overflow-hidden rounded-[32px] bg-fit-card">
         <div className="relative">
-          <ExerciseArt pattern={cur.pattern} size="lg" />
-          <div className="absolute inset-0 grid place-items-center">
-            <p className={`text-[120px] font-bold leading-none tabular-nums text-fit-lime drop-shadow-[0_4px_20px_rgba(0,0,0,0.5)] ${isRest ? "" : "fit-pop"}`} key={`${state.ex}-${state.set}-${isRest}`}>
-              {bigNumber}
-            </p>
-          </div>
+          <ExerciseMedia id={cur.exerciseId} pattern={cur.pattern} size="lg" className="h-64" />
+          {isRest ? (
+            // Rest: dim the photo of what's next and show the countdown big.
+            <div className="absolute inset-0 grid place-items-center bg-black/55">
+              <p className="text-[120px] font-bold leading-none tabular-nums text-fit-lime drop-shadow-[0_4px_20px_rgba(0,0,0,0.5)]">{bigNumber}</p>
+            </div>
+          ) : (
+            // Working: keep the demo visible; the target sits in the corner.
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-end bg-gradient-to-t from-black/70 via-black/10 to-transparent p-4 pt-16">
+              <p key={`${state.ex}-${state.set}`} className="fit-pop text-7xl font-bold leading-none tabular-nums text-fit-lime drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]">
+                {bigNumber}
+              </p>
+            </div>
+          )}
           <span className="absolute left-4 top-4 rounded-full bg-fit-strong/80 px-3 py-1 text-[11px] font-semibold text-white">
             {isRest ? "Descanso" : cur.unit === "seg" ? "segundos" : "repetições"}
           </span>
@@ -597,7 +605,7 @@ export function WorkoutPlayer({
               return (
                 <li key={i}>
                   <button type="button" onClick={() => goTo(i)} className={`flex w-full items-center gap-3 rounded-3xl p-2 text-left ${i === state.ex ? "bg-fit-lime-soft" : "bg-fit-card-2"}`}>
-                    <ExerciseArt pattern={e.pattern} size="sm" />
+                    <ExerciseMedia id={e.exerciseId} pattern={e.pattern} size="sm" />
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-semibold text-fit-accent">{e.name}</span>
                       <span className="block text-xs text-fit-muted">
@@ -622,7 +630,7 @@ export function WorkoutPlayer({
             {exercises[state.ex].alternatives.map((a) => (
               <li key={a.id}>
                 <button type="button" onClick={() => swap(a.id)} className="flex w-full items-center gap-3 rounded-3xl bg-fit-card-2 p-2 text-left">
-                  <ExerciseArt pattern={a.pattern} size="sm" />
+                  <ExerciseMedia id={a.id} pattern={a.pattern} size="sm" />
                   <span className="text-sm font-semibold">{a.name}</span>
                 </button>
               </li>

@@ -190,3 +190,8 @@ export const ExitI = (p: P) => (
     <path d="M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4M10 17l-5-5 5-5M5 12h11" />
   </svg>
 );
+export const AlertI = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M12 3 2 21h20zM12 10v5M12 18h.01" />
+  </svg>
+);

@@ -4,7 +4,7 @@ import { PHASE_INFO, WEEKDAY_LONG, buildBlocks, weeklyVolume } from "@/lib/fit/p
 import { getExercise } from "@/lib/fit/exercises";
 import { GOAL_LABEL, LEVEL_LABEL, MUSCLE_LABEL } from "@/lib/fit/types";
 import { oneRepMax } from "@/lib/fit/progression";
-import { Card, ExerciseArt, SectionTitle, TopBar, fmtDate, fmtNum } from "@/components/fit/ui";
+import { Card, ExerciseMedia, SectionTitle, TopBar, fmtDate, fmtNum } from "@/components/fit/ui";
 import { ClockI, FlameI } from "@/components/fit/FitIcons";
 import { DeleteWorkoutButton } from "@/components/fit/DeleteButtons";
 
@@ -36,6 +36,9 @@ export default async function TreinoPage({ searchParams }: { searchParams: Promi
             {label}
           </Link>
         ))}
+        <Link href="/fit/exercicios" className="shrink-0 rounded-full bg-fit-card-2 px-4 py-2 text-[13px] font-medium text-fit-muted">
+          Exercícios
+        </Link>
       </nav>
 
       {tab === "semana" && <WeekTab ctx={ctx} />}
@@ -119,7 +122,7 @@ function WeekTab({ ctx }: { ctx: Awaited<ReturnType<typeof loadFitContext>> }) {
           return (
             <Link key={d.index} href={`/fit/treino/${d.index}`} className="group overflow-hidden rounded-[26px] bg-fit-card">
               <div className="relative">
-                <ExerciseArt pattern={first?.pattern ?? "core"} />
+                <ExerciseMedia id={first?.id ?? ""} pattern={first?.pattern ?? "core"} animate={false} />
                 <span className="absolute right-2 top-2 rounded-full bg-fit-strong/80 px-2 py-0.5 text-[10px] font-semibold text-[#d6f94b]">
                   {WEEKDAY_LONG[d.weekday].slice(0, 3)}
                 </span>

@@ -10,6 +10,7 @@ import {
   GOAL_LABEL,
   LEVEL_LABEL,
   LIMITATION_LABEL,
+  MACHINES,
   MUSCLE_LABEL,
   TIME_LABEL,
   type Equipment,
@@ -64,7 +65,8 @@ const LEVEL_HINT: Record<Level, string> = {
 };
 
 const PLACES: { key: string; label: string; hint: string; equipment: Equipment[]; home: boolean }[] = [
-  { key: "academia", label: "Academia", hint: "Máquinas, barras, halteres, polia", equipment: ["academia"], home: false },
+  { key: "academia", label: "Academia completa", hint: "Todos os aparelhos, barras e halteres", equipment: ["academia"], home: false },
+  { key: "predio", label: "Academia do prédio / estúdio", hint: "Alguns aparelhos: marque abaixo", equipment: ["halteres", "banco", "polia", "cardio_maquina"], home: true },
   { key: "casa_equip", label: "Casa com equipamentos", hint: "Escolha abaixo o que você tem", equipment: ["halteres", "elastico"], home: true },
   { key: "casa_zero", label: "Casa sem nada", hint: "Só o peso do corpo", equipment: ["peso_corporal"], home: true },
   { key: "ar_livre", label: "Ao ar livre / praça", hint: "Barras e paralelas de praça", equipment: ["barra_fixa", "paralelas"], home: false },
@@ -368,13 +370,29 @@ export function OnboardingWizard({ initial, editing: editingProp, defaultName }:
                 );
               })}
             </div>
-            <Label>Equipamentos (toque para marcar tudo o que você tem)</Label>
-            <Chips
-              all={(Object.keys(EQUIPMENT_LABEL) as Equipment[]).filter((e) => e !== "peso_corporal")}
-              selected={a.equipment}
-              label={(e) => EQUIPMENT_LABEL[e]}
-              onToggle={(e) => set("equipment", toggle(a.equipment, e))}
-            />
+            {a.equipment.includes("academia") ? (
+              <p className="mt-4 rounded-2xl bg-fit-lime-soft p-3 text-xs">
+                Academia completa inclui todos os aparelhos (leg press, polia, Smith, cadeiras, máquinas) e pesos livres. Se na sua faltar algo, escolha
+                &quot;Academia do prédio / estúdio&quot; e marque só o que tem.
+              </p>
+            ) : (
+              <>
+                <Label>Aparelhos de academia</Label>
+                <Chips
+                  all={MACHINES}
+                  selected={a.equipment}
+                  label={(e) => EQUIPMENT_LABEL[e]}
+                  onToggle={(e) => set("equipment", toggle(a.equipment, e))}
+                />
+                <Label>Pesos livres e acessórios</Label>
+                <Chips
+                  all={(Object.keys(EQUIPMENT_LABEL) as Equipment[]).filter((e) => e !== "peso_corporal" && e !== "academia" && !MACHINES.includes(e))}
+                  selected={a.equipment}
+                  label={(e) => EQUIPMENT_LABEL[e]}
+                  onToggle={(e) => set("equipment", toggle(a.equipment, e))}
+                />
+              </>
+            )}
           </Q>
         )}
 

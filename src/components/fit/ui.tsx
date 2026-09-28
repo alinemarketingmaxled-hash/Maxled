@@ -1,5 +1,8 @@
 import type { ReactNode } from "react";
+import Image from "next/image";
 import Link from "next/link";
+import { exerciseImages } from "@/lib/fit/exercise-images";
+import { POSES, type Pose } from "@/lib/fit/poses";
 import type { Pattern } from "@/lib/fit/exercises";
 import { ArrowLeftI, BoltI, DumbbellI, HeartI, LegI, SpiralI, TargetI } from "./FitIcons";
 
@@ -235,4 +238,109 @@ export function signed(n: number | null | undefined, unit = ""): string {
   if (n == null) return "–";
   const s = n > 0 ? "+" : n < 0 ? "−" : "";
   return `${s}${fmtNum(Math.abs(n))}${unit}`;
+}
+
+/** Real execution photo when we have one (animated start ↔ end), otherwise
+ * the illustrated tile. `animate` is off for small thumbnails in long
+ * lists so the page doesn't turn into a wall of motion. */
+export function ExerciseMedia({
+  id,
+  pattern,
+  size = "md",
+  animate = size !== "sm",
+  labels = false,
+  className = "",
+}: {
+  id: string;
+  pattern: Pattern;
+  size?: "sm" | "md" | "lg";
+  animate?: boolean;
+  labels?: boolean;
+  className?: string;
+}) {
+  const img = exerciseImages(id);
+  const pose = POSES[id];
+  if (!img && pose) return <PoseMedia poses={pose} size={size} animate={animate} labels={labels} className={className} />;
+  if (!img) return <ExerciseArt pattern={pattern} size={size} />;
+  const dims = size === "sm" ? "h-14 w-14 rounded-2xl" : size === "lg" ? "h-56 w-full rounded-[28px]" : "h-28 w-full rounded-3xl";
+  const sizes = size === "sm" ? "56px" : "(max-width: 448px) 100vw, 448px";
+  return (
+    <div className={`relative shrink-0 overflow-hidden bg-white ${dims} ${className}`}>
+      <Image src={img.frames[0]} alt="" fill sizes={sizes} unoptimized className="object-cover" />
+      {animate && <Image src={img.frames[1]} alt="" fill sizes={sizes} unoptimized className="fit-demo-end object-cover" />}
+      {labels && (
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between bg-gradient-to-t from-black/70 to-transparent px-3 pb-2 pt-8 text-[10px] font-semibold text-white">
+          <span>{animate ? "Início ↔ fim do movimento" : "Posição inicial"}</span>
+          {img.approx && <span className="rounded-full bg-black/50 px-2 py-0.5 font-normal">movimento de referência</span>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** One illustrated frame of a pose (see lib/fit/poses.ts). */
+export function PoseFrame({ pose, className = "" }: { pose: Pose; className?: string }) {
+  const seg = (a: [number, number], b: [number, number], c?: [number, number]) =>
+    `M${a[0]},${a[1]} L${b[0]},${b[1]}${c ? ` L${c[0]},${c[1]}` : ""}`;
+  return (
+    <svg viewBox="0 0 200 130" className={className} role="img" aria-hidden>
+      <line x1="4" x2="196" y1="119" y2="119" stroke="var(--fit-lime)" strokeOpacity="0.35" strokeWidth="2" />
+      {pose.props?.map((p, i) =>
+        "dot" in p ? (
+          <circle key={i} cx={p.dot[0]} cy={p.dot[1]} r="5" fill="var(--fit-lime)" />
+        ) : (
+          <line
+            key={i}
+            x1={p.line[0][0]}
+            y1={p.line[0][1]}
+            x2={p.line[1][0]}
+            y2={p.line[1][1]}
+            stroke={p.wall ? "#6c6d73" : "var(--fit-lime)"}
+            strokeWidth={p.wall ? 4 : 3}
+            strokeLinecap="round"
+          />
+        ),
+      )}
+      <g fill="none" stroke="#f4f5f0" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round">
+        {/* far-side limbs slightly dimmer for depth */}
+        <path d={seg(pose.hip, pose.kneeR, pose.footR)} strokeOpacity="0.55" />
+        <path d={seg(pose.neck, pose.elbowR, pose.handR)} strokeOpacity="0.55" />
+        <path d={seg(pose.neck, pose.hip)} strokeWidth="9" />
+        <path d={seg(pose.hip, pose.kneeL, pose.footL)} />
+        <path d={seg(pose.neck, pose.elbowL, pose.handL)} />
+      </g>
+      <circle cx={pose.head[0]} cy={pose.head[1]} r="9" fill="#f4f5f0" />
+    </svg>
+  );
+}
+
+function PoseMedia({
+  poses,
+  size,
+  animate,
+  labels,
+  className,
+}: {
+  poses: [Pose, Pose];
+  size: "sm" | "md" | "lg";
+  animate: boolean;
+  labels: boolean;
+  className: string;
+}) {
+  const dims = size === "sm" ? "h-14 w-14 rounded-2xl" : size === "lg" ? "h-56 w-full rounded-[28px]" : "h-28 w-full rounded-3xl";
+  return (
+    <div className={`relative shrink-0 overflow-hidden bg-[#1f2024] ${dims} ${className}`}>
+      <PoseFrame pose={poses[0]} className="absolute inset-0 h-full w-full" />
+      {animate && (
+        <div className="fit-demo-end absolute inset-0 bg-[#1f2024]">
+          <PoseFrame pose={poses[1]} className="h-full w-full" />
+        </div>
+      )}
+      {labels && (
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 px-3 pb-2 text-[10px] font-semibold text-white/80">
+          {animate ? "Início ↔ fim do movimento" : "Posição inicial"} · ilustração
+        </div>
+      )}
+    </div>
+  );
 }

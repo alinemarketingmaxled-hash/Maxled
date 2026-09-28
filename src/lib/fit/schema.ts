@@ -16,6 +16,14 @@ const equipment = z.enum([
   "bola_suica",
   "corda",
   "cardio_maquina",
+  "polia",
+  "leg_press",
+  "extensora_flexora",
+  "abdutora",
+  "smith",
+  "maquinas_peito_ombro",
+  "maquinas_costas",
+  "panturrilha_maquina",
 ]);
 const limitation = z.enum(["joelho", "lombar", "ombro", "punho", "quadril", "cervical", "hipertensao", "gestante"]);
 const muscle = z.enum([

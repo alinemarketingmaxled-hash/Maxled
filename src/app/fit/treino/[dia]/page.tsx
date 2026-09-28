@@ -6,7 +6,7 @@ import { PHASE_INFO, WEEKDAY_LONG } from "@/lib/fit/program";
 import { suggestNext } from "@/lib/fit/progression";
 import { LEVEL_LABEL, MUSCLE_LABEL } from "@/lib/fit/types";
 import { dayKey } from "@/lib/fit/time";
-import { Card, ExerciseArt, SectionTitle } from "@/components/fit/ui";
+import { Card, ExerciseMedia, SectionTitle } from "@/components/fit/ui";
 import { ArrowLeftI, BoltI, ChevronRightI, ClockI, FlameI, PlayI, SwapI } from "@/components/fit/FitIcons";
 
 export default async function DayPage({ params }: { params: Promise<{ dia: string }> }) {
@@ -22,7 +22,7 @@ export default async function DayPage({ params }: { params: Promise<{ dia: strin
   return (
     <main className="flex flex-col gap-4 pt-4">
       <div className="relative overflow-hidden rounded-[32px]">
-        <ExerciseArt pattern={first?.pattern ?? "core"} size="lg" />
+        <ExerciseMedia id={first?.id ?? ""} pattern={first?.pattern ?? "core"} size="lg" animate={false} />
         <Link href="/fit/treino" aria-label="Voltar" className="absolute left-4 top-4 grid h-9 w-9 place-items-center rounded-full bg-fit-strong text-white">
           <ArrowLeftI className="h-4 w-4" />
         </Link>
@@ -91,7 +91,7 @@ export default async function DayPage({ params }: { params: Promise<{ dia: strin
               <li key={p.exerciseId}>
                 <details className="group rounded-3xl bg-fit-card-2 p-3">
                   <summary className="flex cursor-pointer list-none items-center gap-3">
-                    <ExerciseArt pattern={ex.pattern} size="sm" />
+                    <ExerciseMedia id={ex.id} pattern={ex.pattern} size="sm" />
                     <div className="min-w-0 flex-1">
                       <p className="text-[11px] text-fit-muted">
                         {i + 1}
@@ -105,6 +105,10 @@ export default async function DayPage({ params }: { params: Promise<{ dia: strin
                     <ChevronRightI className="h-4 w-4 shrink-0 text-fit-muted transition-transform group-open:rotate-90" />
                   </summary>
                   <div className="mt-3 space-y-3 border-t border-fit-line pt-3 text-xs">
+                    <ExerciseMedia id={ex.id} pattern={ex.pattern} size="lg" labels />
+                    <Link href={`/fit/exercicios/${ex.id}`} className="inline-block text-fit-accent underline">
+                      Ver passo a passo
+                    </Link>
                     <ul className="space-y-1 text-fit-muted">
                       {p.cues.map((c) => (
                         <li key={c}>• {c}</li>

@@ -276,3 +276,15 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .fit-pop, .fit-rise { animation: none; }
 }
+
+/* Exercise demo: the "end position" frame fades in and out over the start
+   frame, so the two photos read as the movement itself. */
+@keyframes fit-demo {
+  0%, 38% { opacity: 0; }
+  50%, 88% { opacity: 1; }
+  100% { opacity: 0; }
+}
+.fit-demo-end { animation: fit-demo 2.4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .fit-demo-end { animation: none; opacity: 0; }
+}

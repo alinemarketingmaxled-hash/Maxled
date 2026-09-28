@@ -1,7 +1,7 @@
 import { EXERCISES, canDo, getExercise, type Exercise, type Pattern } from "./exercises";
 import type { Adjustments } from "./bio";
 import type { Equipment, FitAnswers, Goal, Level, Muscle } from "./types";
-import { MUSCLE_LABEL } from "./types";
+import { MACHINES, MUSCLE_LABEL } from "./types";
 
 export type PhaseKind = "adaptacao" | "volume" | "intensidade" | "forca" | "metabolico" | "pico";
 
@@ -241,8 +241,7 @@ function loadScore(ex: Exercise, owned: Set<Equipment>): number {
   let best = 0;
   for (const r of reqs) {
     let v = 1;
-    if (r.includes("academia")) v = 3;
-    else if (r.includes("barra")) v = 3;
+    if (r.includes("academia") || r.includes("barra") || r.some((i) => MACHINES.includes(i) && i !== "cardio_maquina")) v = 3;
     else if (r.includes("halteres") || r.includes("kettlebell")) v = 2;
     best = Math.max(best, v);
   }
@@ -288,6 +287,14 @@ const STAPLES = new Set([
   "panturrilha_pe",
   "prancha",
   "dead_bug",
+  "supino_maquina",
+  "peck_deck",
+  "remada_articulada",
+  "puxada_supinada",
+  "agachamento_smith",
+  "cadeira_flexora",
+  "triceps_corda",
+  "coice_polia",
 ]);
 
 function candidatesFor(slot: Slot, answers: FitAnswers, owned: Set<Equipment>, maxDiff: number): Exercise[] {
