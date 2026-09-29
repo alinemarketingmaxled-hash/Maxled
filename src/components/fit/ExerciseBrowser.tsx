@@ -25,7 +25,7 @@ const LEVEL = ["", "Fácil", "Médio", "Difícil"];
 export function ExerciseBrowser({ items }: { items: BrowserItem[] }) {
   const [q, setQ] = useState("");
   const [muscle, setMuscle] = useState<Muscle | "todos">("todos");
-  const [scope, setScope] = useState<"meus" | "aparelhos" | "todos">("meus");
+  const [scope, setScope] = useState<"meus" | "aparelhos" | "mobilidade" | "todos">("meus");
 
   const muscles = useMemo(() => [...new Set(items.map((i) => i.muscle))], [items]);
   const list = useMemo(() => {
@@ -38,6 +38,7 @@ export function ExerciseBrowser({ items }: { items: BrowserItem[] }) {
       if (muscle !== "todos" && i.muscle !== muscle) return false;
       if (scope === "meus" && (!i.available || i.blocked)) return false;
       if (scope === "aparelhos" && !i.machine) return false;
+      if (scope === "mobilidade" && i.pattern !== "mobilidade") return false;
       if (!term) return true;
       const hay = `${i.name} ${MUSCLE_LABEL[i.muscle]} ${i.equipment}`
         .toLowerCase()
@@ -61,6 +62,7 @@ export function ExerciseBrowser({ items }: { items: BrowserItem[] }) {
           [
             ["meus", "Para mim"],
             ["aparelhos", "Aparelhos"],
+            ["mobilidade", "Mobilidade"],
             ["todos", "Todos"],
           ] as const
         ).map(([k, label]) => (

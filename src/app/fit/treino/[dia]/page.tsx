@@ -27,6 +27,7 @@ export default async function DayPage({
   const doneToday = ctx.logs.some((l) => l.dayIndex === day.index && l.weekNumber === ctx.week.week && dayKey(l.performedAt) === dayKey());
   const doneThisWeek = ctx.logs.filter((l) => l.weekNumber === ctx.week.week && l.dayIndex === day.index).length;
   const totalSets = day.exercises.reduce((a, e) => a + e.sets, 0);
+  const mobilityCount = day.exercises.filter((e) => e.isMobility).length;
 
   return (
     <main className="flex flex-col gap-4 pt-4">
@@ -108,6 +109,14 @@ export default async function DayPage({
           </span>
         </SectionTitle>
         <p className="-mt-1 mb-3 text-xs text-fit-muted">Toque num exercício para ver como fazer, manter ou trocar por outro.</p>
+        {mobilityCount > 0 && (
+          <p className="-mt-1 mb-3 rounded-2xl bg-fit-card-2 p-3 text-xs text-fit-muted">
+            {mobilityCount === 1 ? "O primeiro é de mobilidade" : `Os ${mobilityCount} primeiros são de mobilidade`}, como você pediu na avaliação.{" "}
+            <Link href="/fit/comecar?etapa=mobilidade" className="font-medium text-fit-accent">
+              Mudar
+            </Link>
+          </p>
+        )}
         <ul className="space-y-3">
           {day.exercises.map((p, i) => {
             const ex = getExercise(p.exerciseId)!;
@@ -120,8 +129,10 @@ export default async function DayPage({
                     <div className="min-w-0 flex-1">
                       <p className="text-[11px] text-fit-muted">
                         {i + 1}
-                        {p.group ? ` · bi-set ${p.group}` : ""} · {MUSCLE_LABEL[p.muscle]}
+                        {p.group ? ` · bi-set ${p.group}` : ""}
+                        {!p.isMobility && ` · ${MUSCLE_LABEL[p.muscle]}`}
                         {p.isFocus && <span className="ml-1.5 rounded-full bg-fit-lime px-1.5 py-px text-[9px] font-bold text-fit-on-lime">FOCO</span>}
+                        {p.isMobility && <span className="ml-1.5 rounded-full bg-fit-info/20 px-1.5 py-px text-[9px] font-bold text-fit-info">MOBILIDADE</span>}
                       </p>
                       <p className="truncate text-sm font-semibold text-fit-accent">{p.name}</p>
                       <p className="text-xs text-fit-muted">
@@ -147,7 +158,7 @@ export default async function DayPage({
                     {p.note && <p className="rounded-2xl bg-fit-lime-soft p-2 text-fit-ink">{p.note}</p>}
                     <p className="rounded-2xl bg-fit-card p-2">
                       <BoltI className="mr-1 inline h-3.5 w-3.5 text-fit-accent" />
-                      {sug.message}
+                      {p.isMobility ? "Movimento solto e controlado, sem dor. Aumente a amplitude aos poucos a cada série." : sug.message}
                     </p>
                     {p.alternatives.length > 0 && (
                       <p className="text-fit-muted">

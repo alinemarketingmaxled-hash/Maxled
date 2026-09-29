@@ -15,6 +15,7 @@ const equipment = z.enum([
   "trx",
   "bola_suica",
   "corda",
+  "rolo",
   "cardio_maquina",
   "polia",
   "leg_press",
@@ -61,6 +62,8 @@ export const answersSchema = z.object({
   limitations: z.array(limitation),
   focusMuscles: z.array(muscle).max(11),
   focusLevel: z.enum(["leve", "moderado", "forte"]).default("moderado"),
+  // Profiles saved before the question existed never opted in.
+  mobility: z.enum(["nao", "curta", "completa"]).default("nao"),
   activityLevel: z.enum(["sedentario", "leve", "moderado", "alto"]),
   sleepHours: z.number().min(3).max(12),
   stressLevel: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5)]),

@@ -5,5 +5,5 @@ export default async function ComecarPage({ searchParams }: { searchParams: Prom
   const { etapa } = await searchParams;
   const account = await requireFitAccount();
   const profile = await getFitProfile(account.id);
-  return <OnboardingWizard initial={profile?.answers ?? null} editing={!!profile} defaultName={account.name} startAtFocus={etapa === "foco" && !!profile} />;
+  return <OnboardingWizard initial={profile?.answers ?? null} editing={!!profile} defaultName={account.name} startAt={profile && (etapa === "foco" || etapa === "mobilidade") ? etapa : undefined} />;
 }

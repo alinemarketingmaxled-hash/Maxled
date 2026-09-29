@@ -31,6 +31,7 @@ export type Equipment =
   | "trx"
   | "bola_suica"
   | "corda"
+  | "rolo"
   | "cardio_maquina"
   // Aparelhos de academia — for gyms that don't have everything (condomínio,
   // studio, home gym). "academia" still implies all of them.
@@ -49,6 +50,15 @@ export const FOCUS_LEVEL_LABEL: Record<FocusLevel, { label: string; hint: string
   leve: { label: "Um pouco mais", hint: "+1 série nos exercícios dessas regiões" },
   moderado: { label: "Bem mais", hint: "Exercício extra nos dias certos e mais séries" },
   forte: { label: "Prioridade máxima", hint: "Treina essas regiões primeiro, quase todo treino, com o dobro de estímulo" },
+};
+
+/** Whether (and how much) mobility work goes into each session. */
+export type MobilityPref = "nao" | "curta" | "completa";
+
+export const MOBILITY_LABEL: Record<MobilityPref, { label: string; hint: string }> = {
+  nao: { label: "Não quero", hint: "Só o alongamento de aquecimento, sem exercícios de mobilidade" },
+  curta: { label: "Sim, um bloco curto", hint: "2 exercícios de mobilidade (~4 min) no começo de cada treino" },
+  completa: { label: "Sim, bloco completo", hint: "3 exercícios (~7 min) em cada treino, escolhidos para as articulações do dia" },
 };
 
 export type Limitation = "joelho" | "lombar" | "ombro" | "punho" | "quadril" | "cervical" | "hipertensao" | "gestante";
@@ -89,6 +99,8 @@ export type FitAnswers = {
   focusMuscles: Muscle[];
   /** How hard the plan leans into the focus regions. */
   focusLevel: FocusLevel;
+  /** Mobility drills at the start of each session (asked in the questionnaire). */
+  mobility: MobilityPref;
   activityLevel: ActivityLevel;
   sleepHours: number;
   stressLevel: 1 | 2 | 3 | 4 | 5;
@@ -194,6 +206,7 @@ export const EQUIPMENT_LABEL: Record<Equipment, string> = {
   trx: "TRX / fita suspensa",
   bola_suica: "Bola suíça",
   corda: "Corda de pular",
+  rolo: "Rolo de liberação (foam roller)",
   cardio_maquina: "Esteira / bike / elíptico",
   polia: "Polia / cross-over / puxador",
   leg_press: "Leg press / hack",

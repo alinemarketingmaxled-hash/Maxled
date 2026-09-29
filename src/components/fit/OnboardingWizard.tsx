@@ -11,6 +11,7 @@ import {
   LEVEL_LABEL,
   LIMITATION_LABEL,
   MACHINES,
+  MOBILITY_LABEL,
   MUSCLE_LABEL,
   TIME_LABEL,
   type Equipment,
@@ -20,6 +21,7 @@ import {
   type Goal,
   type Level,
   type Limitation,
+  type MobilityPref,
   type Muscle,
 } from "@/lib/fit/types";
 import { ArrowLeftI, ArrowRightI, CheckI, DumbbellI, FlameI, HeartI, BoltI, TargetI, TrophyI } from "./FitIcons";
@@ -53,6 +55,7 @@ const DEFAULTS: FitAnswers = {
   excludedExercises: [],
   favoriteExercises: [],
   focusLevel: "moderado",
+  mobility: "nao",
   trainingDays: [0, 2, 4],
 };
 
@@ -90,6 +93,7 @@ const STEP_TITLES = [
   "Equipamentos",
   "Limitações",
   "Foco",
+  "Mobilidade",
   "Estilo de vida",
   "Resumo",
 ];
@@ -98,12 +102,13 @@ export function OnboardingWizard({
   initial,
   editing: editingProp,
   defaultName,
-  startAtFocus = false,
+  startAt,
 }: {
   initial: FitAnswers | null;
   editing: boolean;
   defaultName: string;
-  startAtFocus?: boolean;
+  /** Jump straight to one question when editing. */
+  startAt?: "foco" | "mobilidade";
 }) {
   // Frozen at mount: saving revalidates the page, which would otherwise flip
   // a first-time run into "editing" mode mid-celebration.
@@ -114,7 +119,7 @@ export function OnboardingWizard({
       ? { ...initial, trainingDays: initial.trainingDays.length ? initial.trainingDays : trainingWeekdays(initial.daysPerWeek) }
       : { ...DEFAULTS, name: defaultName.split(" ")[0] ?? "" },
   );
-  const [step, setStep] = useState(startAtFocus ? 9 : editing ? 1 : 0);
+  const [step, setStep] = useState(startAt === "foco" ? 9 : startAt === "mobilidade" ? 10 : editing ? 1 : 0);
   const [restart, setRestart] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
@@ -478,6 +483,23 @@ export function OnboardingWizard({
         )}
 
         {step === 10 && (
+          <Q title="Quer exercícios de mobilidade?">
+            <p className="-mt-2 mb-3 text-xs text-fit-muted">
+              Mobilidade solta quadril, ombros, coluna e tornozelos: melhora a amplitude dos exercícios e ajuda a prevenir dor. Entram no começo do treino, com fotos de como fazer.
+            </p>
+            <Options
+              value={a.mobility}
+              onChange={(v) => set("mobility", v)}
+              options={(Object.keys(MOBILITY_LABEL) as MobilityPref[]).map((k) => ({ value: k, label: MOBILITY_LABEL[k].label, hint: MOBILITY_LABEL[k].hint }))}
+              cols={1}
+            />
+            {a.mobility !== "nao" && (a.equipment.includes("rolo") || a.equipment.includes("academia")) && (
+              <p className="mt-3 rounded-2xl bg-fit-lime-soft p-3 text-xs">Você tem rolo de liberação: ele também entra no bloco de mobilidade.</p>
+            )}
+          </Q>
+        )}
+
+        {step === 11 && (
           <Q title="Seu dia a dia">
             <Label>Nível de atividade fora do treino</Label>
             <Options
@@ -517,7 +539,7 @@ export function OnboardingWizard({
           </Q>
         )}
 
-        {step === 11 && (
+        {step === 12 && (
           <Q title={`Tudo pronto, ${a.name.split(" ")[0] || "atleta"}!`}>
             <div className="divide-y divide-fit-line rounded-3xl bg-fit-card px-4">
               <Row k="Objetivo" v={GOAL_LABEL[a.goal]} onEdit={() => setStep(3)} />
@@ -540,6 +562,7 @@ export function OnboardingWizard({
                 v={a.focusMuscles.length ? `${a.focusMuscles.map((m) => MUSCLE_LABEL[m]).join(", ")} · ${FOCUS_LEVEL_LABEL[a.focusLevel].label}` : "Equilibrado"}
                 onEdit={() => setStep(9)}
               />
+              <Row k="Mobilidade" v={MOBILITY_LABEL[a.mobility].label} onEdit={() => setStep(10)} />
             </div>
             {editing && (
               <label className="mt-4 flex items-start gap-3 rounded-2xl bg-fit-card p-4 text-sm">

@@ -1,6 +1,6 @@
 import { EXERCISES, canDo, getExercise, type Exercise, type Pattern } from "./exercises";
 import type { Adjustments } from "./bio";
-import type { Equipment, FitAnswers, FocusLevel, Goal, Level, Muscle } from "./types";
+import type { Equipment, FitAnswers, FocusLevel, Goal, Level, MobilityPref, Muscle } from "./types";
 import { MACHINES, MUSCLE_LABEL } from "./types";
 import { stretchesFor } from "./stretches";
 
@@ -64,6 +64,8 @@ type Slot = {
   priority: number;
   /** Added for a focus region: tried with fallback patterns (see FOCUS_PATTERNS). */
   focus?: Muscle;
+  /** Opening mobility block (answers.mobility). */
+  mobility?: boolean;
 };
 
 type DayTemplate = { key: string; title: string; focus: Muscle[]; slots: Slot[] };
@@ -145,8 +147,10 @@ const T: Record<string, DayTemplate> = {
   },
 };
 
-function templatesFor(days: number, level: Level, goal: Goal): DayTemplate[] {
+function templatesFor(days: number, level: Level, goal: Goal, mobility: MobilityPref): DayTemplate[] {
   const metabolic = goal === "emagrecimento" || goal === "condicionamento";
+  // A whole mobility day only for people who said they want mobility.
+  const easyDay = mobility === "nao" ? T.circuit : T.mobility;
   switch (Math.min(6, Math.max(1, days))) {
     case 1:
       return [T.fullA];
@@ -156,12 +160,12 @@ function templatesFor(days: number, level: Level, goal: Goal): DayTemplate[] {
       if (level === "iniciante" || goal === "saude" || metabolic) return [T.fullA, T.fullB, T.fullC];
       return [T.push, T.pull, T.legs];
     case 4:
-      if (goal === "saude") return [T.fullA, T.mobility, T.fullB, T.fullC];
+      if (goal === "saude") return [T.fullA, easyDay, T.fullB, T.fullC];
       if (metabolic) return [T.upperA, T.lowerA, T.circuit, T.fullB];
       return [T.upperA, T.lowerA, T.upperB, T.lowerB];
     case 5:
       if (metabolic) return [T.upperA, T.lowerA, T.circuit, T.upperB, T.lowerB];
-      if (goal === "saude") return [T.fullA, T.mobility, T.fullB, T.circuit, T.fullC];
+      if (goal === "saude") return mobility === "nao" ? [T.fullA, T.upperA, T.fullB, T.circuit, T.lowerA] : [T.fullA, T.mobility, T.fullB, T.circuit, T.fullC];
       return [T.push, T.pull, T.legs, T.upperA, T.lowerB];
     default:
       if (metabolic) return [T.push, T.pull, T.legs, T.circuit, T.upperB, T.lowerB];
@@ -218,6 +222,8 @@ export type PlannedExercise = {
   alternatives: { id: string; name: string }[];
   /** Trains one of the user's focus regions. */
   isFocus: boolean;
+  /** Part of the opening mobility block. */
+  isMobility: boolean;
 };
 
 export type CardioBlock = { minutes: number; title: string; description: string; exerciseId: string | null };
@@ -344,8 +350,20 @@ function pickExercise(
   const pool = candidatesFor(slot, answers, owned, maxDiff).filter((e) => !usedToday.has(e.id));
   if (pool.length === 0) return null;
   const wantsLoad = goal === "hipertrofia" || goal === "forca" || goal === "recomposicao";
+  const mobility = slot.pattern === "mobilidade";
+  const usesRoller = (e: Exercise | undefined) => !!e?.equipment.some((r) => r.includes("rolo"));
+  const rollerToday = [...usedToday].some((id) => usesRoller(getExercise(id)));
   const scored = pool
     .map((e) => {
+      if (mobility) {
+        // Mobility isn't about load or difficulty: rotate freely, and keep
+        // foam rolling to one drill a session so the block stays varied.
+        let score = (hash(seed + e.id) % 100) / 100 - (usedWeek.get(e.id) ?? 0) * 4;
+        if (e.difficulty > maxDiff) score -= 4;
+        if (rollerToday && usesRoller(e)) score -= 6;
+        if (answers.favoriteExercises.includes(e.id)) score += 8;
+        return { e, score };
+      }
       let score = 0;
       // Anything at or under the user's level is fine; staples win ties.
       score += e.difficulty <= maxDiff ? 2 + (e.difficulty === maxDiff && maxDiff < 3 ? 1 : 0) : -4;
@@ -492,6 +510,26 @@ function orderWithFocus(base: Slot[], extra: Slot[], level: FocusLevel): Slot[] 
   return [...early, ...base, ...late];
 }
 
+/** Joints each kind of day loads, in the order the mobility block visits
+ * them (mobility drills are tagged with the region they free up). */
+function mobilityRegions(t: DayTemplate): Muscle[] {
+  const k = t.key.replace(/2$/, "");
+  if (k.startsWith("lower") || k === "legs") return ["gluteos", "panturrilha", "posterior", "quadriceps"];
+  if (k.startsWith("upper") || k === "push" || k === "pull") return ["costas", "ombros", "peito"];
+  return ["gluteos", "costas", "ombros", "panturrilha"];
+}
+
+/** 2 (curta) or 3 (completa) drills for the joints the session uses. The
+ * mobility day already is mobility work, so it gets none on top. */
+function mobilitySlotsFor(t: DayTemplate, dayIndex: number, answers: FitAnswers): Slot[] {
+  if (answers.mobility === "nao" || t.key === "mobility") return [];
+  const n = answers.mobility === "completa" ? 3 : 2;
+  const regions = mobilityRegions(t);
+  const rot = dayIndex % regions.length;
+  const ordered = [...regions.slice(rot), ...regions.slice(0, rot)];
+  return ordered.slice(0, n).map((m) => ({ pattern: "mobilidade", muscle: m, priority: 2, mobility: true }));
+}
+
 function pickFocusAware(
   slot: Slot,
   answers: FitAnswers,
@@ -501,6 +539,12 @@ function pickFocusAware(
   seed: string,
   goal: Goal,
 ): ReturnType<typeof pickExercise> {
+  if (slot.mobility) {
+    return (
+      pickExercise(slot, answers, owned, usedToday, usedWeek, seed, goal) ??
+      pickExercise({ ...slot, muscle: undefined }, answers, owned, usedToday, usedWeek, seed, goal)
+    );
+  }
   if (!slot.focus) return pickExercise(slot, answers, owned, usedToday, usedWeek, seed, goal);
   for (const pattern of FOCUS_PATTERNS[slot.focus]) {
     const pick = pickExercise({ ...slot, pattern }, answers, owned, usedToday, usedWeek, seed, goal);
@@ -540,7 +584,7 @@ export function generateWeek(answers: FitAnswers, adj: Adjustments, week: number
   const params = PHASE_PARAMS[phase];
   const owned = new Set<Equipment>([...answers.equipment, "peso_corporal"]);
   const weekdays = resolveWeekdays(answers);
-  const templates = templatesFor(weekdays.length, answers.level, goal);
+  const templates = templatesFor(weekdays.length, answers.level, goal, answers.mobility);
   const usedWeek = new Map<string, number>();
   const limits = new Set(answers.limitations);
   const notes: string[] = [];
@@ -553,7 +597,7 @@ export function generateWeek(answers: FitAnswers, adj: Adjustments, week: number
     const usedToday = new Set<string>();
     const seed = `${t.key}|${block.index}|${answers.sex}`;
     const extra = focusSlotsFor(t, i, answers);
-    const slotsAll = orderWithFocus(t.slots, extra, answers.focusLevel);
+    const slotsAll = [...mobilitySlotsFor(t, i, answers), ...orderWithFocus(t.slots, extra, answers.focusLevel)];
 
     const planned: PlannedExercise[] = [];
     const plannedSlots: Slot[] = [];
@@ -572,13 +616,19 @@ export function generateWeek(answers: FitAnswers, adj: Adjustments, week: number
       let sets = isCompound ? params.compoundSets : params.isoSets;
       if (answers.level === "iniciante") sets = Math.min(sets, 3);
       if (answers.level === "avancado" && isCompound) sets += 1;
-      if (answers.focusMuscles.includes(ex.muscle)) sets += FOCUS_EXTRA_SETS[answers.focusLevel];
+      if (answers.focusMuscles.includes(ex.muscle) && !slot.mobility) sets += FOCUS_EXTRA_SETS[answers.focusLevel];
       sets = Math.round(sets * adj.volume);
       if (deload) sets = Math.max(1, Math.round(sets * 0.6));
       sets = Math.min(ex.muscle === "core" || ex.muscle === "panturrilha" || !isCompound ? 4 : 5, Math.max(deload ? 1 : 2, sets));
       let rest = isCompound ? params.compoundRest : params.isoRest;
       if (adj.density) rest = Math.round(rest * 0.75);
       if (ex.pattern === "mobilidade") rest = 20;
+      if (slot.mobility) {
+        // Warm-up quality work: short, easy, never trimmed into strength sets.
+        sets = deload ? 1 : 2;
+        rest = 15;
+        [lo, hi] = timed ? [30, 45] : [8, 10];
+      }
 
       const note: string[] = [];
       if (limits.has("hipertensao") && ex.compound) note.push("Não prenda a respiração: solte o ar na subida.");
@@ -602,14 +652,15 @@ export function generateWeek(answers: FitAnswers, adj: Adjustments, week: number
         note: note.join(" ") || null,
         cues: ex.cues,
         alternatives: pick.alternatives.map((a) => ({ id: a.id, name: a.name })),
-        isFocus: !!slot.focus || answers.focusMuscles.includes(ex.muscle),
+        isFocus: !slot.mobility && (!!slot.focus || answers.focusMuscles.includes(ex.muscle)),
+        isMobility: !!slot.mobility,
       });
     }
 
     // Bi-sets on metabolic phases / density: pair isolation work.
     if (params.superset || adj.density) {
       let letter = 65;
-      const iso = planned.filter((p, idx) => idx >= 2);
+      const iso = planned.filter((p) => !p.isMobility).filter((p, idx) => idx >= 2);
       for (let k = 0; k + 1 < iso.length; k += 2) {
         const g = String.fromCharCode(letter++);
         iso[k].group = g;

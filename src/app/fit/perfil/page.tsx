@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { loadFitContext } from "@/lib/fit/server";
-import { EQUIPMENT_LABEL, FOCUS_LEVEL_LABEL, GOAL_LABEL, LEVEL_LABEL, LIMITATION_LABEL, MUSCLE_LABEL, TIME_LABEL, ageFrom } from "@/lib/fit/types";
+import { EQUIPMENT_LABEL, FOCUS_LEVEL_LABEL, GOAL_LABEL, LEVEL_LABEL, LIMITATION_LABEL, MOBILITY_LABEL, MUSCLE_LABEL, TIME_LABEL, ageFrom } from "@/lib/fit/types";
 import { Card, ExerciseMedia, SectionTitle, TopBar, fmtDate, fmtNum } from "@/components/fit/ui";
 import { ExercisePrefButtons } from "@/components/fit/ExercisePrefButtons";
 import { WEEKDAY_SHORT } from "@/lib/fit/program";
@@ -132,6 +132,7 @@ export default async function PerfilPage() {
             k="Foco"
             v={answers.focusMuscles.length ? `${answers.focusMuscles.map((m) => MUSCLE_LABEL[m]).join(", ")} · ${FOCUS_LEVEL_LABEL[answers.focusLevel].label}` : "Equilibrado"}
           />
+          <Row k="Mobilidade" v={MOBILITY_LABEL[answers.mobility].label} />
           <Row k="Sono / estresse" v={`${answers.sleepHours}h · ${answers.stressLevel}/5`} />
         </dl>
       </Card>

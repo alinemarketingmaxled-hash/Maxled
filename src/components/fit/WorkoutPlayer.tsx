@@ -551,7 +551,7 @@ export function WorkoutPlayer({
         </div>
         <div className="p-5">
           <p className="text-xs text-fit-muted">
-            {isRest ? "A seguir" : `Série ${state.set + 1} de ${cur.sets.length}`} · {MUSCLE_LABEL[exercises[state.ex].plan.muscle]}
+            {isRest ? "A seguir" : `Série ${state.set + 1} de ${cur.sets.length}`} · {exercises[state.ex].plan.isMobility ? "Mobilidade" : MUSCLE_LABEL[exercises[state.ex].plan.muscle]}
             {plan.group ? ` · bi-set ${plan.group}` : ""}
           </p>
           <h1 className="text-xl font-bold leading-tight">{(nextUp ?? cur).name}</h1>
