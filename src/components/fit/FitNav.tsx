@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { CameraI, DumbbellI, HomeI, PlayI, PlusI, ScaleI, UserI } from "./FitIcons";
+import { CameraI, DumbbellI, HomeI, PlayI, PlusI, ScaleI, SparkI, UserI } from "./FitIcons";
 
 const ITEMS = [
   { href: "/fit", label: "Início", icon: HomeI },
@@ -37,6 +37,7 @@ export function FitNav() {
             onClick={(e) => e.stopPropagation()}
           >
             <QuickAction href="/fit/hoje" icon={<PlayI className="h-5 w-5" />} title="Começar treino de hoje" hint="Abre o treino do dia" onClick={() => setOpen(false)} />
+            <QuickAction href="/fit/alongamento" icon={<SparkI className="h-5 w-5" />} title="Alongamento" hint="Antes e depois do treino, com fotos" onClick={() => setOpen(false)} />
             <QuickAction href="/fit/bio/nova?modo=laudo" icon={<CameraI className="h-5 w-5" />} title="Foto do laudo de bioimpedância" hint="A IA lê os valores para você" onClick={() => setOpen(false)} />
             <QuickAction href="/fit/bio/nova?modo=foto" icon={<UserI className="h-5 w-5" />} title="Foto do corpo" hint="Estimativa de % de gordura" onClick={() => setOpen(false)} />
             <QuickAction href="/fit/bio/nova?modo=manual" icon={<ScaleI className="h-5 w-5" />} title="Digitar bioimpedância" hint="Peso, gordura, músculo, medidas" onClick={() => setOpen(false)} />

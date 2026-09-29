@@ -4,6 +4,7 @@ import { loadFitContext } from "@/lib/fit/server";
 import { EQUIPMENT_LABEL, FOCUS_LEVEL_LABEL, GOAL_LABEL, LEVEL_LABEL, LIMITATION_LABEL, MUSCLE_LABEL, TIME_LABEL, ageFrom } from "@/lib/fit/types";
 import { Card, ExerciseMedia, SectionTitle, TopBar, fmtDate, fmtNum } from "@/components/fit/ui";
 import { ExercisePrefButtons } from "@/components/fit/ExercisePrefButtons";
+import { WEEKDAY_SHORT } from "@/lib/fit/program";
 import { getExercise } from "@/lib/fit/exercises";
 import { ChevronRightI, DumbbellI, FlameI, HeartI, PencilI, ScaleI, StarI, TrophyI } from "@/components/fit/FitIcons";
 import { ThemeToggle } from "@/components/fit/ThemeToggle";
@@ -124,7 +125,7 @@ export default async function PerfilPage() {
             v={[answers.targetWeightKg ? `${answers.targetWeightKg} kg` : null, answers.targetBodyFatPct ? `${answers.targetBodyFatPct}%` : null].filter(Boolean).join(" · ") || "Automática"}
           />
           <Row k="Período" v={`${answers.programWeeks} semanas`} />
-          <Row k="Rotina" v={`${answers.daysPerWeek}x · ${answers.sessionMinutes} min · ${TIME_LABEL[answers.timeOfDay]}`} />
+          <Row k="Rotina" v={`${ctx.weekdays.map((d) => WEEKDAY_SHORT[d]).join(", ")} · ${answers.sessionMinutes} min · ${TIME_LABEL[answers.timeOfDay]}`} />
           <Row k="Equipamentos" v={answers.equipment.map((e) => EQUIPMENT_LABEL[e]).join(", ") || "Peso corporal"} />
           <Row k="Limitações" v={answers.limitations.map((l) => LIMITATION_LABEL[l]).join(", ") || "Nenhuma"} />
           <Row

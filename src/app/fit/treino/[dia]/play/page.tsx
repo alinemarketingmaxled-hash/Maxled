@@ -3,6 +3,7 @@ import { loadFitContext } from "@/lib/fit/server";
 import { getExercise } from "@/lib/fit/exercises";
 import { suggestNext } from "@/lib/fit/progression";
 import { WorkoutPlayer, type PlayerExercise } from "@/components/fit/WorkoutPlayer";
+import { getStretches, toSessionItems } from "@/components/fit/StretchList";
 
 export default async function PlayPage({ params }: { params: Promise<{ dia: string }> }) {
   const { dia } = await params;
@@ -34,6 +35,8 @@ export default async function PlayPage({ params }: { params: Promise<{ dia: stri
       exercises={exercises}
       cardio={day.cardio}
       bodyKg={ctx.analysis.latest?.weightKg ?? ctx.answers.weightKg}
+      stretchesBefore={toSessionItems(getStretches(day.stretchesBefore))}
+      stretchesAfter={toSessionItems(getStretches(day.stretchesAfter))}
     />
   );
 }

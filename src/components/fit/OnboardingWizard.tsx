@@ -24,6 +24,7 @@ import {
 } from "@/lib/fit/types";
 import { ArrowLeftI, ArrowRightI, CheckI, DumbbellI, FlameI, HeartI, BoltI, TargetI, TrophyI } from "./FitIcons";
 import { ProgressBar } from "./ui";
+import { WEEKDAY_SHORT, trainingWeekdays } from "@/lib/fit/program";
 
 const thisYear = new Date().getFullYear();
 
@@ -52,6 +53,7 @@ const DEFAULTS: FitAnswers = {
   excludedExercises: [],
   favoriteExercises: [],
   focusLevel: "moderado",
+  trainingDays: [0, 2, 4],
 };
 
 const GOAL_ICON: Record<Goal, typeof FlameI> = {
@@ -107,7 +109,11 @@ export function OnboardingWizard({
   // a first-time run into "editing" mode mid-celebration.
   const [editing] = useState(editingProp);
   const router = useRouter();
-  const [a, setA] = useState<FitAnswers>(initial ?? { ...DEFAULTS, name: defaultName.split(" ")[0] ?? "" });
+  const [a, setA] = useState<FitAnswers>(() =>
+    initial
+      ? { ...initial, trainingDays: initial.trainingDays.length ? initial.trainingDays : trainingWeekdays(initial.daysPerWeek) }
+      : { ...DEFAULTS, name: defaultName.split(" ")[0] ?? "" },
+  );
   const [step, setStep] = useState(startAtFocus ? 9 : editing ? 1 : 0);
   const [restart, setRestart] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -119,7 +125,7 @@ export function OnboardingWizard({
     list.includes(v) ? list.filter((x) => x !== v) : max && list.length >= max ? [...list.slice(1), v] : [...list, v];
 
   const last = STEP_TITLES.length - 1;
-  const canNext = step !== 1 || a.name.trim().length > 0;
+  const canNext = (step !== 1 || a.name.trim().length > 0) && (step !== 6 || a.trainingDays.length > 0);
 
   function next() {
     setError(null);
@@ -341,20 +347,33 @@ export function OnboardingWizard({
 
         {step === 6 && (
           <Q title="Como é sua rotina?">
-            <Label>Quantos dias por semana você consegue treinar?</Label>
-            <div className="grid grid-cols-6 gap-2">
-              {[1, 2, 3, 4, 5, 6].map((d) => (
-                <button
-                  key={d}
-                  type="button"
-                  onClick={() => set("daysPerWeek", d)}
-                  aria-pressed={a.daysPerWeek === d}
-                  className={`aspect-square rounded-2xl text-lg font-bold ${a.daysPerWeek === d ? "bg-fit-lime text-fit-on-lime" : "bg-fit-card"}`}
-                >
-                  {d}
-                </button>
-              ))}
+            <Label>Em quais dias você vai treinar?</Label>
+            <div className="grid grid-cols-7 gap-1.5">
+              {WEEKDAY_SHORT.map((d, i) => {
+                const on = a.trainingDays.includes(i);
+                return (
+                  <button
+                    key={d}
+                    type="button"
+                    onClick={() => {
+                      const next = on ? a.trainingDays.filter((x) => x !== i) : [...a.trainingDays, i].sort((x, y) => x - y);
+                      if (next.length > 6) return;
+                      setA((prev) => ({ ...prev, trainingDays: next, daysPerWeek: Math.max(1, next.length) }));
+                    }}
+                    aria-pressed={on}
+                    className={`flex aspect-[3/4] flex-col items-center justify-center rounded-2xl text-xs font-bold ${on ? "bg-fit-lime text-fit-on-lime" : "bg-fit-card text-fit-muted"}`}
+                  >
+                    {d}
+                    {on && <CheckI className="mt-1 h-3.5 w-3.5" strokeWidth={3} />}
+                  </button>
+                );
+              })}
             </div>
+            <p className="mt-2 text-xs text-fit-muted">
+              {a.trainingDays.length === 0
+                ? "Escolha pelo menos 1 dia."
+                : `${a.trainingDays.length} ${a.trainingDays.length === 1 ? "dia" : "dias"} por semana. ${a.trainingDays.length === 6 ? "Máximo de 6: o corpo precisa de 1 dia de descanso." : "O treino de cada dia é montado para os músculos descansarem entre um e outro."}`}
+            </p>
             <Label>Tempo por treino</Label>
             <Options value={a.sessionMinutes} onChange={(v) => set("sessionMinutes", v)} options={[30, 45, 60, 75, 90].map((m) => ({ value: m, label: `${m} min` }))} cols={5} />
             <Label>Período do dia</Label>
@@ -509,7 +528,11 @@ export function OnboardingWizard({
               />
               <Row k="Período" v={`${a.programWeeks} semanas`} onEdit={() => setStep(4)} />
               <Row k="Nível" v={LEVEL_LABEL[a.level]} onEdit={() => setStep(5)} />
-              <Row k="Rotina" v={`${a.daysPerWeek}x/semana · ${a.sessionMinutes} min · ${TIME_LABEL[a.timeOfDay]}`} onEdit={() => setStep(6)} />
+              <Row
+                k="Rotina"
+                v={`${a.trainingDays.map((d) => WEEKDAY_SHORT[d]).join(", ")} · ${a.sessionMinutes} min · ${TIME_LABEL[a.timeOfDay]}`}
+                onEdit={() => setStep(6)}
+              />
               <Row k="Equipamentos" v={a.equipment.length ? a.equipment.map((e) => EQUIPMENT_LABEL[e]).join(", ") : "Peso corporal"} onEdit={() => setStep(7)} />
               <Row k="Limitações" v={a.limitations.length ? a.limitations.map((l) => LIMITATION_LABEL[l]).join(", ") : "Nenhuma"} onEdit={() => setStep(8)} />
               <Row

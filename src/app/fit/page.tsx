@@ -15,7 +15,11 @@ export default async function FitHome() {
   const doneThisWeek = new Set(logs.filter((l) => dayKey(l.performedAt) >= monday).map((l) => weekdayIndex(l.performedAt)));
   const todayPlan = week.days.find((d) => d.weekday === today) ?? null;
   const todayDone = doneThisWeek.has(today);
-  const nextPlan = week.days.find((d) => d.weekday > today) ?? week.days[0];
+  // Workouts of this program week not logged yet — the user can do them on
+  // any day (missed Monday? do it Tuesday).
+  const doneIdx = new Set(logs.filter((l) => l.weekNumber === week.week).map((l) => l.dayIndex));
+  const pending = week.days.filter((d) => !doneIdx.has(d.index));
+  const nextPlan = pending.find((d) => d.weekday >= today && d.weekday !== todayPlan?.weekday) ?? pending[0] ?? week.days.find((d) => d.weekday > today) ?? week.days[0];
   const weekPct = week.days.length ? doneThisWeek.size / week.days.length : 0;
   const blockPct = (week.week - week.block.fromWeek + 1) / (week.block.toWeek - week.block.fromWeek + 1);
   const progress = analysis.progress;
@@ -116,11 +120,16 @@ export default async function FitHome() {
             </div>
           )}
           <Link
-            href={`/fit/treino/${(todayPlan ?? nextPlan).index}`}
+            href={`/fit/treino/${(todayPlan && !todayDone ? todayPlan : nextPlan).index}${todayPlan && !todayDone ? "" : "/play"}`}
             className="mt-5 flex h-12 items-center justify-center gap-2 rounded-full bg-fit-lime font-semibold text-fit-on-lime"
           >
-            <PlayI className="h-4 w-4" /> {todayPlan && !todayDone ? "Começar treino" : "Ver treino"}
+            <PlayI className="h-4 w-4" /> {todayPlan && !todayDone ? "Começar treino" : pending.length ? `Fazer ${nextPlan.title} agora` : "Treinar de novo"}
           </Link>
+          {(!todayPlan || todayDone) && pending.length > 0 && (
+            <p className="mt-2 text-center text-[11px] text-fit-muted">
+              {pending.length} {pending.length === 1 ? "treino pendente" : "treinos pendentes"} nesta semana. Pode fazer em qualquer dia.
+            </p>
+          )}
         </div>
       </Card>
 

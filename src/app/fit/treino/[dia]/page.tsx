@@ -8,6 +8,7 @@ import { LEVEL_LABEL, MUSCLE_LABEL } from "@/lib/fit/types";
 import { dayKey } from "@/lib/fit/time";
 import { Card, ExerciseMedia, SectionTitle } from "@/components/fit/ui";
 import { ExercisePrefButtons, RemovedBanner } from "@/components/fit/ExercisePrefButtons";
+import { StretchList, getStretches } from "@/components/fit/StretchList";
 import { ArrowLeftI, BoltI, ChevronRightI, ClockI, FlameI, PlayI, SwapI } from "@/components/fit/FitIcons";
 
 export default async function DayPage({
@@ -86,8 +87,8 @@ export default async function DayPage({
       </Card>
 
       <Card>
-        <SectionTitle>Aquecimento</SectionTitle>
-        <ol className="space-y-2 text-sm">
+        <SectionTitle>Aquecimento e alongamento</SectionTitle>
+        <ol className="mb-4 space-y-2 text-sm">
           {day.warmup.map((w, i) => (
             <li key={w} className="flex gap-3">
               <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-fit-card-2 text-[11px] font-bold text-fit-accent">{i + 1}</span>
@@ -95,6 +96,8 @@ export default async function DayPage({
             </li>
           ))}
         </ol>
+        <p className="mb-2 text-xs font-medium text-fit-muted">Antes do treino: alongamentos dinâmicos (em movimento)</p>
+        <StretchList items={getStretches(day.stretchesBefore)} guidedHref={`/fit/alongamento?dia=${day.index}&tipo=antes`} />
       </Card>
 
       <Card>
@@ -169,12 +172,9 @@ export default async function DayPage({
       )}
 
       <Card>
-        <SectionTitle>Volta à calma</SectionTitle>
-        <ul className="space-y-1 text-sm text-fit-muted">
-          {day.cooldown.map((c) => (
-            <li key={c}>• {c}</li>
-          ))}
-        </ul>
+        <SectionTitle>Depois do treino</SectionTitle>
+        <p className="-mt-1 mb-3 text-xs text-fit-muted">Alongamentos estáticos: segure sem dor, respirando fundo.</p>
+        <StretchList items={getStretches(day.stretchesAfter)} guidedHref={`/fit/alongamento?dia=${day.index}&tipo=depois`} />
       </Card>
 
       <div className="sticky bottom-24 z-10">

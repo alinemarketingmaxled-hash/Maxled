@@ -166,3 +166,8 @@ export function exerciseImages(id: string): { frames: [string, string]; approx: 
   const base = `/fit/exercicios/${hit.src}`;
   return { frames: [`${base}/0.webp`, `${base}/1.webp`], approx: !!hit.approx };
 }
+
+/** Public asset URL; a single seam so other builds can re-root paths. */
+export function assetPath(path: string): string {
+  return path;
+}

@@ -39,6 +39,9 @@ export default async function TreinoPage({ searchParams }: { searchParams: Promi
         <Link href="/fit/exercicios" className="shrink-0 rounded-full bg-fit-card-2 px-4 py-2 text-[13px] font-medium text-fit-muted">
           Exercícios
         </Link>
+        <Link href="/fit/alongamento" className="shrink-0 rounded-full bg-fit-card-2 px-4 py-2 text-[13px] font-medium text-fit-muted">
+          Alongamento
+        </Link>
       </nav>
 
       {tab === "semana" && <WeekTab ctx={ctx} />}

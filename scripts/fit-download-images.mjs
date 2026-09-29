@@ -1,4 +1,5 @@
 // Downloads the execution photos referenced in src/lib/fit/exercise-images.ts
+// and src/lib/fit/stretches.ts
 // from Free Exercise DB (public domain, Unlicense), shrinks them to 640px
 // WebP and saves them in public/fit/exercicios/<id>/{0,1}.webp.
 // Re-run after adding a mapping: node scripts/fit-download-images.mjs
@@ -7,7 +8,14 @@ import sharp from "sharp";
 
 const BASE = "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises";
 const src = await readFile(new URL("../src/lib/fit/exercise-images.ts", import.meta.url), "utf8");
-const ids = [...new Set([...src.matchAll(/src: "([^"]+)"/g)].map((m) => m[1]))];
+const stretches = await readFile(new URL("../src/lib/fit/stretches.ts", import.meta.url), "utf8");
+const ids = [
+  ...new Set([
+    ...[...src.matchAll(/src: "([^"]+)"/g)].map((m) => m[1]),
+    // image id is the last string in each stretch definition row
+    ...[...stretches.matchAll(/, "([A-Z][A-Za-z0-9_-]+)"(?:, \[[^\]]*\])?\],/g)].map((m) => m[1]),
+  ]),
+];
 
 let fetched = 0;
 for (const id of ids) {

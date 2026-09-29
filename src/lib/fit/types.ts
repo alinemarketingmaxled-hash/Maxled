@@ -80,6 +80,8 @@ export type FitAnswers = {
   programWeeks: number;
   level: Level;
   daysPerWeek: number;
+  /** Weekdays the user picked (0 = segunda). Empty = spread automatically. */
+  trainingDays: number[];
   sessionMinutes: number;
   timeOfDay: TimeOfDay;
   equipment: Equipment[];

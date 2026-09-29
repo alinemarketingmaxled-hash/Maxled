@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { analyzeBio, type BioAnalysis } from "./bio";
 import { nutritionPlan, type NutritionPlan } from "./nutrition";
-import { currentWeek, generateWeek, trainingWeekdays, type WeekPlan } from "./program";
+import { currentWeek, generateWeek, resolveWeekdays, type WeekPlan } from "./program";
 import { answersSchema } from "./schema";
 import { streakDays } from "./progression";
 import { achievements, type Achievement } from "./achievements";
@@ -94,7 +94,7 @@ export async function loadFitContext(): Promise<FitContext> {
   const week = generateWeek(answers, analysis.adjustments, weekNo);
   const nextWeek = weekNo < week.totalWeeks ? generateWeek(answers, analysis.adjustments, weekNo + 1) : null;
   const nutrition = nutritionPlan(answers, analysis.latest, analysis.adjustments, week.goal);
-  const weekdays = trainingWeekdays(answers.daysPerWeek);
+  const weekdays = resolveWeekdays(answers);
   const streak = streakDays(logs, weekdays);
   return {
     answers,

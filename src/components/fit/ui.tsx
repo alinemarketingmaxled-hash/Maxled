@@ -344,3 +344,14 @@ function PoseMedia({
     </div>
   );
 }
+
+/** Start/end photo pair cross-faded into the movement (same effect as
+ * ExerciseMedia), for any two frames. */
+export function FramesMedia({ frames, className = "", animate = true }: { frames: [string, string]; className?: string; animate?: boolean }) {
+  return (
+    <div className={`relative shrink-0 overflow-hidden bg-white ${className}`}>
+      <Image src={frames[0]} alt="" fill sizes="(max-width: 448px) 100vw, 448px" unoptimized className="object-cover" />
+      {animate && <Image src={frames[1]} alt="" fill sizes="(max-width: 448px) 100vw, 448px" unoptimized className="fit-demo-end object-cover" />}
+    </div>
+  );
+}

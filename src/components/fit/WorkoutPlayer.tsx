@@ -10,6 +10,7 @@ import type { LoadSuggestion } from "@/lib/fit/progression";
 import { MUSCLE_LABEL } from "@/lib/fit/types";
 import { ArrowLeftI, ArrowRightI, CheckI, ExitI, PauseI, PlayI, PlusI, SwapI } from "./FitIcons";
 import { ExerciseMedia } from "./ui";
+import { StretchSession, type SessionStretch } from "./StretchSession";
 
 export type PlayerExercise = {
   plan: PlannedExercise;
@@ -111,6 +112,8 @@ export function WorkoutPlayer({
   exercises,
   cardio,
   bodyKg,
+  stretchesBefore,
+  stretchesAfter,
 }: {
   storageKey: string;
   weekNumber: number;
@@ -119,12 +122,16 @@ export function WorkoutPlayer({
   exercises: PlayerExercise[];
   cardio: CardioBlock | null;
   bodyKg: number;
+  stretchesBefore: SessionStretch[];
+  stretchesAfter: SessionStretch[];
 }) {
   const router = useRouter();
   const [state, setState] = useState<State>(() => initialState(exercises));
   const [now, setNow] = useState(() => Date.now());
   const [showList, setShowList] = useState(false);
   const [showSwap, setShowSwap] = useState(false);
+  const [stretching, setStretching] = useState<"antes" | "depois" | null>(null);
+  const [warmedUp, setWarmedUp] = useState(false);
   const [swapForever, setSwapForever] = useState(true);
   const pendingPrefs = useRef<[string, string][]>([]);
   const [saved, setSaved] = useState<{ sets: number; volume: number; minutes: number } | null>(null);
@@ -319,6 +326,20 @@ export function WorkoutPlayer({
 
   // ------------------------------------------------------------------ views
 
+  if (stretching) {
+    return (
+      <StretchSession
+        title={stretching === "antes" ? "Aquecimento" : "Volta à calma"}
+        items={stretching === "antes" ? stretchesBefore : stretchesAfter}
+        doneLabel={stretching === "antes" ? "Começar o treino" : "Voltar"}
+        onClose={(completed) => {
+          if (stretching === "antes" && completed) setWarmedUp(true);
+          setStretching(null);
+        }}
+      />
+    );
+  }
+
   if (saved) {
     const kcal = Math.round(((5.5 * 3.5 * bodyKg) / 200) * saved.minutes);
     return (
@@ -383,6 +404,15 @@ export function WorkoutPlayer({
                 Continuar de onde parei
               </button>
             )}
+            {stretchesBefore.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setStretching("antes")}
+                className="h-14 w-full rounded-full bg-black/10 font-semibold"
+              >
+                {warmedUp ? "Aquecimento feito. Repetir?" : `Aquecer com alongamentos (${Math.max(1, Math.round(stretchesBefore.reduce((a, x) => a + x.seconds + 5, 0) / 60))} min)`}
+              </button>
+            )}
             <button
               type="button"
               onClick={() => setState((s) => ({ ...initialState(exercises), phase: "countdown", timerEndsAt: Date.now() + 3000, rpe: s.rpe }))}
@@ -413,6 +443,15 @@ export function WorkoutPlayer({
     return (
       <div className="flex min-h-screen flex-col gap-4 pb-8 pt-6">
         <h1 className="text-2xl font-bold">Como foi o treino?</h1>
+        {stretchesAfter.length > 0 && (
+          <button type="button" onClick={() => setStretching("depois")} className="flex items-center gap-3 rounded-[28px] bg-fit-lime p-4 text-left text-fit-on-lime">
+            <span className="flex-1">
+              <span className="block font-semibold">Alongar agora</span>
+              <span className="block text-xs opacity-75">{stretchesAfter.length} alongamentos para os músculos que você treinou</span>
+            </span>
+            <PlayI className="h-5 w-5" />
+          </button>
+        )}
         <div className="rounded-[28px] bg-fit-card p-5">
           <p className="text-sm text-fit-muted">Esforço percebido (1 = muito leve, 10 = máximo)</p>
           <div className="mt-3 grid grid-cols-5 gap-2">

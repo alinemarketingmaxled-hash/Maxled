@@ -54,6 +54,7 @@ export const answersSchema = z.object({
   programWeeks: z.number().int().min(4).max(52),
   level: z.enum(["iniciante", "intermediario", "avancado"]),
   daysPerWeek: z.number().int().min(1).max(6),
+  trainingDays: z.array(z.number().int().min(0).max(6)).max(6).default([]),
   sessionMinutes: z.number().int().min(20).max(150),
   timeOfDay: z.enum(["manha", "tarde", "noite"]),
   equipment: z.array(equipment),

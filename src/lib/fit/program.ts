@@ -2,6 +2,7 @@ import { EXERCISES, canDo, getExercise, type Exercise, type Pattern } from "./ex
 import type { Adjustments } from "./bio";
 import type { Equipment, FitAnswers, FocusLevel, Goal, Level, Muscle } from "./types";
 import { MACHINES, MUSCLE_LABEL } from "./types";
+import { stretchesFor } from "./stretches";
 
 export type PhaseKind = "adaptacao" | "volume" | "intensidade" | "forca" | "metabolico" | "pico";
 
@@ -170,6 +171,12 @@ function templatesFor(days: number, level: Level, goal: Goal): DayTemplate[] {
   }
 }
 
+/** The user's chosen weekdays, or an even spread for their frequency. */
+export function resolveWeekdays(answers: Pick<FitAnswers, "trainingDays" | "daysPerWeek">): number[] {
+  const picked = [...new Set(answers.trainingDays)].filter((d) => d >= 0 && d <= 6).sort((a, b) => a - b);
+  return picked.length ? picked : trainingWeekdays(answers.daysPerWeek);
+}
+
 /** Weekday indices (0 = segunda) for each training day. */
 export function trainingWeekdays(days: number): number[] {
   switch (Math.min(6, Math.max(1, days))) {
@@ -222,6 +229,10 @@ export type DayPlan = {
   title: string;
   focus: Muscle[];
   warmup: string[];
+  /** Dynamic stretches before training (ids from lib/fit/stretches.ts). */
+  stretchesBefore: string[];
+  /** Static stretches after training. */
+  stretchesAfter: string[];
   exercises: PlannedExercise[];
   cardio: CardioBlock | null;
   cooldown: string[];
@@ -406,13 +417,8 @@ function cardioFor(
     : { minutes, title: "Caminhada rápida", description: "Ao ar livre ou no lugar, ritmo acelerado constante", exerciseId: null };
 }
 
-function warmupFor(t: DayTemplate, answers: FitAnswers): string[] {
-  const list = ["3-5 min de cardio leve para elevar a temperatura"];
-  const lower = t.focus.some((m) => ["quadriceps", "posterior", "gluteos"].includes(m));
-  const upper = t.focus.some((m) => ["peito", "costas", "ombros"].includes(m));
-  if (lower) list.push("Mobilidade de quadril 90/90 e agachamento profundo sustentado (1 min cada)");
-  if (upper) list.push("Rotação torácica e deslocamento de ombro (10 cada)");
-  list.push("1-2 séries leves do primeiro exercício");
+function warmupFor(answers: FitAnswers): string[] {
+  const list = ["3-5 min de cardio leve (bike, esteira, polichinelo) para elevar a temperatura", "Alongamentos dinâmicos abaixo, com as fotos", "1-2 séries leves do primeiro exercício"];
   if (answers.timeOfDay === "manha") list.push("De manhã as articulações estão mais rígidas: gaste 2 min extras aquecendo");
   return list;
 }
@@ -503,6 +509,20 @@ function pickFocusAware(
   return null;
 }
 
+/** Stretches picked from what the session actually trains. */
+function dayStretches(list: PlannedExercise[], answers: FitAnswers): { stretchesBefore: string[]; stretchesAfter: string[] } {
+  const muscles = new Set<Muscle>();
+  for (const p of list) {
+    muscles.add(p.muscle);
+    for (const m of getExercise(p.exerciseId)?.secondary ?? []) muscles.add(m);
+  }
+  const trained = [...muscles].filter((m) => m !== "cardio");
+  return {
+    stretchesBefore: stretchesFor(trained, "dinamico", answers.limitations).map((s) => s.id),
+    stretchesAfter: stretchesFor(trained, "estatico", answers.limitations).map((s) => s.id),
+  };
+}
+
 /** Generates one week of training. Pure and deterministic: the same inputs
  * always produce the same plan, so the server can regenerate it on every
  * request (and the session player can trust exercise IDs). */
@@ -519,8 +539,8 @@ export function generateWeek(answers: FitAnswers, adj: Adjustments, week: number
   const phase = block.kind;
   const params = PHASE_PARAMS[phase];
   const owned = new Set<Equipment>([...answers.equipment, "peso_corporal"]);
-  const templates = templatesFor(answers.daysPerWeek, answers.level, goal);
-  const weekdays = trainingWeekdays(answers.daysPerWeek);
+  const weekdays = resolveWeekdays(answers);
+  const templates = templatesFor(weekdays.length, answers.level, goal);
   const usedWeek = new Map<string, number>();
   const limits = new Set(answers.limitations);
   const notes: string[] = [];
@@ -599,8 +619,8 @@ export function generateWeek(answers: FitAnswers, adj: Adjustments, week: number
     }
 
     const cardio = t.key === "mobility" ? null : cardioFor(answers, goal, adj, owned, phase, deload);
-    const warmup = warmupFor(t, answers);
-    const cooldown = ["Alongamento leve dos músculos trabalhados (3-5 min)", "Respiração diafragmática: 1 min"];
+    const warmup = warmupFor(answers);
+    const cooldown = ["Alongamentos estáticos abaixo, segurando sem dor", "Respiração diafragmática: 1 min"];
 
     // Fit the session into the time the user has, in order of what hurts
     // the plan least: extra isolation work, then cardio length, then sets
@@ -654,6 +674,7 @@ export function generateWeek(answers: FitAnswers, adj: Adjustments, week: number
       title: t.title,
       focus: t.focus,
       warmup,
+      ...dayStretches(finalList, answers),
       exercises: finalList,
       cardio: finalCardio,
       cooldown,
