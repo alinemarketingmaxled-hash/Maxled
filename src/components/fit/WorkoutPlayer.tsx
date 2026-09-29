@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, useTransition } from "react";
-import { saveWorkoutAction } from "@/app/fit/actions";
+import { saveWorkoutAction, setExercisePreferenceAction } from "@/app/fit/actions";
 import type { Pattern } from "@/lib/fit/exercises";
 import type { CardioBlock, PlannedExercise } from "@/lib/fit/program";
 import type { LoadSuggestion } from "@/lib/fit/progression";
@@ -125,6 +125,8 @@ export function WorkoutPlayer({
   const [now, setNow] = useState(() => Date.now());
   const [showList, setShowList] = useState(false);
   const [showSwap, setShowSwap] = useState(false);
+  const [swapForever, setSwapForever] = useState(true);
+  const pendingPrefs = useRef<[string, string][]>([]);
   const [saved, setSaved] = useState<{ sets: number; volume: number; minutes: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
@@ -264,6 +266,11 @@ export function WorkoutPlayer({
   function swap(altId: string) {
     const alt = exercises[state.ex].alternatives.find((a) => a.id === altId);
     if (!alt) return;
+    if (swapForever) {
+      // Applied after the workout is saved: changing the plan mid-session
+      // would reshuffle the exercise list under the player.
+      pendingPrefs.current.push([state.exercises[state.ex].exerciseId, alt.id]);
+    }
     setState((s) => ({
       ...s,
       exercises: s.exercises.map((e, i) =>
@@ -279,11 +286,11 @@ export function WorkoutPlayer({
 
   function save() {
     setError(null);
-    const minutes = state.startedAt ? Math.max(1, Math.round((Date.now() - state.startedAt) / 60000)) : null;
     const entries = state.exercises
       .map((e) => ({ exerciseId: e.exerciseId, sets: e.sets.map((x) => ({ reps: x.reps, loadKg: x.loadKg, done: x.done })) }))
       .filter((e) => e.sets.some((x) => x.done));
     start(async () => {
+      const minutes = state.startedAt ? Math.max(1, Math.round((Date.now() - state.startedAt) / 60000)) : null;
       const res = await saveWorkoutAction({
         weekNumber,
         dayIndex,
@@ -297,6 +304,11 @@ export function WorkoutPlayer({
         setError(res.error);
         return;
       }
+      for (const [removed, kept] of pendingPrefs.current) {
+        await setExercisePreferenceAction(removed, "excluir");
+        await setExercisePreferenceAction(kept, "manter");
+      }
+      pendingPrefs.current = [];
       try {
         localStorage.removeItem(storageKey);
       } catch {}
@@ -626,6 +638,15 @@ export function WorkoutPlayer({
 
       {showSwap && (
         <Sheet onClose={() => setShowSwap(false)} title="Trocar por">
+          <label className="mb-3 flex items-start gap-3 rounded-2xl bg-fit-card-2 p-3 text-sm">
+            <input type="checkbox" checked={swapForever} onChange={(e) => setSwapForever(e.target.checked)} className="mt-0.5 h-4 w-4 accent-[var(--fit-lime)]" />
+            <span>
+              Trocar sempre
+              <span className="block text-xs text-fit-muted">
+                &quot;{state.exercises[state.ex].name}&quot; sai do seu treino e a opção escolhida fica no lugar nas próximas semanas.
+              </span>
+            </span>
+          </label>
           <ul className="space-y-2">
             {exercises[state.ex].alternatives.map((a) => (
               <li key={a.id}>

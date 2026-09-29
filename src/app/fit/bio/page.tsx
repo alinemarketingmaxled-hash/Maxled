@@ -67,6 +67,14 @@ export default async function BioPage({ searchParams }: { searchParams: Promise<
           <span>Última medição · {fmtDate(latest.measuredAt, { day: "2-digit", month: "long" })}</span>
           <span className="rounded-full bg-white/10 px-2 py-0.5">{SOURCE_LABEL[latest.source]}</span>
         </div>
+        {latest.hasImage && (
+          <Link href={`/fit/bio/${latest.id}`} className="mt-3 flex items-center gap-3 rounded-2xl bg-white/10 p-2 pr-3 text-sm">
+            {/* eslint-disable-next-line @next/next/no-img-element -- private, auth-checked route */}
+            <img src={`/fit/bio/${latest.id}/imagem`} alt="" className="h-12 w-12 rounded-xl object-cover" />
+            <span className="flex-1">Ver print do laudo</span>
+            <span className="text-[#d6f94b]">Abrir</span>
+          </Link>
+        )}
         <div className="mt-3 flex items-end gap-6">
           <div>
             <p className="text-5xl font-bold tabular-nums">{fmtNum(latest.weightKg)}</p>
@@ -186,17 +194,25 @@ export default async function BioPage({ searchParams }: { searchParams: Promise<
         <ul className="space-y-2">
           {[...bios].reverse().map((b) => (
             <li key={b.id} className="flex items-center gap-3 rounded-2xl bg-fit-card-2 p-3">
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-fit-card text-fit-accent">
-                {b.source === "laudo" ? <FileI className="h-5 w-5" /> : b.source === "foto" ? <CameraI className="h-5 w-5" /> : <PencilI className="h-5 w-5" />}
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-sm font-semibold">
-                  {fmtNum(b.weightKg)} kg{b.bodyFatPct != null ? ` · ${fmtNum(b.bodyFatPct)}%` : ""}
+              <Link href={`/fit/bio/${b.id}`} className="flex min-w-0 flex-1 items-center gap-3">
+                {b.hasImage ? (
+                  // eslint-disable-next-line @next/next/no-img-element -- private, auth-checked route
+                  <img src={`/fit/bio/${b.id}/imagem`} alt="" loading="lazy" className="h-12 w-12 shrink-0 rounded-xl bg-fit-card object-cover" />
+                ) : (
+                  <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-fit-card text-fit-accent">
+                    {b.source === "laudo" ? <FileI className="h-5 w-5" /> : b.source === "foto" ? <CameraI className="h-5 w-5" /> : <PencilI className="h-5 w-5" />}
+                  </span>
+                )}
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-semibold">
+                    {fmtNum(b.weightKg)} kg{b.bodyFatPct != null ? ` · ${fmtNum(b.bodyFatPct)}%` : ""}
+                  </span>
+                  <span className="block text-xs text-fit-muted">
+                    {fmtDate(b.measuredAt, { day: "2-digit", month: "short", year: "numeric" })} · {SOURCE_LABEL[b.source]}
+                    {b.hasImage ? " · com print" : ""}
+                  </span>
                 </span>
-                <span className="block text-xs text-fit-muted">
-                  {fmtDate(b.measuredAt, { day: "2-digit", month: "short", year: "numeric" })} · {SOURCE_LABEL[b.source]}
-                </span>
-              </span>
+              </Link>
               <DeleteBioButton id={b.id} />
             </li>
           ))}

@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import NextAuth, { CredentialsSignin } from "next-auth";
+import NextAuth, { CredentialsSignin, type Session } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 import { verifyMfaToken } from "@/lib/mfa";
@@ -25,10 +25,47 @@ export class MfaInvalidError extends CredentialsSignin {
   code = "mfa_invalid";
 }
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+/** Maxled Fit accounts (FitAccount) sign in through their own provider so a
+ * Fit login never becomes a CRM session: the session callback strips
+ * `session.user` for them and exposes only `fitAccountId`. */
+const fitCredentials = Credentials({
+  id: "fit",
+  name: "Maxled Fit",
+  credentials: {
+    email: { label: "E-mail", type: "email" },
+    password: { label: "Senha", type: "password" },
+  },
+  async authorize(credentials) {
+    const email = typeof credentials?.email === "string" ? credentials.email.trim().toLowerCase() : "";
+    const password = credentials?.password;
+    if (!email || typeof password !== "string") return null;
+
+    const account = await prisma.fitAccount.findUnique({ where: { email } });
+    if (!account?.passwordHash) return null;
+    if (account.lockedAt) throw new AccountLockedError();
+
+    const valid = await bcrypt.compare(password, account.passwordHash);
+    if (!valid) {
+      const attempts = account.failedLoginAttempts + 1;
+      await prisma.fitAccount.update({
+        where: { id: account.id },
+        data: attempts >= MAX_LOGIN_ATTEMPTS ? { failedLoginAttempts: attempts, lockedAt: new Date() } : { failedLoginAttempts: attempts },
+      });
+      if (attempts >= MAX_LOGIN_ATTEMPTS) throw new AccountLockedError();
+      return null;
+    }
+    if (account.failedLoginAttempts > 0) {
+      await prisma.fitAccount.update({ where: { id: account.id }, data: { failedLoginAttempts: 0 } });
+    }
+    return { id: account.id, name: account.name, email: account.email, kind: "fit" as const };
+  },
+});
+
+const nextAuth = NextAuth({
   session: { strategy: "jwt" },
   pages: { signIn: "/login" },
   providers: [
+    fitCredentials,
     Credentials({
       credentials: {
         email: { label: "E-mail", type: "email" },
@@ -86,12 +123,25 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     jwt({ token, user }) {
       if (user) {
-        token.role = (user as { role: Role }).role;
-        token.id = user.id as string;
+        if ((user as { kind?: string }).kind === "fit") {
+          token.kind = "fit";
+          token.fitAccountId = user.id as string;
+          delete token.role;
+          delete token.id;
+        } else {
+          token.kind = "crm";
+          token.role = (user as { role: Role }).role;
+          token.id = user.id as string;
+          delete token.fitAccountId;
+        }
       }
       return token;
     },
     session({ session, token }) {
+      if (token.kind === "fit") {
+        // No CRM identity at all: every CRM check (`session?.user`) fails.
+        return { expires: session.expires, fitAccountId: token.fitAccountId } as unknown as typeof session;
+      }
       if (session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as Role;
@@ -100,3 +150,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
   },
 });
+
+export const { handlers, signIn, signOut } = nextAuth;
+
+/** Raw session, including Maxled Fit logins (`fitAccountId`). Only the Fit
+ * module should read this — see src/lib/fit/account.ts. */
+export async function fitAuth(): Promise<Session | null> {
+  return nextAuth.auth();
+}
+
+/** CRM session. A Maxled Fit login is not a CRM identity: Auth.js still
+ * attaches a partial `user` to its session, so it is filtered out here —
+ * every CRM page and action goes through this function. */
+export async function auth(): Promise<Session | null> {
+  const session = await nextAuth.auth();
+  if (!session || session.fitAccountId || !session.user?.id || !session.user.role) return null;
+  return session;
+}

@@ -14,6 +14,8 @@ export type BrowserItem = {
   difficulty: 1 | 2 | 3;
   available: boolean;
   blocked: boolean;
+  excluded: boolean;
+  favorite: boolean;
   machine: boolean;
   equipment: string;
 };
@@ -93,6 +95,8 @@ export function ExerciseBrowser({ items }: { items: BrowserItem[] }) {
             <div className="relative">
               <ExerciseMedia id={i.id} pattern={i.pattern} animate={false} className="rounded-none" />
               {i.blocked && <span className="absolute left-2 top-2 rounded-full bg-fit-bad px-2 py-0.5 text-[10px] font-semibold text-white">Evitar</span>}
+              {i.excluded && !i.blocked && <span className="absolute left-2 top-2 rounded-full bg-fit-strong/85 px-2 py-0.5 text-[10px] font-semibold text-white">Fora do treino</span>}
+              {i.favorite && <span className="absolute left-2 top-2 rounded-full bg-fit-lime px-2 py-0.5 text-[10px] font-semibold text-fit-on-lime">Mantido</span>}
             </div>
             <div className="p-3">
               <p className="line-clamp-2 text-[13px] font-semibold leading-tight">{i.name}</p>

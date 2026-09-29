@@ -64,6 +64,8 @@ export const answersSchema = z.object({
   stressLevel: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5)]),
   likesCardio: z.boolean(),
   trainingAtHome: z.boolean(),
+  excludedExercises: z.array(z.string().max(60)).max(200).default([]),
+  favoriteExercises: z.array(z.string().max(60)).max(200).default([]),
 });
 
 const optNum = (min: number, max: number) => z.number().min(min).max(max).nullable();
@@ -86,6 +88,12 @@ export const bioSchema = z.object({
   armCm: optNum(15, 70),
   thighCm: optNum(25, 100),
   notes: z.string().max(1000).nullable(),
+  // ~1 MB of base64 at most; the client shrinks images well below this.
+  image: z
+    .string()
+    .max(1_000_000)
+    .regex(/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/, "Imagem inválida.")
+    .nullable(),
 });
 
 export const workoutLogSchema = z.object({

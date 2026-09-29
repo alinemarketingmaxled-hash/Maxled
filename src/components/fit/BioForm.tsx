@@ -76,6 +76,8 @@ export function BioForm({ initialMode, lastWeight, visionEnabled, first }: { ini
   const [date, setDate] = useState(todayInput);
   const [notes, setNotes] = useState("");
   const [preview, setPreview] = useState<string | null>(null);
+  // Body photos are private by default; report prints are kept.
+  const [keepImage, setKeepImage] = useState(initialMode !== "foto");
   const [scanMsg, setScanMsg] = useState<string | null>(null);
   const [body, setBody] = useState<BodyReading | null>(null);
   const [filled, setFilled] = useState<Set<string>>(new Set());
@@ -92,8 +94,9 @@ export function BioForm({ initialMode, lastWeight, visionEnabled, first }: { ini
     setScanMsg(null);
     setBody(null);
     try {
-      const url = await resizeImageToDataUrl(file, 1400, 0.82);
+      const url = await resizeImageToDataUrl(file, 1280, 0.75);
       setPreview(url);
+      if (mode === "manual") return;
       if (!visionEnabled) {
         setScanMsg("Leitura automática indisponível no servidor. Preencha os valores manualmente abaixo.");
         return;
@@ -170,6 +173,7 @@ export function BioForm({ initialMode, lastWeight, visionEnabled, first }: { ini
       armCm: num(fields.armCm),
       thighCm: num(fields.thighCm),
       notes: [notes.trim(), bodyNote].filter(Boolean).join("\n").slice(0, 1000) || null,
+      image: keepImage ? preview : null,
     };
     if (Object.entries(input).some(([k, v]) => typeof v === "number" && Number.isNaN(v) && k !== "measuredAt")) {
       setError("Há um número inválido no formulário.");
@@ -206,6 +210,7 @@ export function BioForm({ initialMode, lastWeight, visionEnabled, first }: { ini
             onClick={() => {
               setMode(m.key);
               setPreview(null);
+              setKeepImage(m.key !== "foto");
               setScanMsg(null);
               setBody(null);
               setError(null);
@@ -218,7 +223,7 @@ export function BioForm({ initialMode, lastWeight, visionEnabled, first }: { ini
         ))}
       </div>
 
-      {mode !== "manual" && (
+      {(
         <div className="rounded-[28px] bg-fit-card p-5">
           <input
             ref={fileRef}
@@ -236,18 +241,31 @@ export function BioForm({ initialMode, lastWeight, visionEnabled, first }: { ini
               <span className="grid h-14 w-14 place-items-center rounded-full bg-fit-lime text-fit-on-lime">
                 <CameraI className="h-6 w-6" />
               </span>
-              <span className="text-sm font-semibold">{mode === "laudo" ? "Fotografar ou enviar o laudo" : "Enviar foto do corpo"}</span>
+              <span className="text-sm font-semibold">
+                {mode === "laudo" ? "Fotografar ou enviar o laudo" : mode === "foto" ? "Enviar foto do corpo" : "Anexar print do laudo (opcional)"}
+              </span>
               <span className="max-w-xs text-xs text-fit-muted">
                 {mode === "laudo"
-                  ? "InBody, Tanita, balança de farmácia ou print do app da balança. A IA lê os números."
-                  : "De frente, corpo inteiro, roupa justa e boa luz. A IA estima o % de gordura. A foto não é salva."}
+                  ? "InBody, Tanita, balança de farmácia ou print do app da balança. A IA lê os números e o print fica guardado com a bio."
+                  : mode === "foto"
+                    ? "De frente, corpo inteiro, roupa justa e boa luz. A IA estima o % de gordura. Você escolhe se a foto fica salva."
+                    : "Guarde o print do laudo ou do app da balança junto com os valores que você digitar."}
               </span>
             </button>
           )}
           {preview && (
-            <button type="button" onClick={() => fileRef.current?.click()} className="mt-3 w-full rounded-full bg-fit-card-2 py-2.5 text-xs font-medium">
-              Trocar foto
-            </button>
+            <>
+              <button type="button" onClick={() => fileRef.current?.click()} className="mt-3 w-full rounded-full bg-fit-card-2 py-2.5 text-xs font-medium">
+                Trocar imagem
+              </button>
+              <label className="mt-3 flex items-start gap-3 rounded-2xl bg-fit-card-2 p-3 text-sm">
+                <input type="checkbox" checked={keepImage} onChange={(e) => setKeepImage(e.target.checked)} className="mt-0.5 h-4 w-4 accent-[var(--fit-lime)]" />
+                <span>
+                  Guardar esta imagem com a bio
+                  <span className="block text-xs text-fit-muted">Só você vê. Dá para abrir depois no histórico.</span>
+                </span>
+              </label>
+            </>
           )}
           {scanning && (
             <p className="mt-3 flex items-center gap-2 rounded-2xl bg-fit-lime-soft p-3 text-sm">

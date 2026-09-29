@@ -5,7 +5,7 @@ import { useTransition } from "react";
 import { deleteBioAction, deleteWorkoutAction } from "@/app/fit/actions";
 import { TrashI } from "./FitIcons";
 
-function DeleteButton({ label, confirmText, run }: { label: string; confirmText: string; run: () => Promise<{ ok: boolean }> }) {
+function DeleteButton({ label, confirmText, run, redirectTo }: { label: string; confirmText: string; run: () => Promise<{ ok: boolean }>; redirectTo?: string }) {
   const router = useRouter();
   const [pending, start] = useTransition();
   return (
@@ -17,6 +17,7 @@ function DeleteButton({ label, confirmText, run }: { label: string; confirmText:
         if (!confirm(confirmText)) return;
         start(async () => {
           await run();
+          if (redirectTo) router.push(redirectTo);
           router.refresh();
         });
       }}
@@ -31,9 +32,10 @@ export function DeleteWorkoutButton({ id }: { id: string }) {
   return <DeleteButton label="Excluir treino" confirmText="Excluir este treino do histórico?" run={() => deleteWorkoutAction(id)} />;
 }
 
-export function DeleteBioButton({ id }: { id: string }) {
+export function DeleteBioButton({ id, redirectTo }: { id: string; redirectTo?: string }) {
   return (
     <DeleteButton
+      redirectTo={redirectTo}
       label="Excluir bioimpedância"
       confirmText="Excluir esta bioimpedância? O treino será recalculado."
       run={() => deleteBioAction(id)}

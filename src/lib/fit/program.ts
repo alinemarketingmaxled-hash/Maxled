@@ -299,8 +299,10 @@ const STAPLES = new Set([
 
 function candidatesFor(slot: Slot, answers: FitAnswers, owned: Set<Equipment>, maxDiff: number): Exercise[] {
   const limits = new Set(answers.limitations);
+  const excluded = new Set(answers.excludedExercises);
   const base = EXERCISES.filter(
     (e) =>
+      !excluded.has(e.id) &&
       e.pattern === slot.pattern &&
       (!slot.muscle || e.muscle === slot.muscle) &&
       canDo(e, owned) &&
@@ -329,6 +331,7 @@ function pickExercise(
       // Anything at or under the user's level is fine; staples win ties.
       score += e.difficulty <= maxDiff ? 2 + (e.difficulty === maxDiff && maxDiff < 3 ? 1 : 0) : -4;
       if (STAPLES.has(e.id)) score += 3;
+      if (answers.favoriteExercises.includes(e.id)) score += 8;
       if (slot.priority <= 2 && e.compound) score += 3;
       score += loadScore(e, owned) * (wantsLoad ? 2 : 1);
       score -= (usedWeek.get(e.id) ?? 0) * 4;

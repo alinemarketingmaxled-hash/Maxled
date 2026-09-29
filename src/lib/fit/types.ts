@@ -82,6 +82,10 @@ export type FitAnswers = {
   stressLevel: 1 | 2 | 3 | 4 | 5;
   likesCardio: boolean;
   trainingAtHome: boolean;
+  /** Exercises the user asked never to get again ("não quero este"). */
+  excludedExercises: string[];
+  /** Exercises the user asked to keep; they win ties in the generator. */
+  favoriteExercises: string[];
 };
 
 export type BioRecord = {
@@ -103,9 +107,14 @@ export type BioRecord = {
   armCm: number | null;
   thighCm: number | null;
   notes: string | null;
+  /** A print/photo of the report is attached (served by /fit/bio/[id]/imagem). */
+  hasImage: boolean;
 };
 
-export type BioInput = Omit<BioRecord, "id">;
+export type BioInput = Omit<BioRecord, "id" | "hasImage"> & {
+  /** JPEG/PNG/WebP data URL of the report print, when the user keeps it. */
+  image: string | null;
+};
 
 export type LoggedSet = { reps: number; loadKg: number | null; done: boolean };
 export type LoggedExercise = { exerciseId: string; sets: LoggedSet[] };

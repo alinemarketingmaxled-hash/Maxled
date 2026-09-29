@@ -1,7 +1,22 @@
 -- CreateTable
+CREATE TABLE "FitAccount" (
+    "id" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "passwordHash" TEXT,
+    "crmUserId" TEXT,
+    "failedLoginAttempts" INTEGER NOT NULL DEFAULT 0,
+    "lockedAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "FitAccount_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "FitProfile" (
     "id" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
+    "accountId" TEXT NOT NULL,
     "answers" JSONB NOT NULL,
     "startedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -13,7 +28,7 @@ CREATE TABLE "FitProfile" (
 -- CreateTable
 CREATE TABLE "FitBioRecord" (
     "id" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
+    "accountId" TEXT NOT NULL,
     "measuredAt" TIMESTAMP(3) NOT NULL,
     "source" TEXT NOT NULL DEFAULT 'manual',
     "weightKg" DOUBLE PRECISION NOT NULL,
@@ -37,9 +52,20 @@ CREATE TABLE "FitBioRecord" (
 );
 
 -- CreateTable
+CREATE TABLE "FitBioImage" (
+    "id" TEXT NOT NULL,
+    "bioId" TEXT NOT NULL,
+    "mimeType" TEXT NOT NULL,
+    "data" BYTEA NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "FitBioImage_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "FitWorkoutLog" (
     "id" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
+    "accountId" TEXT NOT NULL,
     "performedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "weekNumber" INTEGER NOT NULL,
     "dayIndex" INTEGER NOT NULL,
@@ -54,20 +80,35 @@ CREATE TABLE "FitWorkoutLog" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "FitProfile_userId_key" ON "FitProfile"("userId");
+CREATE UNIQUE INDEX "FitAccount_email_key" ON "FitAccount"("email");
 
 -- CreateIndex
-CREATE INDEX "FitBioRecord_userId_measuredAt_idx" ON "FitBioRecord"("userId", "measuredAt");
+CREATE UNIQUE INDEX "FitAccount_crmUserId_key" ON "FitAccount"("crmUserId");
 
 -- CreateIndex
-CREATE INDEX "FitWorkoutLog_userId_performedAt_idx" ON "FitWorkoutLog"("userId", "performedAt");
+CREATE UNIQUE INDEX "FitProfile_accountId_key" ON "FitProfile"("accountId");
+
+-- CreateIndex
+CREATE INDEX "FitBioRecord_accountId_measuredAt_idx" ON "FitBioRecord"("accountId", "measuredAt");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "FitBioImage_bioId_key" ON "FitBioImage"("bioId");
+
+-- CreateIndex
+CREATE INDEX "FitWorkoutLog_accountId_performedAt_idx" ON "FitWorkoutLog"("accountId", "performedAt");
 
 -- AddForeignKey
-ALTER TABLE "FitProfile" ADD CONSTRAINT "FitProfile_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "FitAccount" ADD CONSTRAINT "FitAccount_crmUserId_fkey" FOREIGN KEY ("crmUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "FitBioRecord" ADD CONSTRAINT "FitBioRecord_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "FitProfile" ADD CONSTRAINT "FitProfile_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "FitAccount"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "FitWorkoutLog" ADD CONSTRAINT "FitWorkoutLog_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "FitBioRecord" ADD CONSTRAINT "FitBioRecord_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "FitAccount"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "FitBioImage" ADD CONSTRAINT "FitBioImage_bioId_fkey" FOREIGN KEY ("bioId") REFERENCES "FitBioRecord"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "FitWorkoutLog" ADD CONSTRAINT "FitWorkoutLog_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "FitAccount"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 

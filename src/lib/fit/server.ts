@@ -1,6 +1,5 @@
 import "server-only";
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { analyzeBio, type BioAnalysis } from "./bio";
 import { nutritionPlan, type NutritionPlan } from "./nutrition";
@@ -10,13 +9,11 @@ import { streakDays } from "./progression";
 import { achievements, type Achievement } from "./achievements";
 import type { BioRecord, FitAnswers, WorkoutLog } from "./types";
 
-export async function requireFitUser() {
-  const session = await auth();
-  if (!session?.user) redirect("/login?callbackUrl=/fit");
-  return session.user;
-}
+export { requireFitAccount } from "./account";
+import { requireFitAccount } from "./account";
 
-type BioRow = Awaited<ReturnType<typeof prisma.fitBioRecord.findMany>>[number];
+const BIO_INCLUDE = { image: { select: { id: true } } } as const;
+type BioRow = Awaited<ReturnType<typeof prisma.fitBioRecord.findMany<{ include: typeof BIO_INCLUDE }>>>[number];
 type LogRow = Awaited<ReturnType<typeof prisma.fitWorkoutLog.findMany>>[number];
 
 function toBio(r: BioRow): BioRecord {
@@ -39,6 +36,7 @@ function toBio(r: BioRow): BioRecord {
     armCm: r.armCm,
     thighCm: r.thighCm,
     notes: r.notes,
+    hasImage: !!r.image,
   };
 }
 
@@ -56,8 +54,8 @@ function toLog(r: LogRow): WorkoutLog {
   };
 }
 
-export async function getFitProfile(userId: string): Promise<{ answers: FitAnswers; startedAt: Date } | null> {
-  const profile = await prisma.fitProfile.findUnique({ where: { userId } });
+export async function getFitProfile(accountId: string): Promise<{ answers: FitAnswers; startedAt: Date } | null> {
+  const profile = await prisma.fitProfile.findUnique({ where: { accountId } });
   if (!profile) return null;
   const parsed = answersSchema.safeParse(profile.answers);
   if (!parsed.success) return null;
@@ -81,12 +79,12 @@ export type FitContext = {
 /** Loads everything and derives the live plan. Redirects to onboarding
  * when the questionnaire hasn't been answered yet. */
 export async function loadFitContext(): Promise<FitContext> {
-  const user = await requireFitUser();
-  const profile = await getFitProfile(user.id);
+  const account = await requireFitAccount();
+  const profile = await getFitProfile(account.id);
   if (!profile) redirect("/fit/comecar");
   const [bioRows, logRows] = await Promise.all([
-    prisma.fitBioRecord.findMany({ where: { userId: user.id }, orderBy: { measuredAt: "asc" } }),
-    prisma.fitWorkoutLog.findMany({ where: { userId: user.id }, orderBy: { performedAt: "desc" }, take: 300 }),
+    prisma.fitBioRecord.findMany({ where: { accountId: account.id }, orderBy: { measuredAt: "asc" }, include: BIO_INCLUDE }),
+    prisma.fitWorkoutLog.findMany({ where: { accountId: account.id }, orderBy: { performedAt: "desc" }, take: 300 }),
   ]);
   const bios = bioRows.map(toBio);
   const logs = logRows.map(toLog);

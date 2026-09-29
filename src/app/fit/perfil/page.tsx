@@ -2,9 +2,12 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { loadFitContext } from "@/lib/fit/server";
 import { EQUIPMENT_LABEL, GOAL_LABEL, LEVEL_LABEL, LIMITATION_LABEL, MUSCLE_LABEL, TIME_LABEL, ageFrom } from "@/lib/fit/types";
-import { Card, SectionTitle, TopBar, fmtDate, fmtNum } from "@/components/fit/ui";
+import { Card, ExerciseMedia, SectionTitle, TopBar, fmtDate, fmtNum } from "@/components/fit/ui";
+import { ExercisePrefButtons } from "@/components/fit/ExercisePrefButtons";
+import { getExercise } from "@/lib/fit/exercises";
 import { ChevronRightI, DumbbellI, FlameI, HeartI, PencilI, ScaleI, StarI, TrophyI } from "@/components/fit/FitIcons";
 import { ThemeToggle } from "@/components/fit/ThemeToggle";
+import { signOutFitAction } from "@/app/fit/actions";
 
 const BADGE_ICON = { flame: FlameI, trophy: TrophyI, dumbbell: DumbbellI, scale: ScaleI, heart: HeartI, star: StarI };
 
@@ -129,11 +132,52 @@ export default async function PerfilPage() {
         </dl>
       </Card>
 
+      <Card>
+        <SectionTitle>Seus exercícios</SectionTitle>
+        {answers.excludedExercises.length === 0 && answers.favoriteExercises.length === 0 ? (
+          <p className="text-sm text-fit-muted">
+            Nenhuma preferência ainda. No treino do dia, toque num exercício e use &quot;Manter sempre&quot; ou &quot;Não quero este&quot;.
+          </p>
+        ) : (
+          <div className="space-y-4">
+            {(
+              [
+                ["Mantidos no treino", answers.favoriteExercises, "manter"],
+                ["Fora do treino", answers.excludedExercises, "excluir"],
+              ] as const
+            ).map(([label, ids, pref]) =>
+              ids.length ? (
+                <div key={label}>
+                  <p className="mb-2 text-xs font-medium text-fit-muted">{label}</p>
+                  <ul className="space-y-2">
+                    {ids.map((id) => {
+                      const ex = getExercise(id);
+                      if (!ex) return null;
+                      return (
+                        <li key={id} className="rounded-2xl bg-fit-card-2 p-3">
+                          <Link href={`/fit/exercicios/${id}`} className="mb-2 flex items-center gap-3">
+                            <ExerciseMedia id={id} pattern={ex.pattern} size="sm" />
+                            <span className="text-sm font-semibold">{ex.name}</span>
+                          </Link>
+                          <ExercisePrefButtons exerciseId={id} pref={pref} compact />
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              ) : null,
+            )}
+          </div>
+        )}
+      </Card>
+
       <Card flush className="p-2">
         <ThemeToggle theme={theme} />
-        <Link href="/" className="flex items-center justify-between rounded-2xl px-3 py-3 text-sm">
-          Voltar ao CRM Maxled <ChevronRightI className="h-4 w-4 text-fit-muted" />
-        </Link>
+        <form action={signOutFitAction}>
+          <button type="submit" className="flex w-full items-center justify-between rounded-2xl px-3 py-3 text-left text-sm text-fit-bad">
+            Sair da conta <ChevronRightI className="h-4 w-4" />
+          </button>
+        </form>
       </Card>
     </main>
   );

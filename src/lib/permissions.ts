@@ -95,8 +95,11 @@ const MATRIX: Record<Module, Record<Role, Permission>> = {
   },
 };
 
+const NO_ACCESS: Permission = { level: "none", scope: "none" };
+
 export function getPermission(role: Role, mod: Module): Permission {
-  return MATRIX[mod][role];
+  // Unknown/missing role (e.g. a malformed session) gets nothing.
+  return MATRIX[mod][role] ?? NO_ACCESS;
 }
 
 /** Read-only snapshot for display (e.g. the Config page's permission reference table). */

@@ -4,8 +4,9 @@ import { EXERCISES, canDo, equipmentText, getExercise } from "@/lib/fit/exercise
 import { exerciseImages } from "@/lib/fit/exercise-images";
 import { EQUIPMENT_LABEL, LIMITATION_LABEL, MUSCLE_LABEL, type Equipment } from "@/lib/fit/types";
 import { WEEKDAY_LONG } from "@/lib/fit/program";
-import { getFitProfile, requireFitUser, loadFitContext } from "@/lib/fit/server";
+import { getFitProfile, requireFitAccount, loadFitContext } from "@/lib/fit/server";
 import { Card, ExerciseMedia, PoseFrame, SectionTitle } from "@/components/fit/ui";
+import { ExercisePrefButtons } from "@/components/fit/ExercisePrefButtons";
 import { POSES } from "@/lib/fit/poses";
 import { AlertI, ArrowLeftI, ChevronRightI } from "@/components/fit/FitIcons";
 
@@ -15,8 +16,8 @@ export default async function ExercicioPage({ params }: { params: Promise<{ id: 
   const { id } = await params;
   const ex = getExercise(id);
   if (!ex) notFound();
-  const user = await requireFitUser();
-  const profile = await getFitProfile(user.id);
+  const account = await requireFitAccount();
+  const profile = await getFitProfile(account.id);
   const ctx = profile ? await loadFitContext() : null;
   const owned = new Set<Equipment>([...(profile?.answers.equipment ?? ["academia"]), "peso_corporal"]);
   const blockedBy = ex.avoid.filter((l) => profile?.answers.limitations.includes(l));
@@ -48,6 +49,13 @@ export default async function ExercicioPage({ params }: { params: Promise<{ id: 
           </span>
         </div>
       </div>
+
+      {profile && (
+        <ExercisePrefButtons
+          exerciseId={ex.id}
+          pref={profile.answers.excludedExercises.includes(ex.id) ? "excluir" : profile.answers.favoriteExercises.includes(ex.id) ? "manter" : "neutro"}
+        />
+      )}
 
       {blockedBy.length > 0 && (
         <Card className="flex gap-3 border border-fit-bad/40">

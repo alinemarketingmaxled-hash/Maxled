@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
-import { requireFitUser } from "@/lib/fit/server";
 import { FitNav } from "@/components/fit/FitNav";
 
 export const metadata: Metadata = {
@@ -15,7 +14,6 @@ export const viewport: Viewport = {
 };
 
 export default async function FitLayout({ children }: { children: React.ReactNode }) {
-  await requireFitUser();
   const theme = (await cookies()).get("fit-theme")?.value === "light" ? "light" : "dark";
   return (
     <div className="fit min-h-screen w-full" data-fit-theme={theme}>

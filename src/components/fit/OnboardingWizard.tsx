@@ -47,6 +47,8 @@ const DEFAULTS: FitAnswers = {
   stressLevel: 3,
   likesCardio: true,
   trainingAtHome: false,
+  excludedExercises: [],
+  favoriteExercises: [],
 };
 
 const GOAL_ICON: Record<Goal, typeof FlameI> = {

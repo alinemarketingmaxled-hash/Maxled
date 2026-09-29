@@ -1,12 +1,12 @@
 import { EXERCISES, canDo, isMachine, equipmentText } from "@/lib/fit/exercises";
 import { EQUIPMENT_LABEL, MACHINES, type Equipment } from "@/lib/fit/types";
-import { getFitProfile, requireFitUser } from "@/lib/fit/server";
+import { getFitProfile, requireFitAccount } from "@/lib/fit/server";
 import { ExerciseBrowser, type BrowserItem } from "@/components/fit/ExerciseBrowser";
 import { TopBar } from "@/components/fit/ui";
 
 export default async function ExerciciosPage() {
-  const user = await requireFitUser();
-  const profile = await getFitProfile(user.id);
+  const account = await requireFitAccount();
+  const profile = await getFitProfile(account.id);
   const owned = new Set<Equipment>([...(profile?.answers.equipment ?? ["academia"]), "peso_corporal"]);
   const limits = new Set(profile?.answers.limitations ?? []);
   const items: BrowserItem[] = EXERCISES.map((e) => ({
@@ -17,6 +17,8 @@ export default async function ExerciciosPage() {
     difficulty: e.difficulty,
     available: canDo(e, owned),
     blocked: e.avoid.some((l) => limits.has(l)),
+    excluded: profile?.answers.excludedExercises.includes(e.id) ?? false,
+    favorite: profile?.answers.favoriteExercises.includes(e.id) ?? false,
     machine: isMachine(e, MACHINES),
     equipment: equipmentText(e, EQUIPMENT_LABEL),
   })).sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));

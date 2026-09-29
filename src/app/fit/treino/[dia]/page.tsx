@@ -7,10 +7,18 @@ import { suggestNext } from "@/lib/fit/progression";
 import { LEVEL_LABEL, MUSCLE_LABEL } from "@/lib/fit/types";
 import { dayKey } from "@/lib/fit/time";
 import { Card, ExerciseMedia, SectionTitle } from "@/components/fit/ui";
+import { ExercisePrefButtons, RemovedBanner } from "@/components/fit/ExercisePrefButtons";
 import { ArrowLeftI, BoltI, ChevronRightI, ClockI, FlameI, PlayI, SwapI } from "@/components/fit/FitIcons";
 
-export default async function DayPage({ params }: { params: Promise<{ dia: string }> }) {
+export default async function DayPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ dia: string }>;
+  searchParams: Promise<{ removido?: string }>;
+}) {
   const { dia } = await params;
+  const { removido } = await searchParams;
   const ctx = await loadFitContext();
   const day = ctx.week.days[Number(dia)];
   if (!day || !/^\d+$/.test(dia)) notFound();
@@ -41,6 +49,19 @@ export default async function DayPage({ params }: { params: Promise<{ dia: strin
           </div>
         </div>
       </div>
+
+      {removido && getExercise(removido) && (
+        <RemovedBanner
+          exerciseId={removido}
+          name={getExercise(removido)!.name}
+          replacement={
+            (
+              day.exercises.find((p) => p.muscle === getExercise(removido)!.muscle && getExercise(p.exerciseId)?.pattern === getExercise(removido)!.pattern) ??
+              day.exercises.find((p) => getExercise(p.exerciseId)?.pattern === getExercise(removido)!.pattern)
+            )?.name ?? null
+          }
+        />
+      )}
 
       <Card>
         <SectionTitle>Sobre</SectionTitle>
@@ -83,6 +104,7 @@ export default async function DayPage({ params }: { params: Promise<{ dia: strin
             {day.exercises.length} exercícios · {totalSets} séries
           </span>
         </SectionTitle>
+        <p className="-mt-1 mb-3 text-xs text-fit-muted">Toque num exercício para ver como fazer, manter ou trocar por outro.</p>
         <ul className="space-y-3">
           {day.exercises.map((p, i) => {
             const ex = getExercise(p.exerciseId)!;
@@ -106,6 +128,7 @@ export default async function DayPage({ params }: { params: Promise<{ dia: strin
                   </summary>
                   <div className="mt-3 space-y-3 border-t border-fit-line pt-3 text-xs">
                     <ExerciseMedia id={ex.id} pattern={ex.pattern} size="lg" labels />
+                    <ExercisePrefButtons exerciseId={ex.id} pref={ctx.answers.favoriteExercises.includes(ex.id) ? "manter" : "neutro"} />
                     <Link href={`/fit/exercicios/${ex.id}`} className="inline-block text-fit-accent underline">
                       Ver passo a passo
                     </Link>

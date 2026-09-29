@@ -26,7 +26,7 @@ export function FitNav() {
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
-  if (pathname.startsWith("/fit/comecar") || pathname.endsWith("/play")) return null;
+  if (pathname.startsWith("/fit/comecar") || pathname.startsWith("/fit/entrar") || pathname.startsWith("/fit/cadastro") || pathname.endsWith("/play")) return null;
 
   return (
     <>
