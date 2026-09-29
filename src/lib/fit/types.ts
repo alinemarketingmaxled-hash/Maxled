@@ -43,6 +43,14 @@ export type Equipment =
   | "maquinas_costas"
   | "panturrilha_maquina";
 
+export type FocusLevel = "leve" | "moderado" | "forte";
+
+export const FOCUS_LEVEL_LABEL: Record<FocusLevel, { label: string; hint: string }> = {
+  leve: { label: "Um pouco mais", hint: "+1 série nos exercícios dessas regiões" },
+  moderado: { label: "Bem mais", hint: "Exercício extra nos dias certos e mais séries" },
+  forte: { label: "Prioridade máxima", hint: "Treina essas regiões primeiro, quase todo treino, com o dobro de estímulo" },
+};
+
 export type Limitation = "joelho" | "lombar" | "ombro" | "punho" | "quadril" | "cervical" | "hipertensao" | "gestante";
 
 export type Muscle =
@@ -77,6 +85,8 @@ export type FitAnswers = {
   equipment: Equipment[];
   limitations: Limitation[];
   focusMuscles: Muscle[];
+  /** How hard the plan leans into the focus regions. */
+  focusLevel: FocusLevel;
   activityLevel: ActivityLevel;
   sleepHours: number;
   stressLevel: 1 | 2 | 3 | 4 | 5;

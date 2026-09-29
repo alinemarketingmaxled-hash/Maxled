@@ -118,6 +118,7 @@ export default async function DayPage({
                       <p className="text-[11px] text-fit-muted">
                         {i + 1}
                         {p.group ? ` · bi-set ${p.group}` : ""} · {MUSCLE_LABEL[p.muscle]}
+                        {p.isFocus && <span className="ml-1.5 rounded-full bg-fit-lime px-1.5 py-px text-[9px] font-bold text-fit-on-lime">FOCO</span>}
                       </p>
                       <p className="truncate text-sm font-semibold text-fit-accent">{p.name}</p>
                       <p className="text-xs text-fit-muted">

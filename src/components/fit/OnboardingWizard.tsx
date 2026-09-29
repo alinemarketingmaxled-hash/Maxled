@@ -15,6 +15,8 @@ import {
   TIME_LABEL,
   type Equipment,
   type FitAnswers,
+  type FocusLevel,
+  FOCUS_LEVEL_LABEL,
   type Goal,
   type Level,
   type Limitation,
@@ -49,6 +51,7 @@ const DEFAULTS: FitAnswers = {
   trainingAtHome: false,
   excludedExercises: [],
   favoriteExercises: [],
+  focusLevel: "moderado",
 };
 
 const GOAL_ICON: Record<Goal, typeof FlameI> = {
@@ -89,13 +92,23 @@ const STEP_TITLES = [
   "Resumo",
 ];
 
-export function OnboardingWizard({ initial, editing: editingProp, defaultName }: { initial: FitAnswers | null; editing: boolean; defaultName: string }) {
+export function OnboardingWizard({
+  initial,
+  editing: editingProp,
+  defaultName,
+  startAtFocus = false,
+}: {
+  initial: FitAnswers | null;
+  editing: boolean;
+  defaultName: string;
+  startAtFocus?: boolean;
+}) {
   // Frozen at mount: saving revalidates the page, which would otherwise flip
   // a first-time run into "editing" mode mid-celebration.
   const [editing] = useState(editingProp);
   const router = useRouter();
   const [a, setA] = useState<FitAnswers>(initial ?? { ...DEFAULTS, name: defaultName.split(" ")[0] ?? "" });
-  const [step, setStep] = useState(editing ? 1 : 0);
+  const [step, setStep] = useState(startAtFocus ? 9 : editing ? 1 : 0);
   const [restart, setRestart] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
@@ -419,13 +432,29 @@ export function OnboardingWizard({ initial, editing: editingProp, defaultName }:
 
         {step === 9 && (
           <Q title="Quer dar prioridade a alguma região?">
-            <p className="-mt-2 mb-3 text-xs text-fit-muted">Até 3. Esses músculos ganham séries e exercícios extras.</p>
+            <p className="-mt-2 mb-3 text-xs text-fit-muted">Escolha quantas quiser. Essas regiões ganham exercícios e séries extras.</p>
             <Chips
               all={Object.keys(MUSCLE_LABEL) as Muscle[]}
               selected={a.focusMuscles}
               label={(m) => MUSCLE_LABEL[m]}
-              onToggle={(m) => set("focusMuscles", toggle(a.focusMuscles, m, 3))}
+              onToggle={(m) => set("focusMuscles", toggle(a.focusMuscles, m))}
             />
+            {a.focusMuscles.length > 0 && (
+              <>
+                <Label>Quanto foco?</Label>
+                <Options
+                  value={a.focusLevel}
+                  onChange={(v) => set("focusLevel", v)}
+                  options={(Object.keys(FOCUS_LEVEL_LABEL) as FocusLevel[]).map((k) => ({ value: k, label: FOCUS_LEVEL_LABEL[k].label, hint: FOCUS_LEVEL_LABEL[k].hint }))}
+                  cols={1}
+                />
+                {a.focusMuscles.length > 4 && (
+                  <p className="mt-3 rounded-2xl bg-fit-lime-soft p-3 text-xs">
+                    Com {a.focusMuscles.length} regiões o foco é dividido entre elas ao longo da semana. Para sentir mais diferença, escolha até 3 ou 4.
+                  </p>
+                )}
+              </>
+            )}
           </Q>
         )}
 
@@ -483,7 +512,11 @@ export function OnboardingWizard({ initial, editing: editingProp, defaultName }:
               <Row k="Rotina" v={`${a.daysPerWeek}x/semana · ${a.sessionMinutes} min · ${TIME_LABEL[a.timeOfDay]}`} onEdit={() => setStep(6)} />
               <Row k="Equipamentos" v={a.equipment.length ? a.equipment.map((e) => EQUIPMENT_LABEL[e]).join(", ") : "Peso corporal"} onEdit={() => setStep(7)} />
               <Row k="Limitações" v={a.limitations.length ? a.limitations.map((l) => LIMITATION_LABEL[l]).join(", ") : "Nenhuma"} onEdit={() => setStep(8)} />
-              <Row k="Foco" v={a.focusMuscles.length ? a.focusMuscles.map((m) => MUSCLE_LABEL[m]).join(", ") : "Equilibrado"} onEdit={() => setStep(9)} />
+              <Row
+                k="Foco"
+                v={a.focusMuscles.length ? `${a.focusMuscles.map((m) => MUSCLE_LABEL[m]).join(", ")} · ${FOCUS_LEVEL_LABEL[a.focusLevel].label}` : "Equilibrado"}
+                onEdit={() => setStep(9)}
+              />
             </div>
             {editing && (
               <label className="mt-4 flex items-start gap-3 rounded-2xl bg-fit-card p-4 text-sm">
@@ -510,7 +543,13 @@ export function OnboardingWizard({ initial, editing: editingProp, defaultName }:
           >
             Continuar <ArrowRightI className="h-5 w-5" />
           </button>
-        ) : (
+        ) : null}
+        {step < last && editing && (
+          <button type="button" disabled={pending || !canNext} onClick={submit} className="mt-2 h-12 w-full rounded-full bg-fit-card font-semibold disabled:opacity-50">
+            {pending ? "Salvando..." : "Salvar agora"}
+          </button>
+        )}
+        {step < last ? null : (
           <button
             type="button"
             disabled={pending}

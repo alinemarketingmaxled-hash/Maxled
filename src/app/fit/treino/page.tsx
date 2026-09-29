@@ -146,17 +146,31 @@ function WeekTab({ ctx }: { ctx: Awaited<ReturnType<typeof loadFitContext>> }) {
       </div>
 
       <Card>
-        <SectionTitle>Séries por músculo na semana</SectionTitle>
+        <SectionTitle
+          action={
+            <Link href="/fit/comecar?etapa=foco" className="text-xs font-medium text-fit-accent">
+              Ajustar foco
+            </Link>
+          }
+        >
+          Séries por músculo na semana
+        </SectionTitle>
         <ul className="space-y-2">
-          {volume.map((v) => (
-            <li key={v.muscle} className="flex items-center gap-3 text-xs">
-              <span className="w-28 shrink-0 text-fit-muted">{v.label}</span>
-              <span className="h-2.5 flex-1 overflow-hidden rounded-full bg-fit-card-3">
-                <span className="block h-full rounded-full bg-fit-lime" style={{ width: `${(v.sets / maxSets) * 100}%` }} />
-              </span>
-              <span className="w-6 text-right font-semibold tabular-nums">{v.sets}</span>
-            </li>
-          ))}
+          {volume.map((v) => {
+            const focus = ctx.answers.focusMuscles.includes(v.muscle);
+            return (
+              <li key={v.muscle} className="flex items-center gap-3 text-xs">
+                <span className={`w-28 shrink-0 ${focus ? "font-semibold text-fit-ink" : "text-fit-muted"}`}>
+                  {v.label}
+                  {focus && <span className="ml-1 rounded-full bg-fit-lime px-1.5 py-px text-[9px] font-bold text-fit-on-lime">FOCO</span>}
+                </span>
+                <span className="h-2.5 flex-1 overflow-hidden rounded-full bg-fit-card-3">
+                  <span className={`block h-full rounded-full ${focus ? "bg-fit-lime" : "bg-fit-muted/60"}`} style={{ width: `${(v.sets / maxSets) * 100}%` }} />
+                </span>
+                <span className="w-6 text-right font-semibold tabular-nums">{v.sets}</span>
+              </li>
+            );
+          })}
         </ul>
         <p className="mt-3 text-[11px] text-fit-muted">Séries de músculos secundários contam como meia série.</p>
       </Card>

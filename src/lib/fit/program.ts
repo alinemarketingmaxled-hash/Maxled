@@ -1,6 +1,6 @@
 import { EXERCISES, canDo, getExercise, type Exercise, type Pattern } from "./exercises";
 import type { Adjustments } from "./bio";
-import type { Equipment, FitAnswers, Goal, Level, Muscle } from "./types";
+import type { Equipment, FitAnswers, FocusLevel, Goal, Level, Muscle } from "./types";
 import { MACHINES, MUSCLE_LABEL } from "./types";
 
 export type PhaseKind = "adaptacao" | "volume" | "intensidade" | "forca" | "metabolico" | "pico";
@@ -57,7 +57,13 @@ export function buildBlocks(goal: Goal, level: Level, totalWeeks: number): Block
   return blocks;
 }
 
-type Slot = { pattern: Pattern; muscle?: Muscle; priority: number };
+type Slot = {
+  pattern: Pattern;
+  muscle?: Muscle;
+  priority: number;
+  /** Added for a focus region: tried with fallback patterns (see FOCUS_PATTERNS). */
+  focus?: Muscle;
+};
 
 type DayTemplate = { key: string; title: string; focus: Muscle[]; slots: Slot[] };
 
@@ -203,6 +209,8 @@ export type PlannedExercise = {
   note: string | null;
   cues: string[];
   alternatives: { id: string; name: string }[];
+  /** Trains one of the user's focus regions. */
+  isFocus: boolean;
 };
 
 export type CardioBlock = { minutes: number; title: string; description: string; exerciseId: string | null };
@@ -368,6 +376,7 @@ function cardioFor(
     goal === "emagrecimento" ? 20 : goal === "condicionamento" ? 20 : goal === "recomposicao" ? 10 : goal === "saude" ? 10 : 0;
   if (phase === "metabolico") minutes += 5;
   if (answers.likesCardio) minutes += 5;
+  if (answers.focusMuscles.includes("cardio")) minutes += answers.focusLevel === "forte" ? 10 : answers.focusLevel === "moderado" ? 5 : 0;
   minutes += adj.cardioMinutes;
   if (deload) minutes = Math.round(minutes * 0.6);
   if (minutes <= 0) return null;
@@ -408,6 +417,92 @@ function warmupFor(t: DayTemplate, answers: FitAnswers): string[] {
   return list;
 }
 
+const FOCUS_EXTRA_SETS: Record<FocusLevel, number> = { leve: 1, moderado: 1, forte: 1 };
+
+/** Patterns that train each region, best first — a focus slot falls back
+ * down the list when the user lacks the equipment for the first. */
+const FOCUS_PATTERNS: Record<Muscle, Pattern[]> = {
+  peito: ["empurrar_h"],
+  costas: ["puxar_h", "puxar_v"],
+  ombros: ["isolado_ombro", "empurrar_v"],
+  biceps: ["isolado_braco"],
+  triceps: ["isolado_braco", "empurrar_h"],
+  quadriceps: ["isolado_perna", "agachar", "unilateral_perna"],
+  posterior: ["isolado_perna", "dobrar_quadril"],
+  gluteos: ["dobrar_quadril", "isolado_perna", "unilateral_perna"],
+  panturrilha: ["isolado_perna"],
+  core: ["core"],
+  cardio: ["condicionamento"],
+};
+
+const UPPER: Muscle[] = ["peito", "costas", "ombros", "biceps", "triceps"];
+const LOWER: Muscle[] = ["quadriceps", "posterior", "gluteos", "panturrilha"];
+/** Regions each kind of day can take extra work for. */
+function dayRegions(t: DayTemplate): Muscle[] {
+  const k = t.key.replace(/2$/, "");
+  if (k.startsWith("full") || k === "circuit") return [...UPPER, ...LOWER];
+  if (k.startsWith("upper")) return UPPER;
+  if (k.startsWith("lower") || k === "legs") return LOWER;
+  if (k === "push") return ["peito", "ombros", "triceps"];
+  if (k === "pull") return ["costas", "biceps", "ombros"];
+  return [];
+}
+
+/** Extra slots a day gets for the user's focus regions. Core, calves and
+ * cardio recover fast, so they can show up every day; the rest go on the
+ * days that already train that region. With many regions picked, they
+ * rotate across the week so each still gets its share. */
+function focusSlotsFor(t: DayTemplate, dayIndex: number, answers: FitAnswers): Slot[] {
+  if (answers.focusMuscles.length === 0 || t.key === "mobility") return [];
+  const level = answers.focusLevel;
+  const everyDay: Muscle[] = ["core", "panturrilha", "cardio"];
+  const regions = dayRegions(t);
+  const eligible = answers.focusMuscles.filter((m) => everyDay.includes(m) || regions.includes(m) || t.focus.includes(m));
+  if (eligible.length === 0) return [];
+  const perDay = level === "forte" ? 3 : level === "moderado" ? 2 : 0;
+  if (perDay === 0) return [];
+  const rot = dayIndex % eligible.length;
+  const ordered = [...eligible.slice(rot), ...eligible.slice(0, rot)];
+  const slots: Slot[] = [];
+  const perMuscle = level === "forte" ? 2 : 1;
+  for (let round = 0; round < perMuscle; round++) {
+    for (const m of ordered) {
+      if (slots.length >= perDay) break;
+      // A second exercise for the same region only on "forte" and only for
+      // regions this day is built around (or core/calves).
+      if (round === 1 && !t.focus.includes(m)) continue;
+      slots.push({ pattern: FOCUS_PATTERNS[m][0], muscle: m === "cardio" ? undefined : m, priority: level === "forte" ? 1.5 : 2.5, focus: m });
+    }
+  }
+  return slots;
+}
+
+/** "Prioridade máxima" trains the focus regions first, while fresh (core
+ * stays at the end so it doesn't tire the stabilizers for heavy lifts). */
+function orderWithFocus(base: Slot[], extra: Slot[], level: FocusLevel): Slot[] {
+  if (level !== "forte") return [...base, ...extra];
+  const early = extra.filter((s) => s.focus !== "core" && s.focus !== "cardio");
+  const late = extra.filter((s) => s.focus === "core" || s.focus === "cardio");
+  return [...early, ...base, ...late];
+}
+
+function pickFocusAware(
+  slot: Slot,
+  answers: FitAnswers,
+  owned: Set<Equipment>,
+  usedToday: Set<string>,
+  usedWeek: Map<string, number>,
+  seed: string,
+  goal: Goal,
+): ReturnType<typeof pickExercise> {
+  if (!slot.focus) return pickExercise(slot, answers, owned, usedToday, usedWeek, seed, goal);
+  for (const pattern of FOCUS_PATTERNS[slot.focus]) {
+    const pick = pickExercise({ ...slot, pattern }, answers, owned, usedToday, usedWeek, seed, goal);
+    if (pick) return pick;
+  }
+  return null;
+}
+
 /** Generates one week of training. Pure and deterministic: the same inputs
  * always produce the same plan, so the server can regenerate it on every
  * request (and the session player can trust exercise IDs). */
@@ -437,33 +532,15 @@ export function generateWeek(answers: FitAnswers, adj: Adjustments, week: number
   const days: DayPlan[] = templates.map((t, i) => {
     const usedToday = new Set<string>();
     const seed = `${t.key}|${block.index}|${answers.sex}`;
-    // Focus muscles get an extra isolation slot when possible.
-    const extra: Slot[] = answers.focusMuscles
-      .filter((m) => t.focus.includes(m) || t.key.startsWith("full"))
-      .slice(0, 2)
-      .map((m) => ({
-        pattern:
-          m === "peito"
-            ? "empurrar_h"
-            : m === "costas"
-              ? "puxar_h"
-              : m === "ombros"
-                ? "isolado_ombro"
-                : m === "biceps" || m === "triceps"
-                  ? "isolado_braco"
-                  : m === "core"
-                    ? "core"
-                    : m === "cardio"
-                      ? "condicionamento"
-                      : "isolado_perna",
-        muscle: m === "cardio" ? undefined : m,
-        priority: 3,
-      }));
+    const extra = focusSlotsFor(t, i, answers);
+    const slotsAll = orderWithFocus(t.slots, extra, answers.focusLevel);
 
     const planned: PlannedExercise[] = [];
-    for (const slot of [...t.slots, ...extra]) {
-      const pick = pickExercise(slot, answers, owned, usedToday, usedWeek, seed + planned.length, goal);
+    const plannedSlots: Slot[] = [];
+    for (const slot of slotsAll) {
+      const pick = pickFocusAware(slot, answers, owned, usedToday, usedWeek, seed + planned.length, goal);
       if (!pick) continue;
+      plannedSlots.push(slot);
       const ex = pick.chosen;
       usedToday.add(ex.id);
       usedWeek.set(ex.id, (usedWeek.get(ex.id) ?? 0) + 1);
@@ -475,10 +552,10 @@ export function generateWeek(answers: FitAnswers, adj: Adjustments, week: number
       let sets = isCompound ? params.compoundSets : params.isoSets;
       if (answers.level === "iniciante") sets = Math.min(sets, 3);
       if (answers.level === "avancado" && isCompound) sets += 1;
-      if (answers.focusMuscles.includes(ex.muscle) && !isCompound) sets += 1;
+      if (answers.focusMuscles.includes(ex.muscle)) sets += FOCUS_EXTRA_SETS[answers.focusLevel];
       sets = Math.round(sets * adj.volume);
       if (deload) sets = Math.max(1, Math.round(sets * 0.6));
-      sets = Math.min(5, Math.max(deload ? 1 : 2, sets));
+      sets = Math.min(ex.muscle === "core" || ex.muscle === "panturrilha" || !isCompound ? 4 : 5, Math.max(deload ? 1 : 2, sets));
       let rest = isCompound ? params.compoundRest : params.isoRest;
       if (adj.density) rest = Math.round(rest * 0.75);
       if (ex.pattern === "mobilidade") rest = 20;
@@ -505,6 +582,7 @@ export function generateWeek(answers: FitAnswers, adj: Adjustments, week: number
         note: note.join(" ") || null,
         cues: ex.cues,
         alternatives: pick.alternatives.map((a) => ({ id: a.id, name: a.name })),
+        isFocus: !!slot.focus || answers.focusMuscles.includes(ex.muscle),
       });
     }
 
@@ -528,8 +606,7 @@ export function generateWeek(answers: FitAnswers, adj: Adjustments, week: number
     // the plan least: extra isolation work, then cardio length, then sets
     // on accessories, then more exercises, and finally the cardio itself.
     const budget = answers.sessionMinutes;
-    const slotsAll = [...t.slots, ...extra];
-    let items = planned.map((p, idx) => ({ p, prio: slotsAll[idx]?.priority ?? 4, idx }));
+    let items = planned.map((p, idx) => ({ p, prio: plannedSlots[idx]?.priority ?? 4, idx }));
     let finalCardio = cardio;
     const minutesOf = () => 5 + 2 + (finalCardio?.minutes ?? 0) + items.reduce((acc, it) => acc + exerciseMinutes(it.p), 0);
     const dropOne = (minPrio: number, keep: number) => {
