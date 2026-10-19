@@ -437,7 +437,7 @@ details summary::-webkit-details-marker { color: var(--brand); }
 .toolbar button:hover { border-color: rgba(242,204,91,.55); background: rgba(242,204,91,.08); }
 .toolbar button.on { background: var(--grad); color: #1b1206; border-color: transparent; box-shadow: inset 0 1px 0 rgba(255,255,255,.5); }
 .toolbar button.on svg.i { color: #1b1206; }
-.view { padding-block: 22px 56px; }
+.view { padding-block: 22px 120px; }
 
 /* Lançamento de pedido no formato do IUVEN */
 .pedform { display: grid; gap: 14px; }
@@ -457,14 +457,31 @@ details summary::-webkit-details-marker { color: var(--brand); }
   .pf-head { grid-template-columns: repeat(2, minmax(0, 1fr)); } .pf-head .wide { grid-column: span 2; }
   .pf-entry { grid-template-columns: 1fr; } .pf-entry-l { grid-template-columns: repeat(2, minmax(0, 1fr)); } .pf-entry-l .wide { grid-column: span 2; }
 }
+
+/* Lançamento rápido */
+.sugwrap { position: relative; }
+.f .hint { font-weight: 500; color: var(--text-3); font-size: 11px; margin-left: 6px; }
+.sug { position: absolute; left: 0; right: 0; top: 100%; margin-top: 4px; z-index: 25; background: rgba(24, 22, 18, .98); border: 1px solid var(--border); border-radius: 12px; padding: 5px; box-shadow: 0 16px 36px rgba(0,0,0,.5); display: grid; }
+.sug[hidden] { display: none; }
+.sug button { display: grid; grid-template-columns: 130px minmax(0, 1fr) auto; gap: 10px; align-items: center; text-align: left; background: none; border: 0; color: var(--text); padding: 8px 10px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; }
+.sug button small { color: var(--text-3); font-size: 11.5px; white-space: nowrap; }
+.sug button.sel, .sug button:hover { background: rgba(242, 204, 91, .14); }
+.keys { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--text-3); }
+kbd { font-family: inherit; font-size: 11px; border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 5px; padding: 0 5px; margin-right: 3px; color: var(--text-2); }
+.btn kbd { border-color: rgba(27, 18, 6, .3); color: inherit; margin: 0 0 0 4px; }
+.repeat .btn { padding: 6px 10px; font-size: 12px; }
+.ticket { cursor: default; }
+.ticket .btn { justify-self: start; padding: 6px 10px; font-size: 12px; }
+.lane > .btn { padding: 6px 10px; font-size: 12px; }
+@media (max-width: 820px) { .sug button { grid-template-columns: 1fr; gap: 2px; } }
 </style>
 
-<header class="cbar classic">
+<header class="cbar">
   <div class="cbar-in">
     <div class="brand"><div class="brand-mark">M</div><div><b>MAX LED</b><small id="titleline">ERP integrado</small></div></div>
     <div class="cmd" id="cmdbox">
       <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-      <input id="cmd" type="search" autocomplete="off" placeholder="Buscar pedido, produto ou comando" aria-label="Buscar ou digitar um comando">
+      <input id="cmd" type="search" autocomplete="off" placeholder="Buscar pedido, produto, cliente ou função" aria-label="Buscar ou digitar um comando">
       <kbd>Ctrl K</kbd>
       <div class="cmd-res" id="cmdres" hidden></div>
     </div>
@@ -474,11 +491,9 @@ details summary::-webkit-details-marker { color: var(--brand); }
     </div>
     <div class="who" id="who"></div>
   </div>
-  <div class="menubar-wrap"><nav class="menubar" id="menubar" aria-label="Menu principal"></nav></div>
-  <div class="toolbar-wrap"><div class="toolbar" id="toolbar"></div></div>
 </header>
 <main class="view" id="view"></main>
-<nav id="nav" hidden></nav>
+<nav class="dock" id="nav" aria-label="Módulos"></nav>
 <div class="toast" id="toast" hidden></div>
 
 <script>
@@ -926,12 +941,12 @@ let menuActions = [];
 function renderMenus() {
   menuActions = [];
   const allowed = (mod) => mod === "*" || can(mod);
-  $("menubar").innerHTML = MENUS.filter(([, mod]) => allowed(mod)).map(([title, , items], mi) =>
+  if ($("menubar")) $("menubar").innerHTML = MENUS.filter(([, mod]) => allowed(mod)).map(([title, , items], mi) =>
     `<div class="mb" data-mb="${mi}"><button type="button" data-mbt="${mi}" aria-haspopup="true">${title}</button><div class="dd" role="menu">${items.map((it) => {
       if (it === "-") return "<hr>";
       menuActions.push(it[1]); return `<button type="button" role="menuitem" data-mi="${menuActions.length - 1}">${it[0]}${it[2] ? `<kbd>${it[2]}</kbd>` : ""}</button>`;
     }).join("")}</div></div>`).join("");
-  $("toolbar").innerHTML = TOOLBAR.filter(([, mod]) => can(mod)).map(([label, mod, ic, fn]) => {
+  if ($("toolbar")) $("toolbar").innerHTML = TOOLBAR.filter(([, mod]) => can(mod)).map(([label, mod, ic, fn]) => {
     menuActions.push(fn);
     const on = (label === "Pedido de Saída" && S.view === "pedidos") || (label === "Pedido de Entrada" && S.view === "compras") || (label === "Movimentação" && S.view === "estoque") || (label === "Painel" && S.view === "painel") || (S.view === "financeiro" && ((label === "Contas a Pagar" && S.tab === "pagar") || (label === "Contas a Receber" && S.tab !== "pagar")));
     return `<button type="button" class="${on ? "on" : ""}" data-mi="${menuActions.length - 1}">${icon(ic)}${label}</button>`;
@@ -963,11 +978,20 @@ function startDraft() {
   draft = { customer: custs[0]?.id, items: [], freight: 0, discount: 0, inst: 1, tipo: "PED", entrega: tomorrow.toISOString().slice(0, 10), tabela: "1", entry: { sku: "", qty: 1, disc: 0, price: 0, obs: "" } };
   S.composing = true; render(); setTimeout(() => $("e-sku")?.focus(), 0);
 }
-function includeItem() {
-  const e = draft.entry; const sku = e.sku.trim().toUpperCase(); const p = prod(sku);
+function includeItem(pickedSku) {
+  const e = draft.entry;
+  // O código é lido direto do campo (ou vem da lista de sugestões); aceita
+  // "texto*qtd" e acha o produto por parte do código ou do nome.
+  const typed = $("e-sku") ? $("e-sku").value : e.sku;
+  const [raw0, q] = typed.split("*"); const raw = pickedSku || raw0;
+  const qtyField = $("e-qty") ? Math.floor(+$("e-qty").value) : e.qty;
+  e.qty = q && +q > 0 ? Math.floor(+q) : (qtyField > 0 ? qtyField : 1);
+  let sku = raw.trim().toUpperCase(); let p = prod(sku);
+  if (!p && sku) { const m = C().products.filter((x) => matchWords(`${x.sku} ${x.name}`, raw.trim())); if (m.length === 1) { p = m[0]; sku = p.sku; e.price = 0; } else if (m.length > 1) throw new Error(`${m.length} produtos com "${raw.trim()}": escolha na lista.`); }
   if (!p) throw new Error(sku ? `Produto ${sku} não existe nesta empresa.` : "Informe o código do produto.");
   if (!(e.qty > 0)) throw new Error("Quantidade deve ser maior que zero.");
-  draft.items.push({ sku, qty: Math.floor(e.qty), price: +e.price || p.price, disc: +e.disc || 0, obs: e.obs.trim() });
+  const priceField = $("e-price") ? +$("e-price").value : 0;
+  draft.items.push({ sku, qty: Math.floor(e.qty), price: e.priceTyped && priceField > 0 ? priceField : p.price, disc: +($("e-disc")?.value || e.disc) || 0, obs: ($("e-obs")?.value ?? e.obs).trim() });
   draft.entry = { sku: "", qty: 1, disc: 0, price: 0, obs: "" };
   render(); setTimeout(() => $("e-sku")?.focus(), 0);
 }
@@ -978,19 +1002,21 @@ function vNovaCotacao() {
   const reasons = d.items.length ? approvalReasons(d) : [];
   const p = prod(e.sku.trim().toUpperCase());
   const today = new Date().toLocaleDateString("pt-BR");
-  return `<div class="card pedform"><h2>Lançar Pedido de Saída <small>Enter inclui o item</small></h2>
+  return `<div class="card pedform"><h2>Lançar Pedido de Saída</h2>
+    <div class="keys"><span><kbd>Enter</kbd> inclui item</span><span><kbd>↑</kbd><kbd>↓</kbd> escolhe na lista</span><span><kbd>F8</kbd> grava</span><span><kbd>F9</kbd> grava e envia</span><span><kbd>Esc</kbd> cancela</span><span><kbd>F2</kbd> novo pedido (de qualquer tela)</span></div>
     <div class="pf-head">
       <label class="f">Emissão<input value="${today}" readonly></label>
       <label class="f" for="e-tipo">Tipo<select id="e-tipo"><option value="PED" ${d.tipo === "PED" ? "selected" : ""}>PED · Pedido</option><option value="ORC" ${d.tipo === "ORC" ? "selected" : ""}>ORC · Orçamento</option></select></label>
       <label class="f">Empresa<input value="0${c.code === "A" ? 1 : 2}" readonly></label>
       <label class="f">Pedido<input value="${c.code}${String(c.seq).padStart(5, "0")}" readonly></label>
-      <label class="f wide" for="q-cust">Cliente<select id="q-cust">${custs.map((x) => `<option value="${x.id}" ${x.id === d.customer ? "selected" : ""}>${x.id.toUpperCase()} · ${esc(x.name)} · ${x.doc}</option>`).join("")}</select></label>
+      <label class="f wide sugwrap" for="c-find">Cliente <span class="hint">código, nome ou CNPJ</span><input id="c-find" autocomplete="off" value="${esc(cust(d.customer) ? `${d.customer.toUpperCase()} · ${cust(d.customer).name} · ${cust(d.customer).doc}` : "")}"><div class="sug" id="c-sug" hidden></div></label>
       <label class="f" for="e-entrega">Entrega<input id="e-entrega" type="date" value="${d.entrega}"></label>
       <label class="f" for="e-tabela">Tabela<select id="e-tabela"><option value="1">1 · Padrão</option></select></label>
     </div>
+    ${(() => { const last = c.orders.filter((o) => o.customer === d.customer && o.status !== "CANCELADO").slice(0, 3); return last.length ? `<div class="row repeat"><span class="note">Últimos pedidos deste cliente:</span>${last.map((o) => `<button class="btn ghost" data-repeat="${o.id}" title="Copia os itens para este pedido">${code(o)} · ${o.items.length} item(ns) · ${money(o.total)} · Repetir</button>`).join("")}</div>` : ""; })()}
     <div class="pf-entry">
       <div class="pf-entry-l">
-        <label class="f wide" for="e-sku">Código do Produto<input id="e-sku" list="skus" value="${esc(e.sku)}" placeholder="ex.: KIT-LED-25" autocomplete="off"><datalist id="skus">${c.products.map((x) => `<option value="${x.sku}">${esc(x.name)}</option>`).join("")}</datalist></label>
+        <label class="f wide sugwrap" for="e-sku">Código do Produto <span class="hint">digite parte do código ou nome · texto*qtd</span><input id="e-sku" value="${esc(e.sku)}" placeholder="ex.: kit led*3" autocomplete="off"><div class="sug" id="e-sug" hidden></div></label>
         <label class="f" for="e-qty">Quantidade<input id="e-qty" type="number" min="1" step="1" value="${e.qty}"></label>
         <label class="f" for="e-disc">% Desconto<input id="e-disc" type="number" min="0" max="100" step="0.5" value="${e.disc}"></label>
         <label class="f" for="e-price">Valor Unitário<input id="e-price" type="number" min="0" step="0.00001" value="${e.price || (p ? p.price : 0)}"></label>
@@ -1008,11 +1034,108 @@ function vNovaCotacao() {
         <label class="f" for="q-inst" style="width:110px">Parcelas<select id="q-inst">${[1, 2, 3, 4, 6].map((n) => `<option ${n === d.inst ? "selected" : ""}>${n}</option>`).join("")}</select></label>
         <div><div class="note">Total do pedido</div><div class="kpi"><div class="val num">${money(d.total)}</div></div></div>
       </div>
-      <div class="row"><button class="btn ghost" data-act="descartar">Cancelar</button><button class="btn" data-act="salvar" ${d.items.length ? "" : "disabled"}>${icon("check")}Gravar ${d.tipo === "ORC" ? "orçamento" : "pedido"}</button></div>
+      <div class="row"><button class="btn ghost" data-act="descartar">Cancelar</button><button class="btn ghost" data-act="salvar" ${d.items.length ? "" : "disabled"}>Gravar <kbd>F8</kbd></button><button class="btn" data-act="salvar-enviar" ${d.items.length ? "" : "disabled"}>${icon("check")}Gravar e enviar <kbd>F9</kbd></button></div>
     </div>
     ${reasons.length ? `<div class="alert warn">${icon("alert")}<span>Vai para aprovação: ${esc(reasons.join("; "))}.</span></div>` : d.items.length ? `<div class="alert good">${icon("check")}<span>Dentro dos limites: aprovado automaticamente ao enviar.</span></div>` : ""}
     <div id="err"></div>
   </div>`;
+}
+
+
+// ---------------------------------------------------------------------------
+// Lançamento rápido: sugestões ao digitar (produto e cliente), teclado em
+// tudo, repetir pedido anterior e gravar+enviar num passo só.
+// ---------------------------------------------------------------------------
+let sug = { box: null, items: [], sel: 0 };
+// Busca por palavras: "kit led" acha "KIT-LED-25 Kit 25 LEDs"; todas as palavras precisam aparecer.
+const matchWords = (text, q) => { const h = norm(text).replace(/[-_/]/g, " "); return norm(q).replace(/[-_/]/g, " ").split(/\s+/).filter(Boolean).every((w) => h.includes(w)); };
+function sugProducts(q) {
+  const t = norm(q.split("*")[0].trim()); if (!t) return [];
+  return C().products.filter((p) => matchWords(`${p.sku} ${p.name}`, t)).slice(0, 8)
+    .map((p) => ({ key: p.sku, html: `<b class="mono">${p.sku}</b><span>${esc(p.name)}</span><small>${money(p.price)} · disp. ${nf.format(avail(p))}</small>` }));
+}
+function sugCustomers(q) {
+  const t = norm(q).replace(/\D/g, "") && /^\d/.test(q.trim()) ? q.replace(/\D/g, "") : norm(q);
+  const list = role().own ? C().customers.filter((x) => x.seller === role().user) : C().customers;
+  return list.filter((c) => matchWords(`${c.id} ${c.name} ${c.city || ""}`, q) || (t && c.doc.replace(/\D/g, "").includes(t))).slice(0, 8)
+    .map((c) => ({ key: c.id, html: `<b class="mono">${c.id.toUpperCase()}</b><span>${esc(c.name)}</span><small>${c.doc} · ${esc(c.city || "")}</small>` }));
+}
+document.addEventListener("focusin", (ev) => { if (draft && ev.target.id === "c-find") ev.target.select(); });
+function showSug(input) {
+  const isProd = input.id === "e-sku"; const box = $(isProd ? "e-sug" : "c-sug");
+  sug = { box, items: isProd ? sugProducts(input.value) : sugCustomers(input.value), sel: 0, input };
+  if (!sug.items.length) { box.hidden = true; return; }
+  box.innerHTML = sug.items.map((it, i) => `<button type="button" data-sug="${i}" class="${i === 0 ? "sel" : ""}">${it.html}</button>`).join("");
+  box.hidden = false;
+}
+function hideSug() { if (sug.box) sug.box.hidden = true; sug.items = []; }
+function pickSug(i) {
+  const it = sug.items[i]; if (!it) return false;
+  if (sug.input.id === "e-sku") {
+    hideSug(); includeItem(it.key);
+  } else {
+    draft.customer = it.key; hideSug(); render(); setTimeout(() => $("e-sku")?.focus(), 0);
+  }
+  return true;
+}
+document.addEventListener("input", (ev) => { if (draft && (ev.target.id === "e-sku" || ev.target.id === "c-find")) showSug(ev.target); });
+document.addEventListener("mousedown", (ev) => { const b = ev.target.closest("[data-sug]"); if (b) { ev.preventDefault(); try { pickSug(+b.dataset.sug); } catch (e) { toast(e.message); } } });
+document.addEventListener("focusout", (ev) => {
+  const t = ev.target;
+  // Só fecha a lista do campo que perdeu o foco (não a do campo seguinte).
+  if (t.id === "e-sku" || t.id === "c-find") setTimeout(() => { if (sug.input === t && document.activeElement !== t) hideSug(); }, 150);
+});
+function saveDraft(andSend) {
+  const n = createOrder(draft.customer, role().user === "Aline" ? cust(draft.customer).seller : role().user, draft.items.map((i) => [i.sku, i.qty, i.price, i.disc]), { freight: draft.freight, inst: draft.inst });
+  S.composing = false; draft = null; S.orderId = n.id;
+  if (andSend) { try { submit(n); } catch (e) { toast(`Pedido gravado, mas não enviado: ${e.message}`); } }
+  render(); window.scrollTo(0, 0);
+}
+document.addEventListener("keydown", (ev) => {
+  // Navegação nas sugestões tem prioridade sobre os outros atalhos.
+  if (sug.items.length && sug.box && !sug.box.hidden && (ev.target.id === "e-sku" || ev.target.id === "c-find")) {
+    if (ev.key === "ArrowDown" || ev.key === "ArrowUp") {
+      ev.preventDefault(); sug.sel = (sug.sel + (ev.key === "ArrowDown" ? 1 : -1) + sug.items.length) % sug.items.length;
+      sug.box.querySelectorAll("button").forEach((b, i) => b.classList.toggle("sel", i === sug.sel)); return;
+    }
+    if (ev.key === "Enter") { ev.preventDefault(); ev.stopImmediatePropagation(); try { pickSug(sug.sel); } catch (e) { toast(e.message); } return; }
+    if (ev.key === "Escape") { ev.preventDefault(); hideSug(); return; }
+  }
+  if (ev.key === "F2") { ev.preventDefault(); if (can("pedidos")) newSale(); return; }
+  if (draft && (ev.key === "F8" || ev.key === "F9")) {
+    ev.preventDefault(); document.activeElement?.dispatchEvent(new Event("change", { bubbles: true }));
+    setTimeout(() => { if (!draft.items.length) return toast("Inclua ao menos um item."); try { saveDraft(ev.key === "F9"); } catch (e) { toast(e.message); } }, 20); return;
+  }
+  if (draft && ev.key === "Escape" && !document.querySelector(".mb.open")) { S.composing = false; draft = null; render(); }
+}, true);
+
+// Lote: emitir todas as NF-e pendentes com os dados fiscais padrão.
+function nfDefaults(o) {
+  const c = cust(o.customer); const inUf = ufOf(c) === EMIT_UF;
+  return {
+    order: o.id, natureza: "Venda de mercadoria", finalidade: "1 · Normal", serie: 1, numero: C().nf,
+    ie: "", endereco: c.city || "", email: "", consumidor: "0 · Não (revenda/empresa)",
+    items: o.items.map((i) => ({ sku: i.sku, name: prod(i.sku).name, ncm: prod(i.sku).ncm, cfop: inUf ? "5102" : "6102", cst: "102", qty: i.qty, sub: i.sub })),
+    modFrete: o.freight > 0 ? "0 · Por conta do emitente (CIF)" : "1 · Por conta do destinatário (FOB)", transp: "Correios", volumes: 1, peso: "",
+    pag: "15 · Boleto", obs: "Documento emitido em ambiente de homologação, sem valor fiscal.",
+  };
+}
+function emitAllPending() {
+  if (!["MEDIATOR", "FISCAL"].includes(S.role)) throw new Error("Seu perfil não emite NF-e.");
+  const pend = C().orders.filter((o) => FLOW.indexOf(o.status) >= 2 && o.status !== "CANCELADO" && !activeDoc(o));
+  let ok = 0; const fails = [];
+  pend.forEach((o) => { const d = nfDefaults(o); const errs = nfErrors(d); if (errs.length) { fails.push(`${code(o)}: ${errs[0]}`); return; } emitNF(o, true); activeDoc(o).fiscal = d; ok++; });
+  toast(`${ok} NF-e emitida(s)${fails.length ? `; ${fails.length} precisa(m) de ajuste` : ""}.`);
+  if (fails.length) S.batchErrors = fails;
+  render();
+}
+// Expedição: avançar um pedido ou a coluna inteira sem abrir cada um.
+const NEXT_STEP = { APROVADO: ["SEPARACAO", "Iniciar separação"], SEPARACAO: ["CONFERENCIA", "Concluir separação"], CONFERENCIA: ["PRONTO", "Conferir e embalar"], PRONTO: ["ENVIADO", "Despachar"], ENVIADO: ["ENTREGUE", "Confirmar entrega"] };
+function advanceMany(ids) {
+  let ok = 0; const fails = [];
+  ids.forEach((id) => { const o = C().orders.find((x) => x.id === id); const nx = NEXT_STEP[o.status]; if (!nx) return; try { advance(o, nx[0], true); ok++; } catch (e) { fails.push(`${code(o)}: ${e.message}`); } });
+  toast(`${ok} pedido(s) avançado(s)${fails.length ? `; ${fails.length} com pendência` : ""}.`);
+  S.batchErrors = fails.length ? fails : null; render();
 }
 
 function vPedido() {
@@ -1077,9 +1200,15 @@ function vEstoque() {
 }
 
 function vExpedicao() {
-  const cols = [["APROVADO", "Para separar", "c1"], ["SEPARACAO", "Em separação", "c3"], ["CONFERENCIA", "Em conferência", "c2"], ["PRONTO", "Prontos para expedir", "c4"], ["ENVIADO", "Aguardando entrega", "c1"]];
-  return head("Expedição", "Separação, conferência por outra pessoa, embalagem e despacho") +
-    `<div class="kanban">${cols.map(([s2, l, c]) => { const os = C().orders.filter((o) => o.status === s2); return `<div class="lane"><h3><span>${l}</span><span class="pill p-neutral">${os.length}</span></h3>${os.map((o) => `<button class="ticket" data-open="${o.id}"><span class="row" style="justify-content:space-between"><span class="link">${code(o)}</span><span class="num" style="font-weight:700">${money(o.total)}</span></span><span>${esc(cust(o.customer).name)}</span><small class="note">${o.items.length} item(ns)${s2 === "PRONTO" && !activeDoc(o) ? " · aguardando NF-e" : ""}${o.tracking ? ` · ${esc(o.tracking)}` : ""}</small></button>`).join("") || `<p class="note" style="margin:0">Nenhum pedido.</p>`}</div>`; }).join("")}</div>
+  const cols = [["APROVADO", "Para separar"], ["SEPARACAO", "Em separação"], ["CONFERENCIA", "Em conferência"], ["PRONTO", "Prontos para expedir"], ["ENVIADO", "Aguardando entrega"]];
+  const canMove = ["MEDIATOR", "STOCK"].includes(S.role);
+  return head("Expedição", "Separação, conferência, embalagem e despacho · avance um pedido ou a coluna inteira") +
+    (S.batchErrors && S.view === "expedicao" ? `<div class="alert warn">${icon("alert")}<span>${S.batchErrors.map(esc).join("<br>")}</span></div>` : "") +
+    `<div class="kanban">${cols.map(([s2, l]) => { const os = C().orders.filter((o) => o.status === s2); const nx = NEXT_STEP[s2];
+      return `<div class="lane"><h3><span>${l}</span><span class="pill p-neutral">${os.length}</span></h3>
+      ${canMove && os.length > 1 ? `<button class="btn ghost" data-advall="${s2}">${nx[1]}: todos (${os.length})</button>` : ""}
+      ${os.map((o) => `<div class="ticket"><span class="row" style="justify-content:space-between"><button class="link" data-open="${o.id}">${code(o)}</button><span class="num" style="font-weight:700">${money(o.total)}</span></span><span>${esc(cust(o.customer).name)}</span><small class="note">${o.items.length} item(ns)${s2 === "PRONTO" && !activeDoc(o) ? " · aguardando NF-e" : ""}${o.tracking ? ` · ${esc(o.tracking)}` : ""}</small>
+        ${canMove ? (s2 === "PRONTO" && !activeDoc(o) ? (["MEDIATOR","FISCAL"].includes(S.role) ? `<button class="btn ghost" data-nf="${o.id}">Emitir NF-e</button>` : "") : `<button class="btn" data-adv1="${o.id}">${nx[1]}</button>`) : ""}</div>`).join("") || `<p class="note" style="margin:0">Nenhum pedido.</p>`}</div>`; }).join("")}</div>
     <div class="alert warn">${icon("alert")}<span>O despacho só é liberado com NF-e autorizada e dá a baixa do estoque reservado uma única vez por item.</span></div>`;
 }
 
@@ -1089,7 +1218,7 @@ function vFiscal() {
   const pend = C().orders.filter((o) => FLOW.indexOf(o.status) >= 2 && o.status !== "CANCELADO" && !activeDoc(o));
   return head("Fiscal", "Ambiente de homologação · provedor: simulador (sem valor fiscal)") +
     `<div class="alert warn">${icon("alert")}<span>O provedor fiscal real e o certificado digital ainda precisam ser configurados. Até lá, as notas são emitidas só em homologação.</span></div>
-    <div class="card"><h2>Pendentes de emissão · ${pend.length}</h2>${pend.length ? `<div class="list">${pend.map((o) => `<div class="row" style="justify-content:space-between"><span><button class="link" data-open="${o.id}">${code(o)}</button> · ${esc(cust(o.customer).name)} · ${money(o.total)}</span>${["MEDIATOR","FISCAL"].includes(S.role) ? `<button class="btn" data-nf="${o.id}">${icon("fiscal")}Preencher e emitir NF-e</button>` : ""}</div>`).join("")}</div>` : `<p class="note">Nenhum pedido aprovado sem nota.</p>`}</div>` +
+    ${S.batchErrors && S.view === "fiscal" ? `<div class="alert warn">${icon("alert")}<span>Notas que precisam de ajuste antes de emitir:<br>${S.batchErrors.map(esc).join("<br>")}</span></div>` : ""}<div class="card"><h2>Pendentes de emissão · ${pend.length} ${pend.length >= 1 && ["MEDIATOR","FISCAL"].includes(S.role) ? `<button class="btn" data-act="nf-all">${icon("fiscal")}Emitir todas (${pend.length})</button>` : ""}</h2>${pend.length ? `<div class="list">${pend.map((o) => `<div class="row" style="justify-content:space-between"><span><button class="link" data-open="${o.id}">${code(o)}</button> · ${esc(cust(o.customer).name)} · ${money(o.total)}</span>${["MEDIATOR","FISCAL"].includes(S.role) ? `<button class="btn" data-nf="${o.id}">${icon("fiscal")}Preencher e emitir NF-e</button>` : ""}</div>`).join("")}</div>` : `<p class="note">Nenhum pedido aprovado sem nota.</p>`}</div>` +
     `<p class="note" style="margin:0">Clique no número da nota para ver o DANFE e o XML.</p>` + table([{ t: "NF-e" }, { t: "Pedido" }, { t: "Chave de acesso" }, { t: "Status" }, { t: "Total", r: 1 }, { t: "Autorizada em" }],
       C().docs.map((d) => { const o = C().orders.find((x) => x.id === d.order); return `<tr><td class="num"><button class="link" data-danfe="${d.id}">NF-e ${d.n}</button></td><td><button class="link" data-open="${o.id}">${code(o)}</button></td><td class="mono">${d.key}</td><td>${pill(["Autorizada", "p-good"])}</td><td class="r num">${money(d.total)}</td><td class="num">${d.when}</td></tr>`; }), "Nenhuma nota emitida.");
 }
@@ -1111,14 +1240,7 @@ function openNfForm(o) {
   if (!["MEDIATOR", "FISCAL"].includes(S.role)) throw new Error("Seu perfil não emite NF-e.");
   if (FLOW.indexOf(o.status) < 2 || o.status === "CANCELADO") throw new Error("A nota só pode ser emitida para pedido aprovado.");
   if (activeDoc(o)) throw new Error("Este pedido já tem NF-e autorizada.");
-  const c = cust(o.customer); const inUf = ufOf(c) === EMIT_UF;
-  nfDraft = {
-    order: o.id, natureza: "Venda de mercadoria", finalidade: "1 · Normal", serie: 1, numero: C().nf,
-    ie: "", endereco: c.city || "", email: "", consumidor: "0 · Não (revenda/empresa)",
-    items: o.items.map((i) => ({ sku: i.sku, name: prod(i.sku).name, ncm: prod(i.sku).ncm, cfop: inUf ? "5102" : "6102", cst: "102", qty: i.qty, sub: i.sub })),
-    modFrete: o.freight > 0 ? "0 · Por conta do emitente (CIF)" : "1 · Por conta do destinatário (FOB)", transp: "Correios", volumes: 1, peso: "",
-    pag: "15 · Boleto", obs: "Documento emitido em ambiente de homologação, sem valor fiscal.",
-  };
+  nfDraft = nfDefaults(o);
   S.view = "fiscal"; S.orderId = null; S.danfe = null; render(); window.scrollTo(0, 0);
 }
 function nfErrors(d) {
@@ -1387,7 +1509,7 @@ function vPortal() {
 // Eventos
 // ---------------------------------------------------------------------------
 function err(e) { const box = $("err"); if (box) box.innerHTML = `<div class="alert bad" style="margin-top:10px">${esc(e.message)}</div>`; else toast(e.message); }
-function go(view) { S.view = view; S.orderId = null; S.tab = null; S.composing = false; S.danfe = null; S.impView = null; nfDraft = null; impDraft = null; render(); window.scrollTo(0, 0); }
+function go(view) { S.batchErrors = null; S.view = view; S.orderId = null; S.tab = null; S.composing = false; S.danfe = null; S.impView = null; nfDraft = null; impDraft = null; render(); window.scrollTo(0, 0); }
 
 document.addEventListener("click", (ev) => {
   const t = ev.target.closest("button, tr[data-open]"); if (!t) return;
@@ -1398,8 +1520,13 @@ document.addEventListener("click", (ev) => {
     if (ds.open || t.closest("[data-open]")) { const id = ds.open || t.closest("[data-open]").dataset.open; S.view = "pedidos"; S.orderId = id; S.composing = false; render(); return window.scrollTo(0, 0); }
     if (ds.act === "novo") { return startDraft(); }
     if (ds.act === "e-add") { return includeItem(); }
+    if (ds.act === "salvar-enviar") { return saveDraft(true); }
+    if (ds.repeat) { const src = C().orders.find((x) => x.id === ds.repeat); draft.items = src.items.map((i) => ({ sku: i.sku, qty: i.qty, price: prod(i.sku).price, disc: 0, obs: "" })); toast(`Itens de ${code(src)} copiados com o preço de tabela atual.`); return render(); }
+    if (ds.act === "nf-all") { return emitAllPending(); }
+    if (ds.adv1) { return advanceMany([ds.adv1]); }
+    if (ds.advall) { return advanceMany(C().orders.filter((o) => o.status === ds.advall).map((o) => o.id)); }
     if (ds.act === "descartar") { S.composing = false; draft = null; return render(); }
-    if (ds.act === "salvar") { const n = createOrder(draft.customer, role().user === "Aline" ? cust(draft.customer).seller : role().user, draft.items.map((i) => [i.sku, i.qty, i.price, i.disc]), { freight: draft.freight, inst: draft.inst }); S.composing = false; draft = null; S.orderId = n.id; return render(); }
+    if (ds.act === "salvar") { return saveDraft(false); }
     if (ds.rm !== undefined) { draft.items.splice(+ds.rm, 1); return render(); }
     if (ds.act === "voltar") { S.orderId = null; return render(); }
     if (ds.o === "submit") { submit(o); return render(); }
@@ -1433,6 +1560,8 @@ document.addEventListener("click", (ev) => {
 });
 document.addEventListener("change", (ev) => {
   const el = ev.target;
+  // Campo já substituído por um redesenho: o valor antigo não vale mais.
+  if (!el.isConnected) return;
   if (el.id === "company" || el.id === "role") { S.danfe = null; S.impView = null; nfDraft = null; impDraft = null; }
   if (el.id === "company") { S.company = el.value; S.orderId = null; S.composing = false; S.tab = null; toast(`Empresa ${el.value} ativa: telas da empresa anterior foram fechadas.`); return render(); }
   if (el.id === "role") { S.role = el.value; S.orderId = null; S.composing = false; S.tab = null; if (S.role === "CUSTOMER") S.view = "portal"; return render(); }
@@ -1458,14 +1587,14 @@ document.addEventListener("change", (ev) => {
   }
   if (draft && el.id?.startsWith("e-")) {
     const e = draft.entry;
-    if (el.id === "e-sku") { e.sku = el.value.trim().toUpperCase(); const p = prod(e.sku); if (p) e.price = p.price; }
+    if (el.id === "e-sku") return; // lido na hora de incluir; redesenhar aqui perderia o que foi digitado
     if (el.id === "e-qty") e.qty = Math.max(1, Math.floor(+el.value) || 1);
     if (el.id === "e-disc") e.disc = Math.min(100, Math.max(0, +el.value || 0));
-    if (el.id === "e-price") e.price = Math.max(0, +el.value || 0);
+    if (el.id === "e-price") { e.price = Math.max(0, +el.value || 0); e.priceTyped = true; }
     if (el.id === "e-obs") e.obs = el.value;
-    if (el.id === "e-tipo") draft.tipo = el.value;
     if (el.id === "e-entrega") draft.entrega = el.value;
-    return setTimeout(() => { const f = document.activeElement?.id; render(); if (f) $(f)?.focus(); }, 0);
+    if (el.id === "e-tipo") { draft.tipo = el.value; setTimeout(render, 0); }
+    return;
   }
   if (!draft || el.id === "q-sku") return;
   if (el.id === "q-cust") { draft.customer = el.value; }
@@ -1477,8 +1606,7 @@ document.addEventListener("change", (ev) => {
 });
 document.addEventListener("keydown", (ev) => {
   if (draft && ["e-sku", "e-qty", "e-disc", "e-price"].includes(ev.target.id) && ev.key === "Enter") {
-    ev.preventDefault(); const el = ev.target; el.dispatchEvent(new Event("change", { bubbles: true }));
-    setTimeout(() => { try { includeItem(); } catch (e) { toast(e.message); } }, 10); return;
+    ev.preventDefault(); try { includeItem(); } catch (e) { toast(e.message); } return;
   }
   if (ev.target.id !== "q-sku" || ev.key !== "Enter") return;
   ev.preventDefault();
@@ -1507,7 +1635,10 @@ function buildCmd(q) {
     out.push({ g: "Sugestões", label: "Lançar Pedido de Saída", hint: "comando", run: () => newSale() });
     const pendO = C().orders.find((o) => o.status === "AGUARDANDO");
     if (pendO) out.push({ g: "Sugestões", label: `Aprovar ${code(pendO)}`, hint: "aguardando aprovação", run: () => runCmd(`aprovar ${code(pendO)}`) });
-    MODULES.filter(([k]) => can(k)).slice(0, 6).forEach(([k, l]) => out.push({ g: "Módulos", label: l, hint: "abrir", run: () => go(k) }));
+    [["Pedido de Saída", "Consultar Pedidos"], ["A Receber", "Baixa de Contas a Receber"], ["A Pagar", "Baixa de Contas a Pagar"], ["Movimentação", "NF-e / NFC-e / SAT"], ["Pedido de Entrada", "Lançar Pedido de Entrada"]].forEach(([m, l]) => {
+      const menu = MENUS.find((x) => x[0] === m); const it = menu && menu[2].find((x) => x !== "-" && x[0] === l);
+      if (it && (menu[1] === "*" || can(menu[1]))) out.push({ g: "Funções", label: l, hint: m, run: it[1] });
+    });
     return out;
   }
   const verb = t.split(/\s+/)[0];
@@ -1519,6 +1650,10 @@ function buildCmd(q) {
   if (can("compras") && (t.includes("import") || t.includes("invoice"))) out.push({ g: "Comando", label: "Nova importação (invoice)", hint: "compras", run: () => { go("compras"); newImpDraft(); } });
   if (verb.startsWith("nova") || verb.startsWith("novo") || t.includes("cotacao")) out.push({ g: "Comando", label: "Lançar Pedido de Saída", hint: "comando", run: () => newSale() });
   MODULES.filter(([k, l]) => can(k) && norm(l).includes(t)).forEach(([k, l]) => out.push({ g: "Módulos", label: l, hint: "abrir", run: () => go(k) }));
+  // Funções com os nomes do sistema atual (IUVEN): "baixa contas a pagar", "lançar pedido de saída"...
+  MENUS.filter(([, mod]) => mod === "*" || can(mod)).forEach(([menu, , items]) => items.forEach((it) => {
+    if (it !== "-" && matchWords(`${menu} ${it[0]}`, q)) out.push({ g: "Funções", label: it[0], hint: menu + (it[2] ? ` · ${it[2]}` : ""), run: it[1] });
+  }));
   if (can("pedidos")) visibleOrders().filter((x) => norm(`${code(x)} ${cust(x.customer).name}`).includes(t.replace(/^abrir\s+/, ""))).slice(0, 5)
     .forEach((x) => out.push({ g: "Pedidos", label: `${code(x)} · ${cust(x.customer).name}`, hint: STATUS[x.status][0], run: () => { S.view = "pedidos"; S.orderId = x.id; render(); } }));
   if (can("produtos")) C().products.filter((p) => norm(`${p.sku} ${p.name}`).includes(t)).slice(0, 5)
