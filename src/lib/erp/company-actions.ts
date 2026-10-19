@@ -2,6 +2,7 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { COMPANY_COOKIE, userHasCompany } from "@/lib/erp/company";
 
@@ -20,4 +21,8 @@ export async function setActiveCompany(companyId: string) {
     path: "/",
     maxAge: 60 * 60 * 24 * 365,
   });
+  // Limpa todo o cache de navegação do cliente (staleTimes de 30s em
+  // next.config): nenhuma tela já visitada pode reaparecer com dados da
+  // empresa anterior.
+  revalidatePath("/", "layout");
 }

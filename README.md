@@ -1,8 +1,12 @@
-# Maxled CRM
+# Maxled CRM + ERP
 
-Gold-and-black CRM for Maxled's sales team. Full product spec at
-[`docs/CRM-SPEC.md`](docs/CRM-SPEC.md); a static visual mockup of the design
-system at [`design/dashboard-mockup.html`](design/dashboard-mockup.html).
+Gold-and-black CRM for Maxled's sales team, extended into the **MAX LED ERP**
+(multiempresa: pedidos, estoque, kits, expedição, compras/importação, fiscal,
+financeiro, Mercado Livre, e-mails, portal do cliente, relatórios). CRM spec at
+[`docs/CRM-SPEC.md`](docs/CRM-SPEC.md); ERP architecture, permissions, business
+rules, integrations and backup/restore procedure at [`docs/ERP.md`](docs/ERP.md);
+a static visual mockup of the design system at
+[`design/dashboard-mockup.html`](design/dashboard-mockup.html).
 
 Stack: Next.js (App Router, TypeScript), Tailwind CSS v4, Prisma 7 +
 PostgreSQL, NextAuth.
@@ -23,7 +27,13 @@ PostgreSQL, NextAuth.
    ```bash
    npx prisma migrate dev
    ```
-4. Run the dev server:
+4. (Optional) Load development/homologation data — test companies, products,
+   a kit and one user per ERP profile (password `maxled123`):
+   ```bash
+   npx prisma db seed
+   npm run erp:selftest   # end-to-end check of the ERP core rules
+   ```
+5. Run the dev server:
    ```bash
    npm run dev
    ```
