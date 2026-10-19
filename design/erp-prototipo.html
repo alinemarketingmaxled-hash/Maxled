@@ -334,35 +334,66 @@ tr.click:hover td { background: rgba(255,255,255,.04); }
 .btn.ghost { background: rgba(255,255,255,.04); color: #f2cc5b; border: 1px solid rgba(242,204,91,.45); box-shadow: none; text-shadow: none; }
 .btn.ghost:hover { background: var(--grad-soft); border-color: #f2cc5b; }
 .btn.danger { background: var(--bad-soft); color: var(--bad); border: 1px solid rgba(255,133,133,.35); box-shadow: none; text-shadow: none; }
+
+/* ===== Layout com menu no topo ===== */
+.topbar {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10;
+  background: rgba(15, 14, 12, .62); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--border);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.tb-row { max-width: 1280px; margin: 0 auto; display: flex; align-items: center; gap: 16px; padding-block: 12px; }
+.topbar .search { max-width: 340px; }
+.topbar .ctx { display: flex; gap: 10px; margin-left: auto; background: none; border: 0; padding: 0; }
+.topbar .ctx label { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--text-3); white-space: nowrap; }
+.topbar .ctx select { width: auto; max-width: 220px; border-radius: 10px; }
+.topbar .who { margin-left: 0; }
+.tb-nav.side {
+  position: static; transform: none; width: auto; height: auto; overflow: visible; display: block;
+  background: none; border: 0; padding: 0; backdrop-filter: none; box-shadow: none;
+}
+.tb-nav .nav { max-width: 1280px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 4px; padding-block: 0 10px; }
+.tb-nav .nav button { padding: 8px 11px; font-size: 13px; border-radius: 10px; gap: 8px; }
+.ctx-m { display: none; }
+.view { padding-block: 28px 56px; }
+.wrap { max-width: 1280px; }
+.burger { display: none; margin-left: auto; }
+@media (max-width: 1180px) { .topbar .search { display: none; } }
+@media (max-width: 900px) {
+  .topbar .ctx, .topbar .who-name { display: none; }
+  .burger { display: grid; }
+  .topbar .who { margin-left: auto; }
+  .topbar .burger { margin-left: 0; }
+  .tb-nav.side { display: none; }
+  .tb-nav.side.open { display: block; padding-bottom: 12px; }
+  .tb-nav .nav { flex-direction: column; flex-wrap: nowrap; }
+  .tb-nav .nav button { padding: 11px 12px; font-size: 14px; }
+  .ctx-m { display: grid; gap: 10px; padding-top: 12px; }
+  .ctx-m label { display: grid; gap: 5px; font-size: 12px; font-weight: 600; color: var(--text-3); }
+  .ctx-m select { width: 100%; background: rgba(0,0,0,.3); border: 1px solid var(--border); color: var(--text); border-radius: 10px; padding: 9px; }
+}
 </style>
 
-<div class="app">
-  <aside class="side" id="side" aria-label="Menu">
+<header class="topbar">
+  <div class="tb-row">
     <div class="brand"><div class="brand-mark">M</div><div><b>MAX LED</b><small>ERP integrado</small></div></div>
+    <div class="search"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Buscar pedidos, clientes, SKUs...</div>
     <div class="ctx">
-      <label for="company">Empresa
-        <select id="company"></select>
-      </label>
-      <label for="role">Ver como (perfil)
-        <select id="role"></select>
-      </label>
+      <label for="company">Empresa<select id="company"></select></label>
+      <label for="role">Ver como<select id="role"></select></label>
     </div>
-    <div>
-      <div class="nav-sec">MENU</div>
-      <nav class="nav" id="nav"></nav>
-    </div>
-    <div class="side-foot">Protótipo com dados de exemplo. Recarregar a página volta ao início.</div>
-  </aside>
-  <div class="main">
-    <header class="top">
-      <button class="burger" id="burger" aria-label="Abrir menu"><svg class="i" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
-      <div class="search"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Buscar pedidos, clientes, SKUs...</div>
-      <span class="demo-tag">Homologação</span>
-      <div class="who" id="who"></div>
-    </header>
-    <main class="view" id="view"></main>
+    <div class="who" id="who"></div>
+    <button class="burger" id="burger" aria-label="Abrir menu"><svg class="i" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
   </div>
-</div>
+  <div class="tb-nav side" id="side">
+    <nav class="nav" id="nav" aria-label="Módulos"></nav>
+    <div class="ctx-m">
+      <label for="company-m">Empresa<select id="company-m"></select></label>
+      <label for="role-m">Ver como<select id="role-m"></select></label>
+    </div>
+  </div>
+</header>
+<main class="view" id="view"></main>
 <div class="toast" id="toast" hidden></div>
 
 <script>
@@ -381,9 +412,9 @@ const ROLES = {
   CUSTOMER: { label: "Cliente (portal)", user: "Distribuidora Sul", mods: ["portal"] },
 };
 const MODULES = [
-  ["painel", "Painel"], ["pedidos", "Cotações e pedidos"], ["produtos", "Produtos e kits"], ["estoque", "Estoque"],
-  ["expedicao", "Expedição"], ["compras", "Compras e importação"], ["fiscal", "Fiscal"], ["financeiro", "Financeiro"],
-  ["mercadolivre", "Mercado Livre"], ["relatorios", "Relatórios"], ["portal", "Portal do cliente"],
+  ["painel", "Painel"], ["pedidos", "Pedidos"], ["produtos", "Produtos"], ["estoque", "Estoque"],
+  ["expedicao", "Expedição"], ["compras", "Compras"], ["fiscal", "Fiscal"], ["financeiro", "Financeiro"],
+  ["mercadolivre", "Mercado Livre"], ["relatorios", "Relatórios"], ["portal", "Portal"],
 ];
 const ICON_PATHS = {
   painel: '<rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/>',
@@ -626,7 +657,9 @@ const seeCosts = () => ["MEDIATOR", "MANAGER", "FINANCE", "FISCAL"].includes(S.r
 function renderShell() {
   $("company").innerHTML = Object.values(S.companies).map((c) => `<option value="${c.code}" ${c.code === S.company ? "selected" : ""}>${c.code} · ${esc(c.name)}</option>`).join("");
   $("company").disabled = S.role === "CUSTOMER";
+  $("company-m").innerHTML = $("company").innerHTML;
   $("role").innerHTML = Object.entries(ROLES).map(([k, r]) => `<option value="${k}" ${k === S.role ? "selected" : ""}>${esc(r.label)}</option>`).join("");
+  $("role-m").innerHTML = $("role").innerHTML;
   const pend = C().orders.filter((o) => o.status === "AGUARDANDO").length;
   $("nav").innerHTML = MODULES.filter(([k]) => can(k)).map(([k, l]) =>
     `<button data-go="${k}" class="${S.view === k ? "on" : ""}">${icon(k)}${esc(l)}${k === "pedidos" && pend && (role().approve || S.role === "MEDIATOR") ? `<span class="count" title="aguardando aprovação">${pend}</span>` : ""}</button>`).join("");
@@ -931,6 +964,7 @@ document.addEventListener("click", (ev) => {
 });
 document.addEventListener("change", (ev) => {
   const el = ev.target;
+  if (el.id === "company-m" || el.id === "role-m") { const main = $(el.id.slice(0, -2)); main.value = el.value; main.dispatchEvent(new Event("change", { bubbles: true })); return; }
   if (el.id === "company") { S.company = el.value; S.orderId = null; S.composing = false; S.tab = null; toast(`Empresa ${el.value} ativa: telas da empresa anterior foram fechadas.`); return render(); }
   if (el.id === "role") { S.role = el.value; S.orderId = null; S.composing = false; S.tab = null; if (S.role === "CUSTOMER") S.view = "portal"; return render(); }
   if (!draft || el.id === "q-sku") return;
