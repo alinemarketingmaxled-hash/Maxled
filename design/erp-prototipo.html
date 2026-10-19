@@ -415,11 +415,53 @@ td select { border: 1px solid var(--border); background: rgba(0,0,0,.25); color:
 .danfe .dz-tab td { padding: 6px 8px; border-bottom: 1px solid #e3dfd4; color: #1a1a1a; }
 details summary::-webkit-details-marker { color: var(--brand); }
 @media (max-width: 760px) { .dz-head, .dz-row { grid-template-columns: 1fr; } .danfe { overflow-x: auto; } }
+
+/* ===== Layout clássico (como o IUVEN): menus suspensos + atalhos ===== */
+.cbar.classic { position: sticky; }
+.cbar.classic .cbar-in { padding-block: 10px 8px; }
+.brand small#titleline { max-width: 340px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.menubar-wrap, .toolbar-wrap { max-width: 1280px; margin: 0 auto; }
+.menubar { display: flex; flex-wrap: wrap; gap: 2px; border-top: 1px solid var(--border); padding-top: 4px; }
+.mb { position: relative; }
+.mb > button { white-space: nowrap; background: none; border: 0; color: var(--text-2); padding: 7px 11px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; }
+.mb > button:hover, .mb.open > button { background: rgba(242,204,91,.12); color: var(--text); }
+.mb .dd { position: absolute; top: calc(100% + 4px); left: 0; min-width: 250px; z-index: 30; background: rgba(24, 22, 18, .97); border: 1px solid var(--border); border-radius: 12px; padding: 6px; box-shadow: 0 18px 40px rgba(0,0,0,.5); display: none; }
+.mb.open .dd { display: grid; }
+.mb .dd button { display: flex; align-items: center; justify-content: space-between; gap: 16px; text-align: left; background: none; border: 0; color: var(--text); padding: 8px 10px; border-radius: 8px; cursor: pointer; font-size: 13px; white-space: nowrap; }
+.mb .dd button:hover, .mb .dd button:focus-visible { background: var(--grad); color: #1b1206; outline: none; }
+.mb .dd button kbd { font-family: inherit; font-size: 11px; opacity: .7; }
+.mb .dd hr { border: 0; border-top: 1px solid var(--border); margin: 4px 6px; }
+.toolbar { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-block: 8px 10px; }
+.toolbar button { flex: 1 0 auto; display: flex; align-items: center; justify-content: center; gap: 8px; background: rgba(255,255,255,.05); border: 1px solid var(--border); color: var(--text); padding: 10px 14px; border-radius: 12px; cursor: pointer; font-size: 13px; font-weight: 600; white-space: nowrap; }
+.toolbar button svg.i { color: #f2cc5b; }
+.toolbar button:hover { border-color: rgba(242,204,91,.55); background: rgba(242,204,91,.08); }
+.toolbar button.on { background: var(--grad); color: #1b1206; border-color: transparent; box-shadow: inset 0 1px 0 rgba(255,255,255,.5); }
+.toolbar button.on svg.i { color: #1b1206; }
+.view { padding-block: 22px 56px; }
+
+/* Lançamento de pedido no formato do IUVEN */
+.pedform { display: grid; gap: 14px; }
+.pf-head { display: grid; grid-template-columns: 130px 110px 90px 140px minmax(0, 1fr) 150px 120px; gap: 12px; align-items: end; }
+.pf-entry { display: grid; grid-template-columns: minmax(0, 1fr) 200px; gap: 16px; }
+.pf-entry-l { display: grid; grid-template-columns: minmax(0, 2fr) 120px 110px 140px; gap: 12px; align-content: start; }
+.pf-photo { border: 1px dashed var(--border); border-radius: 14px; display: grid; place-items: center; text-align: center; padding: 14px; color: var(--text-3); font-size: 12px; min-height: 170px; gap: 6px; }
+.pf-photo svg { width: 46px; height: 46px; stroke: var(--text-3); fill: none; stroke-width: 1.4; }
+.pf-photo b { color: var(--text); font-size: 13px; }
+.f input[readonly] { opacity: .75; }
+@media (max-width: 1500px) { .cbar .who-name { display: none; } }
+@media (max-width: 820px) { .cbar.classic { position: static; } }
+@media (max-width: 1100px) { .pf-head { grid-template-columns: repeat(4, minmax(0, 1fr)); } .pf-head .wide { grid-column: span 4; } }
+@media (max-width: 820px) {
+  .menubar { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .mb .dd { position: fixed; left: 12px; right: 12px; top: auto; min-width: 0; }
+  .pf-head { grid-template-columns: repeat(2, minmax(0, 1fr)); } .pf-head .wide { grid-column: span 2; }
+  .pf-entry { grid-template-columns: 1fr; } .pf-entry-l { grid-template-columns: repeat(2, minmax(0, 1fr)); } .pf-entry-l .wide { grid-column: span 2; }
+}
 </style>
 
-<header class="cbar">
+<header class="cbar classic">
   <div class="cbar-in">
-    <div class="brand"><div class="brand-mark">M</div><div><b>MAX LED</b><small>ERP integrado</small></div></div>
+    <div class="brand"><div class="brand-mark">M</div><div><b>MAX LED</b><small id="titleline">ERP integrado</small></div></div>
     <div class="cmd" id="cmdbox">
       <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
       <input id="cmd" type="search" autocomplete="off" placeholder="Buscar pedido, produto ou comando" aria-label="Buscar ou digitar um comando">
@@ -432,9 +474,11 @@ details summary::-webkit-details-marker { color: var(--brand); }
     </div>
     <div class="who" id="who"></div>
   </div>
+  <div class="menubar-wrap"><nav class="menubar" id="menubar" aria-label="Menu principal"></nav></div>
+  <div class="toolbar-wrap"><div class="toolbar" id="toolbar"></div></div>
 </header>
 <main class="view" id="view"></main>
-<nav class="dock" id="nav" aria-label="Módulos"></nav>
+<nav id="nav" hidden></nav>
 <div class="toast" id="toast" hidden></div>
 
 <script>
@@ -605,7 +649,7 @@ function createOrder(cid, seller, items, opts, silent) {
     inst: opts.inst || 1, events: [], created: now(), carrier: "", tracking: "",
   };
   totals(o); c.orders.unshift(o); log(o, "Cotação criada");
-  if (!silent) toast(`Cotação ${code(o)} criada.`);
+  if (!silent) toast(`Pedido ${code(o)} gravado.`);
   return o;
 }
 function log(o, msg) { o.events.unshift({ when: now(), who: role().user, msg }); }
@@ -702,6 +746,7 @@ function renderShell() {
   const pend = C().orders.filter((o) => o.status === "AGUARDANDO").length;
   $("nav").innerHTML = MODULES.filter(([k]) => can(k)).map(([k, l]) =>
     `<button data-go="${k}" class="${S.view === k ? "on" : ""}" aria-label="${esc(l)}">${icon(k)}<span class="tip">${esc(l)}</span>${k === "pedidos" && pend && (role().approve || S.role === "MEDIATOR") ? `<span class="count" title="aguardando aprovação">${pend}</span>` : ""}</button>`).join("");
+  renderMenus();
   $("who").innerHTML = `<span class="who-name" style="text-align:right"><b>${esc(role().user)}</b>${esc(role().label)} · empresa ${C().code}</span>${avatar(role().user)}`;
 }
 function render() {
@@ -801,7 +846,7 @@ function vPedidos() {
   const labels = { todos: "Todos", cotacoes: "Cotações", aprovacao: "Aguardando aprovação", andamento: "Em andamento", enviados: "Enviados/entregues", cancelados: "Cancelados" };
   const os = visibleOrders();
   const canEdit = ["MEDIATOR","MANAGER","SALES_MANAGER","SELLER"].includes(S.role);
-  return head("Cotações e pedidos", `${esc(C().name)}${role().own ? " · sua carteira" : ""}`, canEdit ? `<button class="btn" data-act="novo">${icon("plus")}Nova cotação</button>` : "") +
+  return head("Cotações e pedidos", `${esc(C().name)}${role().own ? " · sua carteira" : ""}`, canEdit ? `<button class="btn" data-act="novo">${icon("plus")}Lançar Pedido de Saída</button>` : "") +
     `<div class="tabs">${Object.keys(groups).map((k) => `<button data-tab="${k}" class="${tab === k ? "on" : ""}">${labels[k]} <span class="num">${os.filter(groups[k]).length}</span></button>`).join("")}</div>` +
     (S.composing ? vNovaCotacao() : "") +
     table([{ t: "Número" }, { t: "Cliente" }, { t: "Vendedor" }, { t: "Canal" }, { t: "Status" }, { t: "Total", r: 1 }, { t: "Criado" }],
@@ -809,29 +854,165 @@ function vPedidos() {
       "Nenhum pedido nesta aba.");
 }
 let draft = null;
+
+// ---------------------------------------------------------------------------
+// Menus no mesmo formato do IUVEN (sistema atual da empresa): os nomes e a
+// ordem seguem o que a equipe já conhece; cada item abre a tela equivalente.
+// ---------------------------------------------------------------------------
+const soon = (what) => () => toast(`${what}: entra na próxima etapa do sistema.`);
+const openTab = (view, tab) => () => { go(view); if (tab) { S.tab = tab; render(); } };
+const newSale = () => { go("pedidos"); startDraft(); };
+const MENUS = [
+  ["Cadastros", "*", [
+    ["Clientes", soon("Cadastro de clientes (já existe no CRM, menu Clientes)")], ["Fornecedores", openTab("compras")], ["Produtos", openTab("produtos")],
+    ["Transportadoras", soon("Cadastro de transportadoras")], ["Vendedor / Representante", soon("Cadastro de vendedores")], "-",
+    ["Plano de Contas Financeiro", soon("Plano de contas")], ["Contas-Correntes", soon("Contas-correntes")], ["Cotações de Moedas", soon("Cotações de moedas")],
+    ["Informações para Nota Fiscal", openTab("fiscal")], ["Empresas", soon("Cadastro de empresas (use o seletor Empresa no topo)")], ["Usuários", soon("Cadastro de usuários")],
+  ]],
+  ["Relatórios Gerenciais", "relatorios", [
+    ["Movimentação de Mercadoria", openTab("estoque", "mov")], ["Controle por Estoque", openTab("estoque")], ["Vendedores", openTab("relatorios")],
+    ["Financeiros", openTab("financeiro")], ["Painel geral", openTab("painel")],
+  ]],
+  ["Pedido de Entrada", "compras", [
+    ["Lançar Pedido de Entrada", () => { go("compras"); newImpDraft(); }], ["Lançar Requisição", soon("Requisição de compra")],
+    ["Consultar Pedidos", openTab("compras")], ["Tomada de Preços", soon("Tomada de preços")], ["Conferência", openTab("compras")],
+  ]],
+  ["Pedido de Saída", "pedidos", [
+    ["Lançar Pedido de Saída", newSale], ["Pedido Rápido", newSale], "-",
+    ["Consultar Pedidos", openTab("pedidos"), "Ctrl+P"], ["Consultar Posição do Pedido", openTab("pedidos", "andamento")], ["Reemissão do Pedido", openTab("pedidos")],
+    ["Logística", openTab("expedicao")], ["Etiquetas de Expedição", openTab("expedicao")], ["Conferência", openTab("expedicao")],
+  ]],
+  ["Movimentação", "estoque", [
+    ["Lançar Movimentação", openTab("estoque")], ["NF-e / NFC-e / SAT", openTab("fiscal")], ["MDF-e", soon("MDF-e")],
+    ["Reemissão de Documento", openTab("fiscal")], ["Conferência", openTab("expedicao")], ["Operações Fiscais", openTab("fiscal")],
+    ["Análise de Posições de Notas", openTab("fiscal"), "Ctrl+Q"],
+  ]],
+  ["A Pagar", "financeiro", [
+    ["Lançar Contas a Pagar", openTab("financeiro", "pagar")], ["Consulta de Contas a Pagar", openTab("financeiro", "pagar")], ["Baixa de Contas a Pagar", openTab("financeiro", "pagar")],
+    ["Gerar Parcelas", soon("Geração de parcelas")], ["CNAB - Comunicação Bancária", soon("CNAB")],
+  ]],
+  ["A Receber", "financeiro", [
+    ["Lançar Contas a Receber", openTab("financeiro", "receber")], ["Consultar Contas a Receber", openTab("financeiro", "receber")], ["Baixa de Contas a Receber", openTab("financeiro", "receber")],
+    ["Gerar Parcelas", soon("Geração de parcelas")],
+  ]],
+  ["Controle Bancário", "financeiro", [
+    ["Lançar Receitas", openTab("financeiro", "receber")], ["Lançar Despesas", openTab("financeiro", "pagar")], ["Consultar Saldo", soon("Saldo por conta-corrente")],
+    ["Transferência entre Contas", soon("Transferência entre contas")], ["Conciliação Bancária Integrada", openTab("financeiro")],
+    ["Relatórios Gerenciais", openTab("financeiro")], ["Simulador Pagamento/Recebimento", soon("Simulador de fluxo de caixa")],
+  ]],
+  ["Ferramentas", "*", [
+    ["Configuração", soon("Parâmetros da empresa (limites de desconto, aprovação, fiscal)")], ["Importar planilha", soon("Importação de produtos e clientes por planilha")],
+    ["Exportar", openTab("relatorios")], ["Pesquisa por Observação", () => $("cmd").focus()], ["Acerto de Cadastros", soon("Revisão de cadastros duplicados")],
+    ["Atualização Tabela IBPT", soon("Tabela IBPT (tributos aproximados na nota)")], "-",
+    ["Mercado Livre", openTab("mercadolivre")], ["Portal do cliente", openTab("portal")], ["Busca rápida", () => $("cmd").focus(), "Ctrl+K"],
+  ]],
+  ["Utilitários", "*", [
+    ["Etiquetas", openTab("expedicao")], ["Importar Movimento com Coletor", soon("Inventário com leitor de código de barras")], ["Configurar E-mail", soon("Caixas de e-mail IMAP/SMTP")],
+    ["Alterar Código de Produto", soon("Troca de código com histórico")], ["Importação de Imagens", soon("Fotos dos produtos")],
+    ["Backup e restauração", soon("Backup automático na nuvem")], ["Logs de Atualização", soon("Auditoria de alterações")],
+  ]],
+];
+const TOOLBAR = [
+  ["Pedido de Entrada", "compras", "compras", () => { go("compras"); newImpDraft(); }],
+  ["Pedido de Saída", "pedidos", "pedidos", newSale],
+  ["Movimentação", "estoque", "estoque", openTab("estoque")],
+  ["Contas a Pagar", "financeiro", "financeiro", openTab("financeiro", "pagar")],
+  ["Contas a Receber", "financeiro", "money", openTab("financeiro", "receber")],
+  ["Despesas", "financeiro", "receipt", openTab("financeiro", "pagar")],
+  ["Receitas", "financeiro", "relatorios", openTab("financeiro", "receber")],
+  ["Painel", "painel", "painel", openTab("painel")],
+];
+let menuActions = [];
+function renderMenus() {
+  menuActions = [];
+  const allowed = (mod) => mod === "*" || can(mod);
+  $("menubar").innerHTML = MENUS.filter(([, mod]) => allowed(mod)).map(([title, , items], mi) =>
+    `<div class="mb" data-mb="${mi}"><button type="button" data-mbt="${mi}" aria-haspopup="true">${title}</button><div class="dd" role="menu">${items.map((it) => {
+      if (it === "-") return "<hr>";
+      menuActions.push(it[1]); return `<button type="button" role="menuitem" data-mi="${menuActions.length - 1}">${it[0]}${it[2] ? `<kbd>${it[2]}</kbd>` : ""}</button>`;
+    }).join("")}</div></div>`).join("");
+  $("toolbar").innerHTML = TOOLBAR.filter(([, mod]) => can(mod)).map(([label, mod, ic, fn]) => {
+    menuActions.push(fn);
+    const on = (label === "Pedido de Saída" && S.view === "pedidos") || (label === "Pedido de Entrada" && S.view === "compras") || (label === "Movimentação" && S.view === "estoque") || (label === "Painel" && S.view === "painel") || (S.view === "financeiro" && ((label === "Contas a Pagar" && S.tab === "pagar") || (label === "Contas a Receber" && S.tab !== "pagar")));
+    return `<button type="button" class="${on ? "on" : ""}" data-mi="${menuActions.length - 1}">${icon(ic)}${label}</button>`;
+  }).join("");
+  const c = C(); const d = new Date().toLocaleDateString("pt-BR");
+  $("titleline").textContent = `${d} · Estoque = ${c.name.toUpperCase()} (0${c.code === "A" ? 1 : 2}) · Usuário » ${role().user.toUpperCase()}`;
+}
+document.addEventListener("click", (ev) => {
+  const t = ev.target.closest("[data-mbt]");
+  document.querySelectorAll(".mb.open").forEach((m) => { if (!t || m.dataset.mb !== t.dataset.mbt) m.classList.remove("open"); });
+  if (t) { t.parentElement.classList.toggle("open"); return; }
+  const mi = ev.target.closest("[data-mi]");
+  if (mi) { document.querySelectorAll(".mb.open").forEach((m) => m.classList.remove("open")); try { menuActions[+mi.dataset.mi](); } catch (e) { toast(e.message); } }
+});
+document.addEventListener("keydown", (ev) => {
+  if (ev.key === "Escape") document.querySelectorAll(".mb.open").forEach((m) => m.classList.remove("open"));
+  if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === "p") { ev.preventDefault(); if (can("pedidos")) openTab("pedidos")(); }
+  if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === "q") { ev.preventDefault(); if (can("fiscal")) openTab("fiscal")(); }
+});
+
+// ---------------------------------------------------------------------------
+// Lançar Pedido de Saída no formato da tela do IUVEN: cabeçalho (emissão,
+// tipo, empresa, pedido, cliente, entrega, tabela) e linha de inclusão de
+// item (código, quantidade, observação, % desconto, valor unitário, foto).
+// ---------------------------------------------------------------------------
+function startDraft() {
+  const c = C(); const custs = role().own ? c.customers.filter((x) => x.seller === role().user) : c.customers;
+  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+  draft = { customer: custs[0]?.id, items: [], freight: 0, discount: 0, inst: 1, tipo: "PED", entrega: tomorrow.toISOString().slice(0, 10), tabela: "1", entry: { sku: "", qty: 1, disc: 0, price: 0, obs: "" } };
+  S.composing = true; render(); setTimeout(() => $("e-sku")?.focus(), 0);
+}
+function includeItem() {
+  const e = draft.entry; const sku = e.sku.trim().toUpperCase(); const p = prod(sku);
+  if (!p) throw new Error(sku ? `Produto ${sku} não existe nesta empresa.` : "Informe o código do produto.");
+  if (!(e.qty > 0)) throw new Error("Quantidade deve ser maior que zero.");
+  draft.items.push({ sku, qty: Math.floor(e.qty), price: +e.price || p.price, disc: +e.disc || 0, obs: e.obs.trim() });
+  draft.entry = { sku: "", qty: 1, disc: 0, price: 0, obs: "" };
+  render(); setTimeout(() => $("e-sku")?.focus(), 0);
+}
 function vNovaCotacao() {
-  const d = draft; const c = C();
+  const d = draft; const c = C(); const e = d.entry;
   const custs = role().own ? c.customers.filter((x) => x.seller === role().user) : c.customers;
   totals(d);
   const reasons = d.items.length ? approvalReasons(d) : [];
-  return `<div class="card"><h2>Nova cotação</h2>
-  <div class="form">
-    <label class="f span2" for="q-cust">Cliente<select id="q-cust">${custs.map((x) => `<option value="${x.id}" ${x.id === d.customer ? "selected" : ""}>${esc(x.name)} · ${x.doc}</option>`).join("")}</select></label>
-    <label class="f" for="q-inst">Parcelas<select id="q-inst">${[1, 2, 3, 4, 6].map((n) => `<option ${n === d.inst ? "selected" : ""}>${n}</option>`).join("")}</select></label>
-    <label class="f span2" for="q-sku">Adicionar item por SKU (Enter)<input id="q-sku" list="skus" placeholder="ex.: KIT-LED-25" autocomplete="off"><datalist id="skus">${c.products.map((p) => `<option value="${p.sku}">${esc(p.name)}</option>`).join("")}</datalist></label>
-    <label class="f" for="q-freight">Frete (R$)<input id="q-freight" type="number" min="0" step="0.01" value="${d.freight}"></label>
-  </div>
-  <div style="margin-top:12px">${table([{ t: "SKU" }, { t: "Produto" }, { t: "Disponível", r: 1 }, { t: "Qtd", r: 1 }, { t: "Preço un.", r: 1 }, { t: "Desc. %", r: 1 }, { t: "Subtotal", r: 1 }, { t: "" }],
-    d.items.map((i, idx) => { const p = prod(i.sku); const a = avail(p); return `<tr><td class="mono">${i.sku}${p.kit ? ` <span class="pill p-neutral">kit</span>` : ""}</td><td>${esc(p.name)}</td><td class="r num" style="color:${a < i.qty ? "var(--bad)" : "inherit"}">${nf.format(a)}</td>
-      <td class="r"><input aria-label="Quantidade" data-qi="${idx}" data-k="qty" type="number" min="1" step="1" value="${i.qty}" style="width:84px"></td>
-      <td class="r"><input aria-label="Preço" data-qi="${idx}" data-k="price" type="number" min="0" step="0.01" value="${i.price}" style="width:90px"></td>
-      <td class="r"><input aria-label="Desconto" data-qi="${idx}" data-k="disc" type="number" min="0" max="100" step="0.5" value="${i.disc}" style="width:70px"></td>
-      <td class="r num">${money(i.sub)}</td><td><button class="btn ghost" data-rm="${idx}">Remover</button></td></tr>`; }), "Digite um SKU acima e tecle Enter.")}</div>
-  <div class="row" style="justify-content:space-between;margin-top:12px">
-    <div class="note">Itens ${money(d.itemsTotal)} + frete ${money(d.freight)} = <b class="num" style="color:var(--text)">${money(d.total)}</b>. Tributos calculados pelo provedor fiscal na emissão.
-      ${reasons.length ? `<div class="alert warn" style="margin-top:8px">Vai para aprovação: ${esc(reasons.join("; "))}.</div>` : d.items.length ? `<div class="alert good" style="margin-top:8px">Dentro dos limites: será aprovada automaticamente ao enviar.</div>` : ""}</div>
-    <div class="row"><button class="btn ghost" data-act="descartar">Descartar</button><button class="btn" data-act="salvar" ${d.items.length ? "" : "disabled"}>Salvar cotação</button></div>
-  </div></div>`;
+  const p = prod(e.sku.trim().toUpperCase());
+  const today = new Date().toLocaleDateString("pt-BR");
+  return `<div class="card pedform"><h2>Lançar Pedido de Saída <small>Enter inclui o item</small></h2>
+    <div class="pf-head">
+      <label class="f">Emissão<input value="${today}" readonly></label>
+      <label class="f" for="e-tipo">Tipo<select id="e-tipo"><option value="PED" ${d.tipo === "PED" ? "selected" : ""}>PED · Pedido</option><option value="ORC" ${d.tipo === "ORC" ? "selected" : ""}>ORC · Orçamento</option></select></label>
+      <label class="f">Empresa<input value="0${c.code === "A" ? 1 : 2}" readonly></label>
+      <label class="f">Pedido<input value="${c.code}${String(c.seq).padStart(5, "0")}" readonly></label>
+      <label class="f wide" for="q-cust">Cliente<select id="q-cust">${custs.map((x) => `<option value="${x.id}" ${x.id === d.customer ? "selected" : ""}>${x.id.toUpperCase()} · ${esc(x.name)} · ${x.doc}</option>`).join("")}</select></label>
+      <label class="f" for="e-entrega">Entrega<input id="e-entrega" type="date" value="${d.entrega}"></label>
+      <label class="f" for="e-tabela">Tabela<select id="e-tabela"><option value="1">1 · Padrão</option></select></label>
+    </div>
+    <div class="pf-entry">
+      <div class="pf-entry-l">
+        <label class="f wide" for="e-sku">Código do Produto<input id="e-sku" list="skus" value="${esc(e.sku)}" placeholder="ex.: KIT-LED-25" autocomplete="off"><datalist id="skus">${c.products.map((x) => `<option value="${x.sku}">${esc(x.name)}</option>`).join("")}</datalist></label>
+        <label class="f" for="e-qty">Quantidade<input id="e-qty" type="number" min="1" step="1" value="${e.qty}"></label>
+        <label class="f" for="e-disc">% Desconto<input id="e-disc" type="number" min="0" max="100" step="0.5" value="${e.disc}"></label>
+        <label class="f" for="e-price">Valor Unitário<input id="e-price" type="number" min="0" step="0.00001" value="${e.price || (p ? p.price : 0)}"></label>
+        <label class="f span3" for="e-obs" style="grid-column:1/-1">Observação do Produto<textarea id="e-obs" rows="3" placeholder="Ex.: embalar separado, cor de LED, prazo especial...">${esc(e.obs)}</textarea></label>
+        <div class="row" style="grid-column:1/-1"><button class="btn" data-act="e-add">${icon("plus")}Incluir item</button>${p ? `<span class="note">${esc(p.name)} · disponível ${nf.format(avail(p))} · preço de tabela ${money(p.price)}</span>` : ""}</div>
+      </div>
+      <div class="pf-photo">${p ? `${icon("produtos").replace('class="i"', 'class="i" style="width:46px;height:46px"')}<b>${esc(p.name)}</b><span class="mono">${p.sku} · NCM ${p.ncm}</span><span>Sem foto cadastrada</span>` : `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18"/><path d="M9 5h6l2 2h2a2 2 0 0 1 2 2v8M17.5 19H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1"/><circle cx="12" cy="13" r="3.2"/></svg><span>Foto do produto</span>`}</div>
+    </div>` +
+    table([{ t: "Código" }, { t: "Produto" }, { t: "Observação" }, { t: "Disponível", r: 1 }, { t: "Qtd", r: 1 }, { t: "Valor unit.", r: 1 }, { t: "% Desc.", r: 1 }, { t: "Total", r: 1 }, { t: "" }],
+      d.items.map((i, idx) => { const pr = prod(i.sku); const a = avail(pr); return `<tr><td class="mono">${i.sku}${pr.kit ? ` <span class="pill p-neutral">kit</span>` : ""}</td><td>${esc(pr.name)}</td><td class="note">${esc(i.obs || "")}</td><td class="r num" style="color:${a < i.qty ? "var(--bad)" : "inherit"}">${nf.format(a)}</td>
+        <td class="r num">${nf.format(i.qty)}</td><td class="r num">${money(i.price)}</td><td class="r num">${i.disc}%</td><td class="r num">${money(i.sub)}</td><td><button class="btn ghost" data-rm="${idx}">Excluir</button></td></tr>`; }), "Nenhum item incluído ainda.") +
+    `<div class="row" style="justify-content:space-between">
+      <div class="row">
+        <label class="f" for="q-freight" style="width:130px">Frete (R$)<input id="q-freight" type="number" min="0" step="0.01" value="${d.freight}"></label>
+        <label class="f" for="q-inst" style="width:110px">Parcelas<select id="q-inst">${[1, 2, 3, 4, 6].map((n) => `<option ${n === d.inst ? "selected" : ""}>${n}</option>`).join("")}</select></label>
+        <div><div class="note">Total do pedido</div><div class="kpi"><div class="val num">${money(d.total)}</div></div></div>
+      </div>
+      <div class="row"><button class="btn ghost" data-act="descartar">Cancelar</button><button class="btn" data-act="salvar" ${d.items.length ? "" : "disabled"}>${icon("check")}Gravar ${d.tipo === "ORC" ? "orçamento" : "pedido"}</button></div>
+    </div>
+    ${reasons.length ? `<div class="alert warn">${icon("alert")}<span>Vai para aprovação: ${esc(reasons.join("; "))}.</span></div>` : d.items.length ? `<div class="alert good">${icon("check")}<span>Dentro dos limites: aprovado automaticamente ao enviar.</span></div>` : ""}
+    <div id="err"></div>
+  </div>`;
 }
 
 function vPedido() {
@@ -1215,7 +1396,8 @@ document.addEventListener("click", (ev) => {
     if (ds.go) return go(ds.go);
     if (ds.tab) { S.tab = ds.tab; return render(); }
     if (ds.open || t.closest("[data-open]")) { const id = ds.open || t.closest("[data-open]").dataset.open; S.view = "pedidos"; S.orderId = id; S.composing = false; render(); return window.scrollTo(0, 0); }
-    if (ds.act === "novo") { const c = C(); const custs = role().own ? c.customers.filter((x) => x.seller === role().user) : c.customers; draft = { customer: custs[0]?.id, items: [], freight: 0, discount: 0, inst: 1 }; S.composing = true; return render(); }
+    if (ds.act === "novo") { return startDraft(); }
+    if (ds.act === "e-add") { return includeItem(); }
     if (ds.act === "descartar") { S.composing = false; draft = null; return render(); }
     if (ds.act === "salvar") { const n = createOrder(draft.customer, role().user === "Aline" ? cust(draft.customer).seller : role().user, draft.items.map((i) => [i.sku, i.qty, i.price, i.disc]), { freight: draft.freight, inst: draft.inst }); S.composing = false; draft = null; S.orderId = n.id; return render(); }
     if (ds.rm !== undefined) { draft.items.splice(+ds.rm, 1); return render(); }
@@ -1274,6 +1456,17 @@ document.addEventListener("change", (ev) => {
     if (el.dataset.imi !== undefined) { const it = impDraft.items[+el.dataset.imi]; const k = el.dataset.k; it[k] = k === "sku" ? el.value : k === "qty" ? Math.max(1, Math.floor(+el.value) || 1) : Math.max(0, +el.value || 0); }
     return setTimeout(render, 0);
   }
+  if (draft && el.id?.startsWith("e-")) {
+    const e = draft.entry;
+    if (el.id === "e-sku") { e.sku = el.value.trim().toUpperCase(); const p = prod(e.sku); if (p) e.price = p.price; }
+    if (el.id === "e-qty") e.qty = Math.max(1, Math.floor(+el.value) || 1);
+    if (el.id === "e-disc") e.disc = Math.min(100, Math.max(0, +el.value || 0));
+    if (el.id === "e-price") e.price = Math.max(0, +el.value || 0);
+    if (el.id === "e-obs") e.obs = el.value;
+    if (el.id === "e-tipo") draft.tipo = el.value;
+    if (el.id === "e-entrega") draft.entrega = el.value;
+    return setTimeout(() => { const f = document.activeElement?.id; render(); if (f) $(f)?.focus(); }, 0);
+  }
   if (!draft || el.id === "q-sku") return;
   if (el.id === "q-cust") { draft.customer = el.value; }
   if (el.id === "q-inst") { draft.inst = +el.value; }
@@ -1283,6 +1476,10 @@ document.addEventListener("change", (ev) => {
   setTimeout(render, 0);
 });
 document.addEventListener("keydown", (ev) => {
+  if (draft && ["e-sku", "e-qty", "e-disc", "e-price"].includes(ev.target.id) && ev.key === "Enter") {
+    ev.preventDefault(); const el = ev.target; el.dispatchEvent(new Event("change", { bubbles: true }));
+    setTimeout(() => { try { includeItem(); } catch (e) { toast(e.message); } }, 10); return;
+  }
   if (ev.target.id !== "q-sku" || ev.key !== "Enter") return;
   ev.preventDefault();
   const [sku, q] = ev.target.value.trim().toUpperCase().split("*");
@@ -1307,7 +1504,7 @@ function findOrder(txt) {
 function buildCmd(q) {
   const t = norm(q.trim()); const out = [];
   if (!t) {
-    out.push({ g: "Sugestões", label: "Nova cotação", hint: "comando", run: () => { go("pedidos"); $("view").querySelector('[data-act="novo"]')?.click(); } });
+    out.push({ g: "Sugestões", label: "Lançar Pedido de Saída", hint: "comando", run: () => newSale() });
     const pendO = C().orders.find((o) => o.status === "AGUARDANDO");
     if (pendO) out.push({ g: "Sugestões", label: `Aprovar ${code(pendO)}`, hint: "aguardando aprovação", run: () => runCmd(`aprovar ${code(pendO)}`) });
     MODULES.filter(([k]) => can(k)).slice(0, 6).forEach(([k, l]) => out.push({ g: "Módulos", label: l, hint: "abrir", run: () => go(k) }));
@@ -1320,7 +1517,7 @@ function buildCmd(q) {
     out.push({ g: "Comando", label: `${label} ${code(o)}`, hint: esc(cust(o.customer).name), run: () => runCmd(t) });
   }
   if (can("compras") && (t.includes("import") || t.includes("invoice"))) out.push({ g: "Comando", label: "Nova importação (invoice)", hint: "compras", run: () => { go("compras"); newImpDraft(); } });
-  if (verb.startsWith("nova") || verb.startsWith("novo") || t.includes("cotacao")) out.push({ g: "Comando", label: "Nova cotação", hint: "comando", run: () => { go("pedidos"); $("view").querySelector('[data-act="novo"]')?.click(); } });
+  if (verb.startsWith("nova") || verb.startsWith("novo") || t.includes("cotacao")) out.push({ g: "Comando", label: "Lançar Pedido de Saída", hint: "comando", run: () => newSale() });
   MODULES.filter(([k, l]) => can(k) && norm(l).includes(t)).forEach(([k, l]) => out.push({ g: "Módulos", label: l, hint: "abrir", run: () => go(k) }));
   if (can("pedidos")) visibleOrders().filter((x) => norm(`${code(x)} ${cust(x.customer).name}`).includes(t.replace(/^abrir\s+/, ""))).slice(0, 5)
     .forEach((x) => out.push({ g: "Pedidos", label: `${code(x)} · ${cust(x.customer).name}`, hint: STATUS[x.status][0], run: () => { S.view = "pedidos"; S.orderId = x.id; render(); } }));
