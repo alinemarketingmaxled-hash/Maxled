@@ -1,0 +1,169 @@
+<title>Ideias de design MAX LED</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Rajdhani:wght@500;600;700&family=Archivo+Black&family=Space+Mono:wght@400;700&family=Nunito:wght@500;700;800&family=Source+Sans+3:wght@400;600;700&family=Sora:wght@400;600;700&family=Playfair+Display:wght@600&family=Lato:wght@400;700&display=swap">
+<style>
+/* Galeria: uma coluna de "pranchas", cada uma com um mini-painel do ERP
+   desenhado num estilo diferente. A página em si é neutra para não
+   competir com as propostas; cada prancha define as próprias cores. */
+:root {
+  color-scheme: light;
+  --page: #ecebe8;
+  --ink: #1b1b1d;
+  --muted: #615f5a;
+  --card: #ffffff;
+  --line: #d8d6d0;
+  --pick: #1b1b1d;
+}
+* { box-sizing: border-box; }
+body { background: var(--page); color: var(--ink); font-family: "Source Sans 3", "Segoe UI", sans-serif; margin: 0; }
+.page { max-width: 1180px; margin: 0 auto; padding-block: 36px 60px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 28px; }
+header h1 { font-size: 32px; margin: 0; letter-spacing: -.01em; text-wrap: balance; }
+header p { margin: 8px 0 0; color: var(--muted); max-width: 70ch; line-height: 1.5; font-size: 15.5px; }
+.board { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 22px; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 22px; align-items: start; }
+.about .n { font-size: 12px; font-weight: 700; letter-spacing: .14em; color: var(--muted); }
+.about h2 { font-size: 23px; margin: 6px 0 8px; }
+.about p { margin: 0 0 12px; color: var(--muted); line-height: 1.5; font-size: 14.5px; }
+.about ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 13.5px; line-height: 1.6; }
+.swatches { display: flex; gap: 6px; margin-top: 14px; }
+.swatches i { width: 26px; height: 26px; border-radius: 6px; border: 1px solid rgba(0,0,0,.12); }
+.frame { min-width: 0; overflow-x: auto; border-radius: 12px; }
+.mock { min-width: 640px; border-radius: 12px; overflow: hidden; }
+footer { text-align: center; color: var(--muted); font-size: 15px; }
+@media (max-width: 860px) { .board { grid-template-columns: 1fr; } }
+
+/* Peças comuns de estrutura (cada estilo pinta por cima) */
+.mock .shell { display: grid; grid-template-columns: 150px 1fr; min-height: 330px; }
+.mock .nav { padding: 16px 12px; display: grid; gap: 4px; align-content: start; font-size: 12.5px; }
+.mock .nav b { display: block; margin-bottom: 12px; }
+.mock .nav span { padding: 7px 9px; border-radius: 6px; }
+.mock .body { padding: 18px; display: grid; gap: 12px; align-content: start; }
+.mock .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.mock .k small { display: block; font-size: 10.5px; }
+.mock .k strong { display: block; font-size: 19px; margin-top: 4px; }
+.mock .lower { display: grid; grid-template-columns: 1.4fr 1fr; gap: 10px; }
+.mock .bars { display: flex; align-items: flex-end; gap: 8px; height: 90px; margin-top: 8px; }
+.mock .bars i { flex: 1; border-radius: 3px 3px 0 0; }
+.mock .orders { display: grid; gap: 6px; font-size: 11.5px; margin-top: 6px; }
+.mock .orders div { display: flex; justify-content: space-between; gap: 6px; align-items: center; }
+.mock .tag { font-size: 10px; padding: 2px 7px; border-radius: 99px; font-weight: 700; white-space: nowrap; }
+.mock h4 { margin: 0; font-size: 11.5px; }
+
+/* 1. Painel de LED: escuro, brilho de LED, linguagem de eletrônica */
+.s1 { background: #07090c; color: #d7f5ec; font-family: "Rajdhani", sans-serif; }
+.s1 .nav { background: #0b0f14; border-right: 1px solid #13202a; }
+.s1 .nav b { font-family: "Orbitron", sans-serif; color: #fff; letter-spacing: .08em; }
+.s1 .nav b em { color: #3cffb4; font-style: normal; text-shadow: 0 0 8px #3cffb4; }
+.s1 .nav span.on { background: rgba(60,255,180,.08); color: #3cffb4; box-shadow: inset 2px 0 0 #3cffb4; }
+.s1 .box { background: #0d1219; border: 1px solid #172531; border-radius: 8px; padding: 12px; }
+.s1 .k strong { font-family: "Orbitron", sans-serif; color: #fff; }
+.s1 .k small { color: #6e8a96; letter-spacing: .1em; text-transform: uppercase; }
+.s1 .k .led { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #3cffb4; box-shadow: 0 0 6px #3cffb4; margin-right: 5px; }
+.s1 .k:nth-child(3) .led { background: #ffb547; box-shadow: 0 0 6px #ffb547; }
+.s1 .bars i { background: linear-gradient(#3cffb4, #0e6e55); box-shadow: 0 0 10px rgba(60,255,180,.35); }
+.s1 .tag { background: rgba(60,255,180,.12); color: #3cffb4; }
+.s1 .tag.w { background: rgba(255,181,71,.12); color: #ffb547; }
+.s1 h4 { color: #6e8a96; letter-spacing: .12em; text-transform: uppercase; }
+
+/* 2. Bold / neo-brutalista: amarelo forte, bordas pretas, sombras duras */
+.s2 { background: #fff7d6; color: #111; font-family: "Space Mono", monospace; }
+.s2 .nav { background: #ffd23f; border-right: 3px solid #111; }
+.s2 .nav b { font-family: "Archivo Black", sans-serif; font-size: 16px; }
+.s2 .nav span.on { background: #111; color: #ffd23f; }
+.s2 .box { background: #fff; border: 3px solid #111; border-radius: 0; padding: 12px; box-shadow: 5px 5px 0 #111; }
+.s2 .k strong { font-family: "Archivo Black", sans-serif; }
+.s2 .k:nth-child(2) { background: #8ef0c4; } .s2 .k:nth-child(4) { background: #ff9fb6; }
+.s2 .bars i { background: #111; border-radius: 0; } .s2 .bars i:last-child { background: #ff5a36; }
+.s2 .tag { border: 2px solid #111; border-radius: 0; background: #8ef0c4; } .s2 .tag.w { background: #ffd23f; }
+.s2 h4 { font-family: "Archivo Black", sans-serif; text-transform: uppercase; }
+
+/* 3. ERP corporativo clássico (estilo Bling/Omie): azul, denso, objetivo */
+.s3 { background: #f3f6fa; color: #1d2b3a; font-family: "Lato", sans-serif; }
+.s3 .nav { background: #0f3d6e; color: #c9daf0; }
+.s3 .nav b { color: #fff; } .s3 .nav b em { color: #f2b632; font-style: normal; }
+.s3 .nav span.on { background: #1b5a9c; color: #fff; }
+.s3 .box { background: #fff; border: 1px solid #d6e0ec; border-radius: 4px; padding: 12px; }
+.s3 .k { border-top: 3px solid #1b5a9c; } .s3 .k:nth-child(2) { border-top-color: #2e9b5f; } .s3 .k:nth-child(3) { border-top-color: #f2b632; } .s3 .k:nth-child(4) { border-top-color: #d64545; }
+.s3 .k small { color: #607285; }
+.s3 .bars i { background: #1b5a9c; border-radius: 2px 2px 0 0; } .s3 .bars i:nth-child(odd) { background: #6f9fd6; }
+.s3 .tag { background: #e3f2e9; color: #2e9b5f; border-radius: 3px; } .s3 .tag.w { background: #fdf3dd; color: #a87810; }
+.s3 h4 { color: #0f3d6e; }
+
+/* 4. Vidro e gradiente: fundo em degradê grafite→âmbar, cards translúcidos */
+.s4 { background: radial-gradient(circle at 15% 10%, #6b4a12 0, transparent 45%), radial-gradient(circle at 90% 90%, #3b2a6b 0, transparent 50%), #121218; color: #f5f0e6; font-family: "Sora", sans-serif; }
+.s4 .nav { background: rgba(255,255,255,.04); border-right: 1px solid rgba(255,255,255,.08); }
+.s4 .nav b { color: #fff; } .s4 .nav b em { background: linear-gradient(90deg, #ffd27a, #ff9d5c); -webkit-background-clip: text; background-clip: text; color: transparent; font-style: normal; }
+.s4 .nav span.on { background: rgba(255,210,122,.14); color: #ffd27a; }
+.s4 .box { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); border-radius: 16px; padding: 12px; backdrop-filter: blur(10px); }
+.s4 .k small { color: #b8b0a2; }
+.s4 .bars i { background: linear-gradient(#ffd27a, #ff7b54); border-radius: 6px 6px 0 0; }
+.s4 .tag { background: rgba(120,230,170,.15); color: #8ef0b8; } .s4 .tag.w { background: rgba(255,210,122,.15); color: #ffd27a; }
+.s4 h4 { color: #b8b0a2; }
+
+/* 5. Suave e amigável: pastéis, cantos bem redondos, ilustrativo */
+.s5 { background: #f6f3ff; color: #2d2a3e; font-family: "Nunito", sans-serif; }
+.s5 .nav { background: #fff; }
+.s5 .nav b { color: #6c4cf1; font-size: 15px; }
+.s5 .nav span.on { background: #ede8ff; color: #6c4cf1; font-weight: 800; border-radius: 12px; }
+.s5 .box { background: #fff; border-radius: 20px; padding: 13px; box-shadow: 0 6px 18px rgba(108,76,241,.08); }
+.s5 .k:nth-child(1) { background: #ffe9d6; } .s5 .k:nth-child(2) { background: #dff7ec; } .s5 .k:nth-child(3) { background: #e3efff; } .s5 .k:nth-child(4) { background: #ffe3ef; }
+.s5 .k small { color: #6f6a85; font-weight: 700; }
+.s5 .k strong { font-weight: 800; }
+.s5 .bars i { background: #a996ff; border-radius: 10px; } .s5 .bars i:last-child { background: #6c4cf1; }
+.s5 .tag { background: #dff7ec; color: #1d8a57; } .s5 .tag.w { background: #fff1d6; color: #b07410; }
+.s5 h4 { color: #6f6a85; }
+
+/* 6. Luxo editorial: preto profundo, dourado real, serifa clássica */
+.s6 { background: #0c0b09; color: #ede4d0; font-family: "Lato", sans-serif; }
+.s6 .nav { background: #0c0b09; border-right: 1px solid #2a251b; }
+.s6 .nav b { font-family: "Playfair Display", serif; font-size: 17px; color: #d9b45a; letter-spacing: .04em; }
+.s6 .nav span { letter-spacing: .06em; text-transform: uppercase; font-size: 10.5px; }
+.s6 .nav span.on { color: #d9b45a; border-left: 1px solid #d9b45a; border-radius: 0; }
+.s6 .box { background: transparent; border: 1px solid #2f2a1f; border-radius: 0; padding: 12px; }
+.s6 .k strong { font-family: "Playfair Display", serif; font-size: 21px; color: #f3e6c4; }
+.s6 .k small { color: #8f846c; letter-spacing: .14em; text-transform: uppercase; }
+.s6 .bars i { background: linear-gradient(#e8c870, #8a6a24); border-radius: 0; width: 2px; }
+.s6 .tag { border: 1px solid #5d7a52; color: #9fc28f; border-radius: 0; background: transparent; } .s6 .tag.w { border-color: #8a6a24; color: #d9b45a; }
+.s6 h4 { font-family: "Playfair Display", serif; color: #d9b45a; font-size: 13px; font-weight: 600; }
+</style>
+
+<div class="page">
+  <header>
+    <h1>Seis ideias de design para o ERP</h1>
+    <p>Todas mostram o mesmo painel (menu, indicadores do mês, gráfico de vendas e últimos pedidos) para facilitar a comparação. Escolha o número da que mais gostar, ou diga o que combinar de duas delas, e eu monto o protótipo completo nesse estilo.</p>
+  </header>
+  <div id="boards"></div>
+  <footer>Responda no chat com o número escolhido. Ex.: "quero a 1" ou "a 3 com as cores da 6".</footer>
+</div>
+
+<script>
+const IDEAS = [
+  { cls: "s1", name: "Painel de LED", desc: "Fundo bem escuro com detalhes que brilham como LED aceso. Conversa direto com o que a MAX LED vende.", bullets: ["Verde-neon e âmbar como luzes de status", "Fonte técnica, estilo equipamento eletrônico", "Ótimo para uso em monitor de operação"], sw: ["#07090c", "#0d1219", "#3cffb4", "#ffb547", "#d7f5ec"], brand: 'MAX<em>LED</em>' },
+  { cls: "s2", name: "Ousado e chapado", desc: "Amarelo forte, bordas pretas grossas e sombras duras. Visual marcante e fácil de ler.", bullets: ["Muito contraste, nada passa despercebido", "Cores fortes por indicador", "Estilo moderno de startup"], sw: ["#ffd23f", "#111111", "#8ef0c4", "#ff9fb6", "#fff7d6"], brand: "MAX LED" },
+  { cls: "s3", name: "ERP corporativo", desc: "Parecido com sistemas que o mercado já conhece (Bling, Omie): azul, objetivo e denso.", bullets: ["Curva de aprendizado mínima para a equipe", "Cores por tipo de indicador", "Foco em tabelas e números"], sw: ["#0f3d6e", "#1b5a9c", "#f2b632", "#2e9b5f", "#f3f6fa"], brand: 'MAX <em>LED</em>' },
+  { cls: "s4", name: "Vidro e degradê", desc: "Cards translúcidos sobre fundo em degradê grafite com brilho âmbar. Visual de aplicativo premium.", bullets: ["Gradiente dourado/laranja da marca", "Cards de vidro fosco", "Moderno e chamativo"], sw: ["#121218", "#6b4a12", "#ffd27a", "#ff7b54", "#3b2a6b"], brand: 'MAX <em>LED</em>' },
+  { cls: "s5", name: "Suave e amigável", desc: "Cores pastel, cantos bem arredondados e clima leve. Agradável para uso o dia inteiro.", bullets: ["Cada indicador com sua cor clara", "Roxo como cor de destaque", "Bom para o portal do cliente também"], sw: ["#f6f3ff", "#6c4cf1", "#ffe9d6", "#dff7ec", "#ffe3ef"], brand: "max led" },
+  { cls: "s6", name: "Luxo clássico", desc: "Preto profundo, dourado de verdade e títulos com serifa. Clima de marca premium, mais discreto.", bullets: ["Preto e dourado como pede o Documento Mestre", "Linhas finas, sem enfeites", "Elegante e sóbrio"], sw: ["#0c0b09", "#2f2a1f", "#d9b45a", "#ede4d0", "#9fc28f"], brand: "Max Led" },
+];
+const months = [38, 52, 46, 61, 57, 74];
+function mock(i) {
+  const k = [["Vendas do mês", "R$ 48.320"], ["Pedidos", "126"], ["Ticket médio", "R$ 383"], ["Clientes ativos", "58"]];
+  const orders = [["A-00128", "Distribuidora Sul", "R$ 1.240", "Aprovado", ""], ["A-00127", "Automação Paulista", "R$ 3.980", "Aguardando", "w"], ["A-00126", "Eletro Norte", "R$ 712", "Enviado", ""]];
+  return `<div class="mock ${i.cls}"><div class="shell">
+    <div class="nav"><b>${i.brand}</b>${["Painel", "Pedidos", "Produtos", "Estoque", "Expedição", "Financeiro"].map((n, x) => `<span class="${x === 0 ? "on" : ""}">${n}</span>`).join("")}</div>
+    <div class="body">
+      <div class="kpis">${k.map(([l, v]) => `<div class="k box"><small>${i.cls === "s1" ? '<span class="led"></span>' : ""}${l}</small><strong>${v}</strong></div>`).join("")}</div>
+      <div class="lower">
+        <div class="box"><h4>Vendas (6 meses)</h4><div class="bars">${months.map((m) => `<i style="height:${m}px"></i>`).join("")}</div></div>
+        <div class="box"><h4>Últimos pedidos</h4><div class="orders">${orders.map(([c, n, v, s, w]) => `<div><span>${c} · ${n}</span><span class="tag ${w}">${s}</span></div>`).join("")}</div></div>
+      </div>
+    </div></div></div>`;
+}
+document.getElementById("boards").outerHTML = IDEAS.map((i, n) => `
+  <section class="board">
+    <div class="about"><div class="n">IDEIA ${n + 1}</div><h2>${i.name}</h2><p>${i.desc}</p><ul>${i.bullets.map((b) => `<li>${b}</li>`).join("")}</ul>
+      <div class="swatches" aria-label="Paleta">${i.sw.map((c) => `<i style="background:${c}" title="${c}"></i>`).join("")}</div></div>
+    <div class="frame">${mock(i)}</div>
+  </section>`).join("");
+</script>
