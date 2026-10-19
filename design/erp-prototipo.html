@@ -584,6 +584,126 @@ textarea { width: 100%; box-sizing: border-box; background: rgba(255,255,255,.04
 .ticket.lead { text-align: left; font: inherit; color: var(--text); cursor: pointer; width: 100%; display: grid; gap: 6px; }
 .ticket.lead:hover { border-color: rgba(242,204,91,.55); }
 .stars { color: #f2cc5b; letter-spacing: 1px; } .stars i { color: rgba(255,255,255,.15); font-style: normal; }
+
+/* Grade de itens */
+.ig-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; margin: 6px 0 -4px; }
+.ig-head h3 { margin: 0; font-size: 15px; display: flex; gap: 8px; align-items: center; }
+.ig table { min-width: 880px; font-size: 13px; }
+.ig td, .ig th { padding-left: 10px; padding-right: 10px; }
+.ig-tab { display: block; font-size: 11px; color: var(--text-2); }
+.kitb { font-size: 10px; font-weight: 800; letter-spacing: .06em; color: #1b1206; background: var(--grad); border-radius: 5px; padding: 1px 5px; vertical-align: middle; }
+.ig th { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; white-space: nowrap; }
+.ig th.c, .ig td.c { text-align: center; }
+.ig td { vertical-align: middle; padding-top: 10px; padding-bottom: 10px; }
+.ig tbody tr:nth-child(even) td { background: rgba(255,255,255,.018); }
+.ig tbody tr:hover td { background: rgba(242,204,91,.05); }
+.ig tr.warnrow td { background: rgba(255,133,133,.06); }
+.ig-n { color: var(--text-2); font-family: ui-monospace, monospace; font-size: 12px; width: 34px; }
+.ig-prod { display: flex; gap: 12px; align-items: center; min-width: 230px; }
+.ig-prod > div { display: grid; gap: 2px; min-width: 0; }
+.ig-prod b { font-weight: 650; }
+.ig-prod .mono { font-size: 11.5px; color: var(--text-2); }
+.ig-obs { display: inline-flex; gap: 5px; align-items: center; color: #f2cc5b; font-size: 12px; }
+.ig-obs svg { width: 13px; height: 13px; }
+.ig-in { background: rgba(255,255,255,.04); border: 1px solid var(--border); border-radius: 8px; color: var(--text); padding: 6px 8px; text-align: right; font: inherit; }
+.ig-in:focus { outline: none; border-color: #f2cc5b; box-shadow: 0 0 0 3px rgba(242,204,91,.18); }
+.ig-flag { display: block; color: var(--bad); font-size: 11px; }
+.mg { display: inline-block; min-width: 44px; text-align: center; border-radius: 6px; padding: 2px 6px; font-weight: 700; font-size: 12px; }
+.mg.hi { background: var(--good-soft); color: var(--good); } .mg.mid { background: var(--warn-soft); color: var(--warn); } .mg.low { background: var(--bad-soft); color: var(--bad); }
+.sc { display: inline-flex; gap: 5px; align-items: center; font-size: 12px; font-weight: 600; white-space: nowrap; border-radius: 99px; padding: 3px 9px; }
+.sc svg { width: 12px; height: 12px; }
+.sc.ok { color: var(--good); background: var(--good-soft); } .sc.part { color: var(--warn); background: var(--warn-soft); } .sc.none { color: var(--bad); background: var(--bad-soft); }
+.ig-act { white-space: nowrap; text-align: right; }
+.ib { width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--border); background: rgba(255,255,255,.04); color: var(--text-2); cursor: pointer; font-size: 13px; margin-left: 3px; }
+.ib:hover:not(:disabled) { color: #f2cc5b; border-color: rgba(242,204,91,.5); }
+.ib:disabled { opacity: .3; cursor: default; }
+.ib.del:hover { color: var(--bad); border-color: var(--bad); }
+.ig-empty { display: grid; justify-items: center; gap: 6px; text-align: center; padding: 28px 16px; border: 1px dashed var(--border); border-radius: 18px; color: var(--text-2); }
+.ig-empty svg { width: 30px; height: 30px; color: #f2cc5b; }
+.ig-empty b { color: var(--text); }
+.ig-sum { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 16px; align-items: start; margin-top: 12px; }
+.ig-facts { display: flex; flex-wrap: wrap; gap: 10px; }
+.ig-facts span { display: grid; gap: 2px; background: rgba(255,255,255,.035); border: 1px solid var(--border); border-radius: 12px; padding: 9px 14px; }
+.ig-facts small { font-size: 11px; color: var(--text-2); text-transform: uppercase; letter-spacing: .05em; }
+.ig-tot { display: grid; grid-template-columns: 1fr auto; gap: 7px 16px; margin: 0; background: rgba(255,255,255,.035); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; font-size: 13px; }
+.ig-tot dt { color: var(--text-2); } .ig-tot dd { margin: 0; text-align: right; }
+.ig-tot .big { font-size: 17px; font-weight: 800; color: var(--text); border-top: 1px solid var(--border); padding-top: 9px; }
+.ig-tot dd.big { color: #f2cc5b; }
+@media (max-width: 760px) { .ig-sum { grid-template-columns: minmax(0, 1fr); } }
+
+@media (max-width: 1180px) {
+  .ig table, .ig tbody { display: block; min-width: 0; }
+  .ig thead { display: none; }
+  .ig tr { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px 12px; padding: 14px; border-bottom: 1px solid var(--border); align-items: end; }
+  .ig td { display: grid; gap: 3px; padding: 0 !important; border: 0 !important; background: none !important; text-align: left !important; }
+  .ig td::before { content: attr(data-l); font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-2); }
+  .ig td.ig-n { display: none; }
+  .ig td.ig-p { grid-column: 1 / -1; }
+  .ig td.ig-p::before { display: none; }
+  .ig td.ig-act { grid-column: 1 / -1; display: flex; justify-content: flex-end; }
+  .ig td.ig-act::before { display: none; }
+  .ig .ig-in { width: 100% !important; box-sizing: border-box; }
+}
+@media (max-width: 560px) { .ig tr { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Prospecção */
+.bulkbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; background: rgba(242,204,91,.1); border: 1px solid rgba(242,204,91,.35); border-radius: 14px; padding: 10px 14px; }
+.sig { display: inline-block; font-size: 11.5px; background: rgba(123,232,176,.12); color: var(--good); border-radius: 99px; padding: 2px 8px; margin: 1px 3px 1px 0; }
+.tasks { gap: 10px; }
+.task { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 14px; }
+.task.late { border-color: rgba(255,133,133,.45); }
+.task .l { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.task > div > span { display: block; margin: 2px 0; }
+.tk-ic { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: rgba(242,204,91,.14); color: #f2cc5b; flex: none; }
+.cadsteps { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 12px; }
+.cadsteps > div { display: grid; gap: 3px; background: rgba(255,255,255,.035); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; }
+.cd-d { font-size: 11px; color: #f2cc5b; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
+@media (max-width: 1180px) {
+  .cbar-in { flex-wrap: wrap; gap: 10px; }
+  .cmd { order: 3; flex-basis: 100%; max-width: none; }
+  .cbar .ctx label { font-size: 0; gap: 0; }
+  .dock { left: 12px; right: 12px; transform: none; overflow-x: auto; justify-content: flex-start; }
+}
+
+/* Cabeçalho e inclusão do pedido */
+.pf-top { display: flex; justify-content: space-between; align-items: flex-end; gap: 14px; flex-wrap: wrap; }
+.pf-title h2 { margin: 2px 0 0; font-size: 22px; }
+.pf-title .mono { color: #f2cc5b; }
+.pf-kicker { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--text-2); font-weight: 700; }
+.seg { display: inline-flex; background: rgba(255,255,255,.05); border: 1px solid var(--border); border-radius: 12px; padding: 3px; }
+.seg button { background: none; border: 0; color: var(--text-2); font: inherit; font-weight: 700; font-size: 13px; padding: 7px 16px; border-radius: 9px; cursor: pointer; }
+.seg button.on { background: var(--grad); color: #1b1206; }
+.pf-head2 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.pf-cli { display: grid; gap: 10px; padding: 14px; border: 1px solid var(--border); border-radius: 16px; background: rgba(255,255,255,.02); }
+.inp-ic { position: relative; display: flex; align-items: center; }
+.inp-ic svg { position: absolute; left: 12px; width: 17px; height: 17px; color: var(--text-3); pointer-events: none; }
+.inp-ic input { padding-left: 38px !important; width: 100%; }
+.pf-cli-card { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.pf-cli-info { display: grid; gap: 2px; flex: 1; min-width: 220px; }
+.pf-cli-stats, .pf-prev-s { display: flex; gap: 18px; flex-wrap: wrap; }
+.pf-cli-stats > span, .pf-prev-s > span { display: grid; gap: 3px; justify-items: start; }
+.pf-cli-stats small, .pf-prev-s small, .pf-lt span { font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-2); }
+.pf-repeat { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.chipbtn { display: inline-flex; gap: 8px; align-items: center; background: rgba(242,204,91,.07); border: 1px solid rgba(242,204,91,.3); color: var(--text); border-radius: 10px; padding: 6px 10px; cursor: pointer; font: inherit; font-size: 12px; }
+.chipbtn b { color: #f2cc5b; white-space: nowrap; } .chipbtn { text-align: left; } .chipbtn span { color: var(--text-2); }
+.chipbtn:hover { border-color: #f2cc5b; }
+.pf-add { display: grid; gap: 12px; padding: 14px; border: 1px solid rgba(242,204,91,.28); border-radius: 16px; background: linear-gradient(180deg, rgba(242,204,91,.06), rgba(242,204,91,.01)); }
+.pf-add-h { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.pf-add-h h3 { margin: 0; font-size: 15px; }
+.pf-line { display: grid; grid-template-columns: minmax(0, 1fr) 90px 130px 96px 120px auto; gap: 10px; align-items: end; }
+.pf-line input.r { text-align: right; }
+.inp-pre { display: flex; align-items: center; background: rgba(255,255,255,.04); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.inp-pre span { padding: 0 0 0 10px; color: var(--text-3); font-size: 12px; } .inp-pre.suf span { padding: 0 10px 0 0; }
+.inp-pre input { border: 0 !important; background: transparent !important; width: 100%; min-width: 0; box-shadow: none !important; }
+.inp-pre:focus-within { border-color: rgba(242,204,91,.6); }
+.pf-lt { display: grid; gap: 6px; } .pf-lt b { font-size: 16px; padding: 9px 0; text-align: right; }
+.pf-btn .btn { height: 42px; white-space: nowrap; }
+.pf-prev { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; background: rgba(0,0,0,.18); border-radius: 12px; padding: 10px 12px; }
+.pf-prev-i { display: grid; gap: 2px; flex: 1; min-width: 200px; }
+.pf-obs summary { cursor: pointer; font-size: 12.5px; color: var(--text-2); font-weight: 600; }
+.pf-obs textarea { margin-top: 8px; }
+@media (max-width: 1100px) { .pf-line { grid-template-columns: repeat(4, minmax(0, 1fr)); } .pf-line > label:first-child { grid-column: 1 / -1; } .pf-lt { grid-column: span 2; } .pf-btn { grid-column: span 2; } .pf-btn .btn { width: 100%; justify-content: center; } }
+@media (max-width: 760px) { .pf-head2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .pf-line { grid-template-columns: repeat(2, minmax(0, 1fr)); } .pf-lt, .pf-btn { grid-column: span 1; } .pf-add-h .keys { display: none; } }
 </style>
 
 <header class="cbar">
@@ -719,7 +839,8 @@ function seed() {
   S = st;
   seedHistory(st);
   seedExtra(st);
-  seedCrm(st); seedSuppliers(st); seedBank(st);
+  seedCrm(st); seedSuppliers(st); seedBank(st); seedProspects(st);
+  for (const co of Object.values(st.companies)) { co.nfIn = []; co.autoStock = false; const prev = st.company; st.company = co.code; co.mails.slice().reverse().forEach((m) => autoPullXml(co, m, true)); st.company = prev; }
   const o1 = createOrder("c1", "Bruno Alves", [["KIT-LED-25", 4, 9.90, 0], ["RES-1K-14W", 200, 0.08, 0]], { freight: 18, inst: 2 }, true);
   submit(o1, true); emitNF(o1, true); advance(o1, "SEPARACAO", true); advance(o1, "CONFERENCIA", true); advance(o1, "PRONTO", true);
   const o2 = createOrder("c3", "Bruno Alves", [["MOD-ESP32", 5, 49.90, 12]], { freight: 0, inst: 1 }, true);
@@ -1283,6 +1404,223 @@ function includeItem(pickedSku) {
   draft.entry = { sku: "", qty: 1, disc: 0, price: 0, obs: "" };
   render(); setTimeout(() => $("e-sku")?.focus(), 0);
 }
+// ---------------------------------------------------------------------------
+// Grade de itens do pedido: numerada, com estoque, preço líquido, margem e
+// edição direta de quantidade, preço e desconto.
+// ---------------------------------------------------------------------------
+function weightOf(p) { if (p.kit) return p.kit.reduce((s, [k, q]) => s + q * weightOf(prod(k)), 0); const h = [...p.sku].reduce((a, c) => a + c.charCodeAt(0), 0); return p.price < 1 ? 0.1 : (h % 300) + 20; }
+function itemCost(i) { return i.qty * unitCost(prod(i.sku)); }
+function stockChip(p, qty, reserved) {
+  const a = avail(p) + (reserved ? qty : 0);
+  if (a >= qty) return `<span class="sc ok" title="${nf.format(a)} disponível">${icon("check")}${nf.format(a)}</span>`;
+  if (a > 0) return `<span class="sc part" title="Atende ${nf.format(a)} de ${nf.format(qty)}">${icon("alert")}${nf.format(a)} de ${nf.format(qty)}</span>`;
+  return `<span class="sc none">${icon("alert")}Sem saldo</span>`;
+}
+function itemsGrid(items, opts = {}) {
+  const ed = !!opts.editable; const costs = seeCosts(); const reserved = !!opts.reserved;
+  if (!items.length) return `<div class="ig-empty">${icon("produtos")}<b>Nenhum item no pedido</b><span>Digite o código ou parte do nome do produto acima e tecle <kbd>Enter</kbd>. Use <kbd>texto*qtd</kbd> para já informar a quantidade.</span></div>`;
+  const rows = items.map((i, idx) => {
+    const p = prod(i.sku); const net = i.price * (1 - i.disc / 100); const below = net < p.min - 1e-9; const mg = net ? (net - unitCost(p)) / net : 0;
+    const num = (k, v, step, w) => ed ? `<input class="ig-in num" type="number" min="0" step="${step}" data-ig="${k}" data-idx="${idx}" value="${v}" style="width:${w}px" aria-label="${k}">` : null;
+    return `<tr class="${below ? "warnrow" : ""}">
+      <td class="ig-n">${String(idx + 1).padStart(2, "0")}</td>
+      <td class="ig-p"><div class="ig-prod">${thumb(p, 40)}<div><b>${esc(p.name)}${p.kit ? ` <span class="kitb">KIT</span>` : ""}</b><span class="mono">${p.sku} · NCM ${p.ncm} · UN</span>${p.kit ? `<small class="note">baixa ${p.kit.map(([k, q]) => `${nf.format(q * i.qty)} × ${k}`).join(", ")}</small>` : ""}${i.obs ? `<small class="ig-obs">${icon("fiscal")}${esc(i.obs)}</small>` : ""}</div></div></td>
+      <td class="r" data-l="Quantidade">${num("qty", i.qty, 1, 72) || `<span class="num">${nf.format(i.qty)}</span>`}</td>
+      <td class="r" data-l="Valor unitário">${num("price", i.price, 0.01, 86) || `<span class="num">${money(i.price)}</span>`}${i.price !== p.price ? `<small class="ig-tab">tabela ${money(p.price)}</small>` : ""}</td>
+      <td class="r" data-l="Desconto %">${num("disc", i.disc, 0.5, 58) || `<span class="num">${i.disc ? `${String(i.disc).replace(".", ",")}%` : "-"}</span>`}</td>
+      <td class="r num" data-l="Líquido">${money(net)}${below ? `<small class="ig-flag" title="Preço mínimo ${money(p.min)}">abaixo do mínimo</small>` : ""}</td>
+      <td class="r num" data-l="Total"><b>${money(i.sub)}</b></td>
+      ${costs ? `<td class="r" data-l="Margem"><span class="mg ${mg < 0.3 ? "low" : mg < 0.5 ? "mid" : "hi"}">${Math.round(mg * 100)}%</span></td>` : ""}
+      <td data-l="Estoque">${stockChip(p, i.qty, reserved)}</td>
+      ${ed ? `<td class="ig-act"><button class="ib mv" data-igmv="-1" data-idx="${idx}" title="Subir" ${idx ? "" : "disabled"}>↑</button><button class="ib mv" data-igmv="1" data-idx="${idx}" title="Descer" ${idx < items.length - 1 ? "" : "disabled"}>↓</button><button class="ib" data-igdup="${idx}" title="Duplicar">⧉</button><button class="ib del" data-rm="${idx}" title="Excluir">✕</button></td>` : ""}
+    </tr>`;
+  });
+  const cols = [["#", ""], ["Produto", ""], ["Qtd", "r"], ["Valor unit.", "r"], ["Desc.", "r"], ["Líquido", "r"], ["Total", "r"]].concat(costs ? [["Margem", "r"]] : []).concat([["Estoque", ""]]).concat(ed ? [["", ""]] : []);
+  return `<div class="tbl-wrap ig"><table><thead><tr>${cols.map(([t, c]) => `<th class="${c}">${t}</th>`).join("")}</tr></thead><tbody>${rows.join("")}</tbody></table></div>`;
+}
+function itemsSummary(o) {
+  const gross = o.items.reduce((s, i) => s + i.qty * i.price, 0); const disc = gross - o.items.reduce((s, i) => s + i.sub, 0);
+  const qty = o.items.reduce((s, i) => s + i.qty, 0); const kg = o.items.reduce((s, i) => s + i.qty * weightOf(prod(i.sku)), 0) / 1000;
+  const cost = o.items.reduce((s, i) => s + itemCost(i), 0); const mg = o.itemsTotal ? (o.itemsTotal - cost) / o.itemsTotal : 0;
+  const short = o.items.filter((i) => avail(prod(i.sku)) < i.qty).length;
+  return `<div class="ig-sum">
+    <div class="ig-facts"><span><small>Itens</small><b class="num">${o.items.length}</b></span><span><small>Unidades</small><b class="num">${nf.format(qty)}</b></span><span><small>Peso estimado</small><b class="num">${kg.toLocaleString("pt-BR", { maximumFractionDigits: 2 })} kg</b></span>${seeCosts() ? `<span><small>Margem do pedido</small><b class="num" style="color:${mg < 0.3 ? "var(--bad)" : "var(--good)"}">${Math.round(mg * 100)}%</b></span>` : ""}${short ? `<span><small>Sem saldo suficiente</small><b class="num" style="color:var(--bad)">${short} item(ns)</b></span>` : ""}</div>
+    <dl class="ig-tot"><dt>Total bruto</dt><dd class="num">${money(gross)}</dd><dt>Descontos</dt><dd class="num" style="color:${disc ? "var(--bad)" : "inherit"}">${disc ? "− " : ""}${money(disc)}</dd><dt>Frete</dt><dd class="num">${money(o.freight)}</dd><dt class="big">Total do pedido</dt><dd class="big num">${money(o.total)}</dd><dt>Pagamento</dt><dd>${o.inst}x de ${money(o.total / o.inst)}</dd></dl>
+  </div>`;
+}
+
+// ---------------------------------------------------------------------------
+// NF-e de entrada: o ERP lê a caixa nfe@ e puxa sozinho todo XML recebido.
+// A nota e a conta a pagar entram na hora; o estoque entra na conferência
+// física (ou direto, se a empresa ligar a entrada automática). A chave de
+// acesso impede importar a mesma nota duas vezes.
+// ---------------------------------------------------------------------------
+function nfKey(m) { return `3526${String(m.nfIn.cnpj || "11222333000181").replace(/\D/g, "")}55001${String(m.nfIn.n).padStart(9, "0")}1${String(m.nfIn.n * 7 % 1e8).padStart(8, "0")}`.slice(0, 44).padEnd(44, "0"); }
+function autoPullXml(co, m, silent) {
+  if (m.box !== "fiscal" || !m.nfIn) return null;
+  co.nfIn = co.nfIn || []; const key = nfKey(m);
+  const dup = co.nfIn.find((x) => x.key === key);
+  if (dup) { m.imported = true; m.autoNote = `XML repetido: a nota ${dup.n} já tinha sido importada (mesma chave). Nada foi lançado de novo.`; return null; }
+  const sup = (co.suppliers || []).find((s) => s.name === m.fromName);
+  const po = co.purchases.find((p) => p.supplier === m.fromName && !p.nfIn && !p.imp && p.status !== "Recebida");
+  const items = m.nfIn.items.map(([sku, q, supCode]) => ({ sku: sku && co.products.some((p) => p.sku === sku) ? sku : (co.supMap || {})[`${m.fromName}|${supCode}`] || null, supCode: supCode || sku, desc: m.nfIn.desc?.[supCode] || (sku && co.products.find((p) => p.sku === sku)?.name.toUpperCase()) || supCode, q, conf: q }));
+  const e = { key, n: m.nfIn.n, supplier: m.fromName, supplierId: sup?.id, total: m.nfIn.total, items, received: m.date, pulled: new Date().toISOString(), po: po?.n, mail: m.id, status: items.some((i) => !i.sku) ? "Produto sem vínculo" : "Aguardando conferência" };
+  co.nfIn.unshift(e);
+  if (po) po.nfIn = e.n;
+  co.pays.unshift({ id: `p-nf${e.n}`, desc: `${m.fromName} · NF ${e.n}`, cat: "Fornecedores", amount: e.total, due: days(28), approved: false, paid: 0, nf: e.n });
+  m.imported = true; m.autoNote = `Puxado automaticamente às ${new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}: NF-e ${e.n} lançada como nota de entrada${po ? ` e vinculada ao pedido de compra ${po.n}` : ""}; conta a pagar de ${money(e.total)} provisionada.`;
+  if (co.autoStock && e.status === "Aguardando conferência") confirmNfIn(co, e, true);
+  if (!silent) toast(`XML da NF-e ${e.n} (${m.fromName}) puxado do e-mail automaticamente.`);
+  return e;
+}
+function confirmNfIn(co, e, auto) {
+  if (e.items.some((i) => !i.sku)) throw new Error("Vincule todos os produtos do fornecedor a um SKU antes de dar entrada.");
+  const prev = S.company; S.company = co.code;
+  try { e.items.forEach((i, idx) => { if (i.conf > 0) move("Entrada", i.sku, i.conf, `NF ${e.n} ${e.supplier}`, `nfin:${e.key}:${idx}`); }); }
+  finally { S.company = prev; }
+  const div = e.items.filter((i) => i.conf !== i.q);
+  e.status = div.length ? "Entrada com divergência" : "Entrada lançada"; e.checkedBy = auto ? "entrada automática" : role().user; e.checkedAt = now();
+  if (div.length) e.divNote = div.map((i) => `${i.sku}: nota ${nf.format(i.q)}, conferido ${nf.format(i.conf)}`).join("; ");
+}
+function simulateIncomingXml() {
+  const co = C(); const n = 77800 + (co.mails || []).filter((m) => m.nfIn).length;
+  const sup = (co.suppliers || [])[1] || (co.suppliers || [])[0];
+  const prods = co.products.filter((p) => !p.kit && sup?.skus.includes(p.sku)).slice(0, 2);
+  const items = prods.map((p, i) => [p.sku, i ? 200 : 1000]); if (co.code === "A") items.push([null, 50, "EP-RL5V"]);
+  const m = { id: `mx${Date.now()}`, box: "fiscal", from: `nfe@${(sup?.name || "fornecedor").split(" ")[0].toLowerCase().normalize("NFD").replace(/[^a-z]/g, "")}.com.br`, fromName: sup?.name || "Fornecedor", supplier: true, subject: `NF-e ${n} - ${sup?.name}`, date: new Date().toISOString(), tag: "XML NF-e", read: false,
+    body: `Segue XML e DANFE da NF-e ${n}.`, nfIn: { n, total: r2(items.reduce((s, [k, q]) => s + q * (k ? prod(k).cost : 1.9), 0)), items, desc: { "EP-RL5V": "RELE 5V 10A 1C SONGLE SRD-05VDC" } }, attach: [`NFe${n}.xml`, `DANFE-${n}.pdf`] };
+  co.mails.unshift(m); return m;
+}
+const NFI = { open: null };
+function vNfEntrada() {
+  const list = C().nfIn || []; const canAct = ["MEDIATOR", "STOCK", "FISCAL", "MANAGER"].includes(S.role);
+  const e = list.find((x) => x.key === NFI.open);
+  const st = (s) => pill([s, s === "Entrada lançada" ? "p-good" : s === "Produto sem vínculo" || s.includes("divergência") ? "p-bad" : "p-warn"]);
+  const box = `<div class="alert info">${icon("emails")}<span>O ERP lê a caixa <b>nfe@maxled.com.br</b> a cada 5 minutos e puxa sozinho todo XML de NF-e recebido: a nota, o fornecedor, o pedido de compra e a conta a pagar já entram. O estoque entra quando a conferência física confirma as quantidades${C().autoStock ? " (entrada automática ligada nesta empresa)" : ""}.</span><button class="btn" data-act="nfin-sync" style="margin-left:auto">Sincronizar caixa agora</button></div>`;
+  const detail = e ? `<div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">NF-e ${e.n} · ${esc(e.supplier)}</h2>${st(e.status)}</div><p class="note mono" style="word-break:break-all">Chave ${e.key}</p>
+    <div class="tbl-wrap"><table><thead><tr><th>Cód. fornecedor</th><th>Descrição na nota</th><th>SKU MAX LED</th><th class="r">Qtd na nota</th><th class="r">Qtd conferida</th></tr></thead><tbody>${e.items.map((i, idx) => `<tr class="${!i.sku ? "warnrow" : ""}"><td class="mono">${esc(i.supCode)}</td><td>${esc(i.desc || i.supCode)}</td><td>${i.sku ? `${esc(prod(i.sku)?.name || i.sku)}<small class="note" style="display:block">${i.sku}</small>` : canAct && e.status !== "Entrada lançada" ? `<select data-nfmap="${idx}"><option value="">Vincular a…</option>${C().products.filter((p) => !p.kit).map((p) => `<option value="${p.sku}">${p.sku} · ${esc(p.name)}</option>`).join("")}</select>` : pill(["sem vínculo", "p-bad"])}</td><td class="r num">${nf.format(i.q)}</td><td class="r">${canAct && !e.status.startsWith("Entrada") ? `<input type="number" min="0" class="ig-in" style="width:90px" data-nfconf="${idx}" value="${i.conf}">` : `<span class="num" style="color:${i.conf !== i.q ? "var(--bad)" : "inherit"}">${nf.format(i.conf)}</span>`}</td></tr>`).join("")}</tbody></table></div>
+    ${e.divNote ? `<div class="alert warn" style="margin-top:10px">${icon("alert")}<span>Divergência: ${esc(e.divNote)}. Avise o fornecedor e o financeiro antes de pagar.</span></div>` : ""}
+    <div class="row" style="margin-top:12px">${canAct && !e.status.startsWith("Entrada") ? `<button class="btn" data-act="nfin-ok">Conferir e dar entrada no estoque</button>` : e.checkedAt ? `<span class="note">Conferido por ${esc(e.checkedBy)} em ${e.checkedAt}.</span>` : ""}<button class="btn ghost" data-ptdl="XML ${e.n}">Baixar XML</button><button class="btn ghost" data-act="nfin-close">Fechar</button></div><p class="note">Um vínculo feito aqui (código do fornecedor → SKU) fica salvo e as próximas notas desse fornecedor já chegam vinculadas.</p><div id="err"></div></div>` : "";
+  return box + detail + table([{ t: "Recebida" }, { t: "Fornecedor" }, { t: "NF-e" }, { t: "Pedido de compra" }, { t: "Itens", r: 1 }, { t: "Total", r: 1 }, { t: "Situação" }, { t: "" }],
+    list.map((x) => `<tr><td class="num">${new Date(x.received).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}<small class="note" style="display:block">via e-mail</small></td><td>${esc(x.supplier)}</td><td class="num">${x.n}</td><td>${x.po ? `Nº ${x.po}` : `<span class="note">sem pedido</span>`}</td><td class="r num">${x.items.length}</td><td class="r num">${money(x.total)}</td><td>${st(x.status)}</td><td><button class="btn ghost" data-nfopen="${x.key}">${x.status.startsWith("Entrada") ? "Ver" : "Conferir"}</button></td></tr>`), "Nenhum XML recebido ainda.");
+}
+function nfinAction(ds, act) {
+  if (ds.nfopen) { NFI.open = ds.nfopen; render(); return window.scrollTo(0, 0); }
+  if (act === "nfin-close") { NFI.open = null; return render(); }
+  if (act === "nfin-sync") {
+    const m = simulateIncomingXml(); const e = autoPullXml(C(), m, true);
+    toast(e ? `1 e-mail novo com XML: NF-e ${e.n} de ${e.supplier} puxada automaticamente${e.status === "Produto sem vínculo" ? " (1 produto precisa de vínculo)" : ""}.` : "Caixa sincronizada: nenhum XML novo.");
+    return render();
+  }
+  if (act === "nfin-ok") { const e = C().nfIn.find((x) => x.key === NFI.open); confirmNfIn(C(), e); toast(`NF-e ${e.n}: ${e.status.toLowerCase()}.`); return render(); }
+}
+
+// ---------------------------------------------------------------------------
+// Prospecção: base de empresas-alvo, busca por segmento, cadências de
+// contato e a agenda do dia do vendedor.
+// ---------------------------------------------------------------------------
+const SEGS = { "Distribuidor de material elétrico": 30, "Integrador solar": 26, "Comunicação visual": 24, "Indústria / automação": 28, "Escola / maker": 16, "Loja de eletrônicos": 22, "Construtora": 18 };
+const PF2 = { seg: "", uf: "", min: 0, q: "", sel: new Set(), tab: "funil", find: false };
+function fitScore(x) { return Math.min(99, (SEGS[x.seg] || 10) + ({ ME: 8, EPP: 16, "Média": 24, Grande: 28 }[x.size] || 0) + (["SP", "PR", "SC", "RS", "MG"].includes(x.uf) ? 18 : 8) + x.signals.length * 9); }
+function seedProspects(st) {
+  const base = [
+    ["Elétrica Paulistana Ltda", "Distribuidor de material elétrico", "São Paulo", "SP", "Média", "Base CNPJ · CNAE 4742", ["Abriu filial em 2026"]],
+    ["SolarMais Integradora", "Integrador solar", "Ribeirão Preto", "SP", "EPP", "Google Maps", ["Contratando instaladores"]],
+    ["Fachadas & Cia Comunicação", "Comunicação visual", "Curitiba", "PR", "EPP", "Lista feira Expolux", []],
+    ["MecaTron Automação", "Indústria / automação", "Caxias do Sul", "RS", "Média", "Base CNPJ · CNAE 2829", ["Comprou relés no ML como PF"]],
+    ["Clube Maker Floripa", "Escola / maker", "Florianópolis", "SC", "ME", "Clientes Mercado Livre", ["3 compras no ML em 90 dias"]],
+    ["Eletrônica Central BH", "Loja de eletrônicos", "Belo Horizonte", "MG", "EPP", "Google Maps", []],
+    ["Construtora Vale Verde", "Construtora", "Campinas", "SP", "Grande", "Indicação", ["Obra com 400 unidades"]],
+    ["Distribuidora Nordeste Elétrica", "Distribuidor de material elétrico", "Recife", "PE", "Média", "Base CNPJ · CNAE 4742", []],
+    ["Brilho Letreiros", "Comunicação visual", "Goiânia", "GO", "ME", "Lista feira Expolux", []],
+    ["Instala Sol Energia", "Integrador solar", "Londrina", "PR", "ME", "Google Maps", ["Site novo com loja"]],
+    ["Fábrica de Painéis Sigma", "Indústria / automação", "Joinville", "SC", "Grande", "Base CNPJ · CNAE 2732", ["Vaga para comprador"]],
+    ["RoboKids Escola", "Escola / maker", "Santos", "SP", "ME", "Clientes Mercado Livre", []],
+  ];
+  st.companies.A.prospects = base.map(([name, seg, city, uf, size, source, signals], i) => { const dom = name.split(" ")[0].toLowerCase().normalize("NFD").replace(/[^a-z]/g, ""); return { id: `P${i + 1}`, name, seg, city, uf, size, source, signals, cnpj: `${String(10 + i * 7).padStart(2, "0")}.${String(300 + i * 37).slice(0, 3)}.${String(500 + i * 41).slice(0, 3)}/0001-${String(10 + i * 3).slice(0, 2)}`, contact: `${FIRST[i % 10]} (compras)`, email: `compras@${dom}.com.br`, phone: `(${11 + i * 3}) 9${8100 + i * 37}-${2000 + i * 11}`, status: i === 6 ? "No funil" : "Novo" }; });
+  st.companies.B.prospects = [{ id: "P50", name: "Shopping Litoral Norte", seg: "Construtora", city: "Bertioga", uf: "SP", size: "Grande", source: "Indicação", signals: ["Retrofit de iluminação"], cnpj: "55.444.333/0001-22", contact: "Eng. Ricardo", email: "obras@shoppinglitoral.com.br", phone: "(13) 3333-2211", status: "Novo" }];
+  for (const co of Object.values(st.companies)) co.cadences = [
+    { id: "cd1", name: "Primeiro contato B2B (14 dias)", steps: [[0, "E-mail", "Apresentação da MAX LED + catálogo"], [2, "Ligação", "Entender volume e fornecedor atual"], [5, "WhatsApp", "Mandar tabela de preços"], [9, "E-mail", "Case de cliente do mesmo segmento"], [14, "Ligação", "Última tentativa / agendar visita"]] },
+    { id: "cd2", name: "Reativação de cliente parado (7 dias)", steps: [[0, "E-mail", "Sentimos sua falta + condição especial"], [3, "Ligação", "Perguntar o motivo e oferecer reposição"], [7, "WhatsApp", "Lembrete da condição"]] },
+  ];
+  const A = st.companies.A; const start = (n) => days(-n);
+  [["L1", 3], ["L2", 5], ["L3", 9]].forEach(([id, n]) => { const l = A.leads.find((x) => x.id === id); if (l) l.cad = { id: "cd1", start: start(n), done: [] }; });
+  const l2 = A.leads.find((x) => x.id === "L2"); if (l2) l2.cad.done = [0, 1];
+  const l3 = A.leads.find((x) => x.id === "L3"); if (l3) l3.cad.done = [0, 1, 2];
+}
+function cadTasks() {
+  // Passos de cadência vencidos (até hoje) e próximos passos marcados nos leads.
+  const today = new Date(new Date().toDateString()); const out = [];
+  myLeads().filter((l) => !["GANHO", "PERDIDO"].includes(l.stage)).forEach((l) => {
+    if (l.cad) { const cd = C().cadences.find((c) => c.id === l.cad.id); cd.steps.forEach(([d, type, what], i) => { const due = new Date(l.cad.start); due.setDate(due.getDate() + d); due.setHours(0, 0, 0, 0); if (!l.cad.done.includes(i) && !(l.cad.skip || []).includes(i) && due <= today && cd.steps.slice(0, i).every((_, j) => l.cad.done.includes(j) || (l.cad.skip || []).includes(j))) out.push({ l, type, what, due, step: i, cad: cd.name, late: due < today }); }); }
+    if (l.nextDate && new Date(l.nextDate) < new Date(today.getTime() + 864e5) && !out.some((t) => t.l === l)) out.push({ l, type: "Tarefa", what: l.next, due: new Date(l.nextDate), late: new Date(l.nextDate) < today });
+  });
+  return out.sort((a, b) => a.due - b.due);
+}
+function crmTabs() {
+  const n = cadTasks().length;
+  return `<div class="tabs">${[["funil", "Funil (Kanban)"], ["prosp", "Prospecção"], ["hoje", `Agenda de hoje ${n ? `<span class="count-in">${n}</span>` : ""}`], ["cad", "Cadências"]].map(([k, l]) => `<button data-crmtab="${k}" class="${PF2.tab === k ? "on" : ""}">${l}</button>`).join("")}</div>`;
+}
+function vProspeccao() {
+  const all = C().prospects || []; const ufs = [...new Set(all.map((x) => x.uf))].sort();
+  const ls = all.filter((x) => x.status !== "Descartado" && (!PF2.seg || x.seg === PF2.seg) && (!PF2.uf || x.uf === PF2.uf) && fitScore(x) >= PF2.min && (!PF2.q || matchWords(`${x.name} ${x.city} ${x.cnpj}`, PF2.q))).sort((a, b) => fitScore(b) - fitScore(a));
+  const sel = [...PF2.sel].filter((id) => ls.some((x) => x.id === id && x.status === "Novo"));
+  return `<div class="grid g4">${kpi("users", "c1", "Empresas na base", all.filter((x) => x.status !== "Descartado").length)}${kpi("check", "c3", "Alto potencial (70+)", all.filter((x) => x.status === "Novo" && fitScore(x) >= 70).length)}${kpi("crm", "c2", "Já no funil", all.filter((x) => x.status === "No funil").length)}${kpi("alert", "c4", "Com sinal de compra", all.filter((x) => x.status === "Novo" && x.signals.length).length)}</div>
+    <div class="row"><button class="btn" data-act="pr-find">${icon("plus")}Buscar novas empresas</button><button class="btn ghost" data-act="pr-import">Importar lista (CSV)</button></div>
+    ${PF2.find ? `<div class="card"><h2>Buscar empresas por segmento e região</h2><div class="form"><label class="f" for="pr-seg">Segmento<select id="pr-seg">${Object.keys(SEGS).map((x) => `<option>${x}</option>`).join("")}</select></label><label class="f" for="pr-city">Cidade/UF<input id="pr-city" value="Campinas/SP"></label><label class="f" for="pr-size">Porte mínimo<select id="pr-size"><option>ME</option><option selected>EPP</option><option>Média</option></select></label><div class="f" style="align-self:end"><button class="btn" data-act="pr-run">Buscar</button></div></div><p class="note">Consulta a base pública de CNPJ pelo CNAE do segmento. Empresas que já são clientes ou já estão na base não entram de novo.</p><div id="err"></div></div>` : ""}
+    <div class="filters"><label class="f grow" for="pp-q">Buscar<input id="pp-q" value="${esc(PF2.q)}" placeholder="Empresa, cidade ou CNPJ"></label><label class="f" for="pp-seg">Segmento<select id="pp-seg"><option value="">Todos</option>${Object.keys(SEGS).map((x) => `<option ${PF2.seg === x ? "selected" : ""}>${x}</option>`).join("")}</select></label><label class="f" for="pp-uf">UF<select id="pp-uf"><option value="">Todas</option>${ufs.map((x) => `<option ${PF2.uf === x ? "selected" : ""}>${x}</option>`).join("")}</select></label><label class="f" for="pp-min">Potencial mínimo<select id="pp-min">${[0, 50, 70].map((x) => `<option value="${x}" ${PF2.min === x ? "selected" : ""}>${x ? `${x}+` : "Qualquer"}</option>`).join("")}</select></label></div>
+    ${sel.length ? `<div class="bulkbar"><b>${sel.length} selecionada(s)</b><label class="f" for="pp-cad" style="flex-direction:row;align-items:center;gap:8px">Cadência<select id="pp-cad"><option value="">Sem cadência</option>${C().cadences.map((c) => `<option value="${c.id}">${esc(c.name)}</option>`).join("")}</select></label><button class="btn" data-act="pr-tofunnel">Levar para o funil</button><button class="btn ghost" data-act="pr-discard">Descartar</button></div>` : ""}` +
+    table([{ t: "" }, { t: "Empresa" }, { t: "Segmento" }, { t: "Porte" }, { t: "Potencial" }, { t: "Sinais" }, { t: "Origem" }, { t: "Situação" }],
+      ls.map((x) => { const sc = fitScore(x); return `<tr><td>${x.status === "Novo" ? `<input type="checkbox" data-ppsel="${x.id}" ${PF2.sel.has(x.id) ? "checked" : ""} aria-label="Selecionar ${esc(x.name)}">` : ""}</td><td><div class="who-cell">${avatar(x.name)}<span>${esc(x.name)}<small>${x.cnpj} · ${esc(x.city)}/${x.uf} · ${esc(x.contact)} · ${x.phone}</small></span></div></td><td>${esc(x.seg)}</td><td>${x.size}</td><td style="min-width:110px"><div class="mini"><i style="width:${sc}%;background:${sc >= 70 ? "var(--grad)" : sc >= 50 ? "var(--warn)" : "var(--neutral-soft)"}"></i></div><small class="note"><b style="color:var(--text)">${sc}</b>/100</small></td><td>${x.signals.map((s) => `<span class="sig">${esc(s)}</span>`).join("") || `<span class="note">-</span>`}</td><td class="note">${esc(x.source)}</td><td>${x.status === "No funil" ? pill(["No funil", "p-good"]) : pill(["Novo", "p-info"])}</td></tr>`; }), "Nenhuma empresa com esses filtros.") +
+    `<p class="note">Potencial = segmento + porte + região atendida + sinais de compra. Ajuste os pesos em Configurações quando tiver histórico de conversão.</p>`;
+}
+function vAgendaHoje() {
+  const ts = cadTasks(); const done = (C().doneToday || 0);
+  const ic = { "E-mail": "emails", "Ligação": "clock", "WhatsApp": "emails", "Tarefa": "check" };
+  return `<div class="grid g3">${kpi("check", "c3", "Concluídas hoje", done)}${kpi("clock", "c1", "Pendentes", ts.length)}${kpi("alert", "c4", "Atrasadas", ts.filter((t) => t.late).length)}</div>` +
+    (ts.length ? `<div class="list tasks">${ts.map((t, i) => `<div class="task ${t.late ? "late" : ""}"><span class="tk-ic">${icon(ic[t.type] || "check")}</span><div style="flex:1;min-width:0"><div class="l"><b>${t.type} · ${esc(t.l.company)}</b>${t.late ? pill(["atrasada", "p-bad"]) : pill(["hoje", "p-info"])}</div><span>${esc(t.what || "")}</span><small class="note">${esc(t.l.contact)} · ${esc(t.l.phone)} · ${esc(t.l.email)}${t.cad ? ` · ${esc(t.cad)}, passo ${t.step + 1}` : ""}</small></div>
+      <div class="row" style="flex-wrap:nowrap">${t.type === "E-mail" && can("emails") ? `<button class="btn ghost" data-mailto="${t.l.email}">Escrever</button>` : ""}<button class="btn" data-tkdone="${i}">Feito</button>${t.cad ? `<button class="btn ghost" data-tkskip="${i}">Pular</button>` : ""}<button class="btn ghost" data-lead="${t.l.id}">Abrir</button></div></div>`).join("")}</div>` : `<div class="ig-empty">${icon("check")}<b>Agenda do dia em dia</b><span>Nenhuma atividade pendente. Que tal levar empresas da Prospecção para o funil?</span></div>`);
+}
+function vCadencias() {
+  return C().cadences.map((cd) => { const en = myLeads().filter((l) => l.cad?.id === cd.id && !["GANHO", "PERDIDO"].includes(l.stage)); const resp = myLeads().filter((l) => l.cad?.id === cd.id && ["QUALIF", "COTACAO", "NEGOC", "APROV", "GANHO"].includes(l.stage)).length;
+    return `<div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">${esc(cd.name)}</h2><span class="note">${en.length} lead(s) em andamento · ${resp} avançaram no funil</span></div>
+      <div class="cadsteps">${cd.steps.map(([d, type, what]) => `<div><span class="cd-d">Dia ${d}</span><b>${type}</b><small class="note">${esc(what)}</small><small class="note">${en.filter((l) => !l.cad.done.includes(cd.steps.findIndex((s) => s[0] === d))).length} pendente(s)</small></div>`).join("")}</div>
+      ${en.length ? `<div class="row" style="margin-top:12px">${en.map((l) => `<button class="btn ghost" data-lead="${l.id}">${esc(l.company)} · ${l.cad.done.length}/${cd.steps.length}</button>`).join("")}</div>` : ""}</div>`; }).join("") +
+    `<p class="note">A cadência sai sozinha do lead quando ele responde (avança de etapa) ou é marcado como perdido.</p>`;
+}
+function prospAction(ds, act) {
+  const c = C();
+  if (ds.crmtab) { PF2.tab = ds.crmtab; KF.leadId = null; return render(); }
+  if (act === "pr-find") { PF2.find = !PF2.find; return render(); }
+  if (act === "pr-run") {
+    const seg = $("pr-seg").value; const [city, uf] = $("pr-city").value.split("/").map((x) => x.trim()); if (!city || !uf || uf.length !== 2) throw new Error("Cidade no formato Cidade/UF.");
+    const names = ["Alfa", "Prisma", "Nova Era", "Ponto Certo", "Total"]; const size = $("pr-size").value; let added = 0;
+    names.forEach((n, i) => { const cnpj = `${String(40 + i).padStart(2, "0")}.${String(city.length * 37 + i).padStart(3, "0").slice(0, 3)}.${String(seg.length * 11 + i).padStart(3, "0").slice(0, 3)}/0001-${String(20 + i)}`; if (c.prospects.some((x) => x.cnpj === cnpj)) return;
+      const nm = `${n} ${seg.split(" ")[0]} ${city}`; c.prospects.unshift({ id: `P${Date.now() % 1e6}${i}`, name: nm, seg, city, uf: uf.toUpperCase(), size: i % 2 ? size : "Média", source: "Busca por CNAE", signals: i === 0 ? ["Empresa aberta há menos de 1 ano"] : [], cnpj, contact: "Comprador", phone: "-", email: `contato@${n.toLowerCase().replace(/\W/g, "")}${i}.com.br`, status: "Novo" }); added++; });
+    PF2.find = false; toast(added ? `${added} empresa(s) encontrada(s) e adicionadas à base.` : "Nenhuma empresa nova: todas já estavam na base."); return render();
+  }
+  if (act === "pr-import") {
+    const rows = [["Elétrica Paulistana Ltda", "dup"], ["Iluminação Moderna ME", "Loja de eletrônicos"], ["Tech Painéis Ind.", "Indústria / automação"], ["Sol do Sul Energia", "Integrador solar"], ["SolarMais Integradora", "dup"]];
+    let n = 0, d = 0; rows.forEach(([name, seg], i) => { if (seg === "dup" || c.prospects.some((x) => x.name === name)) { d++; return; } c.prospects.unshift({ id: `PI${Date.now() % 1e6}${i}`, name, seg, city: "Porto Alegre", uf: "RS", size: "EPP", source: "Importação CSV", signals: [], cnpj: `7${i}.111.222/0001-0${i}`, contact: "-", phone: "-", email: "-", status: "Novo" }); n++; });
+    toast(`Lista importada: ${n} empresa(s) nova(s), ${d} já existia(m) (comparação por CNPJ e nome).`); return render();
+  }
+  if (act === "pr-tofunnel" || act === "pr-discard") {
+    const ids = [...PF2.sel]; const cad = $("pp-cad")?.value;
+    ids.forEach((id) => { const x = c.prospects.find((y) => y.id === id); if (!x || x.status !== "Novo") return;
+      if (act === "pr-discard") { x.status = "Descartado"; return; }
+      x.status = "No funil";
+      c.leads.unshift({ id: `L${Date.now() % 1e6}${id}`, company: x.name, contact: x.contact, email: x.email, phone: x.phone, city: `${x.city}/${x.uf}`, seller: role().own ? role().user : "Gerente Comercial", stage: "NOVO", value: { ME: 4000, EPP: 9000, "Média": 20000, Grande: 45000 }[x.size] || 5000, source: `Prospecção · ${x.source}`, next: cad ? "Seguir a cadência" : "Primeiro contato", nextDate: days(0), cad: cad ? { id: cad, start: days(0), done: [] } : null, acts: [{ when: new Date().toISOString(), type: "Tarefa", msg: `Vindo da prospecção (potencial ${fitScore(x)}/100)${x.signals.length ? `: ${x.signals.join(", ")}` : ""}`, who: role().user }] });
+    });
+    PF2.sel.clear(); toast(act === "pr-discard" ? `${ids.length} empresa(s) descartada(s).` : `${ids.length} empresa(s) levada(s) para o funil${cad ? " com cadência: as tarefas já aparecem na Agenda de hoje" : ""}.`); return render();
+  }
+  if (ds.tkdone !== undefined || ds.tkskip !== undefined) {
+    const t = cadTasks()[+(ds.tkdone ?? ds.tkskip)]; if (!t) return render();
+    if (ds.tkdone !== undefined) { t.l.acts.unshift({ when: new Date().toISOString(), type: t.type === "WhatsApp" ? "Ligação" : t.type, msg: `${t.what || "Atividade"} (feito)`, who: role().user }); c.doneToday = (c.doneToday || 0) + 1; }
+    if (t.cad) { (ds.tkdone !== undefined ? t.l.cad.done : (t.l.cad.skip = t.l.cad.skip || [])).push(t.step); } else { t.l.nextDate = null; }
+    toast(ds.tkdone !== undefined ? `${t.type} com ${t.l.company} registrado(a).` : "Passo pulado."); return render();
+  }
+}
+
 function vNovaCotacao() {
   const d = draft; const c = C(); const e = d.entry;
   const custs = role().own ? c.customers.filter((x) => x.seller === role().user) : c.customers;
@@ -1290,37 +1628,46 @@ function vNovaCotacao() {
   const reasons = d.items.length ? approvalReasons(d) : [];
   const p = prod(e.sku.trim().toUpperCase());
   const today = new Date().toLocaleDateString("pt-BR");
-  return `<div class="card pedform"><h2>Lançar Pedido de Saída</h2>
-    <div class="keys"><span><kbd>Enter</kbd> inclui item</span><span><kbd>↑</kbd><kbd>↓</kbd> escolhe na lista</span><span><kbd>F8</kbd> grava</span><span><kbd>F9</kbd> grava e envia</span><span><kbd>Esc</kbd> cancela</span><span><kbd>F2</kbd> novo pedido (de qualquer tela)</span></div>
-    <div class="pf-head">
-      <label class="f">Emissão<input value="${today}" readonly></label>
-      <label class="f" for="e-tipo">Tipo<select id="e-tipo"><option value="PED" ${d.tipo === "PED" ? "selected" : ""}>PED · Pedido</option><option value="ORC" ${d.tipo === "ORC" ? "selected" : ""}>ORC · Orçamento</option></select></label>
-      <label class="f">Empresa<input value="0${c.code === "A" ? 1 : 2}" readonly></label>
-      <label class="f">Pedido<input value="${c.code}${String(c.seq).padStart(5, "0")}" readonly></label>
-      <label class="f wide sugwrap" for="c-find">Cliente <span class="hint">código, nome ou CNPJ</span><input id="c-find" autocomplete="off" value="${esc(cust(d.customer) ? `${d.customer.toUpperCase()} · ${cust(d.customer).name} · ${cust(d.customer).doc}` : "")}"><div class="sug" id="c-sug" hidden></div></label>
-      <label class="f" for="e-entrega">Entrega<input id="e-entrega" type="date" value="${d.entrega}"></label>
-      <label class="f" for="e-tabela">Tabela<select id="e-tabela"><option value="1">1 · Padrão</option></select></label>
+  const cu = cust(d.customer); const cst = cu ? custStats(cu.id) : null; const lim = cu ? creditLimit(cu.id) : 0;
+  const last = cu ? c.orders.filter((o) => o.customer === d.customer && o.status !== "CANCELADO").slice(0, 3) : [];
+  const priceShown = e.priceTyped ? e.price : p ? p.price : "";
+  const lineTotal = p ? (e.qty || 1) * (+priceShown || 0) * (1 - (e.disc || 0) / 100) : 0;
+  return `<div class="card pedform">
+    <div class="pf-top">
+      <div class="pf-title"><span class="pf-kicker">${d.tipo === "ORC" ? "Orçamento" : "Pedido de saída"} · ${c.code === "A" ? "Empresa 01" : "Empresa 02"}</span><h2>Nº <span class="mono">${c.code}-${String(c.seq).padStart(5, "0")}</span></h2></div>
+      <div class="seg" role="group" aria-label="Tipo de documento"><button data-tipo="PED" class="${d.tipo === "PED" ? "on" : ""}">Pedido</button><button data-tipo="ORC" class="${d.tipo === "ORC" ? "on" : ""}">Orçamento</button></div>
     </div>
-    ${(() => { const last = c.orders.filter((o) => o.customer === d.customer && o.status !== "CANCELADO").slice(0, 3); return last.length ? `<div class="row repeat"><span class="note">Últimos pedidos deste cliente:</span>${last.map((o) => `<button class="btn ghost" data-repeat="${o.id}" title="Copia os itens para este pedido">${code(o)} · ${o.items.length} item(ns) · ${money(o.total)} · Repetir</button>`).join("")}</div>` : ""; })()}
-    <div class="pf-entry">
-      <div class="pf-entry-l">
-        <label class="f wide sugwrap" for="e-sku">Código do Produto <span class="hint">digite parte do código ou nome · texto*qtd</span><input id="e-sku" value="${esc(e.sku)}" placeholder="ex.: kit led*3" autocomplete="off"><div class="sug" id="e-sug" hidden></div></label>
-        <label class="f" for="e-qty">Quantidade<input id="e-qty" type="number" min="1" step="1" value="${e.qty}"></label>
-        <label class="f" for="e-disc">% Desconto<input id="e-disc" type="number" min="0" max="100" step="0.5" value="${e.disc}"></label>
-        <label class="f" for="e-price">Valor Unitário<input id="e-price" type="number" min="0" step="0.00001" value="${e.price || (p ? p.price : 0)}"></label>
-        <label class="f span3" for="e-obs" style="grid-column:1/-1">Observação do Produto<textarea id="e-obs" rows="3" placeholder="Ex.: embalar separado, cor de LED, prazo especial...">${esc(e.obs)}</textarea></label>
-        <div class="row" style="grid-column:1/-1"><button class="btn" data-act="e-add">${icon("plus")}Incluir item</button>${p ? `<span class="note">${esc(p.name)} · disponível ${nf.format(avail(p))} · preço de tabela ${money(p.price)}</span>` : ""}</div>
+    <div class="pf-head2">
+      <label class="f">Emissão<input value="${today}" readonly></label>
+      <label class="f" for="e-entrega">Entrega prevista<input id="e-entrega" type="date" value="${d.entrega}"></label>
+      <label class="f" for="e-tabela">Tabela de preço<select id="e-tabela"><option value="1">1 · Padrão</option></select></label>
+      <label class="f">Condição<input value="${d.inst === 1 ? "À vista / 30 dias" : `${d.inst} parcelas`}" readonly></label>
+    </div>
+    <div class="pf-cli">
+      <label class="f sugwrap" for="c-find">Cliente<div class="inp-ic">${icon("clientes")}<input id="c-find" autocomplete="off" placeholder="Buscar por código, nome ou CNPJ" value="${esc(cu ? cu.name : "")}"></div><div class="sug" id="c-sug" hidden></div></label>
+      ${cu ? `<div class="pf-cli-card">${avatar(cu.name)}<div class="pf-cli-info"><b>${esc(cu.name)}</b><span class="note">${cu.id.toUpperCase()} · CNPJ ${cu.doc} · ${esc(cu.city)} · vendedor ${esc(cu.seller)}</span></div>
+        <div class="pf-cli-stats"><span><small>Em aberto</small><b class="num">${money(cst.open)}</b></span><span><small>Limite livre</small><b class="num" style="color:${lim - cst.open < 0 ? "var(--bad)" : "var(--good)"}">${money(Math.max(0, lim - cst.open))}</b></span><span><small>Situação</small>${cst.late > 0 ? pill(["Título vencido", "p-bad"]) : pill(["Em dia", "p-good"])}</span></div></div>` : ""}
+      ${last.length ? `<div class="pf-repeat"><span class="note">Repetir um pedido anterior:</span>${last.map((o) => `<button class="chipbtn" data-repeat="${o.id}" title="Copia os itens para este pedido"><b class="mono">${code(o)}</b><span>${fdate(o.date)} · ${o.items.length} item(ns) · ${money(o.total)}</span></button>`).join("")}</div>` : ""}
+    </div>
+    <div class="pf-add">
+      <div class="pf-add-h"><h3>Incluir item</h3><span class="keys"><span><kbd>Enter</kbd> inclui</span><span><kbd>↑</kbd><kbd>↓</kbd> escolhe</span><span><kbd>texto*qtd</kbd> já informa a quantidade</span><span><kbd>F8</kbd> grava</span><span><kbd>F9</kbd> grava e envia</span></span></div>
+      <div class="pf-line">
+        <label class="f sugwrap" for="e-sku">Produto<div class="inp-ic">${icon("produtos")}<input id="e-sku" value="${esc(e.sku)}" placeholder="Código ou parte do nome · ex.: kit led*3" autocomplete="off"></div><div class="sug" id="e-sug" hidden></div></label>
+        <label class="f" for="e-qty">Qtd<input id="e-qty" class="num r" type="number" min="1" step="1" value="${e.qty}"></label>
+        <label class="f" for="e-price">Valor unit.<div class="inp-pre"><span>R$</span><input id="e-price" class="num r" type="number" min="0" step="0.01" value="${priceShown}" placeholder="tabela"></div></label>
+        <label class="f" for="e-disc">Desc.<div class="inp-pre suf"><input id="e-disc" class="num r" type="number" min="0" max="100" step="0.5" value="${e.disc}"><span>%</span></div></label>
+        <div class="f pf-lt"><span>Total</span><b class="num">${p ? money(lineTotal) : "-"}</b></div>
+        <div class="f pf-btn"><button class="btn" data-act="e-add">${icon("plus")}Incluir</button></div>
       </div>
-      <div class="pf-photo">${p ? `${thumb(p, 96)}<b>${esc(p.name)}</b><span class="mono">${p.sku} · NCM ${p.ncm}</span><span>Sem foto cadastrada</span>` : `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18"/><path d="M9 5h6l2 2h2a2 2 0 0 1 2 2v8M17.5 19H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1"/><circle cx="12" cy="13" r="3.2"/></svg><span>Foto do produto</span>`}</div>
+      ${p ? `<div class="pf-prev">${thumb(p, 48)}<div class="pf-prev-i"><b>${esc(p.name)}${p.kit ? ` <span class="kitb">KIT</span>` : ""}</b><span class="mono note">${p.sku} · NCM ${p.ncm} · ${prodTech(p).pack}</span></div><div class="pf-prev-s"><span><small>Disponível</small>${stockChip(p, e.qty || 1)}</span><span><small>Tabela</small><b class="num">${money(p.price)}</b></span><span><small>Mínimo</small><b class="num">${money(p.min)}</b></span>${seeCosts() ? `<span><small>Margem</small><b class="num">${Math.round(((p.price - unitCost(p)) / p.price) * 100)}%</b></span>` : ""}</div></div>` : ""}
+      <details class="pf-obs" ${e.obs ? "open" : ""}><summary>Observação do item (opcional)</summary><textarea id="e-obs" rows="2" placeholder="Ex.: embalar separado, cor do LED, prazo especial...">${esc(e.obs)}</textarea></details>
     </div>` +
-    table([{ t: "Código" }, { t: "Produto" }, { t: "Observação" }, { t: "Disponível", r: 1 }, { t: "Qtd", r: 1 }, { t: "Valor unit.", r: 1 }, { t: "% Desc.", r: 1 }, { t: "Total", r: 1 }, { t: "" }],
-      d.items.map((i, idx) => { const pr = prod(i.sku); const a = avail(pr); return `<tr><td class="mono">${i.sku}${pr.kit ? ` <span class="pill p-neutral">kit</span>` : ""}</td><td>${esc(pr.name)}</td><td class="note">${esc(i.obs || "")}</td><td class="r num" style="color:${a < i.qty ? "var(--bad)" : "inherit"}">${nf.format(a)}</td>
-        <td class="r num">${nf.format(i.qty)}</td><td class="r num">${money(i.price)}</td><td class="r num">${i.disc}%</td><td class="r num">${money(i.sub)}</td><td><button class="btn ghost" data-rm="${idx}">Excluir</button></td></tr>`; }), "Nenhum item incluído ainda.") +
+    `<div class="ig-head"><h3>Itens do pedido <span class="pill p-neutral">${d.items.length}</span></h3><span class="note">Quantidade, valor e desconto podem ser alterados direto na grade.</span></div>` + itemsGrid(d.items, { editable: true }) + (d.items.length ? itemsSummary(d) : "") +
     `<div class="row" style="justify-content:space-between">
       <div class="row">
         <label class="f" for="q-freight" style="width:130px">Frete (R$)<input id="q-freight" type="number" min="0" step="0.01" value="${d.freight}"></label>
         <label class="f" for="q-inst" style="width:110px">Parcelas<select id="q-inst">${[1, 2, 3, 4, 6].map((n) => `<option ${n === d.inst ? "selected" : ""}>${n}</option>`).join("")}</select></label>
-        <div><div class="note">Total do pedido</div><div class="kpi"><div class="val num">${money(d.total)}</div></div></div>
+
       </div>
       <div class="row"><button class="btn ghost" data-act="descartar">Cancelar</button><button class="btn ghost" data-act="salvar" ${d.items.length ? "" : "disabled"}>Gravar <kbd>F8</kbd></button><button class="btn" data-act="salvar-enviar" ${d.items.length ? "" : "disabled"}>${icon("check")}Gravar e enviar <kbd>F9</kbd></button></div>
     </div>
@@ -1349,6 +1696,12 @@ function sugCustomers(q) {
     .map((c) => ({ key: c.id, html: `<b class="mono">${c.id.toUpperCase()}</b><span>${esc(c.name)}</span><small>${c.doc} · ${esc(c.city || "")}</small>` }));
 }
 document.addEventListener("focusin", (ev) => { if (draft && ev.target.id === "c-find") ev.target.select(); });
+// Total da linha de inclusão acompanha a digitação sem redesenhar a tela.
+document.addEventListener("input", (ev) => {
+  if (!draft || !["e-qty", "e-price", "e-disc"].includes(ev.target.id)) return;
+  const p = prod(($("e-sku")?.value || "").split("*")[0].trim().toUpperCase()) || prod(draft.entry.sku.trim().toUpperCase()); const box = document.querySelector(".pf-lt b"); if (!p || !box) return;
+  const price = +$("e-price").value || p.price; box.textContent = money((+$("e-qty").value || 0) * price * (1 - (+$("e-disc").value || 0) / 100));
+});
 function showSug(input) {
   const isProd = input.id === "e-sku"; const box = $(isProd ? "e-sug" : "c-sug");
   sug = { box, items: isProd ? sugProducts(input.value) : sugCustomers(input.value), sel: 0, input };
@@ -1367,7 +1720,7 @@ function pickSug(i) {
   return true;
 }
 document.addEventListener("input", (ev) => {
-  if (ev.target.id === "cf-q" || ev.target.id === "pr-q" || ev.target.id === "mf-q" || ev.target.id === "pt-q" || ev.target.id === "kf-q") { const id = ev.target.id; ({ "cf-q": CF, "pr-q": PRF, "mf-q": MF, "pt-q": PT, "kf-q": KF })[id].q = ev.target.value; clearTimeout(window.__pfT); window.__pfT = setTimeout(() => { render(); const el = $(id); if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); } }, 250); return; }
+  if (ev.target.id === "cf-q" || ev.target.id === "pr-q" || ev.target.id === "mf-q" || ev.target.id === "pt-q" || ev.target.id === "kf-q" || ev.target.id === "pp-q") { const id = ev.target.id; ({ "cf-q": CF, "pr-q": PRF, "mf-q": MF, "pt-q": PT, "kf-q": KF, "pp-q": PF2 })[id].q = ev.target.value; clearTimeout(window.__pfT); window.__pfT = setTimeout(() => { render(); const el = $(id); if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); } }, 250); return; }
   if (ev.target.id === "pf-q") { PF.q = ev.target.value; PF.page = 0; clearTimeout(window.__pfT); window.__pfT = setTimeout(() => { render(); const el = $("pf-q"); if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); } }, 250); return; } if (draft && (ev.target.id === "e-sku" || ev.target.id === "c-find")) showSug(ev.target); });
 document.addEventListener("mousedown", (ev) => { const b = ev.target.closest("[data-sug]"); if (b) { ev.preventDefault(); try { pickSug(+b.dataset.sug); } catch (e) { toast(e.message); } } });
 document.addEventListener("focusout", (ev) => {
@@ -1454,9 +1807,7 @@ function vPedido() {
       ${o.approvedAt ? `<p class="note" style="margin:10px 0 0">Aprovação: <b>${esc(o.approvedBy)}</b> em ${o.approvedAt}.</p>` : ""}
     </div>
     <div class="grid g21">
-      <div>${table([{ t: "SKU" }, { t: "Produto" }, { t: "Qtd", r: 1 }, { t: "Preço", r: 1 }, { t: "Desc.", r: 1 }, { t: "Subtotal", r: 1 }].concat(seeCosts() ? [{ t: "Margem", r: 1 }] : []),
-        o.items.map((i) => { const p = prod(i.sku); const cost = p.kit ? p.kit.reduce((s, [k, q]) => s + q * prod(k).cost, 0) : p.cost; return `<tr><td class="mono">${i.sku}</td><td>${esc(p.name)}${p.kit ? `<br><small class="note">baixa ${p.kit.map(([k, q]) => `${q * i.qty} × ${k}`).join(", ")}</small>` : ""}</td><td class="r num">${nf.format(i.qty)}</td><td class="r num">${money(i.price)}</td><td class="r num">${i.disc}%</td><td class="r num">${money(i.sub)}</td>${seeCosts() ? `<td class="r num">${(((i.sub - cost * i.qty) / i.sub) * 100).toFixed(0)}%</td>` : ""}</tr>`; }))}
-        <p class="note" style="text-align:right">Itens ${money(o.itemsTotal)} · frete ${money(o.freight)} · <b style="color:var(--text)">total ${money(o.total)}</b> em ${o.inst}x</p></div>
+      <div>${itemsGrid(o.items, { reserved: FLOW.indexOf(o.status) >= 2 && FLOW.indexOf(o.status) < 6 })}${itemsSummary(o)}</div>
       <div class="grid">
         <div class="card"><h2>Fiscal</h2>${d ? `<dl class="kv"><dt>NF-e</dt><dd class="num">${d.n} · série 1</dd><dt>Status</dt><dd>${pill(["Autorizada", "p-good"])}</dd><dt>Chave</dt><dd class="mono" style="word-break:break-all">${d.key}</dd></dl><p class="note">Homologação: sem valor fiscal.</p>` : `<p class="note">Sem nota emitida.</p>`}</div>
         <div class="card"><h2>Contas a receber</h2>${recv.length ? `<div class="list">${recv.map((r) => `<div class="hbar"><div class="l"><span>${r.inst} · vence ${fdate(r.due)}</span><span class="num">${money(r.amount)} ${pill(recvStatus(r))}</span></div></div>`).join("")}</div>` : `<p class="note">Geradas quando a NF-e é autorizada.</p>`}</div>
@@ -1467,11 +1818,11 @@ function vPedido() {
 }
 
 function vEstoque() {
-  const tab = ["mov", "ml", "prog", "inv"].includes(S.tab) ? S.tab : "saldos";
+  const tab = ["mov", "ml", "prog", "inv", "receb"].includes(S.tab) ? S.tab : "saldos";
   const canMove = ["MEDIATOR","STOCK"].includes(S.role);
   const short = Object.entries(schedDemand(30)).filter(([k, q]) => availSimple(prod(k)) < q).length; const mlOver = C().listings.filter((l) => l.pub > Math.floor(avail(prod(l.sku)) / l.units)).length;
-  const tabsH = `<div class="tabs"><button data-tab="saldos" class="${tab === "saldos" ? "on" : ""}">Saldos</button><button data-tab="ml" class="${tab === "ml" ? "on" : ""}">Mercado Livre ${mlOver ? `<span class="count-in">${mlOver}</span>` : ""}</button><button data-tab="prog" class="${tab === "prog" ? "on" : ""}">Programação ${short ? `<span class="count-in">${short}</span>` : ""}</button><button data-tab="inv" class="${tab === "inv" ? "on" : ""}">Inventário</button><button data-tab="mov" class="${tab === "mov" ? "on" : ""}">Movimentações <span class="num">${C().moves.length}</span></button></div>`;
-  if (tab === "ml" || tab === "prog" || tab === "inv") return head("Estoque", `Físico, reservado, bloqueado e disponível · ${esc(C().name)}`) + tabsH + ({ ml: vEstoqueML, prog: vEstoqueProg, inv: vInventario })[tab]();
+  const tabsH = `<div class="tabs"><button data-tab="saldos" class="${tab === "saldos" ? "on" : ""}">Saldos</button><button data-tab="ml" class="${tab === "ml" ? "on" : ""}">Mercado Livre ${mlOver ? `<span class="count-in">${mlOver}</span>` : ""}</button><button data-tab="prog" class="${tab === "prog" ? "on" : ""}">Programação ${short ? `<span class="count-in">${short}</span>` : ""}</button><button data-tab="receb" class="${tab === "receb" ? "on" : ""}">Recebimento (XML) ${(C().nfIn || []).filter((x) => !x.status.startsWith("Entrada")).length ? `<span class="count-in">${(C().nfIn || []).filter((x) => !x.status.startsWith("Entrada")).length}</span>` : ""}</button><button data-tab="inv" class="${tab === "inv" ? "on" : ""}">Inventário</button><button data-tab="mov" class="${tab === "mov" ? "on" : ""}">Movimentações <span class="num">${C().moves.length}</span></button></div>`;
+  if (tab !== "saldos" && tab !== "mov") return head("Estoque", `Físico, reservado, bloqueado e disponível · ${esc(C().name)}`) + tabsH + ({ ml: vEstoqueML, prog: vEstoqueProg, inv: vInventario, receb: vNfEntrada })[tab]();
   const need = schedDemand(30); const mlPub = {}; C().listings.forEach((l) => explode({ sku: l.sku, qty: l.pub * l.units }).forEach(([k, n]) => { mlPub[k] = (mlPub[k] || 0) + n; }));
   return head("Estoque", `Físico, reservado, bloqueado e disponível · ${esc(C().name)}`) + tabsH +
     (tab === "saldos" ? table([{ t: "SKU" }, { t: "Produto" }, { t: "Físico", r: 1 }, { t: "Reservado", r: 1 }, { t: "Bloqueado", r: 1 }, { t: "Disponível", r: 1 }, { t: "No ML", r: 1 }, { t: "Programado 30d", r: 1 }, { t: "Mínimo", r: 1 }, { t: "Situação" }],
@@ -1503,7 +1854,10 @@ function vFiscal() {
   if (nfDraft) return vNfForm();
   if (S.danfe) return vDanfe();
   const pend = C().orders.filter((o) => FLOW.indexOf(o.status) >= 2 && o.status !== "CANCELADO" && !activeDoc(o));
-  return head("Fiscal", "Ambiente de homologação · provedor: simulador (sem valor fiscal)") +
+  const waiting = (C().nfIn || []).filter((x) => !x.status.startsWith("Entrada")).length;
+  const ftabs = `<div class="tabs"><button data-tab="saida" class="${S.tab !== "entrada" ? "on" : ""}">NF-e de saída</button><button data-tab="entrada" class="${S.tab === "entrada" ? "on" : ""}">NF-e de entrada (XML do e-mail) ${waiting ? `<span class="count-in">${waiting}</span>` : ""}</button></div>`;
+  if (S.tab === "entrada") return head("Fiscal", "Notas de fornecedores puxadas da caixa nfe@") + ftabs + vNfEntrada();
+  return head("Fiscal", "Ambiente de homologação · provedor: simulador (sem valor fiscal)") + ftabs +
     `<div class="alert warn">${icon("alert")}<span>O provedor fiscal real e o certificado digital ainda precisam ser configurados. Até lá, as notas são emitidas só em homologação.</span></div>
     ${S.batchErrors && S.view === "fiscal" ? `<div class="alert warn">${icon("alert")}<span>Notas que precisam de ajuste antes de emitir:<br>${S.batchErrors.map(esc).join("<br>")}</span></div>` : ""}<div class="card"><h2>Pendentes de emissão · ${pend.length} ${pend.length >= 1 && ["MEDIATOR","FISCAL"].includes(S.role) ? `<button class="btn" data-act="nf-all">${icon("fiscal")}Emitir todas (${pend.length})</button>` : ""}</h2>${pend.length ? `<div class="list">${pend.map((o) => `<div class="row" style="justify-content:space-between"><span><button class="link" data-open="${o.id}">${code(o)}</button> · ${esc(cust(o.customer).name)} · ${money(o.total)}</span>${["MEDIATOR","FISCAL"].includes(S.role) ? `<button class="btn" data-nf="${o.id}">${icon("fiscal")}Preencher e emitir NF-e</button>` : ""}</div>`).join("")}</div>` : `<p class="note">Nenhum pedido aprovado sem nota.</p>`}</div>` +
     `<p class="note" style="margin:0">Clique no número da nota para ver o DANFE e o XML.</p>` + table([{ t: "NF-e" }, { t: "Pedido" }, { t: "Chave de acesso" }, { t: "Status" }, { t: "Total", r: 1 }, { t: "Autorizada em" }],
@@ -1843,7 +2197,7 @@ function seedExtra(st) {
     { id: "m2", box: "comercial", from: "contato@casadoled.com.br", fromName: "Casa do LED Varejo", customer: "c7", subject: "Cotação fita 5050 e drivers para loja nova", date: ago(95), tag: "Cotação", read: false,
       body: "Olá, Gerente!\n\nVamos abrir uma loja nova e precisamos de 40 fitas 5050 RGB e 40 drivers 12V 2A. Consegue condição melhor acima de 30 peças?\n\nObrigada,\nPatrícia", items: [["FITA-5050-5M", 40], ["DRV-12V-2A", 40]], attach: [] },
     { id: "m3", box: "fiscal", from: "nfe@componentessp.com.br", fromName: "Distribuidora Componentes SP", supplier: true, subject: "NF-e 3398 - Distribuidora Componentes SP", date: ago(240), tag: "XML NF-e", read: false,
-      body: "Segue em anexo o XML e o DANFE da NF-e 3398 referente ao pedido de compra 2.\n\nValor total: R$ 2.315,00\nVencimento: 28 dias.", nfIn: { n: 3398, total: 2315, items: [["LED-3MM-VM", 3000], ["SENS-PIR-HC", 60]] }, attach: ["35261011222333000181550010000033981.xml", "DANFE-3398.pdf"] },
+      body: "Segue em anexo o XML e o DANFE da NF-e 3398 referente ao pedido de compra 2.\n\nValor total: R$ 2.315,00\nVencimento: 28 dias.", nfIn: { n: 3398, cnpj: "61222333000190", total: 2315, items: [["LED-3MM-VM", 3000], ["SENS-PIR-HC", 60]] }, attach: ["35261011222333000181550010000033981.xml", "DANFE-3398.pdf"] },
     { id: "m4", box: "financeiro", from: "financeiro@makerstore.com.br", fromName: "Maker Store Componentes", customer: "c8", subject: "Boleto vencido - pedido de agosto", date: ago(60 * 26), tag: "Cobrança", read: true,
       body: "Prezados,\n\nnão recebemos o boleto da parcela 3/3. Podem reenviar com nova data?\n\nAtt,\nFinanceiro Maker Store", attach: [] },
     { id: "m5", box: "comercial", from: "eletronica@eletronicaparana.com.br", fromName: "Eletrônica Paraná Ltda", customer: "c6", subject: "Re: Pedido A-00118 - previsão de entrega", date: ago(60 * 30), tag: "Pós-venda", read: true,
@@ -1950,7 +2304,7 @@ function vEmails() {
     <button class="mf ${!box ? "on" : ""}" data-mbox="">Todas as caixas <span>${all.filter((x) => !x.read).length || ""}</span></button>
     ${myBoxes().map((k) => `<button class="mf ${box === k ? "on" : ""}" data-mbox="${k}">${MAILBOX[k][0]}<small>${MAILBOX[k][1]}</small><span>${all.filter((x) => x.box === k && !x.read).length || ""}</span></button>`).join("")}
     <button class="mf ${box === "enviados" ? "on" : ""}" data-mbox="enviados">Enviados <span>${(C().sent || []).length}</span></button>
-    <p class="note" style="margin:10px 4px 0">IMAP: sincronizado ${now().split(" ")[1] || ""} · SMTP ok</p></div>`;
+    ${myBoxes().includes("fiscal") ? `<button class="btn ghost" data-act="nfin-sync" style="width:100%;margin-top:6px">Sincronizar agora</button>` : ""}<p class="note" style="margin:10px 4px 0">IMAP: sincronizado ${now().split(" ")[1] || ""} · SMTP ok</p></div>`;
   let main;
   if (mailDraft) {
     main = `<div class="card"><h2>Novo e-mail</h2><div class="form" style="grid-template-columns:repeat(2,minmax(0,1fr))">
@@ -1966,7 +2320,7 @@ function vEmails() {
   } else {
     const acts = !m ? "" : [
       m.items?.length && can("pedidos") && ["MEDIATOR","MANAGER","SALES_MANAGER","SELLER"].includes(S.role) ? `<button class="btn" data-act="mail-quote">${icon("plus")}Criar cotação com ${m.items.length} item(ns)</button>` : "",
-      m.nfIn && ["MEDIATOR","STOCK","FISCAL","MANAGER"].includes(S.role) ? (m.imported ? pill(["XML importado: entrada e conta a pagar lançadas", "p-good"]) : `<button class="btn" data-act="mail-xml">Importar XML da NF-e ${m.nfIn.n}</button>`) : "",
+      m.nfIn && (can("fiscal") || can("estoque")) ? `<button class="btn" data-gonf="${m.nfIn.n}">Abrir nota de entrada ${m.nfIn.n}</button>` : "",
       m.customer && can("clientes") ? `<button class="btn ghost" data-cli="${m.customer}">Ficha do cliente</button>` : "",
       m.tag === "Cobrança" ? `<button class="btn ghost" data-act="mail-boleto">Reenviar boleto</button>` : "",
       `<button class="btn ghost" data-act="mail-reply">Responder</button>`,
@@ -1976,7 +2330,7 @@ function vEmails() {
         <pre class="mbody">${esc(m.body)}</pre>
         ${m.attach.length ? `<div class="row">${m.attach.map((a) => `<span class="att">${icon("fiscal")}${esc(a)}</span>`).join("")}</div>` : ""}
         ${m.items?.length ? `<div class="alert info" style="margin-top:12px">${icon("check")}<span>O ERP reconheceu ${m.items.length} produto(s) no texto: ${m.items.map(([k, q]) => `<b>${nf.format(q)} × ${k}</b> (${nf.format(avail(prod(k)))} disp.)`).join(", ")}.</span></div>` : ""}
-        ${m.nfIn ? `<div class="alert warn" style="margin-top:12px">${icon("fiscal")}<span>NF-e de entrada ${m.nfIn.n} · ${money(m.nfIn.total)} · ${m.nfIn.items.map(([k, q]) => `${nf.format(q)} × ${k}`).join(", ")}. Importar lança a entrada no estoque e a conta a pagar, uma única vez.</span></div>` : ""}
+        ${m.nfIn ? `<div class="alert ${m.autoNote?.startsWith("XML repetido") ? "warn" : "good"}" style="margin-top:12px">${icon("check")}<span>${esc(m.autoNote || "XML aguardando a próxima leitura da caixa.")}</span></div>` : ""}
         <div class="row" style="margin-top:14px">${acts}</div></div>` : `<div class="card mread"><p class="note">Selecione um e-mail para ler.</p></div>`);
     main = `<div class="filters" style="margin:0 0 10px"><label class="f grow" for="mf-q">Buscar<input id="mf-q" value="${esc(MF.q)}" placeholder="Remetente, assunto ou texto"></label></div><div class="mgrid">${main}</div>`;
   }
@@ -2003,7 +2357,7 @@ function mailAction(act) {
     draft.obs = `Origem: e-mail de ${m.from}`; m.linked = true; toast(`Cotação preenchida a partir do e-mail. Confira preços e grave (F9).`); return render();
   }
   if (act === "mail-xml") {
-    if (m.imported) throw new Error("Esse XML já foi importado.");
+    if (m.imported) throw new Error("Esse XML já foi importado automaticamente.");
     m.nfIn.items.forEach(([k, q], i) => move("Entrada", k, q, `NF ${m.nfIn.n}`, `nfin:${m.from}:${m.nfIn.n}:${i}`));
     C().pays.unshift({ id: `p-nf${m.nfIn.n}`, desc: `${m.fromName} · NF ${m.nfIn.n}`, cat: "Fornecedores", amount: m.nfIn.total, due: days(28), approved: false, paid: 0 });
     m.imported = true; toast(`NF ${m.nfIn.n} importada: entrada no estoque e conta a pagar de ${money(m.nfIn.total)} lançadas.`); return render();
@@ -2220,11 +2574,12 @@ function seedCrm(st) {
 function myLeads() { return (C().leads || []).filter((l) => !role().own || l.seller === role().user); }
 function vCrm() {
   if (KF.leadId) return vLead(KF.leadId);
+  if (PF2.tab !== "funil") return head("CRM e prospecção", `Encontrar, abordar e converter clientes · ${esc(C().name)}`) + crmTabs() + ({ prosp: vProspeccao, hoje: vAgendaHoje, cad: vCadencias })[PF2.tab]();
   const all = myLeads(); const sellers = [...new Set(all.map((l) => l.seller))];
   const ls = all.filter((l) => (!KF.seller || l.seller === KF.seller) && (!KF.q || matchWords(`${l.company} ${l.contact} ${l.city}`, KF.q)));
   const open = ls.filter((l) => !["GANHO", "PERDIDO"].includes(l.stage)); const won = all.filter((l) => l.stage === "GANHO").length; const lost = all.filter((l) => l.stage === "PERDIDO").length;
   const late = open.filter((l) => l.nextDate && new Date(l.nextDate) < new Date(new Date().toDateString()));
-  return head("CRM e prospecção", `Funil de vendas · ${esc(C().name)}${role().own ? " · seus leads" : ""}`, `<button class="btn" data-act="lead-new">${icon("plus")}Novo lead</button>`) +
+  return head("CRM e prospecção", `Funil de vendas · ${esc(C().name)}${role().own ? " · seus leads" : ""}`, `<button class="btn" data-act="lead-new">${icon("plus")}Novo lead</button>`) + crmTabs() +
     `<div class="grid g4">${kpi("users", "c1", "Leads em aberto", open.length)}${kpi("money", "c2", "Valor no funil", money(open.reduce((s, l) => s + l.value, 0)))}${kpi("check", "c3", "Taxa de conversão", `${won + lost ? Math.round((won / (won + lost)) * 100) : 0}%`)}${kpi("alert", "c4", "Próximo passo atrasado", late.length)}</div>` +
     (KF.newLead ? `<div class="card"><h2>Novo lead</h2><div class="form"><label class="f span2" for="ld-company">Empresa<input id="ld-company"></label><label class="f" for="ld-contact">Contato<input id="ld-contact"></label><label class="f" for="ld-email">E-mail<input id="ld-email"></label><label class="f" for="ld-city">Cidade/UF<input id="ld-city" placeholder="Campinas/SP"></label><label class="f" for="ld-value">Valor estimado (R$)<input id="ld-value" type="number" min="0" value="5000"></label><label class="f" for="ld-source">Origem<select id="ld-source">${["Site", "Indicação", "Mercado Livre", "Feira", "Prospecção ativa", "E-mail"].map((x) => `<option>${x}</option>`).join("")}</select></label></div><div id="err"></div><div class="row" style="margin-top:12px"><button class="btn" data-act="lead-save">Criar lead</button><button class="btn ghost" data-act="lead-cancel">Cancelar</button></div></div>` : "") +
     `<div class="filters"><label class="f grow" for="kf-q">Buscar<input id="kf-q" value="${esc(KF.q)}" placeholder="Empresa, contato ou cidade"></label>${role().own ? "" : `<label class="f" for="kf-seller">Vendedor<select id="kf-seller"><option value="">Todos</option>${sellers.map((s) => `<option ${KF.seller === s ? "selected" : ""}>${esc(s)}</option>`).join("")}</select></label>`}<label class="f" style="flex-direction:row;align-items:center;gap:8px;align-self:end"><input type="checkbox" id="kf-lost" ${KF.showLost ? "checked" : ""}> Mostrar perdidos (${lost})</label></div>
@@ -2242,6 +2597,7 @@ function vLead(id) {
       ${l.stage === "NEGOC" || l.stage === "APROV" ? `<label class="f" for="ld-doc" style="margin-top:12px;max-width:320px">CNPJ para conversão<input id="ld-doc" value="${esc(l.doc || "")}" placeholder="00.000.000/0000-00"></label>` : ""}<div id="err"></div></div>` : `<div class="row"><button class="btn ghost" data-act="lead-reopen">Reabrir lead</button></div>`}
     <div class="grid g21"><div class="card"><h2>Atividades</h2><div class="form" style="grid-template-columns:150px minmax(0,1fr) auto"><label class="f" for="la-type">Tipo<select id="la-type">${["Ligação", "E-mail", "Reunião", "Tarefa", "Lembrete"].map((x) => `<option>${x}</option>`).join("")}</select></label><label class="f" for="la-msg">Descrição<input id="la-msg" placeholder="ex.: ligou, pediu amostra"></label><div class="f" style="align-self:end"><button class="btn" data-act="lead-act">Registrar</button></div></div>
       <ol class="timeline" style="margin-top:14px">${l.acts.map((a) => `<li><span>${pill([a.type, a.type === "Ligação" ? "p-info" : a.type === "E-mail" ? "p-warn" : "p-neutral"])} ${esc(a.msg)}</span><small>${new Date(a.when).toLocaleDateString("pt-BR")}${a.who ? ` · ${esc(a.who)}` : ""}</small></li>`).join("")}</ol></div>
+      <div class="card"><h2>Cadência</h2>${l.cad ? (() => { const cd = C().cadences.find((c) => c.id === l.cad.id); return `<p style="margin:0 0 8px"><b>${esc(cd.name)}</b> · ${l.cad.done.length} de ${cd.steps.length} passos</p><ol class="timeline">${cd.steps.map(([d, t, w], j) => `<li><span>${l.cad.done.includes(j) ? "✓ " : ""}Dia ${d} · ${t}</span><small>${esc(w)}</small></li>`).join("")}</ol>`; })() : `<label class="f" for="ld-cad">Colocar em cadência<select id="ld-cad">${C().cadences.map((c) => `<option value="${c.id}">${esc(c.name)}</option>`).join("")}</select></label><button class="btn ghost" data-act="lead-cad" style="margin-top:8px">Iniciar cadência</button>`}</div>
       <div class="card"><h2>Próximo passo</h2><label class="f" for="ld-next">O que fazer<input id="ld-next" value="${esc(l.next || "")}"></label><label class="f" for="ld-nextdate" style="margin-top:8px">Quando<input id="ld-nextdate" type="date" value="${(l.nextDate || "").slice(0, 10)}"></label><button class="btn ghost" data-act="lead-next" style="margin-top:10px">Salvar próximo passo</button>
         <dl class="kv" style="margin-top:14px"><dt>Vendedor</dt><dd>${esc(l.seller)}</dd><dt>Origem</dt><dd>${esc(l.source)}</dd><dt>Empresa</dt><dd>${C().code} · ${esc(C().name)}</dd></dl>${can("emails") ? `<button class="btn ghost" data-mailto="${l.email}">${icon("emails")}Enviar e-mail</button>` : ""}</div></div>`;
 }
@@ -2267,6 +2623,7 @@ function leadAction(act, ds) {
     l.stage = "GANHO"; l.customer = id; addAct("Tarefa", `Convertido em cliente por ${role().user}; histórico do lead mantido`);
     toast(exists ? `CNPJ já cadastrado: lead vinculado a ${exists.name}.` : `${l.company} agora é cliente.`); return render();
   }
+  if (act === "lead-cad") { l.cad = { id: $("ld-cad").value, start: new Date().toISOString(), done: [] }; addAct("Tarefa", "Entrou na cadência"); toast("Cadência iniciada: o primeiro passo já está na Agenda de hoje."); return render(); }
   if (act === "lead-lose") { l.lost = $("ld-lost").value; l.stage = "PERDIDO"; addAct("Tarefa", `Perdido: ${l.lost}`); toast(`Lead marcado como perdido (${l.lost}).`); return render(); }
   if (act === "lead-reopen") { l.stage = "CONTATO"; l.lost = null; addAct("Tarefa", "Lead reaberto"); return render(); }
   if (act === "lead-act") { const m = $("la-msg").value.trim(); if (!m) throw new Error("Descreva a atividade."); addAct($("la-type").value, m); toast("Atividade registrada."); return render(); }
@@ -2578,7 +2935,8 @@ function vConfig() {
         <label class="f" for="cfg-disc">Desconto máximo sem aprovação (%)<input id="cfg-disc" type="number" min="0" max="50" step="0.5" value="${c.maxDisc}"></label>
         <label class="f">Teto de pedido sem aprovação<input value="Sem teto" disabled></label>
         <label class="f">Política de estoque<input value="Reserva na aprovação, baixa na expedição" disabled></label>
-        <label class="f">Tabela padrão<input value="1 · Padrão" disabled></label></div>
+        <label class="f">Tabela padrão<input value="1 · Padrão" disabled></label>
+        <label class="f" style="flex-direction:row;align-items:center;gap:8px;grid-column:1/-1"><input type="checkbox" id="cfg-autostock" ${c.autoStock ? "checked" : ""}> XML de fornecedor dá entrada no estoque sem conferência física</label></div>
         <p class="note" style="margin:12px 0 0">Alterar o desconto máximo já muda a regra de aprovação dos próximos pedidos.</p></div>
       <div class="card"><h2>Fiscal</h2><dl class="kv"><dt>Razão social</dt><dd>${esc(c.name)}</dd><dt>CNPJ</dt><dd>${c.code === "A" ? "11.222.333/0001-81" : "44.555.666/0001-71"} (teste)</dd><dt>UF</dt><dd>${EMIT_UF}</dd><dt>Regime</dt><dd>A confirmar com a contabilidade</dd><dt>Ambiente NF-e</dt><dd>${pill(["Homologação", "p-warn"])}</dd><dt>Série / próximo nº</dt><dd>1 / ${c.nf}</dd><dt>Certificado digital</dt><dd>${pill(["Não configurado", "p-bad"])}</dd></dl></div></div>`;
   } else if (tab === "users") {
@@ -2603,7 +2961,7 @@ function vConfig() {
 // Eventos
 // ---------------------------------------------------------------------------
 function err(e) { const box = $("err"); if (box) box.innerHTML = `<div class="alert bad" style="margin-top:10px">${esc(e.message)}</div>`; else toast(e.message); }
-function go(view) { KF.leadId = null; KF.newLead = false; S.cliTab = null; mailDraft = null; pgDraft = null; cliDraft = null; PT.orderId = null; S.clienteId = null; S.prodSku = null; S.batchErrors = null; S.view = view; S.orderId = null; S.tab = null; S.composing = false; S.danfe = null; S.impView = null; nfDraft = null; impDraft = null; render(); window.scrollTo(0, 0); }
+function go(view) { NFI.open = null; KF.leadId = null; KF.newLead = false; S.cliTab = null; mailDraft = null; pgDraft = null; cliDraft = null; PT.orderId = null; S.clienteId = null; S.prodSku = null; S.batchErrors = null; S.view = view; S.orderId = null; S.tab = null; S.composing = false; S.danfe = null; S.impView = null; nfDraft = null; impDraft = null; render(); window.scrollTo(0, 0); }
 
 document.addEventListener("click", (ev) => {
   if (ev.target.closest("#bell")) { $("bellbox").hidden = !$("bellbox").hidden; return; }
@@ -2624,6 +2982,10 @@ document.addEventListener("click", (ev) => {
     if (ds.act === "novo") { return startDraft(); }
     if (ds.act === "e-add") { return includeItem(); }
     if (ds.act === "novo-painel") { return newSale(); }
+    if (ds.nfopen || ds.act === "nfin-close" || ds.act === "nfin-sync" || ds.act === "nfin-ok") return nfinAction(ds, ds.act);
+    if (ds.gonf) { const e = (C().nfIn || []).find((x) => x.n === +ds.gonf); go(can("fiscal") ? "fiscal" : "estoque"); S.tab = can("fiscal") ? "entrada" : "receb"; NFI.open = e?.key || null; render(); return; }
+    if (ds.crmtab || ds.act?.startsWith("pr-") || ds.tkdone !== undefined || ds.tkskip !== undefined) return prospAction(ds, ds.act);
+    if (ds.lead) { S.view = "crm"; }
     if (ds.lead) { KF.leadId = ds.lead; render(); return window.scrollTo(0, 0); }
     if (ds.act?.startsWith("lead-") || ds.leadmv) return leadAction(ds.act, ds);
     if (ds.act === "rfq-new" || ds.rfqok) return rfqAction(ds.act, ds);
@@ -2691,6 +3053,9 @@ document.addEventListener("click", (ev) => {
     if (ds.act === "descartar") { S.composing = false; draft = null; return render(); }
     if (ds.act === "salvar") { return saveDraft(false); }
     if (ds.rm !== undefined) { draft.items.splice(+ds.rm, 1); return render(); }
+    if (ds.tipo && draft) { draft.tipo = ds.tipo; return render(); }
+    if (ds.igmv) { const a = +ds.idx, b = a + +ds.igmv; [draft.items[a], draft.items[b]] = [draft.items[b], draft.items[a]]; return render(); }
+    if (ds.igdup !== undefined) { const it = draft.items[+ds.igdup]; draft.items.splice(+ds.igdup + 1, 0, { ...it }); return render(); }
     if (ds.act === "voltar") { S.orderId = null; return render(); }
     if (ds.o === "submit") { submit(o); return render(); }
     if (ds.o === "approve") { approve(o); return render(); }
@@ -2727,7 +3092,17 @@ document.addEventListener("change", (ev) => {
   if (!el.isConnected) return;
   if (el.id === "pf-seller") { PF.seller = el.value; PF.page = 0; return render(); }
   if (el.id === "pf-period") { PF.period = el.value; PF.page = 0; return render(); }
-  if (["pf-q", "cf-q", "pr-q", "mf-q", "pt-q", "kf-q"].includes(el.id)) return;
+  if (el.id === "cfg-autostock") { C().autoStock = el.checked; toast(el.checked ? "Entrada automática ligada: XML de fornecedor já entra no estoque." : "Entrada automática desligada: XML aguarda conferência física."); return render(); }
+  if (el.dataset.nfmap !== undefined || el.dataset.nfconf !== undefined) {
+    const e = C().nfIn.find((x) => x.key === NFI.open); const it = e.items[+(el.dataset.nfmap ?? el.dataset.nfconf)];
+    if (el.dataset.nfmap !== undefined && el.value) { it.sku = el.value; C().supMap = C().supMap || {}; C().supMap[`${e.supplier}|${it.supCode}`] = el.value; if (!e.items.some((i) => !i.sku)) e.status = "Aguardando conferência"; toast(`${it.supCode} vinculado a ${el.value}.`); }
+    if (el.dataset.nfconf !== undefined) it.conf = Math.max(0, Math.floor(+el.value || 0));
+    setTimeout(render); return;
+  }
+  if (el.dataset.ig && draft) { const it = draft.items[+el.dataset.idx]; const v = +el.value; if (el.dataset.ig === "qty") { if (!(v >= 1)) { toast("Quantidade deve ser maior que zero."); return render(); } it.qty = Math.floor(v); } if (el.dataset.ig === "price") { if (!(v > 0)) { toast("Valor unitário inválido."); return render(); } it.price = v; } if (el.dataset.ig === "disc") { if (!(v >= 0 && v <= 100)) { toast("Desconto entre 0 e 100%."); return render(); } it.disc = v; } setTimeout(render); return; }
+  if (["pf-q", "cf-q", "pr-q", "mf-q", "pt-q", "kf-q", "pp-q"].includes(el.id)) return;
+  if (el.dataset.ppsel) { PF2.sel.has(el.dataset.ppsel) ? PF2.sel.delete(el.dataset.ppsel) : PF2.sel.add(el.dataset.ppsel); return render(); }
+  if (["pp-seg", "pp-uf", "pp-min"].includes(el.id)) { PF2[{ "pp-seg": "seg", "pp-uf": "uf", "pp-min": "min" }[el.id]] = el.id === "pp-min" ? +el.value : el.value; return render(); }
   if (el.id === "kf-seller") { KF.seller = el.value; return render(); }
   if (el.id === "kf-lost") { KF.showLost = el.checked; return render(); }
   if (el.dataset.inv) { if (el.value === "") delete INV.counts[el.dataset.inv]; else INV.counts[el.dataset.inv] = Math.max(0, Math.floor(+el.value)); return render(); }
