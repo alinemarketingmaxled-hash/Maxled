@@ -578,6 +578,12 @@ textarea { width: 100%; box-sizing: border-box; background: rgba(255,255,255,.04
 @media (max-width: 760px) { .steps.s6 { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 12px; } .bub { max-width: 92%; } }
 .ptcart { align-self: start; position: sticky; top: 90px; }
 @media (max-width: 980px) { .ptcart { position: static; order: -1; } }
+
+/* CRM, fornecedores */
+.kanban.crm { grid-template-columns: repeat(7, minmax(220px, 1fr)); overflow-x: auto; padding-bottom: 8px; }
+.ticket.lead { text-align: left; font: inherit; color: var(--text); cursor: pointer; width: 100%; display: grid; gap: 6px; }
+.ticket.lead:hover { border-color: rgba(242,204,91,.55); }
+.stars { color: #f2cc5b; letter-spacing: 1px; } .stars i { color: rgba(255,255,255,.15); font-style: normal; }
 </style>
 
 <header class="cbar">
@@ -608,16 +614,16 @@ textarea { width: 100%; box-sizing: border-box; background: rgba(255,255,255,.04
 // ---------------------------------------------------------------------------
 const ROLES = {
   MEDIATOR: { label: "Mediador", user: "Aline", mods: "*" },
-  MANAGER: { label: "Diretoria", user: "Diretoria", mods: ["painel","pedidos","clientes","programacao","emails","produtos","estoque","expedicao","compras","fiscal","financeiro","mercadolivre","relatorios","config"], approve: true },
-  SALES_MANAGER: { label: "Gerente comercial", user: "Gerente Comercial", mods: ["painel","pedidos","clientes","programacao","emails","produtos","estoque","relatorios","portal"], approve: true },
-  SELLER: { label: "Vendedor", user: "Bruno Alves", mods: ["painel","pedidos","clientes","programacao","emails","produtos","estoque","relatorios"], own: true, approve: false },
+  MANAGER: { label: "Diretoria", user: "Diretoria", mods: ["painel","pedidos","crm","clientes","programacao","emails","produtos","estoque","expedicao","compras","fiscal","financeiro","mercadolivre","relatorios","config"], approve: true },
+  SALES_MANAGER: { label: "Gerente comercial", user: "Gerente Comercial", mods: ["painel","pedidos","crm","clientes","programacao","emails","produtos","estoque","relatorios","portal"], approve: true },
+  SELLER: { label: "Vendedor", user: "Bruno Alves", mods: ["painel","pedidos","crm","clientes","programacao","emails","produtos","estoque","relatorios"], own: true, approve: false },
   STOCK: { label: "Estoque/expedição", user: "Equipe Estoque", mods: ["painel","pedidos","produtos","estoque","expedicao","mercadolivre","emails"] },
   FINANCE: { label: "Financeiro", user: "Equipe Financeiro", mods: ["painel","pedidos","clientes","emails","financeiro","fiscal","relatorios"] },
   FISCAL: { label: "Fiscal", user: "Equipe Fiscal", mods: ["painel","pedidos","fiscal","emails"] },
   CUSTOMER: { label: "Cliente (portal)", user: "Distribuidora Sul", mods: ["portal"] },
 };
 const MODULES = [
-  ["painel", "Painel"], ["pedidos", "Cotações e pedidos"], ["clientes", "Clientes"], ["programacao", "Programação"], ["emails", "E-mails"], ["produtos", "Produtos e kits"], ["estoque", "Estoque"],
+  ["painel", "Painel"], ["pedidos", "Cotações e pedidos"], ["crm", "CRM e prospecção"], ["clientes", "Clientes"], ["programacao", "Programação"], ["emails", "E-mails"], ["produtos", "Produtos e kits"], ["estoque", "Estoque"],
   ["expedicao", "Expedição"], ["compras", "Compras e importação"], ["fiscal", "Fiscal"], ["financeiro", "Financeiro"],
   ["mercadolivre", "Mercado Livre"], ["relatorios", "Relatórios"], ["portal", "Portal do cliente"], ["config", "Configurações"],
 ];
@@ -633,6 +639,7 @@ const ICON_PATHS = {
   mercadolivre: '<path d="M3 9 4.5 4h15L21 9"/><path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0M5 12v8h14v-8"/>',
   relatorios: '<path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/>',
   portal: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  crm: '<path d="M3 4h18l-7 8v6l-4 2v-8z"/>',
   programacao: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 14h2M14 14h2M8 18h2"/>',
   emails: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/>',
   clientes: '<circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M16 3.5a4 4 0 0 1 0 8M22 21a7 7 0 0 0-4-6.3"/>',
@@ -712,6 +719,7 @@ function seed() {
   S = st;
   seedHistory(st);
   seedExtra(st);
+  seedCrm(st); seedSuppliers(st); seedBank(st);
   const o1 = createOrder("c1", "Bruno Alves", [["KIT-LED-25", 4, 9.90, 0], ["RES-1K-14W", 200, 0.08, 0]], { freight: 18, inst: 2 }, true);
   submit(o1, true); emitNF(o1, true); advance(o1, "SEPARACAO", true); advance(o1, "CONFERENCIA", true); advance(o1, "PRONTO", true);
   const o2 = createOrder("c3", "Bruno Alves", [["MOD-ESP32", 5, 49.90, 12]], { freight: 0, inst: 1 }, true);
@@ -757,7 +765,9 @@ function move(type, sku, qty, doc, key) {
   if (type === "Reserva") { if (availSimple(p) < qty) throw new Error(`Saldo insuficiente de ${sku} para reservar ${qty}.`); p.res += qty; }
   if (type === "Liberação") p.res -= qty;
   if (type === "Saída") { p.res -= qty; p.phys -= qty; }
-  if (type === "Entrada") p.phys += qty;
+  if (type === "Entrada" || type === "Devolução" || type === "Ajuste (+)") p.phys += qty;
+  if (type === "Ajuste (−)") { if (availSimple(p) < qty) throw new Error(`Ajuste maior que o disponível de ${sku}.`); p.phys -= qty; }
+  if (type === "Desbloqueio") { if (p.blk < qty) throw new Error("Quantidade maior que o bloqueado."); p.blk -= qty; }
   if (type === "Bloqueio") { if (availSimple(p) < qty) throw new Error("Saldo insuficiente para bloquear."); p.blk += qty; }
   c.moves.unshift({ when: now(), type, sku, qty, doc, key, user: role().user, after: `${p.phys} / ${p.res} / ${p.blk}` });
   return true;
@@ -858,7 +868,7 @@ const recvStatus = (r) => r.paid >= r.amount ? ["Pago", "p-good"] : r.paid > 0 ?
 // ---------------------------------------------------------------------------
 const $ = (id) => document.getElementById(id);
 let toastTimer;
-function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 3200); }
+function toast(msg) { audit(msg); const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 3200); }
 function can(mod) { const m = role().mods; return m === "*" || m.includes(mod); }
 function visibleOrders() { const os = C().orders; return role().own ? os.filter((o) => o.seller === role().user) : os; }
 const cust = (id) => C().customers.find((c) => c.id === id) || Object.values(S.companies).flatMap((c) => c.customers).find((c) => c.id === id);
@@ -883,7 +893,7 @@ function render() {
   renderShell();
   const v = $("view");
   v.className = "view";
-  const fn = { programacao: vProgramacao, emails: vEmails, clientes: vClientes, config: vConfig, painel: vPainel, pedidos: S.orderId ? vPedido : vPedidos, produtos: vProdutos, estoque: vEstoque, expedicao: vExpedicao, compras: vCompras, fiscal: vFiscal, financeiro: vFinanceiro, mercadolivre: vML, relatorios: vRelatorios, portal: vPortal }[S.view];
+  const fn = { crm: vCrm, programacao: vProgramacao, emails: vEmails, clientes: vClientes, config: vConfig, painel: vPainel, pedidos: S.orderId ? vPedido : vPedidos, produtos: vProdutos, estoque: vEstoque, expedicao: vExpedicao, compras: vCompras, fiscal: vFiscal, financeiro: vFinanceiro, mercadolivre: vML, relatorios: vRelatorios, portal: vPortal }[S.view];
   v.innerHTML = `<div class="wrap">${fn()}</div>`;
 }
 function head(title, sub, actions = "") { return `<div class="head"><div><h1>${esc(title)}</h1><p>${sub}</p></div><div class="row">${actions}</div></div>`; }
@@ -1357,7 +1367,7 @@ function pickSug(i) {
   return true;
 }
 document.addEventListener("input", (ev) => {
-  if (ev.target.id === "cf-q" || ev.target.id === "pr-q" || ev.target.id === "mf-q" || ev.target.id === "pt-q") { const id = ev.target.id; ({ "cf-q": CF, "pr-q": PRF, "mf-q": MF, "pt-q": PT })[id].q = ev.target.value; clearTimeout(window.__pfT); window.__pfT = setTimeout(() => { render(); const el = $(id); if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); } }, 250); return; }
+  if (ev.target.id === "cf-q" || ev.target.id === "pr-q" || ev.target.id === "mf-q" || ev.target.id === "pt-q" || ev.target.id === "kf-q") { const id = ev.target.id; ({ "cf-q": CF, "pr-q": PRF, "mf-q": MF, "pt-q": PT, "kf-q": KF })[id].q = ev.target.value; clearTimeout(window.__pfT); window.__pfT = setTimeout(() => { render(); const el = $(id); if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); } }, 250); return; }
   if (ev.target.id === "pf-q") { PF.q = ev.target.value; PF.page = 0; clearTimeout(window.__pfT); window.__pfT = setTimeout(() => { render(); const el = $("pf-q"); if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); } }, 250); return; } if (draft && (ev.target.id === "e-sku" || ev.target.id === "c-find")) showSug(ev.target); });
 document.addEventListener("mousedown", (ev) => { const b = ev.target.closest("[data-sug]"); if (b) { ev.preventDefault(); try { pickSug(+b.dataset.sug); } catch (e) { toast(e.message); } } });
 document.addEventListener("focusout", (ev) => {
@@ -1457,17 +1467,17 @@ function vPedido() {
 }
 
 function vEstoque() {
-  const tab = ["mov", "ml", "prog"].includes(S.tab) ? S.tab : "saldos";
+  const tab = ["mov", "ml", "prog", "inv"].includes(S.tab) ? S.tab : "saldos";
   const canMove = ["MEDIATOR","STOCK"].includes(S.role);
   const short = Object.entries(schedDemand(30)).filter(([k, q]) => availSimple(prod(k)) < q).length; const mlOver = C().listings.filter((l) => l.pub > Math.floor(avail(prod(l.sku)) / l.units)).length;
-  const tabsH = `<div class="tabs"><button data-tab="saldos" class="${tab === "saldos" ? "on" : ""}">Saldos</button><button data-tab="ml" class="${tab === "ml" ? "on" : ""}">Mercado Livre ${mlOver ? `<span class="count-in">${mlOver}</span>` : ""}</button><button data-tab="prog" class="${tab === "prog" ? "on" : ""}">Programação ${short ? `<span class="count-in">${short}</span>` : ""}</button><button data-tab="mov" class="${tab === "mov" ? "on" : ""}">Movimentações <span class="num">${C().moves.length}</span></button></div>`;
-  if (tab === "ml" || tab === "prog") return head("Estoque", `Físico, reservado, bloqueado e disponível · ${esc(C().name)}`) + tabsH + (tab === "ml" ? vEstoqueML() : vEstoqueProg());
+  const tabsH = `<div class="tabs"><button data-tab="saldos" class="${tab === "saldos" ? "on" : ""}">Saldos</button><button data-tab="ml" class="${tab === "ml" ? "on" : ""}">Mercado Livre ${mlOver ? `<span class="count-in">${mlOver}</span>` : ""}</button><button data-tab="prog" class="${tab === "prog" ? "on" : ""}">Programação ${short ? `<span class="count-in">${short}</span>` : ""}</button><button data-tab="inv" class="${tab === "inv" ? "on" : ""}">Inventário</button><button data-tab="mov" class="${tab === "mov" ? "on" : ""}">Movimentações <span class="num">${C().moves.length}</span></button></div>`;
+  if (tab === "ml" || tab === "prog" || tab === "inv") return head("Estoque", `Físico, reservado, bloqueado e disponível · ${esc(C().name)}`) + tabsH + ({ ml: vEstoqueML, prog: vEstoqueProg, inv: vInventario })[tab]();
   const need = schedDemand(30); const mlPub = {}; C().listings.forEach((l) => explode({ sku: l.sku, qty: l.pub * l.units }).forEach(([k, n]) => { mlPub[k] = (mlPub[k] || 0) + n; }));
   return head("Estoque", `Físico, reservado, bloqueado e disponível · ${esc(C().name)}`) + tabsH +
     (tab === "saldos" ? table([{ t: "SKU" }, { t: "Produto" }, { t: "Físico", r: 1 }, { t: "Reservado", r: 1 }, { t: "Bloqueado", r: 1 }, { t: "Disponível", r: 1 }, { t: "No ML", r: 1 }, { t: "Programado 30d", r: 1 }, { t: "Mínimo", r: 1 }, { t: "Situação" }],
       C().products.filter((p) => !p.kit).map((p) => { const a = availSimple(p); return `<tr class="click" data-prod="${p.sku}"><td class="mono">${p.sku}</td><td>${esc(p.name)}</td><td class="r num">${nf.format(p.phys)}</td><td class="r num">${nf.format(p.res)}</td><td class="r num">${nf.format(p.blk)}</td><td class="r num"><b>${nf.format(a)}</b></td><td class="r num" style="${mlPub[p.sku] > a ? "color:var(--bad)" : ""}">${mlPub[p.sku] ? nf.format(mlPub[p.sku]) : "-"}</td><td class="r num" style="${need[p.sku] > a ? "color:var(--bad)" : ""}">${need[p.sku] ? nf.format(need[p.sku]) : "-"}</td><td class="r num">${nf.format(p.minStock)}</td><td>${a <= 0 ? pill(["Sem saldo", "p-bad"]) : a < p.minStock ? pill(["Abaixo do mínimo", "p-warn"]) : pill(["Ok", "p-good"])}</td></tr>`; })) +
       (canMove ? `<div class="card"><h2>Lançar movimento</h2><div class="form">
-        <label class="f" for="m-type">Tipo<select id="m-type"><option>Entrada</option><option>Bloqueio</option></select></label>
+        <label class="f" for="m-type">Tipo<select id="m-type">${["Entrada", "Devolução", "Ajuste (+)", "Ajuste (−)", "Bloqueio", "Desbloqueio"].map((x) => `<option>${x}</option>`).join("")}</select></label>
         <label class="f" for="m-sku">Produto<select id="m-sku">${C().products.filter((p) => !p.kit).map((p) => `<option>${p.sku}</option>`).join("")}</select></label>
         <label class="f" for="m-qty">Quantidade<input id="m-qty" type="number" min="1" value="100"></label>
         <label class="f span2" for="m-reason">Motivo (obrigatório)<input id="m-reason" placeholder="ex.: recebimento NF 3321 / avaria na conferência"></label>
@@ -1486,7 +1496,7 @@ function vExpedicao() {
       ${canMove && os.length > 1 ? `<button class="btn ghost" data-advall="${s2}">${nx[1]}: todos (${os.length})</button>` : ""}
       ${os.map((o) => `<div class="ticket"><span class="row" style="justify-content:space-between"><button class="link" data-open="${o.id}">${code(o)}</button><span class="num" style="font-weight:700">${money(o.total)}</span></span><span>${esc(cust(o.customer).name)}</span><small class="note">${o.items.length} item(ns)${s2 === "PRONTO" && !activeDoc(o) ? " · aguardando NF-e" : ""}${o.tracking ? ` · ${esc(o.tracking)}` : ""}</small>
         ${canMove ? (s2 === "PRONTO" && !activeDoc(o) ? (["MEDIATOR","FISCAL"].includes(S.role) ? `<button class="btn ghost" data-nf="${o.id}">Emitir NF-e</button>` : "") : `<button class="btn" data-adv1="${o.id}">${nx[1]}</button>`) : ""}</div>`).join("") || `<p class="note" style="margin:0">Nenhum pedido.</p>`}</div>`; }).join("")}</div>
-    <div class="alert warn">${icon("alert")}<span>O despacho só é liberado com NF-e autorizada e dá a baixa do estoque reservado uma única vez por item.</span></div>`;
+    <div class="alert warn">${icon("alert")}<span>O despacho só é liberado com NF-e autorizada e dá a baixa do estoque reservado uma única vez por item.</span></div>` + vOcorrencias();
 }
 
 function vFiscal() {
@@ -1728,13 +1738,13 @@ function receiveImp(n) {
 }
 
 function vFinanceiro() {
-  const extra = { fluxo: vFluxo, aging: vAging, dre: vDre }[S.tab];
+  const extra = { fluxo: vFluxo, aging: vAging, dre: vDre, concil: vConcilia }[S.tab];
   if (extra) return head("Financeiro", `Fluxo de caixa, inadimplência e resultado · ${esc(C().name)}`) + finTabs() + extra();
   return vFinBase();
 }
 function finTabs() {
   const t = S.tab || "receber";
-  return `<div class="tabs">${[["receber", "Contas a receber"], ["pagar", "Contas a pagar"], ["fluxo", "Fluxo de caixa"], ["aging", "Inadimplência"], ["dre", "Resultado (DRE)"]].map(([k, l]) => `<button data-tab="${k}" class="${t === k ? "on" : ""}">${l}</button>`).join("")}</div>`;
+  return `<div class="tabs">${[["receber", "Contas a receber"], ["pagar", "Contas a pagar"], ["fluxo", "Fluxo de caixa"], ["aging", "Inadimplência"], ["concil", "Conciliação bancária"], ["dre", "Resultado (DRE)"]].map(([k, l]) => `<button data-tab="${k}" class="${t === k ? "on" : ""}">${l}</button>`).join("")}</div>`;
 }
 function vFinBase() {
   const tab = S.tab === "pagar" ? "pagar" : "receber";
@@ -1755,7 +1765,10 @@ function vFinBase() {
 function vCompras() {
   if (S.impView === "novo" && impDraft) return vImpForm();
   if (typeof S.impView === "number") return vImpDetail(S.impView);
-  return head("Compras e importação", "Solicitação, cotação, aprovação, recebimento e rateio de custos", `<button class="btn" data-act="imp-new">${icon("plus")}Nova importação (invoice)</button>`) +
+  const ctab = ["rfq", "forn"].includes(S.tab) ? S.tab : "ped";
+  const ctabs = `<div class="tabs">${[["ped", "Pedidos de compra"], ["rfq", "Solicitação e cotação"], ["forn", "Fornecedores"]].map(([k, l]) => `<button data-tab="${k}" class="${ctab === k ? "on" : ""}">${l}</button>`).join("")}</div>`;
+  if (ctab !== "ped") return head("Compras e importação", "Solicitação, cotação, aprovação, recebimento e rateio de custos") + ctabs + (ctab === "rfq" ? vRfq() : vFornecedores());
+  return head("Compras e importação", "Solicitação, cotação, aprovação, recebimento e rateio de custos", `<button class="btn" data-act="imp-new">${icon("plus")}Nova importação (invoice)</button>`) + ctabs +
     table([{ t: "Nº" }, { t: "Fornecedor" }, { t: "Invoice" }, { t: "Tipo" }, { t: "Status" }, { t: "Total (R$)", r: 1 }],
       C().purchases.map((p) => `<tr><td class="num">${p.detail ? `<button class="link" data-impopen="${p.n}">${p.n}</button>` : p.n}</td><td>${esc(p.supplier)}</td><td class="mono">${esc(p.invoice || "-")}</td><td>${p.imp ? pill(["Importação", "p-info"]) : "Nacional"}</td><td>${esc(p.status)}</td><td class="r num">${money(p.total)}</td></tr>`)) +
     `<div class="card"><h2>Como o custo de importação é calculado</h2><p class="note">Itens em moeda estrangeira × câmbio, mais frete, seguro, despesas aduaneiras e tributos rateados por valor, quantidade ou peso (critério validado pela contabilidade). No recebimento, o custo médio do produto é atualizado e as contas a pagar ficam aguardando aprovação da Diretoria.</p></div>`;
@@ -2102,7 +2115,7 @@ function vPortal() {
   const andamento = os.filter((o) => ["AGUARDANDO", "APROVADO", "SEPARACAO", "CONFERENCIA", "PRONTO", "ENVIADO"].includes(o.status));
   const next = open.filter((r) => new Date(r.due) >= new Date(new Date().toDateString())).sort((a, b) => a.due.localeCompare(b.due))[0]; const overdue = open.filter((r) => new Date(r.due) < new Date(new Date().toDateString()));
   const cc = (o) => `A-${String(o.n).padStart(5, "0")}`;
-  const tabs = [["inicio", "Início"], ["pedidos", "Meus pedidos"], ["catalogo", `Fazer pedido${Object.keys(PT.cart).length ? ` (${Object.keys(PT.cart).length})` : ""}`], ["fin", "Boletos e notas"], ["msg", "Fale com a MAX LED"]];
+  const tabs = [["inicio", "Início"], ["pedidos", "Meus pedidos"], ["catalogo", `Fazer pedido${Object.keys(PT.cart).length ? ` (${Object.keys(PT.cart).length})` : ""}`], ["fin", "Boletos e notas"], ["prog", "Minhas programações"], ["dados", "Meus dados"], ["msg", "Fale com a MAX LED"]];
   const steps = (o) => { const idx = ["AGUARDANDO", "APROVADO", "SEPARACAO", "CONFERENCIA", "PRONTO", "ENVIADO", "ENTREGUE"].indexOf(o.status); const lab = ["Recebido", "Aprovado", "Separando", "Separando", "Pronto", "A caminho", "Entregue"]; const pts = [0, 1, 2, 4, 5, 6]; return `<div class="steps s6">${pts.map((p, i) => `<div class="step ${idx > p ? "done" : idx === p || (p === 2 && idx === 3) ? "now" : ""}"><i>${idx > p ? "&#10003;" : i + 1}</i>${lab[p]}</div>`).join("")}</div>`; };
   let body = "";
   if (PT.orderId) {
@@ -2128,6 +2141,14 @@ function vPortal() {
       <div class="card ptcart"><h2>Seu pedido</h2>${cart.length ? `<div class="list">${cart.map(([k, q]) => { const p = co.products.find((x) => x.sku === k); return `<div class="stockrow">${thumb(p, 30)}<div style="flex:1;min-width:0"><div class="l"><span>${esc(p.name)}</span><button class="link" data-ptrm="${k}">remover</button></div><div class="row"><input type="number" min="1" value="${q}" data-ptqty="${k}" style="width:90px"><small class="note">${money(q * p.price)}</small></div></div></div>`; }).join("")}</div><p style="text-align:right"><b>${money(tot)}</b></p><label class="f" for="pt-obs">Observação<input id="pt-obs" placeholder="ex.: entregar na filial"></label><button class="btn" data-pt="send" style="width:100%;margin-top:10px">Enviar pedido</button><p class="note">O vendedor confirma preço, frete e prazo antes de faturar.</p>` : `<p class="note">Carrinho vazio. Adicione produtos ao lado.</p>`}</div></div>`;
   } else if (PT.tab === "fin") {
     body = table([{ t: "Parcela" }, { t: "Pedido" }, { t: "Vencimento" }, { t: "Valor", r: 1 }, { t: "Situação" }, { t: "" }], rec.slice().sort((a, b) => b.due.localeCompare(a.due)).map((r) => { const o = co.orders.find((x) => x.id === r.order); return `<tr><td>${r.inst}</td><td class="mono">${o ? cc(o) : "-"}</td><td class="num">${fdate(r.due)}</td><td class="r num">${money(r.amount)}</td><td>${pill(recvStatus(r))}</td><td>${r.paid < r.amount ? `<div class="row" style="flex-wrap:nowrap"><button class="btn ghost" data-ptdl="Boleto ${r.id}">2ª via do boleto</button><button class="btn ghost" data-ptdl="Pix ${r.id}">Pagar com Pix</button></div>` : `<button class="btn ghost" data-ptdl="Comprovante ${r.id}">Comprovante</button>`}</td></tr>`; }));
+  } else if (PT.tab === "prog") {
+    const ss = (co.schedules || []).filter((x) => x.customer === ME);
+    body = (ss.length ? table([{ t: "Frequência" }, { t: "Próxima" }, { t: "Produtos" }, { t: "Situação" }], ss.map((x) => `<tr><td>${x.freq}</td><td class="num">${fdate(x.next)}</td><td>${x.items.map(([k, q]) => `${nf.format(q)} × ${esc(co.products.find((p) => p.sku === k).name)}`).join("<br>")}</td><td>${pill(x.active ? ["Ativa", "p-good"] : ["Pausada", "p-neutral"])}</td></tr>`)) : `<p class="note">Você não tem compras programadas.</p>`) +
+      `<div class="card"><h2>Pedir alteração</h2><label class="f" for="pt-req">O que deseja mudar?<input id="pt-req" placeholder="ex.: passar a receber 3.000 LEDs por mês"></label><button class="btn" data-pt="sendreq" style="margin-top:10px">Enviar ao vendedor</button></div>`;
+  } else if (PT.tab === "dados") {
+    const k = contactsOf(me);
+    body = `<div class="grid g2"><div class="card"><h2>Cadastro</h2><dl class="kv"><dt>Razão social</dt><dd>${esc(me.name)}</dd><dt>CNPJ</dt><dd>${me.doc}</dd><dt>Cidade/UF</dt><dd>${esc(me.city)}</dd><dt>Condição</dt><dd>30/60/90 dias · boleto</dd><dt>E-mail NF-e</dt><dd>${k[2].email}</dd><dt>E-mail financeiro</dt><dd>${k[1].email}</dd></dl></div>
+      <div class="card"><h2>Solicitar alteração cadastral</h2><label class="f" for="pt-cad">Campo<select id="pt-cad">${["Endereço de entrega", "E-mail para NF-e", "E-mail financeiro", "Contato de compras", "Outro"].map((x) => `<option>${x}</option>`).join("")}</select></label><label class="f" for="pt-cadv" style="margin-top:8px">Novo valor<input id="pt-cadv"></label><button class="btn" data-pt="sendcad" style="margin-top:10px">Enviar solicitação</button><p class="note">A alteração é conferida pela equipe antes de valer, para evitar fraude em e-mail de boleto.</p></div></div>`;
   } else if (PT.tab === "msg") {
     co.portalMsgs = co.portalMsgs || [{ from: "MAX LED", who: me.seller, when: "10/10 09:14", msg: "Olá! Qualquer dúvida sobre pedidos ou entregas é só escrever por aqui." }];
     body = `<div class="card"><h2>Mensagens com ${esc(me.seller)}</h2><div class="chat">${co.portalMsgs.map((m) => `<div class="bub ${m.from === "MAX LED" ? "" : "me"}"><small>${esc(m.who)} · ${m.when}</small>${esc(m.msg)}</div>`).join("")}</div>
@@ -2154,6 +2175,11 @@ function portalAction(ds) {
     finally { S.company = prev; }
     return render();
   }
+  if (k === "sendreq" || k === "sendcad") {
+    const v = (k === "sendreq" ? $("pt-req").value : `${$("pt-cad").value}: ${$("pt-cadv").value}`).trim(); if (v.length < 4 || v.endsWith(":")) throw new Error("Descreva a solicitação.");
+    co.mails.unshift({ id: `pr${Date.now()}`, box: "comercial", from: "portal@maxled.com.br", fromName: `${cust(ME).name} (portal)`, customer: ME, subject: `${k === "sendreq" ? "Alteração de programação" : "Alteração cadastral"}: ${v.slice(0, 40)}`, date: new Date().toISOString(), tag: "Pós-venda", read: false, body: v, attach: [], items: [] });
+    toast("Solicitação enviada. O vendedor recebe na caixa comercial."); return render();
+  }
   if (k === "sendmsg") {
     const v = $("pt-msg").value.trim(); if (!v) throw new Error("Escreva a mensagem.");
     co.portalMsgs.push({ from: "cliente", who: cust(ME).name, when: now(), msg: v });
@@ -2162,6 +2188,226 @@ function portalAction(ds) {
   }
   if (k) { PT.tab = k; PT.orderId = null; return render(); }
 }
+
+// ---------------------------------------------------------------------------
+// Auditoria: toda ação confirmada ao usuário fica registrada com quem, quando
+// e em qual empresa.
+// ---------------------------------------------------------------------------
+const AUDIT = [];
+function audit(msg) { if (!S || !S.companies) return; AUDIT.unshift({ when: new Date().toLocaleString("pt-BR"), who: role().user, profile: role().label, company: C().code, msg }); }
+
+// ---------------------------------------------------------------------------
+// CRM: funil de prospecção em Kanban, atividades e conversão em cliente.
+// ---------------------------------------------------------------------------
+const CRM_STAGES = [["NOVO", "Novo lead"], ["CONTATO", "Primeiro contato"], ["QUALIF", "Qualificação"], ["COTACAO", "Cotação"], ["NEGOC", "Negociação"], ["APROV", "Aprovação"], ["GANHO", "Convertido"]];
+const LOSS = ["Preço", "Prazo de entrega", "Sem estoque", "Comprou de concorrente", "Sem retorno", "Projeto cancelado"];
+const KF = { seller: "", q: "", leadId: null, showLost: false };
+function seedCrm(st) {
+  const d = (n) => days(n);
+  st.companies.A.leads = [
+    { id: "L1", company: "Solar Norte Energia", contact: "Thiago Brandão", email: "thiago@solarnorte.com.br", phone: "(91) 98811-2233", city: "Belém/PA", seller: "Gerente Comercial", stage: "NOVO", value: 18000, source: "Site", next: "Ligar para apresentar linha de drivers", nextDate: d(1), acts: [{ when: d(-1), type: "E-mail", msg: "Formulário do site: interesse em drivers 12V e fitas" }] },
+    { id: "L2", company: "Vitrine Iluminação", contact: "Aline Prado", email: "compras@vitrineilum.com.br", phone: "(41) 3322-1100", city: "Curitiba/PR", seller: "Carla Mendes", stage: "CONTATO", value: 9500, source: "Indicação", next: "Enviar catálogo e tabela", nextDate: d(0), acts: [{ when: d(-3), type: "Ligação", msg: "Conversou com a compradora, pediu catálogo" }] },
+    { id: "L3", company: "RoboEdu Escola de Robótica", contact: "Prof. Daniel", email: "daniel@roboedu.com.br", phone: "(11) 97777-1212", city: "Campinas/SP", seller: "Bruno Alves", stage: "QUALIF", value: 14200, source: "Mercado Livre", next: "Visita para entender volume anual", nextDate: d(3), acts: [{ when: d(-6), type: "Reunião", msg: "Chamada de vídeo: 40 kits por semestre" }, { when: d(-9), type: "E-mail", msg: "Comprou 3x no ML, pediu condição para CNPJ" }] },
+    { id: "L4", company: "LedMax Comunicação Visual", contact: "Rogério Lima", email: "rogerio@ledmaxcv.com.br", phone: "(62) 99123-4567", city: "Goiânia/GO", seller: "Gerente Comercial", stage: "COTACAO", value: 26800, source: "Feira", next: "Cobrar retorno da cotação", nextDate: d(-1), acts: [{ when: d(-4), type: "E-mail", msg: "Cotação enviada: 120 fitas + 80 drivers" }] },
+    { id: "L5", company: "Automatiza Indústria", contact: "Fernanda Reis", email: "fernanda@automatiza.ind.br", phone: "(47) 3030-4040", city: "Blumenau/SC", seller: "Bruno Alves", stage: "NEGOC", value: 41000, source: "Prospecção ativa", next: "Proposta com prazo 60/90", nextDate: d(2), acts: [{ when: d(-2), type: "Ligação", msg: "Pediu 5% a mais de desconto para fechar contrato anual" }] },
+    { id: "L6", company: "Casa Elétrica Bahia", contact: "Marcelo Santos", email: "marcelo@casaeletricaba.com.br", phone: "(71) 98888-0000", city: "Salvador/BA", seller: "Carla Mendes", stage: "APROV", value: 12300, source: "Site", doc: "11.444.777/0001-61", next: "Aguardando gerente liberar crédito", nextDate: d(0), acts: [{ when: d(-1), type: "Tarefa", msg: "Pedido de conversão enviado para aprovação" }] },
+    { id: "L7", company: "Eletro Fácil ME", contact: "Joana", email: "joana@eletrofacil.com.br", phone: "-", city: "Santos/SP", seller: "Bruno Alves", stage: "PERDIDO", lost: "Preço", value: 3200, source: "Site", acts: [{ when: d(-12), type: "Ligação", msg: "Fechou com concorrente 8% mais barato" }] },
+  ];
+  st.companies.B.leads = [
+    { id: "L8", company: "Construtora Litoral", contact: "Eng. Paula", email: "paula@construtoralitoral.com.br", phone: "(13) 3222-1111", city: "Santos/SP", seller: "Gerente Comercial", stage: "NEGOC", value: 96000, source: "Indicação", next: "Amostra de painel 60x60", nextDate: d(4), acts: [{ when: d(-5), type: "Reunião", msg: "Obra com 1.100 painéis em 3 etapas" }] },
+  ];
+}
+function myLeads() { return (C().leads || []).filter((l) => !role().own || l.seller === role().user); }
+function vCrm() {
+  if (KF.leadId) return vLead(KF.leadId);
+  const all = myLeads(); const sellers = [...new Set(all.map((l) => l.seller))];
+  const ls = all.filter((l) => (!KF.seller || l.seller === KF.seller) && (!KF.q || matchWords(`${l.company} ${l.contact} ${l.city}`, KF.q)));
+  const open = ls.filter((l) => !["GANHO", "PERDIDO"].includes(l.stage)); const won = all.filter((l) => l.stage === "GANHO").length; const lost = all.filter((l) => l.stage === "PERDIDO").length;
+  const late = open.filter((l) => l.nextDate && new Date(l.nextDate) < new Date(new Date().toDateString()));
+  return head("CRM e prospecção", `Funil de vendas · ${esc(C().name)}${role().own ? " · seus leads" : ""}`, `<button class="btn" data-act="lead-new">${icon("plus")}Novo lead</button>`) +
+    `<div class="grid g4">${kpi("users", "c1", "Leads em aberto", open.length)}${kpi("money", "c2", "Valor no funil", money(open.reduce((s, l) => s + l.value, 0)))}${kpi("check", "c3", "Taxa de conversão", `${won + lost ? Math.round((won / (won + lost)) * 100) : 0}%`)}${kpi("alert", "c4", "Próximo passo atrasado", late.length)}</div>` +
+    (KF.newLead ? `<div class="card"><h2>Novo lead</h2><div class="form"><label class="f span2" for="ld-company">Empresa<input id="ld-company"></label><label class="f" for="ld-contact">Contato<input id="ld-contact"></label><label class="f" for="ld-email">E-mail<input id="ld-email"></label><label class="f" for="ld-city">Cidade/UF<input id="ld-city" placeholder="Campinas/SP"></label><label class="f" for="ld-value">Valor estimado (R$)<input id="ld-value" type="number" min="0" value="5000"></label><label class="f" for="ld-source">Origem<select id="ld-source">${["Site", "Indicação", "Mercado Livre", "Feira", "Prospecção ativa", "E-mail"].map((x) => `<option>${x}</option>`).join("")}</select></label></div><div id="err"></div><div class="row" style="margin-top:12px"><button class="btn" data-act="lead-save">Criar lead</button><button class="btn ghost" data-act="lead-cancel">Cancelar</button></div></div>` : "") +
+    `<div class="filters"><label class="f grow" for="kf-q">Buscar<input id="kf-q" value="${esc(KF.q)}" placeholder="Empresa, contato ou cidade"></label>${role().own ? "" : `<label class="f" for="kf-seller">Vendedor<select id="kf-seller"><option value="">Todos</option>${sellers.map((s) => `<option ${KF.seller === s ? "selected" : ""}>${esc(s)}</option>`).join("")}</select></label>`}<label class="f" style="flex-direction:row;align-items:center;gap:8px;align-self:end"><input type="checkbox" id="kf-lost" ${KF.showLost ? "checked" : ""}> Mostrar perdidos (${lost})</label></div>
+    <div class="kanban crm">${CRM_STAGES.concat(KF.showLost ? [["PERDIDO", "Perdido"]] : []).map(([k, l]) => { const xs = ls.filter((x) => x.stage === k); return `<div class="lane"><h3><span>${l}</span><span class="pill p-neutral">${xs.length}</span></h3><small class="note">${money(xs.reduce((s, x) => s + x.value, 0))}</small>
+      ${xs.map((x) => { const lt = x.nextDate && new Date(x.nextDate) < new Date(new Date().toDateString()); return `<button class="ticket lead" data-lead="${x.id}"><span class="row" style="justify-content:space-between;flex-wrap:nowrap"><b>${esc(x.company)}</b><span class="num">${money(x.value).replace(",00", "")}</span></span><small class="note">${esc(x.contact)} · ${esc(x.city)}</small>${x.stage === "PERDIDO" ? pill([`Perdido: ${x.lost}`, "p-bad"]) : x.next ? `<small style="color:${lt ? "var(--bad)" : "var(--text-2)"}">${lt ? "atrasado: " : ""}${esc(x.next)} · ${fdate(x.nextDate)}</small>` : ""}<span class="row" style="gap:6px">${avatar(x.seller)}<small class="note">${esc(x.source)}</small></span></button>`; }).join("") || `<p class="note" style="margin:0">Vazio</p>`}</div>`; }).join("")}</div>`;
+}
+function vLead(id) {
+  const l = (C().leads || []).find((x) => x.id === id); const i = CRM_STAGES.findIndex(([k]) => k === l.stage);
+  const isMgr = role().approve || S.role === "MEDIATOR";
+  return `<div class="row"><button class="btn ghost" data-act="lead-back">Voltar ao funil</button></div>
+    <div class="card hero"><div class="who-cell">${avatar(l.company)}<div><h1 style="margin:0;font-size:24px">${esc(l.company)}</h1><p class="note" style="margin:4px 0 0">${esc(l.contact)} · ${esc(l.email)} · ${esc(l.phone)} · ${esc(l.city)}</p></div></div><div class="row">${pill([l.stage === "PERDIDO" ? `Perdido: ${l.lost}` : CRM_STAGES[i][1], l.stage === "PERDIDO" ? "p-bad" : l.stage === "GANHO" ? "p-good" : "p-info"])}${pill([`${money(l.value)} estimado`, "p-warn"])}</div></div>
+    ${l.stage !== "PERDIDO" ? `<div class="card"><div class="steps" style="grid-template-columns:repeat(7,minmax(0,1fr))">${CRM_STAGES.map(([, lb], j) => `<div class="step ${j < i ? "done" : j === i ? "now" : ""}"><i>${j < i ? "&#10003;" : j + 1}</i>${lb}</div>`).join("")}</div>
+      <div class="row" style="margin-top:14px">${i > 0 && l.stage !== "GANHO" ? `<button class="btn ghost" data-leadmv="-1">Voltar etapa</button>` : ""}${i < 4 ? `<button class="btn" data-leadmv="1">Avançar para ${CRM_STAGES[i + 1][1]}</button>` : ""}${l.stage === "NEGOC" ? `<button class="btn" data-act="lead-askconv">Pedir conversão em cliente</button>` : ""}${l.stage === "APROV" && isMgr ? `<button class="btn" data-act="lead-convert">Aprovar e converter em cliente</button>` : l.stage === "APROV" ? `<span class="note">Aguardando aprovação do gerente.</span>` : ""}${l.stage === "GANHO" && l.customer ? `<button class="btn" data-cli="${l.customer}">Abrir ficha do cliente</button>` : ""}</div>
+      ${l.stage !== "GANHO" ? `<div class="row" style="margin-top:12px"><label class="f" for="ld-lost">Motivo da perda<select id="ld-lost">${LOSS.map((x) => `<option>${x}</option>`).join("")}</select></label><button class="btn danger" data-act="lead-lose" style="align-self:end">Marcar como perdido</button></div>` : ""}
+      ${l.stage === "NEGOC" || l.stage === "APROV" ? `<label class="f" for="ld-doc" style="margin-top:12px;max-width:320px">CNPJ para conversão<input id="ld-doc" value="${esc(l.doc || "")}" placeholder="00.000.000/0000-00"></label>` : ""}<div id="err"></div></div>` : `<div class="row"><button class="btn ghost" data-act="lead-reopen">Reabrir lead</button></div>`}
+    <div class="grid g21"><div class="card"><h2>Atividades</h2><div class="form" style="grid-template-columns:150px minmax(0,1fr) auto"><label class="f" for="la-type">Tipo<select id="la-type">${["Ligação", "E-mail", "Reunião", "Tarefa", "Lembrete"].map((x) => `<option>${x}</option>`).join("")}</select></label><label class="f" for="la-msg">Descrição<input id="la-msg" placeholder="ex.: ligou, pediu amostra"></label><div class="f" style="align-self:end"><button class="btn" data-act="lead-act">Registrar</button></div></div>
+      <ol class="timeline" style="margin-top:14px">${l.acts.map((a) => `<li><span>${pill([a.type, a.type === "Ligação" ? "p-info" : a.type === "E-mail" ? "p-warn" : "p-neutral"])} ${esc(a.msg)}</span><small>${new Date(a.when).toLocaleDateString("pt-BR")}${a.who ? ` · ${esc(a.who)}` : ""}</small></li>`).join("")}</ol></div>
+      <div class="card"><h2>Próximo passo</h2><label class="f" for="ld-next">O que fazer<input id="ld-next" value="${esc(l.next || "")}"></label><label class="f" for="ld-nextdate" style="margin-top:8px">Quando<input id="ld-nextdate" type="date" value="${(l.nextDate || "").slice(0, 10)}"></label><button class="btn ghost" data-act="lead-next" style="margin-top:10px">Salvar próximo passo</button>
+        <dl class="kv" style="margin-top:14px"><dt>Vendedor</dt><dd>${esc(l.seller)}</dd><dt>Origem</dt><dd>${esc(l.source)}</dd><dt>Empresa</dt><dd>${C().code} · ${esc(C().name)}</dd></dl>${can("emails") ? `<button class="btn ghost" data-mailto="${l.email}">${icon("emails")}Enviar e-mail</button>` : ""}</div></div>`;
+}
+function leadAction(act, ds) {
+  const l = (C().leads || []).find((x) => x.id === KF.leadId);
+  if (act === "lead-new") { KF.newLead = true; return render(); }
+  if (act === "lead-cancel") { KF.newLead = false; return render(); }
+  if (act === "lead-save") {
+    const company = $("ld-company").value.trim(); if (company.length < 2) throw new Error("Informe a empresa.");
+    C().leads.unshift({ id: `L${Date.now() % 1e6}`, company, contact: $("ld-contact").value.trim() || "-", email: $("ld-email").value.trim() || "-", phone: "-", city: $("ld-city").value.trim() || "-", seller: role().own ? role().user : (KF.seller || "Gerente Comercial"), stage: "NOVO", value: +$("ld-value").value || 0, source: $("ld-source").value, next: "Primeiro contato", nextDate: days(1), acts: [{ when: new Date().toISOString(), type: "Tarefa", msg: "Lead criado", who: role().user }] });
+    KF.newLead = false; toast(`Lead ${company} criado.`); return render();
+  }
+  if (act === "lead-back") { KF.leadId = null; return render(); }
+  if (!l) return;
+  const addAct = (type, msg) => l.acts.unshift({ when: new Date().toISOString(), type, msg, who: role().user });
+  if (ds.leadmv) { const i = CRM_STAGES.findIndex(([k]) => k === l.stage) + +ds.leadmv; l.stage = CRM_STAGES[i][0]; addAct("Tarefa", `Etapa: ${CRM_STAGES[i][1]}`); toast(`${l.company}: ${CRM_STAGES[i][1]}.`); return render(); }
+  if (act === "lead-askconv") { const doc = $("ld-doc").value.trim(); if (!cnpjOk(doc)) throw new Error("Informe um CNPJ válido para converter."); l.doc = doc; l.stage = "APROV"; addAct("Tarefa", "Conversão enviada para aprovação gerencial"); toast("Conversão enviada para aprovação do gerente."); return render(); }
+  if (act === "lead-convert") {
+    const doc = $("ld-doc")?.value.trim() || l.doc; if (!cnpjOk(doc)) throw new Error("CNPJ inválido.");
+    const dd = doc.replace(/\D/g, ""); const exists = C().customers.find((c) => c.doc.replace(/\D/g, "") === dd);
+    const id = exists ? exists.id : `c${Date.now() % 100000}`;
+    if (!exists) C().customers.push({ id, name: l.company, doc: `${dd.slice(0, 2)}.${dd.slice(2, 5)}.${dd.slice(5, 8)}/${dd.slice(8, 12)}-${dd.slice(12)}`, city: l.city, seller: l.seller });
+    l.stage = "GANHO"; l.customer = id; addAct("Tarefa", `Convertido em cliente por ${role().user}; histórico do lead mantido`);
+    toast(exists ? `CNPJ já cadastrado: lead vinculado a ${exists.name}.` : `${l.company} agora é cliente.`); return render();
+  }
+  if (act === "lead-lose") { l.lost = $("ld-lost").value; l.stage = "PERDIDO"; addAct("Tarefa", `Perdido: ${l.lost}`); toast(`Lead marcado como perdido (${l.lost}).`); return render(); }
+  if (act === "lead-reopen") { l.stage = "CONTATO"; l.lost = null; addAct("Tarefa", "Lead reaberto"); return render(); }
+  if (act === "lead-act") { const m = $("la-msg").value.trim(); if (!m) throw new Error("Descreva a atividade."); addAct($("la-type").value, m); toast("Atividade registrada."); return render(); }
+  if (act === "lead-next") { l.next = $("ld-next").value.trim(); l.nextDate = $("ld-nextdate").value ? new Date(`${$("ld-nextdate").value}T12:00:00`).toISOString() : null; toast("Próximo passo salvo."); return render(); }
+}
+
+// ---------------------------------------------------------------------------
+// Fornecedores e cotação de compra (comparação entre fornecedores).
+// ---------------------------------------------------------------------------
+function seedSuppliers(st) {
+  st.companies.A.suppliers = [
+    { id: "f1", name: "Distribuidora Componentes SP", doc: "61.222.333/0001-90", city: "São Paulo/SP", terms: "28 dias", lead: 3, rating: [5, 4, 5], skus: ["LED-5MM-BR", "LED-3MM-VM", "RES-1K-14W", "CAP-100UF-25V", "DIO-1N4007", "SENS-PIR-HC"], buy12: 48200, contact: "vendas@componentessp.com.br" },
+    { id: "f2", name: "EletroParts Atacado", doc: "07.555.111/0001-20", city: "Santa Rita do Sapucaí/MG", terms: "30/60", lead: 5, rating: [4, 5, 4], skus: ["LED-5MM-BR", "RES-1K-14W", "TRA-BC547", "REG-LM7805", "REL-12V-10A"], buy12: 31750, contact: "comercial@eletroparts.com.br" },
+    { id: "f3", name: "MakerHub Importadora", doc: "29.888.444/0001-07", city: "Florianópolis/SC", terms: "À vista 3% desc.", lead: 7, rating: [3, 4, 4], skus: ["MOD-ESP32", "ARD-NANO", "SENS-PIR-HC", "REL-12V-10A"], buy12: 22400, contact: "b2b@makerhub.com.br" },
+    { id: "f4", name: "LuzTec Fitas e Drivers", doc: "14.777.222/0001-55", city: "Joinville/SC", terms: "28/56", lead: 4, rating: [5, 5, 3], skus: ["FITA-5050-5M", "DRV-12V-2A"], buy12: 39900, contact: "pedidos@luztec.com.br" },
+  ];
+  st.companies.B.suppliers = [
+    { id: "f9", name: "Shenzhen Opto Co.", doc: "Estrangeiro · CN", city: "Shenzhen/CN", terms: "30% sinal, 70% embarque", lead: 45, rating: [4, 4, 3], skus: ["IMP-PAINEL-60", "IMP-FITA-5M"], buy12: 214000, contact: "sales@shenzhenopto.cn", fx: "USD" },
+    { id: "f10", name: "Ningbo Lighting Ltd.", doc: "Estrangeiro · CN", city: "Ningbo/CN", terms: "T/T 100% embarque", lead: 50, rating: [3, 4, 4], skus: ["IMP-PAINEL-60"], buy12: 61000, contact: "export@ningbolighting.cn", fx: "USD" },
+  ];
+  st.companies.A.rfqs = []; st.companies.B.rfqs = [];
+}
+function supPrice(s, sku) { const h = [...(s.id + sku)].reduce((a, c) => a + c.charCodeAt(0), 0); return r2(prod(sku).cost * (0.92 + (h % 17) / 100)); }
+function vFornecedores() {
+  const ss = C().suppliers || [];
+  return table([{ t: "Fornecedor" }, { t: "Produtos", r: 1 }, { t: "Condição" }, { t: "Prazo", r: 1 }, { t: "Pontualidade" }, { t: "Qualidade" }, { t: "Preço" }, { t: "Compras 12m", r: 1 }],
+    ss.map((s) => { const st = (n) => `<span class="stars" title="${n} de 5">${"★".repeat(n)}<i>${"★".repeat(5 - n)}</i></span>`; return `<tr><td><div class="who-cell">${avatar(s.name)}<span>${esc(s.name)}<small>${s.doc} · ${esc(s.city)} · ${s.contact}</small></span></div></td><td class="r num">${s.skus.length}</td><td>${esc(s.terms)}</td><td class="r num">${s.lead} dias</td><td>${st(s.rating[0])}</td><td>${st(s.rating[1])}</td><td>${st(s.rating[2])}</td><td class="r num">${money(s.buy12)}</td></tr>`; }), "Nenhum fornecedor.") +
+    `<p class="note">Avaliação atualizada a cada recebimento: pontualidade (data prometida × entrega), qualidade (divergências e avarias na conferência) e preço (comparado às outras cotações).</p>`;
+}
+function vRfq() {
+  const c = C(); const ss = c.suppliers || [];
+  // Sugestões vêm da previsão do estoque (mínimo + programação + ML).
+  const need = schedDemand(30); const ml = {}; c.listings.forEach((l) => explode({ sku: l.sku, qty: l.sold30 * l.units }).forEach(([k, n]) => { ml[k] = (ml[k] || 0) + n; }));
+  const sug = c.products.filter((p) => !p.kit).map((p) => { const bal = availSimple(p) - (need[p.sku] || 0) - (ml[p.sku] || 0); return { p, q: Math.ceil(Math.max(0, p.minStock * 1.5 - bal) / 10) * 10 }; }).filter((x) => x.q > 0);
+  const open = c.rfqs.find((r) => r.status === "Em cotação");
+  return `<div class="card"><h2>Solicitação de compra <small>sugerida pela previsão de estoque</small></h2>${sug.length ? table([{ t: "Produto" }, { t: "Disponível", r: 1 }, { t: "Quantidade sugerida", r: 1 }], sug.map(({ p, q }) => `<tr><td>${p.sku} · ${esc(p.name)}</td><td class="r num">${nf.format(availSimple(p))}</td><td class="r num"><b>${nf.format(q)}</b></td></tr>`)) + (open ? "" : `<button class="btn" data-act="rfq-new">${icon("plus")}Pedir cotação aos fornecedores</button>`) : `<p class="note">Nada para comprar agora.</p>`}</div>` +
+    c.rfqs.map((r) => {
+      const sups = ss.filter((s) => r.items.some(([k]) => s.skus.includes(k)));
+      const best = {}; r.items.forEach(([k]) => { const opts = sups.filter((s) => s.skus.includes(k)); best[k] = opts.sort((a, b) => supPrice(a, k) - supPrice(b, k))[0]?.id; });
+      return `<div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">Cotação de compra ${r.n}</h2>${pill([r.status, r.status === "Em cotação" ? "p-warn" : "p-good"])}</div><p class="note">${r.items.length} item(ns) · ${sups.length} fornecedor(es) consultado(s) · menor preço destacado</p>
+        <div class="tbl-wrap"><table><thead><tr><th>Produto</th><th class="r">Qtd</th>${sups.map((s) => `<th class="r" style="white-space:normal;min-width:110px">${esc(s.name)}<br><small class="note">${s.lead} dias · ${esc(s.terms)}</small></th>`).join("")}</tr></thead><tbody>${r.items.map(([k, q]) => `<tr><td>${k}</td><td class="r num">${nf.format(q)}</td>${sups.map((s) => s.skus.includes(k) ? `<td class="r num" style="${best[k] === s.id ? "color:#f2cc5b;font-weight:800" : ""}">${money(supPrice(s, k))}<br><small class="note">${money(supPrice(s, k) * q)}</small></td>` : `<td class="r note">-</td>`).join("")}</tr>`).join("")}</tbody></table></div>
+        ${r.status === "Em cotação" ? `<div class="row" style="margin-top:12px"><button class="btn" data-rfqok="${r.n}">Gerar pedidos com o menor preço por item</button><span class="note">Cada fornecedor vencedor recebe um pedido; acima de R$ 5.000 vai para aprovação da diretoria.</span></div>` : `<p class="note">${esc(r.result)}</p>`}</div>`;
+    }).join("");
+}
+function rfqAction(act, ds) {
+  const c = C();
+  if (act === "rfq-new") {
+    const need = schedDemand(30); const ml = {}; c.listings.forEach((l) => explode({ sku: l.sku, qty: l.sold30 * l.units }).forEach(([k, n]) => { ml[k] = (ml[k] || 0) + n; }));
+    const items = c.products.filter((p) => !p.kit).map((p) => { const bal = availSimple(p) - (need[p.sku] || 0) - (ml[p.sku] || 0); return [p.sku, Math.ceil(Math.max(0, p.minStock * 1.5 - bal) / 10) * 10]; }).filter(([, q]) => q > 0);
+    c.rfqs.unshift({ n: c.rfqs.length + 1, items, status: "Em cotação" }); toast(`Cotação enviada por e-mail para ${(c.suppliers || []).filter((s) => items.some(([k]) => s.skus.includes(k))).length} fornecedor(es).`); return render();
+  }
+  if (ds.rfqok) {
+    const r = c.rfqs.find((x) => x.n === +ds.rfqok); const by = {};
+    r.items.forEach(([k, q]) => { const s = c.suppliers.filter((x) => x.skus.includes(k)).sort((a, b) => supPrice(a, k) - supPrice(b, k))[0]; if (!s) return; by[s.name] = (by[s.name] || 0) + supPrice(s, k) * q; });
+    Object.entries(by).forEach(([name, tot]) => c.purchases.unshift({ n: c.purchases.length + 1, supplier: name, status: tot > 5000 ? "Aguardando aprovação da diretoria" : "Aprovada, aguardando recebimento", total: r2(tot), imp: false }));
+    r.status = "Concluída"; r.result = `Gerou ${Object.keys(by).length} pedido(s) de compra: ${Object.entries(by).map(([n, t]) => `${n} (${money(t)})`).join(", ")}.`;
+    toast(`${Object.keys(by).length} pedido(s) de compra gerado(s).`); return render();
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Estoque: inventário com contagem e ajuste auditado.
+// ---------------------------------------------------------------------------
+const INV = { counts: {}, n: 1 };
+function vInventario() {
+  const ps = C().products.filter((p) => !p.kit); const canAdj = ["MEDIATOR", "STOCK"].includes(S.role);
+  const diffs = ps.filter((p) => INV.counts[p.sku] !== undefined && INV.counts[p.sku] !== p.phys);
+  return `<div class="alert info">${icon("estoque")}<span>Inventário ${C().code}-${INV.n}: digite a contagem física (ou importe do coletor). Só os itens contados entram; o ajuste vira movimento com motivo e usuário, uma única vez.</span></div>` +
+    table([{ t: "Produto" }, { t: "Sistema (físico)", r: 1 }, { t: "Contado", r: 1 }, { t: "Divergência", r: 1 }, { t: "Valor da divergência", r: 1 }],
+      ps.map((p) => { const ct = INV.counts[p.sku]; const d = ct === undefined ? null : ct - p.phys; return `<tr><td>${p.sku} · ${esc(p.name)}</td><td class="r num">${nf.format(p.phys)}</td><td class="r"><input type="number" min="0" data-inv="${p.sku}" value="${ct ?? ""}" placeholder="-" style="width:100px;text-align:right" ${canAdj ? "" : "disabled"}></td><td class="r num" style="color:${d ? (d < 0 ? "var(--bad)" : "var(--warn)") : "inherit"}">${d === null ? "-" : `${d > 0 ? "+" : ""}${nf.format(d)}`}</td><td class="r num">${d ? money(d * p.cost) : "-"}</td></tr>`; })) +
+    (canAdj ? `<div class="row"><button class="btn ghost" data-act="inv-coletor">Importar arquivo do coletor</button><button class="btn" data-act="inv-apply" ${diffs.length ? "" : "disabled"}>Aplicar ${diffs.length} ajuste(s)</button><div id="err"></div></div>` : `<p class="note">Seu perfil só consulta o inventário.</p>`);
+}
+
+// ---------------------------------------------------------------------------
+// Financeiro: conciliação bancária (extrato × títulos).
+// ---------------------------------------------------------------------------
+function seedBank(st) {
+  for (const co of Object.values(st.companies)) {
+    const paid = co.recv.filter((r) => r.paid > 0).slice(0, 4); const openR = co.recv.filter((r) => r.paid < r.amount).slice(0, 2);
+    co.bank = [
+      ...paid.map((r, i) => ({ id: `b${co.code}${i}`, date: days(-i - 1), desc: `PIX RECEBIDO ${cust(r.customer)?.name.toUpperCase().slice(0, 22) || ""}`, amount: r.paid, match: r.id, ok: true })),
+      ...openR.map((r, i) => ({ id: `b${co.code}o${i}`, date: days(-1), desc: `LIQUIDACAO BOLETO ${r.id}`, amount: r.amount - r.paid, match: r.id, ok: false })),
+      { id: `b${co.code}t1`, date: days(-2), desc: "TARIFA PACOTE SERVICOS", amount: -89.9, match: null, ok: false },
+      { id: `b${co.code}t2`, date: days(-3), desc: "PAG BOLETO CORREIOS", amount: -412.6, match: null, ok: false },
+    ];
+  }
+}
+function vConcilia() {
+  const b = C().bank || []; const pend = b.filter((x) => !x.ok);
+  const canAct = ["MEDIATOR", "FINANCE", "MANAGER"].includes(S.role);
+  return `<div class="grid g4">${kpi("financeiro", "c1", "Saldo do extrato", money(48500 + b.reduce((s, x) => s + x.amount, 0)))}${kpi("check", "c3", "Conciliados", b.length - pend.length)}${kpi("alert", "c4", "Pendentes", pend.length)}${kpi("clock", "c2", "Último extrato", "hoje 07:00 (OFX)")}</div>` +
+    `<div class="row"><button class="btn ghost" data-act="bank-import">Importar extrato (OFX/CNAB)</button>${pend.some((x) => x.match) && canAct ? `<button class="btn" data-act="bank-auto">Conciliar sugestões (${pend.filter((x) => x.match).length})</button>` : ""}</div>` +
+    table([{ t: "Data" }, { t: "Lançamento do banco" }, { t: "Valor", r: 1 }, { t: "No ERP" }, { t: "" }], b.map((x) => { const r = x.match && C().recv.find((y) => y.id === x.match); return `<tr><td class="num">${fdate(x.date)}</td><td class="mono" style="font-size:12px">${esc(x.desc)}</td><td class="r num" style="color:${x.amount < 0 ? "var(--bad)" : "var(--good)"}">${money(x.amount)}</td><td>${r ? `Título ${r.id} · ${esc(cust(r.customer).name)}` : x.amount < 0 ? `<span class="note">sem título: criar despesa</span>` : "-"}</td><td>${x.ok ? pill(["Conciliado", "p-good"]) : canAct ? (r ? `<button class="btn ghost" data-bank="${x.id}">Conciliar e dar baixa</button>` : `<button class="btn ghost" data-bankexp="${x.id}">Lançar despesa</button>`) : pill(["Pendente", "p-warn"])}</td></tr>`; })) +
+    `<p class="note">Faturamento, recebimento e conciliação ficam separados: conciliar confirma que o dinheiro entrou no banco e dá a baixa do título uma única vez.</p>`;
+}
+function bankAction(ds, act) {
+  const b = C().bank;
+  const doOne = (x) => { const r = C().recv.find((y) => y.id === x.match); if (r && r.paid < r.amount) { r.paid = r2(r.paid + x.amount); } x.ok = true; };
+  if (ds.bank) { doOne(b.find((x) => x.id === ds.bank)); toast("Lançamento conciliado e título baixado."); return render(); }
+  if (ds.bankexp) { const x = b.find((y) => y.id === ds.bankexp); C().pays.unshift({ id: `p${x.id}`, desc: x.desc, cat: x.desc.includes("TARIFA") ? "Tarifas bancárias" : "Frete", amount: -x.amount, due: x.date, approved: true, paid: -x.amount }); x.ok = true; toast("Despesa lançada e conciliada."); return render(); }
+  if (act === "bank-auto") { const n = b.filter((x) => !x.ok && x.match); n.forEach(doOne); toast(`${n.length} lançamento(s) conciliado(s).`); return render(); }
+  if (act === "bank-import") return toast("Extrato importado: nenhum lançamento novo (arquivo já processado).");
+}
+
+// ---------------------------------------------------------------------------
+// Expedição: ocorrências e devoluções.
+// ---------------------------------------------------------------------------
+function vOcorrencias() {
+  const sent = C().orders.filter((o) => ["ENVIADO", "ENTREGUE"].includes(o.status)).slice(0, 30); const occ = C().occ || [];
+  const canAct = ["MEDIATOR", "STOCK"].includes(S.role);
+  return `<div class="card"><h2>Ocorrências de entrega e devoluções</h2>${canAct ? `<div class="form"><label class="f" for="oc-order">Pedido<select id="oc-order">${sent.map((o) => `<option value="${o.id}">${code(o)} · ${esc(cust(o.customer).name)}</option>`).join("")}</select></label><label class="f" for="oc-type">Tipo<select id="oc-type">${["Atraso da transportadora", "Endereço não localizado", "Avaria no transporte", "Devolução (volta ao estoque)", "Devolução com avaria (bloqueado)"].map((x) => `<option>${x}</option>`).join("")}</select></label><label class="f span2" for="oc-desc">Descrição<input id="oc-desc" placeholder="ex.: caixa amassada, 2 drivers quebrados"></label><div class="f" style="align-self:end"><button class="btn" data-act="oc-save">Registrar</button></div></div><div id="err"></div>` : ""}
+    ${occ.length ? `<ol class="timeline" style="margin-top:14px">${occ.map((x) => `<li><span>${pill([x.type, x.type.startsWith("Devolução") ? "p-warn" : "p-bad"])} <button class="link" data-open="${x.order}">${x.code}</button> ${esc(x.desc)}</span><small>${x.when} · ${esc(x.who)}</small></li>`).join("")}</ol>` : `<p class="note">Nenhuma ocorrência registrada.</p>`}</div>`;
+}
+function occSave() {
+  const o = C().orders.find((x) => x.id === $("oc-order").value); const type = $("oc-type").value; const desc = $("oc-desc").value.trim();
+  if (!o) throw new Error("Escolha o pedido."); if (!desc) throw new Error("Descreva a ocorrência.");
+  C().occ = C().occ || []; const key = `ret:${o.id}`;
+  if (type.startsWith("Devolução")) {
+    if (C().moves.some((m) => m.key && m.key.startsWith(key))) throw new Error("Este pedido já teve devolução registrada.");
+    o.items.forEach((i, idx) => explode(i).forEach(([s, q]) => { move("Devolução", s, q, code(o), `${key}:${idx}:${s}`); if (type.includes("avaria")) move("Bloqueio", s, q, code(o), `${key}:blk:${idx}:${s}`); }));
+    log(o, `Devolução registrada: ${desc}`);
+  } else log(o, `Ocorrência: ${type} · ${desc}`);
+  C().occ.unshift({ order: o.id, code: code(o), type, desc, when: now(), who: role().user });
+  toast(type.startsWith("Devolução") ? `Devolução de ${code(o)} lançada no estoque${type.includes("avaria") ? " como bloqueado" : ""}.` : "Ocorrência registrada.");
+}
+
+// ---------------------------------------------------------------------------
+// Administração: usuários, cadastros auxiliares e auditoria.
+// ---------------------------------------------------------------------------
+const USERS = [
+  ["Aline", "aline.marketing.maxled@gmail.com", "MEDIATOR", "A, B", "agora"], ["Diretoria", "diretoria@maxled.com.br", "MANAGER", "A, B", "hoje 08:12"],
+  ["Gerente Comercial", "gerente@maxled.com.br", "SALES_MANAGER", "A, B", "hoje 09:40"], ["Bruno Alves", "bruno@maxled.com.br", "SELLER", "A", "hoje 10:05"],
+  ["Carla Mendes", "carla@maxled.com.br", "SELLER", "A", "ontem 17:22"], ["Equipe Estoque", "estoque@maxled.com.br", "STOCK", "A, B", "hoje 07:55"],
+  ["Equipe Financeiro", "financeiro@maxled.com.br", "FINANCE", "A, B", "hoje 08:30"], ["Equipe Fiscal", "fiscal@maxled.com.br", "FISCAL", "A, B", "ontem 16:10"],
+  ["Distribuidora Sul", "compras@distribuidorasul.com.br", "CUSTOMER", "A (portal)", "12/10 14:02"],
+];
+const AUX = {
+  "Transportadoras": [["Jadlog", "CNPJ 04.884.082/0001-35 · rastreio integrado"], ["Correios (contrato)", "SEDEX/PAC · etiqueta via SIGEP"], ["Braspress", "carga fracionada"], ["Entrega própria", "Grande SP"]],
+  "Formas de pagamento": [["Boleto", "30/60/90 · cobrança registrada"], ["Pix", "baixa automática na conciliação"], ["Cartão", "Mercado Pago (ML)"], ["Depósito", "conferência manual"]],
+  "Categorias financeiras": [["Fornecedores", "custo"], ["Frete", "despesa variável"], ["Importação", "custo"], ["Folha", "despesa fixa"], ["Aluguel", "despesa fixa"], ["Tarifas bancárias", "despesa financeira"]],
+};
 
 function vClientes() {
   if (S.clienteId) return vCliente(S.clienteId);
@@ -2217,6 +2463,11 @@ function vProdutos() {
       return `<button class="pcard" data-prod="${p.sku}">${thumb(p, 64)}<div class="pc-b"><span class="mono note">${p.sku}${p.kit ? " · kit" : ""}</span><b>${esc(p.name)}</b><div class="row" style="justify-content:space-between"><span class="price">${money(p.price)}</span>${seeCosts() ? `<span class="note">margem ${Math.round(mg * 100)}%</span>` : ""}</div>
         <div class="mini"><i style="width:${Math.min(100, ratio * 50)}%;background:${ratio < 1 ? "var(--bad)" : "var(--grad)"}"></i></div><small class="note">${nf.format(a)} disponível${p.kit ? " (montáveis)" : ` · mín. ${nf.format(p.minStock)}`} · ${nf.format(sold)} vendidos em 90 dias</small></div></button>`; }).join("") || `<p class="note">Nenhum produto.</p>`}</div>`;
 }
+function prodTech(p) {
+  const h = [...p.sku].reduce((a, c) => a + c.charCodeAt(0), 0);
+  const specs = { LEDs: [["Cor", p.name.includes("vermelho") ? "Vermelho 620nm" : "Branco frio 6500K"], ["Tensão direta", "3,0–3,2 V"], ["Corrente", "20 mA"], ["Ângulo", "30°"]], Resistores: [["Resistência", "1 kΩ"], ["Potência", "0,25 W"], ["Tolerância", "5%"]], Capacitores: [["Capacitância", "100 µF"], ["Tensão", "25 V"], ["Temperatura", "105 °C"]], Diodos: [["Tipo", p.name.split(" ")[0]], ["Encapsulamento", p.sku.startsWith("REG") ? "TO-220" : "DO-41 / TO-92"]], "Relés": [["Bobina", "12 V DC"], ["Contato", "10 A 250 VAC"]], "Módulos": [["Microcontrolador", p.sku.includes("ESP") ? "ESP32 dual-core 240 MHz" : "ATmega328P 16 MHz"], ["Alimentação", "5 V USB"]], Drivers: [["Entrada", "100–240 VAC"], ["Saída", "12 V DC 2 A (24 W)"], ["Proteção", "curto e sobrecarga"]], "Automação": [["Alcance", "até 7 m"], ["Alimentação", "5–20 V"]] }[p.fam] || [["Tipo", p.fam]];
+  return { brand: ["Kingbright", "Vishay", "Epcos", "Fairchild", "Songle", "Espressif", "Mean Well", "MaxLed"][h % 8], mfr: `${p.sku.split("-")[0]}${1000 + h}`, ean: `789${String(h * 7919).padStart(10, "0").slice(0, 10)}`, pack: p.price < 1 ? "Pacote com 100 un. · caixa com 10 pacotes" : p.kit ? "Kit (saco zip)" : "Unidade · caixa com 20 un.", dim: p.price < 1 ? "0,1 g · 5×5×8 mm" : `${(h % 300) + 20} g · ${(h % 10) + 5}×${(h % 7) + 3}×${(h % 5) + 2} cm`, specs };
+}
 function vProduto(sku) {
   const p = prod(sku); const months = lastMonths(6); const sales = prodSales(sku, months); const mx = Math.max(...sales, 1);
   const moves = C().moves.filter((m) => m.sku === sku || (p.kit && p.kit.some(([k]) => k === m.sku))).slice(0, 8);
@@ -2230,9 +2481,11 @@ function vProduto(sku) {
     <div class="grid g4">${p.kit ? kpi("produtos", "c1", "Kits montáveis", nf.format(avail(p))) : `${kpi("estoque", "c1", "Físico", nf.format(p.phys))}${kpi("clock", "c2", "Reservado", nf.format(p.res))}${kpi("alert", "c4", "Bloqueado/avaria", nf.format(p.blk))}`}${kpi("check", "c3", "Disponível", nf.format(avail(p)))}</div>
     <div class="grid g21">
       <div class="card"><h2>Vendas por mês <small>unidades · 6 meses</small></h2><div class="daybars" style="height:130px">${sales.map((v, i) => `<i title="${months[i].label}: ${nf.format(v)} un." style="height:${Math.max(2, (v / mx) * 100)}%"></i>`).join("")}</div><div class="dayaxis">${months.map((m) => `<span>${m.label}</span>`).join("")}</div></div>
-      <div class="card"><h2>Dados fiscais e logísticos</h2><dl class="kv"><dt>NCM</dt><dd class="mono">${p.ncm}</dd><dt>CEST</dt><dd>-</dd><dt>Origem</dt><dd>${p.sku.startsWith("IMP") ? "1 · Estrangeira (importação direta)" : "0 · Nacional"}</dd><dt>Unidade</dt><dd>UN</dd><dt>Estoque mínimo</dt><dd>${p.kit ? "-" : nf.format(p.minStock)}</dd><dt>Família</dt><dd>${p.fam}</dd></dl></div>
+      <div class="card"><h2>Dados fiscais e logísticos</h2><dl class="kv"><dt>NCM</dt><dd class="mono">${p.ncm}</dd><dt>CEST</dt><dd>-</dd><dt>Origem</dt><dd>${p.sku.startsWith("IMP") ? "1 · Estrangeira (importação direta)" : "0 · Nacional"}</dd><dt>Unidade</dt><dd>UN</dd><dt>Estoque mínimo</dt><dd>${p.kit ? "-" : nf.format(p.minStock)}</dd><dt>Família</dt><dd>${p.fam}</dd><dt>Marca</dt><dd>${prodTech(p).brand}</dd><dt>Cód. fabricante</dt><dd class="mono">${prodTech(p).mfr}</dd><dt>EAN</dt><dd class="mono">${prodTech(p).ean}</dd><dt>Embalagem</dt><dd>${prodTech(p).pack}</dd><dt>Peso / dimensões</dt><dd>${prodTech(p).dim}</dd></dl></div>
     </div>
     <div class="grid g2">
+      <div class="card"><h2>Especificações técnicas</h2><dl class="kv">${prodTech(p).specs.map(([a, b]) => `<dt>${a}</dt><dd>${b}</dd>`).join("")}</dl><div class="row" style="margin-top:10px"><button class="btn ghost" data-ptdl="Datasheet ${p.sku}">Datasheet (PDF)</button></div></div>
+      <div class="card"><h2>Fornecedores</h2>${(C().suppliers || []).filter((s) => s.skus.includes(p.sku)).map((s) => `<div class="hbar"><div class="l"><span>${esc(s.name)} <small class="note">${s.lead} dias · ${esc(s.terms)}</small></span>${seeCosts() ? `<b class="num">${money(supPrice(s, p.sku))}</b>` : ""}</div></div>`).join("") || `<p class="note">${p.kit ? "Kit montado internamente." : "Nenhum fornecedor vinculado."}</p>`}</div>
       <div class="card"><h2>${p.kit ? "Composição do kit" : "Usado nos kits"}</h2>${p.kit ? `<div class="list">${p.kit.map(([k, q]) => `<div class="stockrow">${thumb(prod(k), 34)}<div style="flex:1"><div class="l"><span>${q} × ${esc(prod(k).name)}</span><b class="num">${nf.format(avail(prod(k)))} disp.</b></div><small class="note">${k}</small></div></div>`).join("")}</div>` : usedIn.length ? `<div class="list">${usedIn.map((x) => `<button class="link" data-prod="${x.sku}">${x.sku} · ${esc(x.name)}</button>`).join("")}</div>` : `<p class="note">Não faz parte de nenhum kit.</p>`}</div>
       <div class="card"><h2>Últimas movimentações</h2>${moves.length ? `<ol class="timeline">${moves.map((m) => `<li><span>${m.type} de ${nf.format(m.qty)} · ${m.sku}</span><small>${m.when} · ${esc(m.doc)} · ${esc(m.user)}</small></li>`).join("")}</ol>` : `<p class="note">Sem movimentações registradas.</p>`}</div>
     </div>`;
@@ -2317,7 +2570,7 @@ function vRelatorios() {
 // ---------------------------------------------------------------------------
 function vConfig() {
   const tab = S.tab || "param";
-  const tabs = [["param", "Parâmetros da empresa"], ["perfis", "Perfis e permissões"], ["integ", "Integrações"]];
+  const tabs = [["param", "Parâmetros da empresa"], ["users", "Usuários"], ["perfis", "Perfis e permissões"], ["aux", "Cadastros auxiliares"], ["integ", "Integrações"], ["audit", "Auditoria"]];
   let body = "";
   if (tab === "param") {
     const c = C();
@@ -2328,6 +2581,12 @@ function vConfig() {
         <label class="f">Tabela padrão<input value="1 · Padrão" disabled></label></div>
         <p class="note" style="margin:12px 0 0">Alterar o desconto máximo já muda a regra de aprovação dos próximos pedidos.</p></div>
       <div class="card"><h2>Fiscal</h2><dl class="kv"><dt>Razão social</dt><dd>${esc(c.name)}</dd><dt>CNPJ</dt><dd>${c.code === "A" ? "11.222.333/0001-81" : "44.555.666/0001-71"} (teste)</dd><dt>UF</dt><dd>${EMIT_UF}</dd><dt>Regime</dt><dd>A confirmar com a contabilidade</dd><dt>Ambiente NF-e</dt><dd>${pill(["Homologação", "p-warn"])}</dd><dt>Série / próximo nº</dt><dd>1 / ${c.nf}</dd><dt>Certificado digital</dt><dd>${pill(["Não configurado", "p-bad"])}</dd></dl></div></div>`;
+  } else if (tab === "users") {
+    body = table([{ t: "Usuário" }, { t: "Perfil" }, { t: "Empresas" }, { t: "Último acesso" }, { t: "2FA" }, { t: "Situação" }], USERS.map(([n, e, r, co, last], i) => `<tr><td><div class="who-cell">${avatar(n)}<span>${esc(n)}<small>${esc(e)}</small></span></div></td><td>${ROLES[r].label}</td><td>${co}</td><td>${last}</td><td>${r === "CUSTOMER" ? "-" : pill(i < 3 ? ["Ativo", "p-good"] : ["Pendente", "p-warn"])}</td><td>${pill(["Ativo", "p-good"])}</td></tr>`)) + `<p class="note">Convites por e-mail; senha forte e sessão de 12 horas. Desativar um usuário encerra as sessões abertas dele.</p>`;
+  } else if (tab === "aux") {
+    body = `<div class="grid g3">${Object.entries(AUX).map(([k, v]) => `<div class="card"><h2>${k}</h2><div class="list">${v.map(([a, b]) => `<div class="hbar"><div class="l"><span><b>${esc(a)}</b></span><small class="note">${esc(b)}</small></div></div>`).join("")}</div></div>`).join("")}</div>`;
+  } else if (tab === "audit") {
+    body = AUDIT.length ? table([{ t: "Quando" }, { t: "Usuário" }, { t: "Perfil" }, { t: "Empresa" }, { t: "Ação" }], AUDIT.slice(0, 60).map((a) => `<tr><td class="num">${a.when}</td><td>${esc(a.who)}</td><td>${esc(a.profile)}</td><td>${a.company}</td><td>${esc(a.msg)}</td></tr>`)) + `<p class="note">O registro é só de inclusão: ninguém edita nem apaga.</p>` : `<p class="note">Nenhuma ação registrada nesta sessão ainda. Faça algo no sistema (aprovar, emitir, conciliar) e volte aqui.</p>`;
   } else if (tab === "perfis") {
     const mods = MODULES.filter(([k]) => k !== "config");
     body = `<div class="tbl-wrap"><table><thead><tr><th>Perfil</th>${mods.map(([, l]) => `<th style="white-space:normal;min-width:70px">${l}</th>`).join("")}</tr></thead><tbody>${Object.entries(ROLES).map(([k, r]) => `<tr><td><b>${r.label}</b><small class="note" style="display:block">${r.own ? "só a própria carteira" : r.approve ? "aprova pedidos" : ""}</small></td>${mods.map(([m]) => `<td style="text-align:center">${r.mods === "*" || r.mods.includes(m) ? `<span class="okdot" title="acesso">✓</span>` : `<span class="note">-</span>`}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
@@ -2344,7 +2603,7 @@ function vConfig() {
 // Eventos
 // ---------------------------------------------------------------------------
 function err(e) { const box = $("err"); if (box) box.innerHTML = `<div class="alert bad" style="margin-top:10px">${esc(e.message)}</div>`; else toast(e.message); }
-function go(view) { S.cliTab = null; mailDraft = null; pgDraft = null; cliDraft = null; PT.orderId = null; S.clienteId = null; S.prodSku = null; S.batchErrors = null; S.view = view; S.orderId = null; S.tab = null; S.composing = false; S.danfe = null; S.impView = null; nfDraft = null; impDraft = null; render(); window.scrollTo(0, 0); }
+function go(view) { KF.leadId = null; KF.newLead = false; S.cliTab = null; mailDraft = null; pgDraft = null; cliDraft = null; PT.orderId = null; S.clienteId = null; S.prodSku = null; S.batchErrors = null; S.view = view; S.orderId = null; S.tab = null; S.composing = false; S.danfe = null; S.impView = null; nfDraft = null; impDraft = null; render(); window.scrollTo(0, 0); }
 
 document.addEventListener("click", (ev) => {
   if (ev.target.closest("#bell")) { $("bellbox").hidden = !$("bellbox").hidden; return; }
@@ -2365,6 +2624,18 @@ document.addEventListener("click", (ev) => {
     if (ds.act === "novo") { return startDraft(); }
     if (ds.act === "e-add") { return includeItem(); }
     if (ds.act === "novo-painel") { return newSale(); }
+    if (ds.lead) { KF.leadId = ds.lead; render(); return window.scrollTo(0, 0); }
+    if (ds.act?.startsWith("lead-") || ds.leadmv) return leadAction(ds.act, ds);
+    if (ds.act === "rfq-new" || ds.rfqok) return rfqAction(ds.act, ds);
+    if (ds.bank || ds.bankexp || ds.act === "bank-auto" || ds.act === "bank-import") return bankAction(ds, ds.act);
+    if (ds.act === "oc-save") { occSave(); return render(); }
+    if (ds.act === "inv-coletor") { C().products.filter((p) => !p.kit).forEach((p, i) => { INV.counts[p.sku] = i % 4 === 1 ? Math.max(0, p.phys - ((i * 3) % 7) - 1) : p.phys; }); toast("Arquivo do coletor importado: contagens preenchidas."); return render(); }
+    if (ds.act === "inv-apply") {
+      const id = `${C().code}-${INV.n}`; let n = 0;
+      C().products.filter((p) => !p.kit && INV.counts[p.sku] !== undefined && INV.counts[p.sku] !== p.phys).forEach((p) => { const d = INV.counts[p.sku] - p.phys; if (move(d > 0 ? "Ajuste (+)" : "Ajuste (−)", p.sku, Math.abs(d), `Inventário ${id}`, `inv:${id}:${p.sku}`)) n++; });
+      INV.counts = {}; INV.n++; toast(`Inventário ${id} aplicado: ${n} ajuste(s) lançado(s).`); return render();
+    }
+    if (ds.ptdl && S.view !== "portal") return toast(`${ds.ptdl}: no sistema real o arquivo é baixado aqui.`);
     if (ds.pt !== undefined || ds.ptopen || ds.ptadd || ds.ptrm || ds.ptrep || ds.ptdl) return portalAction(ds);
     if (ds.mbox !== undefined) { MF.box = ds.mbox; MF.mailId = null; mailDraft = null; return render(); }
     if (ds.mail) { MF.mailId = ds.mail; const m = C().mails.find((x) => x.id === ds.mail); if (m) m.read = true; return render(); }
@@ -2456,7 +2727,10 @@ document.addEventListener("change", (ev) => {
   if (!el.isConnected) return;
   if (el.id === "pf-seller") { PF.seller = el.value; PF.page = 0; return render(); }
   if (el.id === "pf-period") { PF.period = el.value; PF.page = 0; return render(); }
-  if (["pf-q", "cf-q", "pr-q", "mf-q", "pt-q"].includes(el.id)) return;
+  if (["pf-q", "cf-q", "pr-q", "mf-q", "pt-q", "kf-q"].includes(el.id)) return;
+  if (el.id === "kf-seller") { KF.seller = el.value; return render(); }
+  if (el.id === "kf-lost") { KF.showLost = el.checked; return render(); }
+  if (el.dataset.inv) { if (el.value === "") delete INV.counts[el.dataset.inv]; else INV.counts[el.dataset.inv] = Math.max(0, Math.floor(+el.value)); return render(); }
   if (pgDraft && ["pg-cli", "pg-freq", "pg-date", "pg-act"].includes(el.id)) { pgDraft[{ "pg-cli": "customer", "pg-freq": "freq", "pg-date": "date", "pg-act": "action" }[el.id]] = el.value; return; }
   if (mailDraft && ["md-to", "md-sub", "md-body", "md-box"].includes(el.id)) { mailDraft[{ "md-to": "to", "md-sub": "subject", "md-body": "body", "md-box": "box" }[el.id]] = el.value; return; }
   if (mailDraft && el.id === "md-tpl") { const o = mailDraft.order && C().orders.find((x) => x.id === mailDraft.order); mailDraft.tpl = el.value; mailDraft.body = TEMPLATES[el.value](o); if (el.value === "Lembrete de cobrança") mailDraft.attach = ["boleto-atualizado.pdf"]; return render(); }
@@ -2558,6 +2832,7 @@ function buildCmd(q) {
   }));
   if (can("pedidos")) visibleOrders().filter((x) => norm(`${code(x)} ${cust(x.customer).name}`).includes(t.replace(/^abrir\s+/, ""))).slice(0, 5)
     .forEach((x) => out.push({ g: "Pedidos", label: `${code(x)} · ${cust(x.customer).name}`, hint: STATUS[x.status][0], run: () => { S.view = "pedidos"; S.orderId = x.id; render(); } }));
+  if (can("crm")) myLeads().filter((l) => matchWords(`${l.company} ${l.contact}`, q)).slice(0, 3).forEach((l) => out.push({ g: "CRM", label: l.company, hint: `${l.contact} · ${(CRM_STAGES.find(([k]) => k === l.stage) || ["", "Perdido"])[1]}`, run: () => { S.view = "crm"; KF.leadId = l.id; render(); } }));
   if (can("emails")) myMails().filter((m) => matchWords(`${m.fromName} ${m.subject}`, q)).slice(0, 3).forEach((m) => out.push({ g: "E-mails", label: m.subject, hint: m.fromName, run: () => { S.view = "emails"; MF.box = ""; MF.mailId = m.id; m.read = true; render(); } }));
   if (can("clientes")) myCustomers().filter((c) => matchWords(`${c.id} ${c.name} ${c.doc} ${c.city}`, q)).slice(0, 4).forEach((c) => out.push({ g: "Clientes", label: c.name, hint: `${c.doc} · ${c.city}`, run: () => { S.view = "clientes"; S.clienteId = c.id; render(); } }));
   if (can("produtos")) C().products.filter((p) => norm(`${p.sku} ${p.name}`).includes(t)).slice(0, 5)
