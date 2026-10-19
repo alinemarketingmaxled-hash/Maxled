@@ -704,6 +704,41 @@ textarea { width: 100%; box-sizing: border-box; background: rgba(255,255,255,.04
 .pf-obs textarea { margin-top: 8px; }
 @media (max-width: 1100px) { .pf-line { grid-template-columns: repeat(4, minmax(0, 1fr)); } .pf-line > label:first-child { grid-column: 1 / -1; } .pf-lt { grid-column: span 2; } .pf-btn { grid-column: span 2; } .pf-btn .btn { width: 100%; justify-content: center; } }
 @media (max-width: 760px) { .pf-head2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .pf-line { grid-template-columns: repeat(2, minmax(0, 1fr)); } .pf-lt, .pf-btn { grid-column: span 1; } .pf-add-h .keys { display: none; } }
+
+/* Dock em grupos */
+.dock { gap: 6px; overflow: visible !important; }
+.dock > button { width: auto !important; min-width: 74px; height: 58px !important; padding: 6px 12px !important; display: grid !important; place-items: center; gap: 3px; border-radius: 16px !important; }
+.dock > button .dl { font-size: 11px; font-weight: 700; letter-spacing: .01em; line-height: 1; }
+.dock > button svg.i { width: 20px !important; height: 20px !important; }
+.dock > button.open { background: rgba(242,204,91,.16); color: var(--text); }
+.dock > button.on::after { bottom: -7px !important; }
+.dock > button .tip { display: none !important; }
+.dockmenu { position: absolute; bottom: calc(100% + 12px); left: 50%; transform: translateX(-50%); width: min(400px, calc(100vw - 24px)); display: grid; gap: 4px; padding: 10px; background: rgba(24,22,18,.96); backdrop-filter: blur(22px); border: 1px solid var(--border); border-radius: 20px; box-shadow: 0 24px 60px rgba(0,0,0,.55); }
+.dm-h { font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--text-3); padding: 4px 8px 6px; }
+.dockmenu button { display: flex; align-items: center; gap: 12px; text-align: left; background: none; border: 0; color: var(--text); padding: 9px 10px; border-radius: 12px; cursor: pointer; font: inherit; width: 100%; }
+.dockmenu button { height: auto !important; min-width: 0 !important; transform: none !important; box-shadow: none !important; border-radius: 12px !important; }
+.dockmenu button::after { display: none !important; }
+.dockmenu button:hover { background: rgba(255,255,255,.06); }
+.dockmenu button.on { background: rgba(242,204,91,.12); }
+.dm-ic { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 11px; background: rgba(255,255,255,.06); color: #f2cc5b; flex: none; }
+.dockmenu button.on .dm-ic { background: var(--grad); color: #1b1206; }
+.dm-t { display: grid; gap: 1px; flex: 1; } .dm-t b { font-size: 13.5px; } .dm-t small { font-size: 11.5px; color: var(--text-2); }
+@media (max-width: 1180px) { .dock { left: 50% !important; right: auto !important; transform: translateX(-50%) !important; } }
+@media (max-width: 520px) { .dock { left: 8px !important; right: 8px !important; transform: none !important; justify-content: space-between !important; gap: 2px; } .dock > button { min-width: 0; flex: 1; padding: 6px 2px !important; } .dock > button .dl { font-size: 10px; } .dockmenu { left: 0; transform: none; width: 100%; } }
+/* Prospecção por etapas */
+.pfun { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; }
+.pf-step { display: grid; gap: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 12px 14px; position: relative; }
+.pf-step b { font-size: 13px; } .pf-c { font-size: 24px; font-weight: 800; }
+.pf-n { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--grad); color: #1b1206; font-size: 11px; font-weight: 800; }
+.pf-n.sm { width: 18px; height: 18px; font-size: 10px; margin-right: 6px; vertical-align: 1px; }
+.kanban.pk { grid-template-columns: repeat(6, minmax(210px, 1fr)); }
+.scb { font-size: 11px; font-weight: 800; border-radius: 7px; padding: 2px 7px; background: rgba(255,255,255,.08); color: var(--text-2); }
+.scb.hi { background: var(--grad); color: #1b1206; } .scb.mid { background: var(--warn-soft); color: var(--warn); }
+.reqbar { display: flex; gap: 3px; } .reqbar i { flex: 1; height: 5px; border-radius: 3px; background: rgba(255,255,255,.1); } .reqbar i.ok { background: var(--good); }
+.reqs { margin-top: 14px; display: grid; gap: 6px; } .reqs h3 { margin: 0 0 4px; font-size: 14px; font-weight: 600; }
+.rq { display: flex; gap: 10px; align-items: center; font-size: 13.5px; color: var(--text-2); } .rq span { width: 20px; text-align: center; } .rq.ok { color: var(--text); } .rq.ok span { color: var(--good); font-weight: 800; }
+@media (max-width: 1100px) { .pfun { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .pfun { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 </style>
 
 <header class="cbar">
@@ -734,16 +769,16 @@ textarea { width: 100%; box-sizing: border-box; background: rgba(255,255,255,.04
 // ---------------------------------------------------------------------------
 const ROLES = {
   MEDIATOR: { label: "Mediador", user: "Aline", mods: "*" },
-  MANAGER: { label: "Diretoria", user: "Diretoria", mods: ["painel","pedidos","crm","clientes","programacao","emails","produtos","estoque","expedicao","compras","fiscal","financeiro","mercadolivre","relatorios","config"], approve: true },
-  SALES_MANAGER: { label: "Gerente comercial", user: "Gerente Comercial", mods: ["painel","pedidos","crm","clientes","programacao","emails","produtos","estoque","relatorios","portal"], approve: true },
-  SELLER: { label: "Vendedor", user: "Bruno Alves", mods: ["painel","pedidos","crm","clientes","programacao","emails","produtos","estoque","relatorios"], own: true, approve: false },
+  MANAGER: { label: "Diretoria", user: "Diretoria", mods: ["painel","pedidos","prospeccao","crm","clientes","programacao","emails","produtos","estoque","expedicao","compras","fiscal","financeiro","mercadolivre","relatorios","config"], approve: true },
+  SALES_MANAGER: { label: "Gerente comercial", user: "Gerente Comercial", mods: ["painel","pedidos","prospeccao","crm","clientes","programacao","emails","produtos","estoque","relatorios","portal"], approve: true },
+  SELLER: { label: "Vendedor", user: "Bruno Alves", mods: ["painel","pedidos","prospeccao","crm","clientes","programacao","emails","produtos","estoque","relatorios"], own: true, approve: false },
   STOCK: { label: "Estoque/expedição", user: "Equipe Estoque", mods: ["painel","pedidos","produtos","estoque","expedicao","mercadolivre","emails"] },
   FINANCE: { label: "Financeiro", user: "Equipe Financeiro", mods: ["painel","pedidos","clientes","emails","financeiro","fiscal","relatorios"] },
   FISCAL: { label: "Fiscal", user: "Equipe Fiscal", mods: ["painel","pedidos","fiscal","emails"] },
   CUSTOMER: { label: "Cliente (portal)", user: "Distribuidora Sul", mods: ["portal"] },
 };
 const MODULES = [
-  ["painel", "Painel"], ["pedidos", "Cotações e pedidos"], ["crm", "CRM e prospecção"], ["clientes", "Clientes"], ["programacao", "Programação"], ["emails", "E-mails"], ["produtos", "Produtos e kits"], ["estoque", "Estoque"],
+  ["painel", "Painel"], ["pedidos", "Cotações e pedidos"], ["prospeccao", "Prospecção"], ["crm", "CRM e funil"], ["clientes", "Clientes"], ["programacao", "Programação"], ["emails", "E-mails"], ["produtos", "Produtos e kits"], ["estoque", "Estoque"],
   ["expedicao", "Expedição"], ["compras", "Compras e importação"], ["fiscal", "Fiscal"], ["financeiro", "Financeiro"],
   ["mercadolivre", "Mercado Livre"], ["relatorios", "Relatórios"], ["portal", "Portal do cliente"], ["config", "Configurações"],
 ];
@@ -759,6 +794,7 @@ const ICON_PATHS = {
   mercadolivre: '<path d="M3 9 4.5 4h15L21 9"/><path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0M5 12v8h14v-8"/>',
   relatorios: '<path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/>',
   portal: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  prospeccao: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/>',
   crm: '<path d="M3 4h18l-7 8v6l-4 2v-8z"/>',
   programacao: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 14h2M14 14h2M8 18h2"/>',
   emails: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/>',
@@ -839,7 +875,7 @@ function seed() {
   S = st;
   seedHistory(st);
   seedExtra(st);
-  seedCrm(st); seedSuppliers(st); seedBank(st); seedProspects(st);
+  seedCrm(st); seedSuppliers(st); seedBank(st); seedProspects(st); seedPstages(st);
   for (const co of Object.values(st.companies)) { co.nfIn = []; co.autoStock = false; const prev = st.company; st.company = co.code; co.mails.slice().reverse().forEach((m) => autoPullXml(co, m, true)); st.company = prev; }
   const o1 = createOrder("c1", "Bruno Alves", [["KIT-LED-25", 4, 9.90, 0], ["RES-1K-14W", 200, 0.08, 0]], { freight: 18, inst: 2 }, true);
   submit(o1, true); emitNF(o1, true); advance(o1, "SEPARACAO", true); advance(o1, "CONFERENCIA", true); advance(o1, "PRONTO", true);
@@ -1001,8 +1037,7 @@ function renderShell() {
   $("company").disabled = S.role === "CUSTOMER";
   $("role").innerHTML = Object.entries(ROLES).map(([k, r]) => `<option value="${k}" ${k === S.role ? "selected" : ""}>${esc(r.label)}</option>`).join("");
   const pend = C().orders.filter((o) => o.status === "AGUARDANDO").length;
-  $("nav").innerHTML = MODULES.filter(([k]) => can(k)).map(([k, l]) =>
-    `<button data-go="${k}" class="${S.view === k ? "on" : ""}" aria-label="${esc(l)}">${icon(k)}<span class="tip">${esc(l)}</span>${k === "pedidos" && pend && (role().approve || S.role === "MEDIATOR") ? `<span class="count" title="aguardando aprovação">${pend}</span>` : ""}</button>`).join("");
+  renderDock();
   renderMenus();
   const al = alertsList(); $("bellc").hidden = !al.length; $("bellc").textContent = al.length;
   $("bellbox").innerHTML = `<div class="bb-h">Notificações</div>${al.map(([ic, t, v, tab], i) => `<button data-alert="${i}">${icon(ic)}<span>${esc(t)}</span></button>`).join("") || `<p class="note" style="padding:10px">Tudo em dia.</p>`}`;
@@ -1014,7 +1049,7 @@ function render() {
   renderShell();
   const v = $("view");
   v.className = "view";
-  const fn = { crm: vCrm, programacao: vProgramacao, emails: vEmails, clientes: vClientes, config: vConfig, painel: vPainel, pedidos: S.orderId ? vPedido : vPedidos, produtos: vProdutos, estoque: vEstoque, expedicao: vExpedicao, compras: vCompras, fiscal: vFiscal, financeiro: vFinanceiro, mercadolivre: vML, relatorios: vRelatorios, portal: vPortal }[S.view];
+  const fn = { prospeccao: vProspeccaoMod, crm: vCrm, programacao: vProgramacao, emails: vEmails, clientes: vClientes, config: vConfig, painel: vPainel, pedidos: S.orderId ? vPedido : vPedidos, produtos: vProdutos, estoque: vEstoque, expedicao: vExpedicao, compras: vCompras, fiscal: vFiscal, financeiro: vFinanceiro, mercadolivre: vML, relatorios: vRelatorios, portal: vPortal }[S.view];
   v.innerHTML = `<div class="wrap">${fn()}</div>`;
 }
 function head(title, sub, actions = "") { return `<div class="head"><div><h1>${esc(title)}</h1><p>${sub}</p></div><div class="row">${actions}</div></div>`; }
@@ -1590,7 +1625,7 @@ function vCadencias() {
 }
 function prospAction(ds, act) {
   const c = C();
-  if (ds.crmtab) { PF2.tab = ds.crmtab; KF.leadId = null; return render(); }
+  if (ds.crmtab) { S.view = "prospeccao"; PX.tab = ds.crmtab === "prosp" ? "lista" : ds.crmtab; PX.open = null; return render(); }
   if (act === "pr-find") { PF2.find = !PF2.find; return render(); }
   if (act === "pr-run") {
     const seg = $("pr-seg").value; const [city, uf] = $("pr-city").value.split("/").map((x) => x.trim()); if (!city || !uf || uf.length !== 2) throw new Error("Cidade no formato Cidade/UF.");
@@ -1607,8 +1642,8 @@ function prospAction(ds, act) {
   if (act === "pr-tofunnel" || act === "pr-discard") {
     const ids = [...PF2.sel]; const cad = $("pp-cad")?.value;
     ids.forEach((id) => { const x = c.prospects.find((y) => y.id === id); if (!x || x.status !== "Novo") return;
-      if (act === "pr-discard") { x.status = "Descartado"; return; }
-      x.status = "No funil";
+      if (act === "pr-discard") { x.status = "Descartado"; x.stage = "DESC"; return; }
+      x.status = "No funil"; x.stage = "QUALI";
       c.leads.unshift({ id: `L${Date.now() % 1e6}${id}`, company: x.name, contact: x.contact, email: x.email, phone: x.phone, city: `${x.city}/${x.uf}`, seller: role().own ? role().user : "Gerente Comercial", stage: "NOVO", value: { ME: 4000, EPP: 9000, "Média": 20000, Grande: 45000 }[x.size] || 5000, source: `Prospecção · ${x.source}`, next: cad ? "Seguir a cadência" : "Primeiro contato", nextDate: days(0), cad: cad ? { id: cad, start: days(0), done: [] } : null, acts: [{ when: new Date().toISOString(), type: "Tarefa", msg: `Vindo da prospecção (potencial ${fitScore(x)}/100)${x.signals.length ? `: ${x.signals.join(", ")}` : ""}`, who: role().user }] });
     });
     PF2.sel.clear(); toast(act === "pr-discard" ? `${ids.length} empresa(s) descartada(s).` : `${ids.length} empresa(s) levada(s) para o funil${cad ? " com cadência: as tarefas já aparecem na Agenda de hoje" : ""}.`); return render();
@@ -1618,6 +1653,138 @@ function prospAction(ds, act) {
     if (ds.tkdone !== undefined) { t.l.acts.unshift({ when: new Date().toISOString(), type: t.type === "WhatsApp" ? "Ligação" : t.type, msg: `${t.what || "Atividade"} (feito)`, who: role().user }); c.doneToday = (c.doneToday || 0) + 1; }
     if (t.cad) { (ds.tkdone !== undefined ? t.l.cad.done : (t.l.cad.skip = t.l.cad.skip || [])).push(t.step); } else { t.l.nextDate = null; }
     toast(ds.tkdone !== undefined ? `${t.type} com ${t.l.company} registrado(a).` : "Passo pulado."); return render();
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Dock em grupos: poucos botões com nome; cada grupo abre seus módulos.
+// ---------------------------------------------------------------------------
+const GROUPS = [
+  ["painel", "Painel", "painel", ["painel"]],
+  ["vendas", "Vendas", "pedidos", ["pedidos", "prospeccao", "crm", "clientes", "programacao", "portal"]],
+  ["operacao", "Operação", "estoque", ["produtos", "estoque", "expedicao", "compras"]],
+  ["fin", "Financeiro", "financeiro", ["financeiro", "fiscal"]],
+  ["canais", "Canais", "emails", ["mercadolivre", "emails"]],
+  ["gestao", "Gestão", "relatorios", ["relatorios", "config"]],
+];
+const MOD_DESC = {
+  painel: "Indicadores do dia e alertas", pedidos: "Cotações, pedidos e aprovação", prospeccao: "Encontrar e abordar empresas por etapas", crm: "Funil de vendas, cadências e agenda",
+  clientes: "Carteira, ficha 360 e crédito", programacao: "Pedidos recorrentes de clientes", portal: "O que o cliente vê", produtos: "Catálogo, kits e ficha técnica",
+  estoque: "Saldos, ML, recebimento e inventário", expedicao: "Separação, conferência e despacho", compras: "Cotação, fornecedores e importação", financeiro: "Receber, pagar, caixa e conciliação",
+  fiscal: "NF-e de saída e XML de entrada", mercadolivre: "Anúncios e fila de integração", emails: "Caixas comercial, fiscal e financeiro", relatorios: "ABC, vendedores, estados e consolidado", config: "Empresa, usuários, integrações e auditoria",
+};
+function modBadge(k) {
+  const pend = C().orders.filter((o) => o.status === "AGUARDANDO").length;
+  if (k === "pedidos" && pend && (role().approve || S.role === "MEDIATOR")) return pend;
+  if (k === "emails" && can("emails")) return myMails().filter((m) => !m.read).length || 0;
+  if (k === "prospeccao" && can("prospeccao")) return cadTasks().length || 0;
+  if (k === "fiscal" && can("fiscal")) return (C().nfIn || []).filter((x) => !x.status.startsWith("Entrada")).length || 0;
+  return 0;
+}
+function renderDock() {
+  const gs = GROUPS.map(([g, l, ic, mods]) => [g, l, ic, mods.filter((k) => can(k))]).filter(([, , , m]) => m.length);
+  const open = S.dockOpen && gs.find(([g]) => g === S.dockOpen);
+  $("nav").innerHTML = gs.map(([g, l, ic, mods]) => { const on = mods.includes(S.view); const b = mods.reduce((s, k) => s + modBadge(k), 0); const single = mods.length === 1;
+    return `<button ${single ? `data-go="${mods[0]}"` : `data-dock="${g}"`} class="${on ? "on" : ""} ${S.dockOpen === g ? "open" : ""}" aria-label="${esc(l)}" ${single ? "" : `aria-expanded="${S.dockOpen === g}"`}>${icon(single ? mods[0] : ic)}<span class="dl">${esc(single ? (MODULES.find(([k]) => k === mods[0])?.[1] || l).split(" ")[0] : l)}</span>${b ? `<span class="count">${b}</span>` : ""}</button>`; }).join("") +
+    (open ? `<div class="dockmenu" role="menu"><div class="dm-h">${esc(open[1])}</div>${open[3].map((k) => { const b = modBadge(k); return `<button data-go="${k}" role="menuitem" class="${S.view === k ? "on" : ""}"><span class="dm-ic">${icon(k)}</span><span class="dm-t"><b>${esc(MODULES.find(([m]) => m === k)[1])}</b><small>${MOD_DESC[k] || ""}</small></span>${b ? `<span class="count-in">${b}</span>` : ""}</button>`; }).join("")}</div>` : "");
+}
+
+// ---------------------------------------------------------------------------
+// Prospecção por etapas: da pesquisa até a empresa qualificada, que então
+// vira lead no funil de vendas. Cada etapa tem o que precisa estar feito
+// para avançar.
+// ---------------------------------------------------------------------------
+const PSTAGES = [["PESQ", "Pesquisa"], ["DECISOR", "Decisor identificado"], ["ABORD", "Primeira abordagem"], ["CONV", "Em conversa"], ["REUN", "Reunião agendada"], ["QUALI", "Qualificado"]];
+const PX = { open: null, tab: "etapas", seller: "" };
+const RESULTS = ["Sem resposta", "Caixa postal", "Pediu retorno", "Respondeu", "Sem interesse"];
+function pReqs(x) {
+  // O que falta para sair da etapa atual.
+  const d = x.decisor || {}; const resp = (x.tries || []).some((t) => t.res === "Respondeu" || t.res === "Pediu retorno"); const q = x.qual || {};
+  return {
+    PESQ: [["CNPJ e segmento confirmados", !!(x.cnpj && x.seg)], ["Nome do decisor", !!d.name], ["Telefone ou e-mail do decisor", !!(d.phone || d.email)]],
+    DECISOR: [["Primeira tentativa de contato registrada", (x.tries || []).length > 0]],
+    ABORD: [["Empresa respondeu ou pediu retorno", resp]],
+    CONV: [["Reunião ou visita com data marcada", !!x.meeting]],
+    REUN: [["Necessidade identificada", !!q.need], ["Volume de compra mensal estimado", q.volume > 0], ["Fornecedor atual", !!q.current], ["Prazo para decidir", !!q.when]],
+    QUALI: [], DESC: [],
+  }[x.stage] || [];
+}
+function daysIn(x) { return Math.max(0, Math.floor((Date.now() - new Date(x.since || days(-3))) / 864e5)); }
+function seedPstages(st) {
+  const A = st.companies.A; const map = { P1: "CONV", P2: "ABORD", P3: "PESQ", P4: "REUN", P5: "DECISOR", P6: "PESQ", P7: "QUALI", P8: "PESQ", P9: "DESC", P10: "ABORD", P11: "DECISOR", P12: "PESQ" };
+  const owners = ["Bruno Alves", "Carla Mendes", "Gerente Comercial"];
+  for (const co of Object.values(st.companies)) (co.prospects || []).forEach((x, i) => {
+    x.stage = map[x.id] || "PESQ"; x.owner = owners[i % 3]; x.since = days(-(i % 6) - 1); x.hist = [{ when: days(-12 + i % 4), msg: `Empresa adicionada pela origem: ${x.source}` }];
+    const idx = PSTAGES.findIndex(([k]) => k === x.stage);
+    if (idx >= 1 || x.stage === "DESC") x.decisor = { name: x.contact.replace(" (compras)", ""), role: "Comprador", phone: x.phone, email: x.email };
+    x.tries = idx >= 2 ? [{ when: days(-4), ch: "E-mail", res: "Sem resposta" }, { when: days(-2), ch: "Ligação", res: idx >= 3 ? "Respondeu" : "Caixa postal" }] : [];
+    if (idx >= 4) x.meeting = { when: days(2), type: "Visita" };
+    if (idx >= 5) x.qual = { need: "Fitas e drivers para obras", volume: 18000, current: "Distribuidor local", when: "30 dias" };
+    if (x.stage === "DESC") { x.lost = "Sem interesse"; x.status = "Descartado"; } else x.status = x.stage === "QUALI" ? "No funil" : "Novo";
+  });
+  A.prospects.forEach((x) => { if (x.stage === "DESC") x.tries = [{ when: days(-6), ch: "Ligação", res: "Sem interesse" }]; });
+}
+function myProspects() { return (C().prospects || []).filter((x) => (!role().own || x.owner === role().user) && (!PX.seller || x.owner === PX.seller)); }
+function vProspEtapas() {
+  const ps = myProspects(); const active = ps.filter((x) => x.stage !== "DESC");
+  const reached = (i) => active.filter((x) => PSTAGES.findIndex(([k]) => k === x.stage) >= i).length;
+  const funnel = PSTAGES.map(([k, l], i) => ({ k, l, n: active.filter((x) => x.stage === k).length, r: reached(i) }));
+  const owners = [...new Set((C().prospects || []).map((x) => x.owner))];
+  return `<div class="pfun">${funnel.map((f, i) => `<div class="pf-step"><span class="pf-n">${i + 1}</span><b>${f.l}</b><span class="num pf-c">${f.n}</span><small class="note">${i ? `${funnel[i - 1].r ? Math.round((f.r / funnel[i - 1].r) * 100) : 0}% passam da etapa anterior` : `${f.r} empresas no total`}</small><div class="mini"><i style="width:${active.length ? (f.r / active.length) * 100 : 0}%;background:var(--grad)"></i></div></div>`).join("")}</div>
+    ${role().own ? "" : `<div class="filters"><label class="f" for="px-seller">Responsável<select id="px-seller"><option value="">Todos</option>${owners.map((o) => `<option ${PX.seller === o ? "selected" : ""}>${esc(o)}</option>`).join("")}</select></label></div>`}
+    <div class="kanban pk">${PSTAGES.map(([k, l], i) => { const xs = ps.filter((x) => x.stage === k); return `<div class="lane"><h3><span><span class="pf-n sm">${i + 1}</span>${l}</span><span class="pill p-neutral">${xs.length}</span></h3>
+      ${xs.map((x) => { const req = pReqs(x); const done = req.filter((r) => r[1]).length; const sc = fitScore(x); const stale = daysIn(x) > 5 && k !== "QUALI"; return `<button class="ticket lead" data-pxopen="${x.id}"><span class="row" style="justify-content:space-between;flex-wrap:nowrap"><b>${esc(x.name)}</b><span class="scb ${sc >= 70 ? "hi" : sc >= 50 ? "mid" : ""}">${sc}</span></span><small class="note">${esc(x.seg)} · ${esc(x.city)}/${x.uf}</small>${req.length ? `<div class="reqbar" title="${done} de ${req.length} requisitos para avançar">${req.map((r) => `<i class="${r[1] ? "ok" : ""}"></i>`).join("")}</div><small class="note">${done}/${req.length} para avançar · ${(x.tries || []).length} tentativa(s)</small>` : `<small style="color:var(--good)">Virou lead no funil de vendas</small>`}<span class="row" style="gap:6px;justify-content:space-between">${avatar(x.owner)}<small style="color:${stale ? "var(--bad)" : "var(--text-2)"}">${daysIn(x)} dia(s) na etapa</small></span></button>`; }).join("") || `<p class="note" style="margin:0">Nenhuma empresa</p>`}</div>`; }).join("")}</div>
+    <p class="note">Descartadas: ${ps.filter((x) => x.stage === "DESC").length}. Empresas há mais de 5 dias paradas na mesma etapa ficam com o contador em vermelho.</p>`;
+}
+function vProspDetalhe(x) {
+  const i = PSTAGES.findIndex(([k]) => k === x.stage); const req = pReqs(x); const canAdv = req.length && req.every((r) => r[1]); const d = x.decisor || {}; const q = x.qual || {};
+  return `<div class="row"><button class="btn ghost" data-act="px-back">Voltar às etapas</button></div>
+    <div class="card hero"><div class="who-cell">${avatar(x.name)}<div><h1 style="margin:0;font-size:24px">${esc(x.name)}</h1><p class="note" style="margin:4px 0 0">${x.cnpj} · ${esc(x.seg)} · ${x.size} · ${esc(x.city)}/${x.uf} · origem ${esc(x.source)}</p></div></div><div class="row">${pill([x.stage === "DESC" ? `Descartada: ${x.lost}` : PSTAGES[i][1], x.stage === "DESC" ? "p-bad" : x.stage === "QUALI" ? "p-good" : "p-info"])}<span class="scb ${fitScore(x) >= 70 ? "hi" : "mid"}" title="Potencial">${fitScore(x)}/100</span></div></div>
+    ${x.stage !== "DESC" ? `<div class="card"><div class="steps" style="grid-template-columns:repeat(6,minmax(0,1fr))">${PSTAGES.map(([, l], j) => `<div class="step ${j < i ? "done" : j === i ? "now" : ""}"><i>${j < i ? "&#10003;" : j + 1}</i>${l}</div>`).join("")}</div>
+      ${req.length ? `<div class="reqs"><h3>Para avançar para <b>${PSTAGES[i + 1][1]}</b></h3>${req.map(([t, ok]) => `<div class="rq ${ok ? "ok" : ""}"><span>${ok ? "✓" : "○"}</span>${t}</div>`).join("")}</div>
+      <div class="row" style="margin-top:12px">${i > 0 && x.stage !== "QUALI" ? `<button class="btn ghost" data-pxmv="-1">Voltar etapa</button>` : ""}<button class="btn" data-pxmv="1" ${canAdv ? "" : "disabled"}>${i === 4 ? "Qualificar e enviar para o funil de vendas" : `Avançar para ${PSTAGES[i + 1][1]}`}</button>${canAdv ? "" : `<span class="note">Complete os itens acima para liberar.</span>`}</div>` : `<div class="alert good" style="margin-top:12px">${icon("check")}<span>Qualificada: virou lead no funil de vendas${x.lead ? "" : ""}.</span>${x.lead ? `<button class="btn" data-lead="${x.lead}" style="margin-left:auto">Abrir no funil</button>` : ""}</div>`}
+      ${x.stage !== "QUALI" ? `<div class="row" style="margin-top:12px"><label class="f" for="px-lost">Descartar por<select id="px-lost">${["Sem interesse", "Não tem volume", "Fora da região", "Já compra direto da fábrica", "Contato inválido"].map((y) => `<option>${y}</option>`).join("")}</select></label><button class="btn danger" data-act="px-discard" style="align-self:end">Descartar</button></div>` : ""}<div id="err"></div></div>` : `<div class="row"><button class="btn ghost" data-act="px-reopen">Reabrir na Pesquisa</button></div>`}
+    <div class="grid g2">
+      <div class="card"><h2>1 · Decisor</h2><div class="form" style="grid-template-columns:repeat(2,minmax(0,1fr))"><label class="f" for="pxd-name">Nome<input id="pxd-name" value="${esc(d.name || "")}"></label><label class="f" for="pxd-role">Cargo<input id="pxd-role" value="${esc(d.role || "")}" placeholder="Comprador, dono, engenheiro"></label><label class="f" for="pxd-phone">Telefone / WhatsApp<input id="pxd-phone" value="${esc(d.phone || "")}"></label><label class="f" for="pxd-email">E-mail<input id="pxd-email" value="${esc(d.email || "")}"></label></div><button class="btn ghost" data-act="px-dec" style="margin-top:10px">Salvar decisor</button></div>
+      <div class="card"><h2>2 · Tentativas de contato <small>${(x.tries || []).length}</small></h2><div class="form" style="grid-template-columns:repeat(2,minmax(0,1fr)) auto"><label class="f" for="pxt-ch">Canal<select id="pxt-ch">${["Ligação", "WhatsApp", "E-mail", "LinkedIn", "Visita"].map((y) => `<option>${y}</option>`).join("")}</select></label><label class="f" for="pxt-res">Resultado<select id="pxt-res">${RESULTS.map((y) => `<option>${y}</option>`).join("")}</select></label><div class="f" style="align-self:end"><button class="btn" data-act="px-try">Registrar</button></div></div>
+        ${(x.tries || []).length ? `<ol class="timeline" style="margin-top:12px">${x.tries.map((t) => `<li><span>${t.ch} · ${pill([t.res, t.res === "Respondeu" ? "p-good" : t.res === "Sem interesse" ? "p-bad" : "p-neutral"])}</span><small>${fdate(t.when)}</small></li>`).join("")}</ol>` : `<p class="note">Nenhuma tentativa ainda.</p>`}</div>
+      <div class="card"><h2>3 · Reunião ou visita</h2><div class="form" style="grid-template-columns:repeat(2,minmax(0,1fr)) auto"><label class="f" for="pxm-date">Data<input id="pxm-date" type="date" value="${x.meeting ? x.meeting.when.slice(0, 10) : ""}"></label><label class="f" for="pxm-type">Tipo<select id="pxm-type">${["Visita", "Vídeo", "Ligação agendada"].map((y) => `<option ${x.meeting?.type === y ? "selected" : ""}>${y}</option>`).join("")}</select></label><div class="f" style="align-self:end"><button class="btn ghost" data-act="px-meet">Agendar</button></div></div>${x.meeting ? `<p class="note">${x.meeting.type} em ${fdate(x.meeting.when)}.</p>` : ""}</div>
+      <div class="card"><h2>4 · Qualificação</h2><div class="form" style="grid-template-columns:repeat(2,minmax(0,1fr))"><label class="f span2" for="pxq-need">Necessidade<input id="pxq-need" value="${esc(q.need || "")}" placeholder="O que compram e para quê"></label><label class="f" for="pxq-vol">Volume mensal (R$)<input id="pxq-vol" type="number" min="0" value="${q.volume || ""}"></label><label class="f" for="pxq-cur">Fornecedor atual<input id="pxq-cur" value="${esc(q.current || "")}"></label><label class="f" for="pxq-when">Prazo para decidir<select id="pxq-when"><option value="">-</option>${["Imediato", "30 dias", "60 dias", "90+ dias"].map((y) => `<option ${q.when === y ? "selected" : ""}>${y}</option>`).join("")}</select></label></div><button class="btn ghost" data-act="px-qual" style="margin-top:10px">Salvar qualificação</button></div>
+    </div>
+    <div class="card"><h2>Histórico</h2><ol class="timeline">${(x.hist || []).map((h) => `<li>${esc(h.msg)}<small>${fdate(h.when)}${h.who ? ` · ${esc(h.who)}` : ""}</small></li>`).join("")}</ol></div>`;
+}
+function vProspeccaoMod() {
+  const x = PX.open && (C().prospects || []).find((y) => y.id === PX.open);
+  if (x) return vProspDetalhe(x);
+  const n = cadTasks().length;
+  const tabs = [["etapas", "Etapas"], ["lista", "Base de empresas"], ["hoje", `Agenda de hoje ${n ? `<span class="count-in">${n}</span>` : ""}`], ["cad", "Cadências"]];
+  return head("Prospecção", `Da pesquisa à empresa qualificada · ${esc(C().name)}`, `<button class="btn" data-pxtab="lista" data-act="pr-find">${icon("plus")}Buscar empresas</button>`) +
+    `<div class="tabs">${tabs.map(([k, l]) => `<button data-pxtab="${k}" class="${PX.tab === k ? "on" : ""}">${l}</button>`).join("")}</div>` +
+    ({ etapas: vProspEtapas, lista: vProspeccao, hoje: vAgendaHoje, cad: vCadencias })[PX.tab]();
+}
+function pxAction(ds, act) {
+  const x = (C().prospects || []).find((y) => y.id === PX.open);
+  const hist = (msg) => x.hist.unshift({ when: new Date().toISOString(), msg, who: role().user });
+  if (ds.pxtab) { PX.tab = ds.pxtab; PX.open = null; if (act === "pr-find") PF2.find = true; return render(); }
+  if (ds.pxopen) { PX.open = ds.pxopen; render(); return window.scrollTo(0, 0); }
+  if (act === "px-back") { PX.open = null; return render(); }
+  if (!x) return;
+  if (act === "px-dec") { x.decisor = { name: $("pxd-name").value.trim(), role: $("pxd-role").value.trim(), phone: $("pxd-phone").value.trim(), email: $("pxd-email").value.trim() }; if (x.decisor.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(x.decisor.email)) throw new Error("E-mail do decisor inválido."); hist(`Decisor: ${x.decisor.name || "-"}`); toast("Decisor salvo."); return render(); }
+  if (act === "px-try") { const t = { when: new Date().toISOString(), ch: $("pxt-ch").value, res: $("pxt-res").value }; x.tries = x.tries || []; x.tries.unshift(t); hist(`${t.ch}: ${t.res}`); toast(t.res === "Sem interesse" ? "Registrado. Se não houver mais chance, descarte a empresa." : "Tentativa registrada."); return render(); }
+  if (act === "px-meet") { const v = $("pxm-date").value; if (!v) throw new Error("Escolha a data."); x.meeting = { when: new Date(`${v}T12:00:00`).toISOString(), type: $("pxm-type").value }; hist(`${x.meeting.type} agendada para ${fdate(x.meeting.when)}`); toast("Reunião agendada."); return render(); }
+  if (act === "px-qual") { x.qual = { need: $("pxq-need").value.trim(), volume: +$("pxq-vol").value || 0, current: $("pxq-cur").value.trim(), when: $("pxq-when").value }; hist("Qualificação atualizada"); toast("Qualificação salva."); return render(); }
+  if (act === "px-discard") { x.lost = $("px-lost").value; x.stage = "DESC"; x.status = "Descartado"; hist(`Descartada: ${x.lost}`); toast(`${x.name} descartada (${x.lost}).`); return render(); }
+  if (act === "px-reopen") { x.stage = "PESQ"; x.status = "Novo"; x.since = new Date().toISOString(); hist("Reaberta"); return render(); }
+  if (ds.pxmv) {
+    const i = PSTAGES.findIndex(([k]) => k === x.stage);
+    if (+ds.pxmv > 0 && !pReqs(x).every((r) => r[1])) throw new Error("Complete os requisitos da etapa antes de avançar.");
+    const ni = i + +ds.pxmv; x.stage = PSTAGES[ni][0]; x.since = new Date().toISOString(); hist(`Etapa: ${PSTAGES[ni][1]}`);
+    if (x.stage === "QUALI") {
+      const d = x.decisor || {}; const id = `L${Date.now() % 1e6}`;
+      C().leads.unshift({ id, company: x.name, contact: d.name || "-", email: d.email || "-", phone: d.phone || "-", city: `${x.city}/${x.uf}`, seller: x.owner, stage: "QUALIF", value: (x.qual.volume || 0) * 3, source: `Prospecção · ${x.source}`, next: `${x.meeting?.type || "Contato"}: apresentar proposta`, nextDate: x.meeting?.when || days(1), acts: [{ when: new Date().toISOString(), type: "Tarefa", msg: `Qualificada na prospecção: ${x.qual.need}; ${money(x.qual.volume)}/mês; compra hoje de ${x.qual.current}; decide em ${x.qual.when}`, who: role().user }] });
+      x.lead = id; x.status = "No funil"; toast(`${x.name} qualificada: entrou no funil de vendas na etapa Qualificação.`);
+    } else toast(`${x.name}: ${PSTAGES[ni][1]}.`);
+    return render();
   }
 }
 
@@ -2574,12 +2741,12 @@ function seedCrm(st) {
 function myLeads() { return (C().leads || []).filter((l) => !role().own || l.seller === role().user); }
 function vCrm() {
   if (KF.leadId) return vLead(KF.leadId);
-  if (PF2.tab !== "funil") return head("CRM e prospecção", `Encontrar, abordar e converter clientes · ${esc(C().name)}`) + crmTabs() + ({ prosp: vProspeccao, hoje: vAgendaHoje, cad: vCadencias })[PF2.tab]();
+  if (PF2.tab !== "funil" && false) return head("CRM e prospecção", `Encontrar, abordar e converter clientes · ${esc(C().name)}`) + crmTabs() + ({ prosp: vProspeccao, hoje: vAgendaHoje, cad: vCadencias })[PF2.tab]();
   const all = myLeads(); const sellers = [...new Set(all.map((l) => l.seller))];
   const ls = all.filter((l) => (!KF.seller || l.seller === KF.seller) && (!KF.q || matchWords(`${l.company} ${l.contact} ${l.city}`, KF.q)));
   const open = ls.filter((l) => !["GANHO", "PERDIDO"].includes(l.stage)); const won = all.filter((l) => l.stage === "GANHO").length; const lost = all.filter((l) => l.stage === "PERDIDO").length;
   const late = open.filter((l) => l.nextDate && new Date(l.nextDate) < new Date(new Date().toDateString()));
-  return head("CRM e prospecção", `Funil de vendas · ${esc(C().name)}${role().own ? " · seus leads" : ""}`, `<button class="btn" data-act="lead-new">${icon("plus")}Novo lead</button>`) + crmTabs() +
+  return head("CRM e funil de vendas", `Oportunidades da qualificação até a conversão · ${esc(C().name)}${role().own ? " · seus leads" : ""}`, `<button class="btn ghost" data-go="prospeccao">${icon("prospeccao")}Prospecção</button><button class="btn" data-act="lead-new">${icon("plus")}Novo lead</button>`) +
     `<div class="grid g4">${kpi("users", "c1", "Leads em aberto", open.length)}${kpi("money", "c2", "Valor no funil", money(open.reduce((s, l) => s + l.value, 0)))}${kpi("check", "c3", "Taxa de conversão", `${won + lost ? Math.round((won / (won + lost)) * 100) : 0}%`)}${kpi("alert", "c4", "Próximo passo atrasado", late.length)}</div>` +
     (KF.newLead ? `<div class="card"><h2>Novo lead</h2><div class="form"><label class="f span2" for="ld-company">Empresa<input id="ld-company"></label><label class="f" for="ld-contact">Contato<input id="ld-contact"></label><label class="f" for="ld-email">E-mail<input id="ld-email"></label><label class="f" for="ld-city">Cidade/UF<input id="ld-city" placeholder="Campinas/SP"></label><label class="f" for="ld-value">Valor estimado (R$)<input id="ld-value" type="number" min="0" value="5000"></label><label class="f" for="ld-source">Origem<select id="ld-source">${["Site", "Indicação", "Mercado Livre", "Feira", "Prospecção ativa", "E-mail"].map((x) => `<option>${x}</option>`).join("")}</select></label></div><div id="err"></div><div class="row" style="margin-top:12px"><button class="btn" data-act="lead-save">Criar lead</button><button class="btn ghost" data-act="lead-cancel">Cancelar</button></div></div>` : "") +
     `<div class="filters"><label class="f grow" for="kf-q">Buscar<input id="kf-q" value="${esc(KF.q)}" placeholder="Empresa, contato ou cidade"></label>${role().own ? "" : `<label class="f" for="kf-seller">Vendedor<select id="kf-seller"><option value="">Todos</option>${sellers.map((s) => `<option ${KF.seller === s ? "selected" : ""}>${esc(s)}</option>`).join("")}</select></label>`}<label class="f" style="flex-direction:row;align-items:center;gap:8px;align-self:end"><input type="checkbox" id="kf-lost" ${KF.showLost ? "checked" : ""}> Mostrar perdidos (${lost})</label></div>
@@ -2961,9 +3128,10 @@ function vConfig() {
 // Eventos
 // ---------------------------------------------------------------------------
 function err(e) { const box = $("err"); if (box) box.innerHTML = `<div class="alert bad" style="margin-top:10px">${esc(e.message)}</div>`; else toast(e.message); }
-function go(view) { NFI.open = null; KF.leadId = null; KF.newLead = false; S.cliTab = null; mailDraft = null; pgDraft = null; cliDraft = null; PT.orderId = null; S.clienteId = null; S.prodSku = null; S.batchErrors = null; S.view = view; S.orderId = null; S.tab = null; S.composing = false; S.danfe = null; S.impView = null; nfDraft = null; impDraft = null; render(); window.scrollTo(0, 0); }
+function go(view) { S.dockOpen = null; PX.open = null; NFI.open = null; KF.leadId = null; KF.newLead = false; S.cliTab = null; mailDraft = null; pgDraft = null; cliDraft = null; PT.orderId = null; S.clienteId = null; S.prodSku = null; S.batchErrors = null; S.view = view; S.orderId = null; S.tab = null; S.composing = false; S.danfe = null; S.impView = null; nfDraft = null; impDraft = null; render(); window.scrollTo(0, 0); }
 
 document.addEventListener("click", (ev) => {
+  if (S.dockOpen && !ev.target.closest("#nav")) { S.dockOpen = null; renderDock(); }
   if (ev.target.closest("#bell")) { $("bellbox").hidden = !$("bellbox").hidden; return; }
   if (!ev.target.closest("#bellbox")) $("bellbox").hidden = true;
   const cb = ev.target.closest("[data-sel],[data-selall]");
@@ -2984,6 +3152,8 @@ document.addEventListener("click", (ev) => {
     if (ds.act === "novo-painel") { return newSale(); }
     if (ds.nfopen || ds.act === "nfin-close" || ds.act === "nfin-sync" || ds.act === "nfin-ok") return nfinAction(ds, ds.act);
     if (ds.gonf) { const e = (C().nfIn || []).find((x) => x.n === +ds.gonf); go(can("fiscal") ? "fiscal" : "estoque"); S.tab = can("fiscal") ? "entrada" : "receb"; NFI.open = e?.key || null; render(); return; }
+    if (ds.dock) { S.dockOpen = S.dockOpen === ds.dock ? null : ds.dock; return renderDock(); }
+    if (ds.pxtab || ds.pxopen || ds.pxmv || ds.act?.startsWith("px-")) return pxAction(ds, ds.act);
     if (ds.crmtab || ds.act?.startsWith("pr-") || ds.tkdone !== undefined || ds.tkskip !== undefined) return prospAction(ds, ds.act);
     if (ds.lead) { S.view = "crm"; }
     if (ds.lead) { KF.leadId = ds.lead; render(); return window.scrollTo(0, 0); }
@@ -3101,6 +3271,7 @@ document.addEventListener("change", (ev) => {
   }
   if (el.dataset.ig && draft) { const it = draft.items[+el.dataset.idx]; const v = +el.value; if (el.dataset.ig === "qty") { if (!(v >= 1)) { toast("Quantidade deve ser maior que zero."); return render(); } it.qty = Math.floor(v); } if (el.dataset.ig === "price") { if (!(v > 0)) { toast("Valor unitário inválido."); return render(); } it.price = v; } if (el.dataset.ig === "disc") { if (!(v >= 0 && v <= 100)) { toast("Desconto entre 0 e 100%."); return render(); } it.disc = v; } setTimeout(render); return; }
   if (["pf-q", "cf-q", "pr-q", "mf-q", "pt-q", "kf-q", "pp-q"].includes(el.id)) return;
+  if (el.id === "px-seller") { PX.seller = el.value; return render(); }
   if (el.dataset.ppsel) { PF2.sel.has(el.dataset.ppsel) ? PF2.sel.delete(el.dataset.ppsel) : PF2.sel.add(el.dataset.ppsel); return render(); }
   if (["pp-seg", "pp-uf", "pp-min"].includes(el.id)) { PF2[{ "pp-seg": "seg", "pp-uf": "uf", "pp-min": "min" }[el.id]] = el.id === "pp-min" ? +el.value : el.value; return render(); }
   if (el.id === "kf-seller") { KF.seller = el.value; return render(); }
@@ -3136,7 +3307,7 @@ document.addEventListener("change", (ev) => {
     if (el.dataset.imi !== undefined) { const it = impDraft.items[+el.dataset.imi]; const k = el.dataset.k; it[k] = k === "sku" ? el.value : k === "qty" ? Math.max(1, Math.floor(+el.value) || 1) : Math.max(0, +el.value || 0); }
     return setTimeout(render, 0);
   }
-  if (draft && el.id?.startsWith("e-")) {
+  if (draft && el.id?.startsWith("e-") && el.closest(".pedform")) {
     const e = draft.entry;
     if (el.id === "e-sku") return; // lido na hora de incluir; redesenhar aqui perderia o que foi digitado
     if (el.id === "e-qty") e.qty = Math.max(1, Math.floor(+el.value) || 1);
@@ -3147,7 +3318,7 @@ document.addEventListener("change", (ev) => {
     if (el.id === "e-tipo") { draft.tipo = el.value; setTimeout(render, 0); }
     return;
   }
-  if (!draft || el.id === "q-sku") return;
+  if (!draft || !S.composing || !el.closest(".pedform") || el.id === "q-sku") return;
   if (el.id === "q-cust") { draft.customer = el.value; }
   if (el.id === "q-inst") { draft.inst = +el.value; }
   if (el.id === "q-freight") { draft.freight = Math.max(0, Number(el.value) || 0); }
@@ -3242,6 +3413,7 @@ $("cmd").addEventListener("keydown", (ev) => {
 });
 $("cmdres").addEventListener("mousedown", (ev) => { const b = ev.target.closest("[data-cmd]"); if (b) { ev.preventDefault(); execCmd(+b.dataset.cmd); } });
 $("cmd").addEventListener("blur", () => setTimeout(hideCmd, 120));
+document.addEventListener("keydown", (ev) => { if (ev.key === "Escape" && S.dockOpen) { S.dockOpen = null; renderDock(); } });
 document.addEventListener("keydown", (ev) => { if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === "k") { ev.preventDefault(); $("cmd").focus(); } });
 
 S = seed();
