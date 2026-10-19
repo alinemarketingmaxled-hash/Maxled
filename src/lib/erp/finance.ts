@@ -253,8 +253,9 @@ export async function getCashFlow(companyIds: string[], pastDays = 30, futureDay
   const bucket = (d: Date, projected: boolean) => {
     // Vencidos em aberto entram no "hoje" do previsto.
     const day = projected && d < today ? today : d;
-    const k = key(day);
-    if (!days.has(k)) days.set(k, { date: k, inflow: D(0), outflow: D(0), projected });
+    // Realizado e previsto do mesmo dia (hoje) ficam em linhas separadas.
+    const k = `${key(day)}:${projected ? "p" : "r"}`;
+    if (!days.has(k)) days.set(k, { date: key(day), inflow: D(0), outflow: D(0), projected });
     return days.get(k)!;
   };
   for (const p of inPaid) bucket(p.paidAt, false).inflow = bucket(p.paidAt, false).inflow.add(p.amount);
@@ -268,6 +269,6 @@ export async function getCashFlow(companyIds: string[], pastDays = 30, futureDay
     b.outflow = b.outflow.add(r.amount.sub(r.paidAmount));
   }
   return [...days.values()]
-    .sort((a, b) => a.date.localeCompare(b.date))
+    .sort((a, b) => a.date.localeCompare(b.date) || Number(a.projected) - Number(b.projected))
     .map((d) => ({ date: d.date, inflow: d.inflow.toNumber(), outflow: d.outflow.toNumber(), projected: d.projected }));
 }
