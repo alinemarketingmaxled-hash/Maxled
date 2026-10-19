@@ -399,6 +399,22 @@ tr.click:hover td { background: rgba(255,255,255,.04); }
 }
 @media (max-width: 420px) { .brand small { display: none; } }
 @media (prefers-reduced-motion: reduce) { .dock button { transition: none; } }
+
+td select { border: 1px solid var(--border); background: rgba(0,0,0,.25); color: var(--text); border-radius: 10px; padding: 8px 9px; max-width: 100%; }
+/* DANFE: papel claro dentro do tema escuro, como o documento impresso. */
+.danfe { position: relative; background: #fbfaf6; color: #1a1a1a; border-radius: 14px; padding: 18px; display: grid; gap: 10px; font-size: 12.5px; overflow: hidden; }
+.danfe small { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: #6b675e; margin-bottom: 2px; }
+.dz-wm { position: absolute; inset: 40% -10% auto; text-align: center; font-size: 46px; font-weight: 800; color: rgba(179, 50, 47, .12); transform: rotate(-12deg); pointer-events: none; }
+.dz-head { display: grid; grid-template-columns: 1.2fr .8fr 1.4fr; gap: 10px; }
+.dz-head > div, .dz-row > div { border: 1px solid #cfcabd; border-radius: 6px; padding: 8px 10px; min-width: 0; }
+.dz-head b { font-size: 13px; word-break: break-word; }
+.dz-title { text-align: center; font-weight: 800; font-size: 18px; }
+.dz-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.danfe .dz-tab { min-width: 0; width: 100%; border: 1px solid #cfcabd; border-radius: 6px; border-collapse: separate; border-spacing: 0; overflow: hidden; }
+.danfe .dz-tab th { background: #efece4; color: #4f4b43; font-size: 10px; padding: 6px 8px; border-bottom: 1px solid #cfcabd; }
+.danfe .dz-tab td { padding: 6px 8px; border-bottom: 1px solid #e3dfd4; color: #1a1a1a; }
+details summary::-webkit-details-marker { color: var(--brand); }
+@media (max-width: 760px) { .dz-head, .dz-row { grid-template-columns: 1fr; } .danfe { overflow-x: auto; } }
 </style>
 
 <header class="cbar">
@@ -887,12 +903,248 @@ function vExpedicao() {
 }
 
 function vFiscal() {
+  if (nfDraft) return vNfForm();
+  if (S.danfe) return vDanfe();
   const pend = C().orders.filter((o) => FLOW.indexOf(o.status) >= 2 && o.status !== "CANCELADO" && !activeDoc(o));
   return head("Fiscal", "Ambiente de homologação · provedor: simulador (sem valor fiscal)") +
     `<div class="alert warn">${icon("alert")}<span>O provedor fiscal real e o certificado digital ainda precisam ser configurados. Até lá, as notas são emitidas só em homologação.</span></div>
-    <div class="card"><h2>Pendentes de emissão · ${pend.length}</h2>${pend.length ? `<div class="list">${pend.map((o) => `<div class="row" style="justify-content:space-between"><span><button class="link" data-open="${o.id}">${code(o)}</button> · ${esc(cust(o.customer).name)} · ${money(o.total)}</span>${["MEDIATOR","FISCAL"].includes(S.role) ? `<button class="btn" data-nf="${o.id}">Emitir NF-e</button>` : ""}</div>`).join("")}</div>` : `<p class="note">Nenhum pedido aprovado sem nota.</p>`}</div>` +
-    table([{ t: "NF-e" }, { t: "Pedido" }, { t: "Chave de acesso" }, { t: "Status" }, { t: "Total", r: 1 }, { t: "Autorizada em" }],
-      C().docs.map((d) => { const o = C().orders.find((x) => x.id === d.order); return `<tr><td class="num">${d.n}</td><td><button class="link" data-open="${o.id}">${code(o)}</button></td><td class="mono">${d.key}</td><td>${pill(["Autorizada", "p-good"])}</td><td class="r num">${money(d.total)}</td><td class="num">${d.when}</td></tr>`; }), "Nenhuma nota emitida.");
+    <div class="card"><h2>Pendentes de emissão · ${pend.length}</h2>${pend.length ? `<div class="list">${pend.map((o) => `<div class="row" style="justify-content:space-between"><span><button class="link" data-open="${o.id}">${code(o)}</button> · ${esc(cust(o.customer).name)} · ${money(o.total)}</span>${["MEDIATOR","FISCAL"].includes(S.role) ? `<button class="btn" data-nf="${o.id}">${icon("fiscal")}Preencher e emitir NF-e</button>` : ""}</div>`).join("")}</div>` : `<p class="note">Nenhum pedido aprovado sem nota.</p>`}</div>` +
+    `<p class="note" style="margin:0">Clique no número da nota para ver o DANFE e o XML.</p>` + table([{ t: "NF-e" }, { t: "Pedido" }, { t: "Chave de acesso" }, { t: "Status" }, { t: "Total", r: 1 }, { t: "Autorizada em" }],
+      C().docs.map((d) => { const o = C().orders.find((x) => x.id === d.order); return `<tr><td class="num"><button class="link" data-danfe="${d.id}">NF-e ${d.n}</button></td><td><button class="link" data-open="${o.id}">${code(o)}</button></td><td class="mono">${d.key}</td><td>${pill(["Autorizada", "p-good"])}</td><td class="r num">${money(d.total)}</td><td class="num">${d.when}</td></tr>`; }), "Nenhuma nota emitida.");
+}
+
+// ---------------------------------------------------------------------------
+// NF-e: formulário fiscal antes da emissão + DANFE depois de autorizada.
+// ---------------------------------------------------------------------------
+const CST_OPTS = [
+  ["102", "CSOSN 102 · Simples Nacional sem crédito"],
+  ["101", "CSOSN 101 · Simples Nacional com crédito"],
+  ["000", "CST 00 · Tributada integralmente"],
+  ["020", "CST 20 · Com redução de base"],
+  ["060", "CST 60 · ICMS cobrado por substituição"],
+];
+const EMIT_UF = "SP";
+let nfDraft = null;
+function ufOf(c) { const m = (c.city || "").match(/\/([A-Z]{2})$/); return m ? m[1] : ""; }
+function openNfForm(o) {
+  if (!["MEDIATOR", "FISCAL"].includes(S.role)) throw new Error("Seu perfil não emite NF-e.");
+  if (FLOW.indexOf(o.status) < 2 || o.status === "CANCELADO") throw new Error("A nota só pode ser emitida para pedido aprovado.");
+  if (activeDoc(o)) throw new Error("Este pedido já tem NF-e autorizada.");
+  const c = cust(o.customer); const inUf = ufOf(c) === EMIT_UF;
+  nfDraft = {
+    order: o.id, natureza: "Venda de mercadoria", finalidade: "1 · Normal", serie: 1, numero: C().nf,
+    ie: "", endereco: c.city || "", email: "", consumidor: "0 · Não (revenda/empresa)",
+    items: o.items.map((i) => ({ sku: i.sku, name: prod(i.sku).name, ncm: prod(i.sku).ncm, cfop: inUf ? "5102" : "6102", cst: "102", qty: i.qty, sub: i.sub })),
+    modFrete: o.freight > 0 ? "0 · Por conta do emitente (CIF)" : "1 · Por conta do destinatário (FOB)", transp: "Correios", volumes: 1, peso: "",
+    pag: "15 · Boleto", obs: "Documento emitido em ambiente de homologação, sem valor fiscal.",
+  };
+  S.view = "fiscal"; S.orderId = null; S.danfe = null; render(); window.scrollTo(0, 0);
+}
+function nfErrors(d) {
+  const e = []; const o = C().orders.find((x) => x.id === d.order); const c = cust(o.customer);
+  if (!/^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$|^\d{14}$|^\d{11}$/.test(c.doc)) e.push("CNPJ/CPF do destinatário inválido.");
+  if (!d.natureza.trim()) e.push("Informe a natureza da operação.");
+  d.items.forEach((i) => {
+    if (!/^\d{8}$/.test(i.ncm.replace(/\D/g, ""))) e.push(`NCM de ${i.sku} precisa ter 8 dígitos.`);
+    if (!/^[1-7]\d{3}$/.test(i.cfop)) e.push(`CFOP de ${i.sku} inválido.`);
+    else if ((i.cfop[0] === "5") !== (ufOf(c) === EMIT_UF)) e.push(`CFOP de ${i.sku}: use 5xxx dentro de ${EMIT_UF} e 6xxx para outro estado.`);
+  });
+  if (!d.modFrete.startsWith("9") && !d.transp.trim()) e.push("Informe a transportadora ou escolha 'Sem frete'.");
+  if (!(d.volumes >= 1)) e.push("Volumes deve ser 1 ou mais.");
+  return e;
+}
+function vNfForm() {
+  const d = nfDraft; const o = C().orders.find((x) => x.id === d.order); const c = cust(o.customer);
+  const errs = nfErrors(d);
+  const f = (id, label, val, extra = "") => `<label class="f" for="${id}">${label}<input id="${id}" value="${esc(val)}" ${extra}></label>`;
+  const sel = (id, label, val, opts) => `<label class="f" for="${id}">${label}<select id="${id}">${opts.map((x) => `<option ${x === val ? "selected" : ""}>${esc(x)}</option>`).join("")}</select></label>`;
+  return `<div class="row"><button class="btn ghost" data-act="nf-cancel">Voltar ao Fiscal</button></div>` +
+    head(`Emitir NF-e · pedido ${code(o)}`, `${esc(cust(o.customer).name)} · série ${d.serie} · número ${d.numero} · homologação`) +
+    `<div class="card"><h2>1. Operação</h2><div class="form">
+      ${f("nf-natureza", "Natureza da operação", d.natureza)}
+      ${sel("nf-finalidade", "Finalidade", d.finalidade, ["1 · Normal", "2 · Complementar", "3 · Ajuste", "4 · Devolução"])}
+      ${sel("nf-consumidor", "Consumidor final", d.consumidor, ["0 · Não (revenda/empresa)", "1 · Sim"])}
+    </div></div>
+    <div class="card"><h2>2. Destinatário</h2><div class="form">
+      <label class="f">Razão social<input value="${esc(c.name)}" disabled></label>
+      <label class="f">CNPJ/CPF<input value="${esc(c.doc)}" disabled></label>
+      ${f("nf-ie", "Inscrição estadual", d.ie, 'placeholder="ISENTO se não tiver"')}
+      ${f("nf-endereco", "Município/UF", d.endereco)}
+      ${f("nf-email", "E-mail para envio do XML", d.email, 'type="email" placeholder="nfe@cliente.com.br"')}
+    </div></div>
+    <div class="card"><h2>3. Produtos e tributação <small>CFOP sugerido pelo estado do cliente</small></h2>` +
+    table([{ t: "SKU" }, { t: "Descrição" }, { t: "NCM" }, { t: "CFOP" }, { t: "CST/CSOSN" }, { t: "Qtd", r: 1 }, { t: "Valor", r: 1 }],
+      d.items.map((i, idx) => `<tr><td class="mono">${i.sku}</td><td>${esc(i.name)}</td>
+        <td><input aria-label="NCM" data-nfi="${idx}" data-k="ncm" value="${esc(i.ncm)}" style="width:100px"></td>
+        <td><input aria-label="CFOP" data-nfi="${idx}" data-k="cfop" value="${esc(i.cfop)}" style="width:70px"></td>
+        <td><select aria-label="CST" data-nfi="${idx}" data-k="cst">${CST_OPTS.map(([v, l]) => `<option value="${v}" ${v === i.cst ? "selected" : ""}>${esc(l)}</option>`).join("")}</select></td>
+        <td class="r num">${nf.format(i.qty)}</td><td class="r num">${money(i.sub)}</td></tr>`)) +
+    `<p class="note" style="margin:10px 0 0">Os valores de ICMS, IPI, PIS e COFINS são calculados pelo provedor fiscal a partir do CST/CSOSN e do regime da empresa (a confirmar com a contabilidade).</p></div>
+    <div class="card"><h2>4. Transporte e pagamento</h2><div class="form">
+      ${sel("nf-modfrete", "Modalidade do frete", d.modFrete, ["0 · Por conta do emitente (CIF)", "1 · Por conta do destinatário (FOB)", "2 · Por conta de terceiros", "9 · Sem frete"])}
+      ${f("nf-transp", "Transportadora", d.transp)}
+      ${f("nf-volumes", "Volumes", d.volumes, 'type="number" min="1"')}
+      ${f("nf-peso", "Peso bruto (kg)", d.peso, 'type="number" min="0" step="0.001"')}
+      ${sel("nf-pag", "Forma de pagamento", d.pag, ["15 · Boleto", "17 · PIX", "03 · Cartão de crédito", "01 · Dinheiro", "90 · Sem pagamento"])}
+      <label class="f">Parcelas<input value="${o.inst}x de ${money(o.total / o.inst)}" disabled></label>
+      <label class="f span3" for="nf-obs">Informações complementares<textarea id="nf-obs" rows="2">${esc(d.obs)}</textarea></label>
+    </div></div>
+    <div class="card"><div class="row" style="justify-content:space-between">
+      <div><div class="note">Total da nota</div><div class="kpi"><div class="val num">${money(o.total)}</div></div><small class="note">itens ${money(o.itemsTotal)} + frete ${money(o.freight)}</small></div>
+      <button class="btn" data-act="nf-emit" ${errs.length ? "disabled" : ""}>${icon("fiscal")}Validar e emitir NF-e</button></div>
+      ${errs.length ? `<div class="alert bad" style="margin-top:12px">${icon("alert")}<span>Corrija antes de emitir:<br>${errs.map(esc).join("<br>")}</span></div>` : `<div class="alert good" style="margin-top:12px">${icon("check")}<span>Dados conferidos. Pronto para enviar ao provedor fiscal (homologação).</span></div>`}
+    </div>`;
+}
+function emitFromForm() {
+  const d = nfDraft; const errs = nfErrors(d); if (errs.length) throw new Error(errs[0]);
+  const o = C().orders.find((x) => x.id === d.order);
+  emitNF(o);
+  const doc = activeDoc(o); doc.fiscal = JSON.parse(JSON.stringify(d));
+  nfDraft = null; S.danfe = doc.id; render(); window.scrollTo(0, 0);
+}
+function xmlOf(doc) {
+  const o = C().orders.find((x) => x.id === doc.order); const c = cust(o.customer); const f = doc.fiscal || {};
+  const items = (f.items || o.items.map((i) => ({ sku: i.sku, name: prod(i.sku).name, ncm: prod(i.sku).ncm, cfop: "5102", cst: "102", qty: i.qty, sub: i.sub })));
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<nfeProc versao="4.00">
+  <NFe><infNFe Id="NFe${doc.key.replace(/\s/g, "")}">
+    <ide><natOp>${esc(f.natureza || "Venda de mercadoria")}</natOp><serie>1</serie><nNF>${doc.n}</nNF><tpAmb>2</tpAmb></ide>
+    <emit><xNome>${esc(C().name)}</xNome><UF>${EMIT_UF}</UF></emit>
+    <dest><CNPJ>${c.doc.replace(/\D/g, "")}</CNPJ><xNome>NF-E EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL</xNome></dest>
+${items.map((i, n) => `    <det nItem="${n + 1}"><prod><cProd>${i.sku}</cProd><NCM>${i.ncm}</NCM><CFOP>${i.cfop}</CFOP><qCom>${i.qty}</qCom><vProd>${i.sub.toFixed(2)}</vProd></prod><imposto><ICMS><CSOSN>${i.cst}</CSOSN></ICMS></imposto></det>`).join("\n")}
+    <total><ICMSTot><vNF>${o.total.toFixed(2)}</vNF></ICMSTot></total>
+  </infNFe></NFe>
+  <protNFe><infProt><nProt>${doc.proto}</nProt><cStat>100</cStat><xMotivo>Autorizado o uso da NF-e</xMotivo></infProt></protNFe>
+</nfeProc>`;
+}
+function vDanfe() {
+  const doc = C().docs.find((d) => d.id === S.danfe); const o = C().orders.find((x) => x.id === doc.order); const c = cust(o.customer); const f = doc.fiscal || {};
+  const items = f.items || o.items.map((i) => ({ sku: i.sku, name: prod(i.sku).name, ncm: prod(i.sku).ncm, cfop: "5102", cst: "102", qty: i.qty, sub: i.sub }));
+  return `<div class="row"><button class="btn ghost" data-act="danfe-close">Voltar ao Fiscal</button><button class="btn ghost" data-open="${o.id}">Abrir pedido ${code(o)}</button></div>` +
+    head(`NF-e ${doc.n} autorizada`, `Protocolo ${doc.proto} · ${doc.when} · homologação, sem valor fiscal`, pill(["Autorizada", "p-good"])) +
+    `<div class="danfe">
+      <div class="dz-wm">SEM VALOR FISCAL</div>
+      <div class="dz-head"><div><b>${esc(C().name)}</b><small>Emitente · ${EMIT_UF}</small></div><div class="dz-title">DANFE<small>Documento auxiliar da NF-e<br>1 · Saída · Nº ${doc.n} · Série 1</small></div>
+      <div><small>Chave de acesso</small><b class="mono">${doc.key}</b><small>Protocolo ${doc.proto}</small></div></div>
+      <div class="dz-row"><div><small>Natureza da operação</small>${esc(f.natureza || "Venda de mercadoria")}</div><div><small>Destinatário</small>${esc(c.name)}</div><div><small>CNPJ</small>${c.doc}</div><div><small>Município/UF</small>${esc(c.city || "")}</div></div>
+      <table class="dz-tab"><thead><tr><th>Código</th><th>Descrição</th><th>NCM</th><th>CST</th><th>CFOP</th><th class="r">Qtd</th><th class="r">Valor</th></tr></thead>
+      <tbody>${items.map((i) => `<tr><td>${i.sku}</td><td>${esc(i.name)}</td><td>${i.ncm}</td><td>${i.cst}</td><td>${i.cfop}</td><td class="r">${nf.format(i.qty)}</td><td class="r">${money(i.sub)}</td></tr>`).join("")}</tbody></table>
+      <div class="dz-row"><div><small>Frete</small>${esc(f.modFrete || "-")}</div><div><small>Transportadora</small>${esc(f.transp || "-")}</div><div><small>Volumes</small>${f.volumes || "-"}</div><div><small>Valor total da nota</small><b>${money(o.total)}</b></div></div>
+      <div class="dz-row"><div style="grid-column:1/-1"><small>Informações complementares</small>${esc(f.obs || "")}</div></div>
+    </div>
+    <details class="card"><summary style="cursor:pointer;font-weight:700">Ver XML da nota</summary><pre class="mono" style="white-space:pre-wrap;word-break:break-all;margin:12px 0 0;font-size:11.5px;color:var(--text-2)">${esc(xmlOf(doc))}</pre></details>
+    <p class="note">No sistema real, o XML e o DANFE em PDF ficam disponíveis para download e são enviados ao e-mail do cliente.</p>`;
+}
+
+// ---------------------------------------------------------------------------
+// Importação: cadastro da invoice comercial e custo de entrada (landed cost).
+// Tributos e despesas vêm da DI/despachante: o sistema não inventa alíquota.
+// ---------------------------------------------------------------------------
+let impDraft = null;
+function newImpDraft() {
+  const first = C().products.find((p) => !p.kit);
+  impDraft = {
+    supplier: "Shenzhen Opto Co.", country: "China", invoice: "", date: new Date().toISOString().slice(0, 10), incoterm: "FOB", currency: "USD", rate: 5.42,
+    file: null, items: first ? [{ sku: first.sku, qty: 100, price: 2.5, kg: 0.2 }] : [],
+    freightFx: 120, insuranceFx: 15, alloc: "VALOR",
+    exp: { afrmm: 25, siscomex: 154.23, despachante: 450, armazenagem: 180, freteInterno: 250 },
+    tax: { ii: 168.5, ipi: 0, pis: 28.4, cofins: 130.6, icms: 312.9 }, taxInCost: true, inst: 1,
+  };
+  S.impView = "novo"; render(); window.scrollTo(0, 0);
+}
+function landed(d) {
+  // Valor aduaneiro por item em R$; despesas e tributos rateados pelo critério.
+  const fob = d.items.map((i) => i.qty * i.price * d.rate);
+  const fobTot = fob.reduce((a, b) => a + b, 0);
+  const freightBrl = (d.incoterm === "CIF" ? 0 : (+d.freightFx || 0) + (+d.insuranceFx || 0)) * d.rate;
+  const expTot = Object.values(d.exp).reduce((a, b) => a + (+b || 0), 0);
+  const taxTot = d.taxInCost ? Object.values(d.tax).reduce((a, b) => a + (+b || 0), 0) : (+d.tax.ii || 0);
+  const pool = freightBrl + expTot + taxTot;
+  const base = d.items.map((i, k) => d.alloc === "QUANTIDADE" ? i.qty : d.alloc === "PESO" ? i.qty * (+i.kg || 0) : fob[k]);
+  const baseTot = base.reduce((a, b) => a + b, 0) || 1;
+  const rows = d.items.map((i, k) => { const share = pool * base[k] / baseTot; const total = fob[k] + share; return { ...i, fob: fob[k], share, total, unit: i.qty ? total / i.qty : 0 }; });
+  return { rows, fobTot, freightBrl, expTot, taxTot, pool, grand: fobTot + pool, weightMissing: d.alloc === "PESO" && d.items.some((i) => !(+i.kg > 0)) };
+}
+function vImpForm() {
+  const d = impDraft; const L = landed(d); const ccy = d.currency;
+  const fx = (v) => `${ccy} ${(+v || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const num = (id, label, val, step = "0.01") => `<label class="f" for="${id}">${label}<input id="${id}" type="number" min="0" step="${step}" value="${val}"></label>`;
+  const errs = [];
+  if (!d.invoice.trim()) errs.push("Informe o número da invoice.");
+  if (!d.items.length) errs.push("Inclua ao menos um item.");
+  if (!(d.rate > 0)) errs.push("Informe a taxa de câmbio.");
+  if (L.weightMissing) errs.push("Rateio por peso: informe o peso de todos os itens ou use outro critério.");
+  return `<div class="row"><button class="btn ghost" data-act="imp-back">Voltar às compras</button></div>` +
+    head("Nova importação · invoice comercial", `${esc(C().name)} · os valores de tributos e despesas vêm da DI e do despachante`) +
+    `<div class="card"><h2>1. Invoice</h2><div class="form">
+      <label class="f" for="im-supplier">Fornecedor estrangeiro<input id="im-supplier" value="${esc(d.supplier)}"></label>
+      <label class="f" for="im-country">País<input id="im-country" value="${esc(d.country)}"></label>
+      <label class="f" for="im-invoice">Nº da invoice<input id="im-invoice" value="${esc(d.invoice)}" placeholder="ex.: SO-8812"></label>
+      <label class="f" for="im-date">Data da invoice<input id="im-date" type="date" value="${d.date}"></label>
+      <label class="f" for="im-incoterm">Incoterm<select id="im-incoterm">${["EXW", "FCA", "FOB", "CFR", "CIF", "DAP"].map((x) => `<option ${x === d.incoterm ? "selected" : ""}>${x}</option>`).join("")}</select></label>
+      <label class="f" for="im-currency">Moeda<select id="im-currency">${["USD", "EUR", "CNY"].map((x) => `<option ${x === d.currency ? "selected" : ""}>${x}</option>`).join("")}</select></label>
+      ${num("im-rate", "Câmbio (R$ por 1 " + ccy + ")", d.rate, "0.0001")}
+      <label class="f span2" for="im-file">Arquivo da invoice (PDF ou imagem)<input id="im-file" type="file" accept=".pdf,image/*"></label>
+      <div class="f">${d.file ? `<span>Anexado</span><span class="pill p-good">${esc(d.file.name)} · ${(d.file.size / 1024).toFixed(0)} KB</span>` : `<span>Anexo</span><span class="note">nenhum arquivo</span>`}</div>
+    </div></div>
+    <div class="card"><h2>2. Itens da invoice <small>preço unitário em ${ccy}</small></h2>` +
+    table([{ t: "SKU" }, { t: "Produto" }, { t: "Qtd", r: 1 }, { t: `Preço un. (${ccy})`, r: 1 }, { t: "Peso un. (kg)", r: 1 }, { t: `Total (${ccy})`, r: 1 }, { t: "" }],
+      d.items.map((i, k) => `<tr><td><select aria-label="SKU" data-imi="${k}" data-k="sku">${C().products.filter((p) => !p.kit).map((p) => `<option ${p.sku === i.sku ? "selected" : ""}>${p.sku}</option>`).join("")}</select></td>
+        <td>${esc(prod(i.sku)?.name || "")}</td>
+        <td class="r"><input aria-label="Quantidade" data-imi="${k}" data-k="qty" type="number" min="1" value="${i.qty}" style="width:90px"></td>
+        <td class="r"><input aria-label="Preço" data-imi="${k}" data-k="price" type="number" min="0" step="0.0001" value="${i.price}" style="width:100px"></td>
+        <td class="r"><input aria-label="Peso" data-imi="${k}" data-k="kg" type="number" min="0" step="0.001" value="${i.kg}" style="width:90px"></td>
+        <td class="r num">${fx(i.qty * i.price)}</td><td><button class="btn ghost" data-imrm="${k}">Remover</button></td></tr>`)) +
+    `<div class="row" style="margin-top:10px;justify-content:space-between"><button class="btn ghost" data-act="imp-add">${icon("plus")}Adicionar item</button><span class="note">Total da invoice: <b class="num" style="color:var(--text)">${fx(d.items.reduce((a, i) => a + i.qty * i.price, 0))}</b> = ${money(L.fobTot)}</span></div></div>
+    <div class="grid g2">
+      <div class="card"><h2>3. Frete e despesas</h2><div class="form" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+        ${num("im-freightFx", `Frete internacional (${ccy})`, d.freightFx)}${num("im-insuranceFx", `Seguro (${ccy})`, d.insuranceFx)}
+        ${num("im-exp-afrmm", "AFRMM (R$)", d.exp.afrmm)}${num("im-exp-siscomex", "Taxa Siscomex (R$)", d.exp.siscomex)}
+        ${num("im-exp-despachante", "Despachante (R$)", d.exp.despachante)}${num("im-exp-armazenagem", "Armazenagem/capatazia (R$)", d.exp.armazenagem)}
+        ${num("im-exp-freteInterno", "Frete porto → empresa (R$)", d.exp.freteInterno)}
+      </div>${d.incoterm === "CIF" ? `<p class="note" style="margin:10px 0 0">Incoterm CIF: frete e seguro já estão no preço da invoice e não são somados de novo.</p>` : ""}</div>
+      <div class="card"><h2>4. Tributos da DI <small>valores em R$ conforme a DI</small></h2><div class="form" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+        ${num("im-tax-ii", "II", d.tax.ii)}${num("im-tax-ipi", "IPI", d.tax.ipi)}${num("im-tax-pis", "PIS-Importação", d.tax.pis)}${num("im-tax-cofins", "COFINS-Importação", d.tax.cofins)}${num("im-tax-icms", "ICMS", d.tax.icms)}
+        <label class="f" for="im-alloc">Critério de rateio<select id="im-alloc">${[["VALOR", "Por valor"], ["QUANTIDADE", "Por quantidade"], ["PESO", "Por peso"]].map(([v, l]) => `<option value="${v}" ${v === d.alloc ? "selected" : ""}>${l}</option>`).join("")}</select></label>
+        <label class="f span2" for="im-taxincost" style="display:flex;align-items:center;gap:8px"><input id="im-taxincost" type="checkbox" ${d.taxInCost ? "checked" : ""} style="width:auto">Somar IPI, PIS, COFINS e ICMS ao custo (desmarque se a empresa aproveita esses créditos)</label>
+      </div></div>
+    </div>
+    <div class="card"><h2>5. Custo de entrada por produto <small>${L.weightMissing ? "falta peso" : `rateio por ${d.alloc.toLowerCase()}`}</small></h2>` +
+    table([{ t: "SKU" }, { t: "Qtd", r: 1 }, { t: "Valor da invoice (R$)", r: 1 }, { t: "Despesas e tributos rateados", r: 1 }, { t: "Custo total", r: 1 }, { t: "Custo unitário novo", r: 1 }, { t: "Custo atual", r: 1 }],
+      L.rows.map((r) => `<tr><td class="mono">${r.sku}</td><td class="r num">${nf.format(r.qty)}</td><td class="r num">${money(r.fob)}</td><td class="r num">${money(r.share)}</td><td class="r num">${money(r.total)}</td><td class="r num"><b>${money(r.unit)}</b></td><td class="r num">${money(prod(r.sku)?.cost || 0)}</td></tr>`)) +
+    `<div class="grid g4" style="margin-top:14px">${kpi("money", "c1", "Invoice em R$", money(L.fobTot))}${kpi("expedicao", "c2", "Frete e seguro", money(L.freightBrl))}${kpi("receipt", "c3", "Despesas", money(L.expTot))}${kpi("fiscal", "c2", "Tributos no custo", money(L.taxTot))}</div>
+    <div class="row" style="justify-content:space-between;margin-top:16px"><div><div class="note">Custo total da importação</div><div class="kpi"><div class="val num">${money(L.grand)}</div></div></div>
+      <button class="btn" data-act="imp-save" ${errs.length ? "disabled" : ""}>${icon("check")}Registrar importação</button></div>
+    ${errs.length ? `<div class="alert bad" style="margin-top:12px">${icon("alert")}<span>${errs.map(esc).join("<br>")}</span></div>` : ""}</div>`;
+}
+function saveImp() {
+  const d = impDraft; const L = landed(d); const c = C();
+  if (!d.invoice.trim() || !d.items.length || !(d.rate > 0) || L.weightMissing) throw new Error("Complete os dados da invoice.");
+  if (c.purchases.some((p) => p.invoice === d.invoice.trim() && p.supplier === d.supplier)) throw new Error("Esta invoice já foi registrada para este fornecedor.");
+  const n = Math.max(0, ...c.purchases.map((p) => p.n)) + 1;
+  const imp = { n, supplier: d.supplier, invoice: d.invoice.trim(), status: "Invoice registrada, aguardando recebimento", total: r2(L.grand), imp: true, detail: JSON.parse(JSON.stringify(d)), landed: L.rows.map((r) => ({ sku: r.sku, qty: r.qty, unit: r.unit })), received: false };
+  c.purchases.unshift(imp);
+  c.pays.unshift({ id: `imp${n}a`, desc: `${d.supplier} · invoice ${imp.invoice} (${d.currency})`, cat: "Importação", amount: r2(L.fobTot + L.freightBrl), due: days(30), approved: false, paid: 0 });
+  c.pays.unshift({ id: `imp${n}b`, desc: `Tributos e despesas da DI · invoice ${imp.invoice}`, cat: "Impostos", amount: r2(L.expTot + Object.values(d.tax).reduce((a, b) => a + (+b || 0), 0)), due: days(2), approved: false, paid: 0 });
+  impDraft = null; S.impView = n; toast(`Importação ${n} registrada; 2 contas a pagar criadas para aprovação.`); render();
+}
+function vImpDetail(n) {
+  const p = C().purchases.find((x) => x.n === n); const d = p.detail;
+  return `<div class="row"><button class="btn ghost" data-act="imp-back">Voltar às compras</button></div>` +
+    head(`Importação ${p.n} · invoice ${esc(p.invoice)}`, `${esc(p.supplier)} · ${d.incoterm} · ${d.currency} a R$ ${d.rate.toLocaleString("pt-BR")} ${d.file ? `· anexo ${esc(d.file.name)}` : ""}`, pill(p.received ? ["Recebida", "p-good"] : ["Aguardando recebimento", "p-warn"])) +
+    table([{ t: "SKU" }, { t: "Produto" }, { t: "Qtd", r: 1 }, { t: "Custo unitário de entrada", r: 1 }, { t: "Custo atual no cadastro", r: 1 }],
+      p.landed.map((r) => `<tr><td class="mono">${r.sku}</td><td>${esc(prod(r.sku).name)}</td><td class="r num">${nf.format(r.qty)}</td><td class="r num"><b>${money(r.unit)}</b></td><td class="r num">${money(prod(r.sku).cost)}</td></tr>`)) +
+    `<div class="card"><div class="row" style="justify-content:space-between"><span class="note">Total da importação <b class="num" style="color:var(--text)">${money(p.total)}</b>. ${p.received ? "Mercadoria já lançada no estoque." : "Ao receber, as quantidades entram no estoque e o custo médio de cada produto é atualizado."}</span>
+      ${p.received ? "" : `<button class="btn" data-imprecv="${p.n}">${icon("estoque")}Receber no estoque</button>`}</div></div>`;
+}
+function receiveImp(n) {
+  const p = C().purchases.find((x) => x.n === n); if (p.received) throw new Error("Importação já recebida.");
+  p.landed.forEach((r, k) => {
+    const pr = prod(r.sku); const old = pr.phys;
+    // Custo médio ponderado: saldo anterior ao custo antigo + entrada ao custo de importação.
+    if (move("Entrada", r.sku, r.qty, `Importação ${n}`, `imp:${n}:${k}`)) pr.cost = Math.round(((pr.cost * old + r.unit * r.qty) / (old + r.qty)) * 10000) / 10000;
+  });
+  p.received = true; p.status = "Recebida"; toast(`Importação ${n} recebida: estoque e custo médio atualizados.`); render();
 }
 
 function vFinanceiro() {
@@ -912,9 +1164,11 @@ function vFinanceiro() {
 }
 
 function vCompras() {
-  return head("Compras e importação", "Solicitação, cotação, aprovação, recebimento e rateio de custos") +
-    table([{ t: "Nº" }, { t: "Fornecedor" }, { t: "Tipo" }, { t: "Status" }, { t: "Total (R$)", r: 1 }],
-      C().purchases.map((p) => `<tr><td class="num">${p.n}</td><td>${esc(p.supplier)}</td><td>${p.imp ? pill(["Importação", "p-info"]) : "Nacional"}</td><td>${esc(p.status)}</td><td class="r num">${money(p.total)}</td></tr>`)) +
+  if (S.impView === "novo" && impDraft) return vImpForm();
+  if (typeof S.impView === "number") return vImpDetail(S.impView);
+  return head("Compras e importação", "Solicitação, cotação, aprovação, recebimento e rateio de custos", `<button class="btn" data-act="imp-new">${icon("plus")}Nova importação (invoice)</button>`) +
+    table([{ t: "Nº" }, { t: "Fornecedor" }, { t: "Invoice" }, { t: "Tipo" }, { t: "Status" }, { t: "Total (R$)", r: 1 }],
+      C().purchases.map((p) => `<tr><td class="num">${p.detail ? `<button class="link" data-impopen="${p.n}">${p.n}</button>` : p.n}</td><td>${esc(p.supplier)}</td><td class="mono">${esc(p.invoice || "-")}</td><td>${p.imp ? pill(["Importação", "p-info"]) : "Nacional"}</td><td>${esc(p.status)}</td><td class="r num">${money(p.total)}</td></tr>`)) +
     `<div class="card"><h2>Como o custo de importação é calculado</h2><p class="note">Itens em moeda estrangeira × câmbio, mais frete, seguro, despesas aduaneiras e tributos rateados por valor, quantidade ou peso (critério validado pela contabilidade). No recebimento, o custo médio do produto é atualizado e as contas a pagar ficam aguardando aprovação da Diretoria.</p></div>`;
 }
 
@@ -952,7 +1206,7 @@ function vPortal() {
 // Eventos
 // ---------------------------------------------------------------------------
 function err(e) { const box = $("err"); if (box) box.innerHTML = `<div class="alert bad" style="margin-top:10px">${esc(e.message)}</div>`; else toast(e.message); }
-function go(view) { S.view = view; S.orderId = null; S.tab = null; S.composing = false; render(); window.scrollTo(0, 0); }
+function go(view) { S.view = view; S.orderId = null; S.tab = null; S.composing = false; S.danfe = null; S.impView = null; nfDraft = null; impDraft = null; render(); window.scrollTo(0, 0); }
 
 document.addEventListener("click", (ev) => {
   const t = ev.target.closest("button, tr[data-open]"); if (!t) return;
@@ -968,10 +1222,21 @@ document.addEventListener("click", (ev) => {
     if (ds.act === "voltar") { S.orderId = null; return render(); }
     if (ds.o === "submit") { submit(o); return render(); }
     if (ds.o === "approve") { approve(o); return render(); }
-    if (ds.o === "nf") { emitNF(o); return render(); }
+    if (ds.o === "nf") { return openNfForm(o); }
     if (ds.o === "adv") { advance(o, ds.to); return render(); }
     if (ds.o === "cancel") { cancel(o, $("cancel-reason").value); return render(); }
-    if (ds.nf) { emitNF(C().orders.find((x) => x.id === ds.nf)); return render(); }
+    if (ds.nf) { return openNfForm(C().orders.find((x) => x.id === ds.nf)); }
+    if (ds.act === "nf-cancel") { nfDraft = null; return render(); }
+    if (ds.act === "nf-emit") { return emitFromForm(); }
+    if (ds.danfe) { S.danfe = ds.danfe; render(); return window.scrollTo(0, 0); }
+    if (ds.act === "danfe-close") { S.danfe = null; return render(); }
+    if (ds.act === "imp-new") { return newImpDraft(); }
+    if (ds.act === "imp-back") { impDraft = null; S.impView = null; return render(); }
+    if (ds.act === "imp-add") { const p0 = C().products.find((p) => !p.kit); impDraft.items.push({ sku: p0.sku, qty: 1, price: 0, kg: 0 }); return render(); }
+    if (ds.imrm !== undefined) { impDraft.items.splice(+ds.imrm, 1); return render(); }
+    if (ds.act === "imp-save") { return saveImp(); }
+    if (ds.impopen) { S.impView = +ds.impopen; render(); return window.scrollTo(0, 0); }
+    if (ds.imprecv) { return receiveImp(+ds.imprecv); }
     if (ds.pay) { payRecv(C().recv.find((r) => r.id === ds.pay), Number($(`pay-${ds.pay}`).value)); return render(); }
     if (ds.papprove) { C().pays.find((p) => p.id === ds.papprove).approved = true; toast("Pagamento aprovado pela Diretoria."); return render(); }
     if (ds.ppay) { const p = C().pays.find((x) => x.id === ds.ppay); p.paid = p.amount; toast("Pagamento registrado."); return render(); }
@@ -986,8 +1251,29 @@ document.addEventListener("click", (ev) => {
 });
 document.addEventListener("change", (ev) => {
   const el = ev.target;
+  if (el.id === "company" || el.id === "role") { S.danfe = null; S.impView = null; nfDraft = null; impDraft = null; }
   if (el.id === "company") { S.company = el.value; S.orderId = null; S.composing = false; S.tab = null; toast(`Empresa ${el.value} ativa: telas da empresa anterior foram fechadas.`); return render(); }
   if (el.id === "role") { S.role = el.value; S.orderId = null; S.composing = false; S.tab = null; if (S.role === "CUSTOMER") S.view = "portal"; return render(); }
+  if (nfDraft && (el.id?.startsWith("nf-") || el.dataset.nfi !== undefined)) {
+    const map = { "nf-natureza": "natureza", "nf-finalidade": "finalidade", "nf-consumidor": "consumidor", "nf-ie": "ie", "nf-endereco": "endereco", "nf-email": "email", "nf-modfrete": "modFrete", "nf-transp": "transp", "nf-peso": "peso", "nf-pag": "pag", "nf-obs": "obs" };
+    if (map[el.id]) nfDraft[map[el.id]] = el.value;
+    if (el.id === "nf-volumes") nfDraft.volumes = Math.floor(+el.value);
+    if (el.dataset.nfi !== undefined) nfDraft.items[+el.dataset.nfi][el.dataset.k] = el.value.trim();
+    return setTimeout(render, 0);
+  }
+  if (impDraft && (el.id?.startsWith("im-") || el.dataset.imi !== undefined)) {
+    if (el.id === "im-file") { const f = el.files && el.files[0]; impDraft.file = f ? { name: f.name, size: f.size } : null; return setTimeout(render, 0); }
+    if (el.id === "im-taxincost") { impDraft.taxInCost = el.checked; return setTimeout(render, 0); }
+    const txt = { "im-supplier": "supplier", "im-country": "country", "im-invoice": "invoice", "im-date": "date", "im-incoterm": "incoterm", "im-currency": "currency", "im-alloc": "alloc" };
+    if (txt[el.id]) impDraft[txt[el.id]] = el.value;
+    if (el.id === "im-rate") impDraft.rate = Math.max(0, +el.value || 0);
+    if (el.id === "im-freightFx") impDraft.freightFx = Math.max(0, +el.value || 0);
+    if (el.id === "im-insuranceFx") impDraft.insuranceFx = Math.max(0, +el.value || 0);
+    if (el.id?.startsWith("im-exp-")) impDraft.exp[el.id.slice(7)] = Math.max(0, +el.value || 0);
+    if (el.id?.startsWith("im-tax-")) impDraft.tax[el.id.slice(7)] = Math.max(0, +el.value || 0);
+    if (el.dataset.imi !== undefined) { const it = impDraft.items[+el.dataset.imi]; const k = el.dataset.k; it[k] = k === "sku" ? el.value : k === "qty" ? Math.max(1, Math.floor(+el.value) || 1) : Math.max(0, +el.value || 0); }
+    return setTimeout(render, 0);
+  }
   if (!draft || el.id === "q-sku") return;
   if (el.id === "q-cust") { draft.customer = el.value; }
   if (el.id === "q-inst") { draft.inst = +el.value; }
@@ -1033,6 +1319,7 @@ function buildCmd(q) {
     const label = { aprovar: "Aprovar", emitir: "Emitir NF-e de", nf: "Emitir NF-e de", abrir: "Abrir", cancelar: "Abrir para cancelar", separar: "Abrir para separar", despachar: "Abrir para despachar" }[verb];
     out.push({ g: "Comando", label: `${label} ${code(o)}`, hint: esc(cust(o.customer).name), run: () => runCmd(t) });
   }
+  if (can("compras") && (t.includes("import") || t.includes("invoice"))) out.push({ g: "Comando", label: "Nova importação (invoice)", hint: "compras", run: () => { go("compras"); newImpDraft(); } });
   if (verb.startsWith("nova") || verb.startsWith("novo") || t.includes("cotacao")) out.push({ g: "Comando", label: "Nova cotação", hint: "comando", run: () => { go("pedidos"); $("view").querySelector('[data-act="novo"]')?.click(); } });
   MODULES.filter(([k, l]) => can(k) && norm(l).includes(t)).forEach(([k, l]) => out.push({ g: "Módulos", label: l, hint: "abrir", run: () => go(k) }));
   if (can("pedidos")) visibleOrders().filter((x) => norm(`${code(x)} ${cust(x.customer).name}`).includes(t.replace(/^abrir\s+/, ""))).slice(0, 5)
@@ -1046,7 +1333,7 @@ function runCmd(t) {
   if (!o) throw new Error("Pedido não encontrado nesta empresa.");
   S.view = "pedidos"; S.orderId = o.id;
   if (verb === "aprovar") { if (o.status !== "AGUARDANDO") throw new Error(`${code(o)} não está aguardando aprovação.`); approve(o); }
-  else if (verb === "emitir" || verb === "nf") { if (!["MEDIATOR","FISCAL"].includes(S.role)) throw new Error("Seu perfil não emite NF-e."); if (FLOW.indexOf(o.status) < 2 || o.status === "CANCELADO") throw new Error("A nota só pode ser emitida para pedido aprovado."); emitNF(o); }
+  else if (verb === "emitir" || verb === "nf") { return openNfForm(o); }
   render();
 }
 function showCmd() {
