@@ -789,6 +789,16 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; gap: 8
 .gring b { position: absolute; top: 33px; font-size: 18px; } .gring small { font-size: 12px; color: var(--text-2); }
 .dcard { display: grid; gap: 10px; align-content: start; }
 @media (max-width: 760px) { .rings { grid-template-columns: repeat(2, minmax(0, 1fr)); } .podium { grid-template-columns: 1fr; } .pod.p1, .pod.p2, .pod.p3 { order: 0; } }
+
+.cityshape { fill: rgba(242,204,91,.05); stroke: rgba(242,204,91,.35); stroke-width: .5; }
+.map .zone { font-size: 3px; fill: rgba(242,204,91,.35); text-anchor: middle; font-weight: 800; letter-spacing: .3px; text-transform: uppercase; }
+.sugl { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 10px; }
+.map .pin text.lbl { text-anchor: start; } .map .pin text.lbl.e { text-anchor: end; }
+.sugv .sig { white-space: nowrap; }
+.sugv { display: flex; gap: 10px; align-items: center; background: rgba(255,255,255,.03); border: 1px solid var(--border); border-radius: 14px; padding: 10px 12px; }
+.sugv > div { display: grid; gap: 2px; }
+.kindb { font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; border-radius: 6px; padding: 2px 7px; flex: none; }
+.kindb.cliente { background: var(--grad); color: #1b1206; } .kindb.loja { background: rgba(120,160,255,.18); color: #9cc3ff; }
 </style>
 
 <header class="cbar">
@@ -927,6 +937,7 @@ function seed() {
   ctxOf = () => st.companies[st.company];
   S = st;
   seedHistory(st);
+  st.companies.A.negOk = true; st.companies.B.negOk = true;
   seedExtra(st);
   seedCrm(st); seedSuppliers(st); seedBank(st); seedProspects(st); seedPstages(st); seedGoals(st); seedVisits(st); seedPosVenda(st); seedAuto(st);
   for (const co of Object.values(st.companies)) { co.nfIn = []; co.autoStock = false; const prev = st.company; st.company = co.code; co.mails.slice().reverse().forEach((m) => autoPullXml(co, m, true)); st.company = prev; }
@@ -972,7 +983,7 @@ function move(type, sku, qty, doc, key) {
   const c = C();
   if (key && c.moves.some((m) => m.key === key)) return false; // idempotência: mesma chave não movimenta de novo
   const p = prod(sku);
-  if (type === "Reserva") { if (availSimple(p) < qty) throw new Error(`Saldo insuficiente de ${sku} para reservar ${qty}.`); p.res += qty; }
+  if (type === "Reserva") { if (!c.negOk && availSimple(p) < qty) throw new Error(`Saldo insuficiente de ${sku} para reservar ${qty}.`); p.res += qty; }
   if (type === "Liberação") p.res -= qty;
   if (type === "Saída") { p.res -= qty; p.phys -= qty; }
   if (type === "Entrada" || type === "Devolução" || type === "Ajuste (+)") p.phys += qty;
@@ -1010,7 +1021,7 @@ function reserve(o) {
   // Primeiro confere tudo, depois reserva: ou o pedido inteiro reserva, ou nada.
   const need = {};
   o.items.forEach((i) => explode(i).forEach(([s, q]) => { need[s] = (need[s] || 0) + q; }));
-  for (const [s, q] of Object.entries(need)) if (availSimple(prod(s)) < q) throw new Error(`Saldo insuficiente de ${s}: precisa ${q}, disponível ${availSimple(prod(s))}.`);
+  for (const [s, q] of Object.entries(need)) if (!C().negOk && availSimple(prod(s)) < q) throw new Error(`Saldo insuficiente de ${s}: precisa ${q}, disponível ${availSimple(prod(s))}.`);
   o.items.forEach((i, idx) => explode(i).forEach(([s, q]) => move("Reserva", s, q, code(o), `order:${o.id}:reserve:${idx}:${s}`)));
 }
 function submit(o, silent) {
@@ -1731,7 +1742,7 @@ const GROUPS = [
 ];
 const MOD_DESC = {
   painel: "Indicadores do dia e alertas", pedidos: "Cotações, pedidos e aprovação", prospeccao: "Encontrar e abordar empresas por etapas", crm: "Funil de vendas, cadências e agenda",
-  clientes: "Carteira, ficha 360 e crédito", metas: "Metas da equipe e ranking por pontos", rota: "Visitas do dia, check-in e pedido na rua", posvenda: "Garantia, NPS e lembrete de recompra", programacao: "Pedidos recorrentes de clientes", portal: "O que o cliente vê", produtos: "Catálogo, kits e ficha técnica",
+  clientes: "Carteira, ficha 360 e crédito", metas: "Metas da equipe e ranking por pontos", rota: "Rota em São Paulo: clientes e lojas, check-in e pedido", posvenda: "Garantia, NPS e lembrete de recompra", programacao: "Pedidos recorrentes de clientes", portal: "O que o cliente vê", produtos: "Catálogo, kits e ficha técnica",
   estoque: "Saldos, ML, recebimento e inventário", expedicao: "Separação, conferência e despacho", compras: "Cotação, fornecedores e importação", financeiro: "Receber, pagar, caixa e conciliação",
   fiscal: "NF-e de saída e XML de entrada", mercadolivre: "Anúncios e fila de integração", emails: "Caixas comercial, fiscal e financeiro", relatorios: "ABC, vendedores, estados e consolidado", config: "Empresa, usuários, integrações e auditoria",
 };
@@ -1930,30 +1941,79 @@ function vMetas() {
 // ---------------------------------------------------------------------------
 // Vendedor externo: rota do dia, check-in/out e pedido na rua.
 // ---------------------------------------------------------------------------
-const CITY_XY = { "São Paulo/SP": [62, 70], "Campinas/SP": [55, 58], "Ribeirão Preto/SP": [50, 36], "Santos/SP": [66, 82], "Curitiba/PR": [40, 90], "Joinville/SC": [44, 96], "Londrina/PR": [30, 70], "Belo Horizonte/MG": [78, 30], "Porto Alegre/RS": [22, 98] };
+// ---------------------------------------------------------------------------
+// Rota de visitas: só São Paulo capital. As sugestões vêm das compras dos
+// clientes de SP (recompra, cotação aberta, entrega, cobrança) e das lojas
+// de SP da base de prospecção.
+// ---------------------------------------------------------------------------
+const SP_BAIRROS = { "Centro": [50, 47], "Santa Ifigênia": [47, 43], "Brás": [57, 46], "Mooca": [60, 54], "Tatuapé": [66, 47], "Penha": [72, 40], "Itaquera": [84, 48], "Santana": [52, 27], "Lapa": [31, 39], "Pinheiros": [37, 55], "Vila Mariana": [52, 61], "Moema": [47, 66], "Santo Amaro": [40, 80] };
+const SP_ZONES = [["Norte", 52, 22], ["Oeste", 26, 50], ["Centro", 50, 42], ["Leste", 76, 44], ["Sul", 46, 78]];
 function seedVisits(st) {
-  const A = st.companies.A; const t = (h) => `${String(h).padStart(2, "0")}:00`;
-  A.visits = [["c3", 9, "Campinas/SP", "Reposição de módulos"], ["c7", 11, "São Paulo/SP", "Apresentar fita COB nova"], ["c10", 14, "Ribeirão Preto/SP", "Negociar pedido da obra"], ["c8", 16, "Belo Horizonte/MG", "Cobrança + recompra"]]
-    .filter(([cid]) => A.customers.some((c) => c.id === cid)).map(([cid, h, city, goal], i) => ({ id: `v${i}`, customer: cid, time: t(h), city: A.customers.find((c) => c.id === cid).city || city, goal, seller: "Bruno Alves", in: null, out: null, note: "" }));
-  st.companies.B.visits = [];
+  const A = st.companies.A; const seller = "Bruno Alves";
+  const spc = [["c20", "Elétrica Santa Ifigênia Ltda", "Santa Ifigênia", "41.222.333/0001-01"], ["c21", "LED Center Brás", "Brás", "41.222.333/0001-02"], ["c22", "Iluminação Moema", "Moema", "41.222.333/0001-03"], ["c23", "Eletro Penha Materiais Elétricos", "Penha", "41.222.333/0001-04"], ["c24", "Lapa Componentes Eletrônicos", "Lapa", "41.222.333/0001-05"]];
+  const prev = st.company; st.company = "A";
+  spc.forEach(([id, name, bairro, doc], i) => {
+    A.customers.push({ id, name, doc, city: "São Paulo/SP", seller, bairro, kind: "Loja" });
+    // Histórico de compras para a rota saber quem visitar e por quê.
+    [[38 + i * 9, ["LED-5MM-BR", 1000]], [17 + i * 6, ["FITA-5050-5M", 10 + i * 4]], [i === 2 ? 2 : 70, ["DRV-12V-2A", 12]]].forEach(([ago, [sku, q]], k) => {
+      if (!A.products.some((p) => p.sku === sku)) return;
+      const o = createOrder(id, seller, [[sku, q, prod(sku).price, 0]], { inst: 2 }, true);
+      const d = new Date(); d.setDate(d.getDate() - ago); o.date = d.toISOString(); o.status = k === 2 && i === 2 ? "COTACAO" : i === 1 && k === 1 ? "PRONTO" : "ENTREGUE";
+    });
+  });
+  const c7 = A.customers.find((c) => c.id === "c7"); if (c7) { c7.bairro = "Pinheiros"; c7.kind = "Loja"; }
+  st.company = prev;
+  [["Mundo LED Santa Ifigênia", "Santa Ifigênia", "EPP", ["Vitrine nova na rua"]], ["Eletrônica Tatuapé", "Tatuapé", "ME", []], ["Casa Elétrica Mooca", "Mooca", "EPP", ["Abriu há 6 meses"]], ["LED Shop Vila Mariana", "Vila Mariana", "ME", []], ["Santana Iluminação", "Santana", "EPP", ["Compra fita no ML"]]].forEach(([name, bairro, size, signals], i) => {
+    A.prospects.push({ id: `PS${i}`, name, seg: "Loja de eletrônicos", city: "São Paulo", uf: "SP", bairro, size, source: "Lojas de SP (Google Maps)", signals, cnpj: `52.10${i}.000/0001-9${i}`, contact: "Responsável da loja", email: `contato@${name.split(" ")[0].toLowerCase().normalize("NFD").replace(/[^a-z]/g, "")}${i}.com.br`, phone: `(11) 9${8200 + i * 13}-${3100 + i * 7}`, status: "Novo", stage: "PESQ", owner: seller, since: days(-2 - i), hist: [{ when: days(-6), msg: "Loja de SP adicionada para visita" }], tries: [] });
+  });
+  A.visits = []; st.companies.B.visits = [];
 }
+function spSuggestions() {
+  // Clientes de SP que já compram, com o motivo da visita; depois as lojas.
+  const today = Date.now(); const out = [];
+  C().customers.filter((c) => /São Paulo\/SP/.test(c.city || "")).forEach((c) => {
+    if (role().own && c.seller !== role().user) return;
+    const os = C().orders.filter((o) => o.customer === c.id); if (!os.length) return;
+    const st = custStats(c.id); const why = [];
+    const quote = os.find((o) => o.status === "COTACAO"); if (quote) why.push([`Cotação ${code(quote)} aberta (${money(quote.total)})`, 3]);
+    const ready = os.find((o) => ["PRONTO", "ENVIADO"].includes(o.status)); if (ready) why.push([`Pedido ${code(ready)} para entregar`, 2]);
+    if (st.late > 0) why.push([`Título vencido (${money(st.late)})`, 2]);
+    if (st.last) { const d = Math.round((today - new Date(st.last.date)) / 864e5); if (d > 30) why.push([`Sem comprar há ${d} dias`, 1 + Math.min(2, d / 30)]); }
+    if (!why.length) why.push([`Última compra ${st.last ? fdate(st.last.date) : "-"}`, 0.2]);
+    out.push({ kind: "cliente", ref: c.id, name: c.name, bairro: c.bairro || "Centro", why, score: why.reduce((s, w) => s + w[1], 0), info: `${os.filter(billed).length} compra(s) · última ${st.last ? fdate(st.last.date) : "-"}` });
+  });
+  (C().prospects || []).filter((x) => x.city === "São Paulo" && /Loja/i.test(x.seg) && !["QUALI", "DESC"].includes(x.stage)).forEach((x) => {
+    if (role().own && x.owner !== role().user) return;
+    out.push({ kind: "loja", ref: x.id, name: x.name, bairro: x.bairro || "Centro", why: [["Loja de SP para prospectar", 0.8], ...x.signals.map((s) => [s, 0.4])], score: 0.8 + x.signals.length * 0.4, info: `${x.size} · ${PSTAGES.find(([k]) => k === x.stage)?.[1] || ""}` });
+  });
+  const inRoute = new Set((C().visits || []).map((v) => `${v.kind}:${v.ref}`));
+  return out.filter((s) => !inRoute.has(`${s.kind}:${s.ref}`)).sort((a, b) => b.score - a.score);
+}
+function visitName(v) { return v.kind === "loja" ? (C().prospects.find((x) => x.id === v.ref)?.name || "-") : (cust(v.ref)?.name || "-"); }
+function visitPhone(v) { return v.kind === "loja" ? C().prospects.find((x) => x.id === v.ref)?.phone : contactsOf(cust(v.ref))[0].phone; }
 function vRota() {
   const vs = (C().visits || []).filter((v) => !role().own || v.seller === role().user);
-  const pts = vs.map((v) => ({ v, xy: CITY_XY[v.city] || [50, 50] }));
-  const km = pts.reduce((s, p, i) => i ? s + Math.hypot(p.xy[0] - pts[i - 1].xy[0], p.xy[1] - pts[i - 1].xy[1]) * 9 : s, 0);
+  const sug = spSuggestions(); const pts = vs.map((v) => ({ v, xy: SP_BAIRROS[v.bairro] || [50, 50] }));
+  const km = pts.reduce((s, p, i) => i ? s + Math.hypot(p.xy[0] - pts[i - 1].xy[0], p.xy[1] - pts[i - 1].xy[1]) * 0.45 : s, 0);
   const done = vs.filter((v) => v.out).length;
-  return head("Rota do dia", `Vendedor externo · ${new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" })}`) +
-    `<div class="grid g4">${kpi("expedicao", "c1", "Visitas hoje", vs.length)}${kpi("check", "c3", "Concluídas", `${done}/${vs.length}`)}${kpi("relatorios", "c2", "Distância estimada", `${Math.round(km)} km`)}${kpi("money", "c4", "Pedidos na rua hoje", (C().orders || []).filter((o) => o.channel === "Visita externa").length)}</div>` +
-    `<div class="grid g21"><div class="card mapc"><h2>Mapa da rota</h2><svg viewBox="0 0 100 100" class="map" role="img" aria-label="Mapa com ${vs.length} visitas">${Array.from({ length: 9 }, (_, i) => `<line x1="${i * 12.5}" y1="0" x2="${i * 12.5}" y2="100"/><line x1="0" y1="${i * 12.5}" x2="100" y2="${i * 12.5}"/>`).join("")}<polyline points="${pts.map((p) => p.xy.join(",")).join(" ")}" class="route"/>${pts.map((p, i) => `<g class="pin ${p.v.out ? "done" : p.v.in ? "now" : ""}"><circle cx="${p.xy[0]}" cy="${p.xy[1]}" r="2.8"/><text x="${p.xy[0]}" y="${p.xy[1] + 1}">${i + 1}</text><text class="lbl" x="${p.xy[0] + (p.xy[0] > 65 ? -5.5 : 5.5)}" y="${p.xy[1] + 1}" text-anchor="${p.xy[0] > 65 ? "end" : "start"}">${esc(p.v.city.split("/")[0])}</text></g>`).join("")}</svg><a class="btn ghost" href="https://www.google.com/maps/dir/${vs.map((v) => encodeURIComponent(v.city)).join("/")}" target="_blank" rel="noopener">Abrir rota no Google Maps</a></div>
-      <div class="list visits">${vs.map((v, i) => { const cu = cust(v.customer); const st = custStats(v.customer); return `<div class="visit ${v.out ? "done" : v.in ? "now" : ""}"><span class="vn">${i + 1}</span><div style="flex:1;min-width:0"><div class="l"><b>${v.time} · ${esc(cu.name)}</b>${v.out ? pill(["Concluída", "p-good"]) : v.in ? pill([`Em visita desde ${v.in}`, "p-warn"]) : pill(["Agendada", "p-neutral"])}</div><small class="note">${esc(v.city)} · objetivo: ${esc(v.goal)}</small><small class="note">Em aberto ${money(st.open)}${st.late > 0 ? ` · <b style="color:var(--bad)">título vencido</b>` : ""} · último pedido ${st.last ? fdate(st.last.date) : "-"}</small>${v.note ? `<small>${esc(v.note)}</small>` : ""}
-        <div class="row" style="margin-top:8px">${!v.in ? `<button class="btn" data-vin="${v.id}">Check-in</button>` : !v.out ? `<input class="ig-in" style="text-align:left;flex:1;min-width:140px" id="vnote-${v.id}" placeholder="Resumo da visita"><button class="btn" data-vout="${v.id}">Check-out</button>` : ""}${!v.out && can("pedidos") ? `<button class="btn ghost" data-vorder="${v.id}">Pedido na visita</button>` : ""}<a class="btn ghost" href="${waLink(contactsOf(cu)[0].phone, `Olá! Aqui é ${role().user}, da MAX LED. Estou a caminho, chego às ${v.time}.`)}" target="_blank" rel="noopener">Avisar no WhatsApp</a></div></div></div>`; }).join("") || `<p class="note">Nenhuma visita agendada para hoje.</p>`}</div></div>
-    <p class="note">No celular, o check-in grava a localização e a hora; a visita só conta para a meta com check-in e check-out.</p>`;
+  const sugCard = (s) => `<div class="sugv"><div style="flex:1;min-width:0"><span class="kindb ${s.kind}" style="justify-self:start">${s.kind === "loja" ? "Loja" : "Cliente"}</span><b>${esc(s.name)}</b><small class="note">${esc(s.bairro)} · ${esc(s.info)}</small><div class="row" style="gap:4px;margin-top:4px">${s.why.slice(0, 3).map(([w]) => `<span class="sig">${esc(w)}</span>`).join("")}</div></div><button class="btn ghost" data-vadd="${s.kind}:${s.ref}">Adicionar</button></div>`;
+  return head("Rota de visitas · São Paulo", `Só capital · clientes que já compram e lojas de SP · ${new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" })}`, sug.length && !vs.length ? `<button class="btn" data-act="vauto">Montar rota com as 4 melhores</button>` : "") +
+    `<div class="grid g4">${kpi("expedicao", "c1", "Visitas na rota", vs.length)}${kpi("check", "c3", "Concluídas", `${done}/${vs.length}`)}${kpi("relatorios", "c2", "Distância estimada", `${Math.round(km)} km`)}${kpi("money", "c4", "Pedidos na rua hoje", (C().orders || []).filter((o) => o.channel === "Visita externa").length)}</div>` +
+    `<div class="grid g21"><div class="card mapc"><h2>Mapa · São Paulo capital</h2><svg viewBox="0 0 100 100" class="map" role="img" aria-label="Mapa de São Paulo com ${vs.length} visitas"><path class="cityshape" d="M30 14 L58 10 L76 22 L92 40 L90 58 L72 64 L62 74 L52 92 L38 94 L34 78 L22 66 L14 50 L18 30 Z"/>${SP_ZONES.map(([z, x, y]) => `<text class="zone" x="${x}" y="${y}">${z}</text>`).join("")}<polyline points="${pts.map((p) => p.xy.join(",")).join(" ")}" class="route"/>${pts.map((p, i) => `<g class="pin ${p.v.out ? "done" : p.v.in ? "now" : ""}"><circle cx="${p.xy[0]}" cy="${p.xy[1]}" r="2.8"/><text x="${p.xy[0]}" y="${p.xy[1] + 1}">${i + 1}</text><text class="lbl ${p.xy[0] > 65 ? "e" : ""}" x="${p.xy[0] + (p.xy[0] > 65 ? -4.2 : 4.2)}" y="${p.xy[1] + 1}">${esc(p.v.bairro)}</text></g>`).join("")}</svg>${vs.length ? `<a class="btn ghost" href="https://www.google.com/maps/dir/${vs.map((v) => encodeURIComponent(`${v.bairro}, São Paulo, SP`)).join("/")}" target="_blank" rel="noopener">Abrir rota no Google Maps</a>` : ""}</div>
+      <div class="list visits">${vs.map((v, i) => { const isCli = v.kind === "cliente"; const st = isCli ? custStats(v.ref) : null; return `<div class="visit ${v.out ? "done" : v.in ? "now" : ""}"><span class="vn">${i + 1}</span><div style="flex:1;min-width:0"><div class="l"><b>${v.time} · ${esc(visitName(v))}</b><span class="row" style="gap:6px"><span class="kindb ${v.kind}">${isCli ? "Cliente" : "Loja"}</span>${v.out ? pill(["Concluída", "p-good"]) : v.in ? pill([`Em visita desde ${v.in}`, "p-warn"]) : ""}</span></div><small class="note">${esc(v.bairro)} · ${esc(v.goal)}</small>${isCli ? `<small class="note">Em aberto ${money(st.open)}${st.late > 0 ? ` · <b style="color:var(--bad)">título vencido</b>` : ""} · última compra ${st.last ? fdate(st.last.date) : "-"}</small>` : ""}${v.note ? `<small>${esc(v.note)}</small>` : ""}
+        <div class="row" style="margin-top:8px">${!v.in ? `<button class="btn" data-vin="${v.id}">Check-in</button><button class="btn ghost" data-vdel="${v.id}">Tirar da rota</button>` : !v.out ? `<input class="ig-in" style="text-align:left;flex:1;min-width:140px" id="vnote-${v.id}" placeholder="Resumo da visita"><button class="btn" data-vout="${v.id}">Check-out</button>` : ""}${!v.out && isCli && can("pedidos") ? `<button class="btn ghost" data-vorder="${v.id}">Pedido na visita</button>` : ""}${!v.out && !isCli && can("prospeccao") ? `<button class="btn ghost" data-pxopen="${v.ref}" data-go2="prospeccao">Ficha da prospecção</button>` : ""}<a class="btn ghost" href="${waLink(visitPhone(v), `Olá! Aqui é ${role().user}, da MAX LED. Estou passando aí às ${v.time}, tudo bem?`)}" target="_blank" rel="noopener">WhatsApp</a></div></div></div>`; }).join("") || `<div class="ig-empty">${icon("rota")}<b>Rota vazia</b><span>Adicione clientes e lojas de São Paulo da lista abaixo.</span></div>`}</div></div>
+    <div class="card"><h2>Sugestões em São Paulo <small>${sug.length}</small></h2><p class="note" style="margin-top:0">Clientes que já compram (cotação aberta, entrega, cobrança, recompra) primeiro; depois lojas de SP da prospecção.</p><div class="sugl">${sug.map(sugCard).join("") || `<p class="note">Nenhuma sugestão: todos já estão na rota.</p>`}</div></div>`;
 }
 function rotaAction(ds) {
-  const v = (C().visits || []).find((x) => x.id === (ds.vin || ds.vout || ds.vorder));
-  if (ds.vin) { v.in = new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }); toast(`Check-in em ${cust(v.customer).name} às ${v.in} (localização registrada).`); return render(); }
-  if (ds.vout) { v.out = new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }); v.note = $(`vnote-${v.id}`)?.value.trim() || ""; toast("Check-out registrado."); return render(); }
-  if (ds.vorder) { go("pedidos"); startDraft(); draft.customer = v.customer; draft.channel = "Visita externa"; toast("Pedido na visita: inclua os itens e grave."); return render(); }
+  const c = C(); c.visits = c.visits || [];
+  const addOne = (key) => { const [kind, ref] = key.split(":"); const s = spSuggestions().find((x) => x.kind === kind && x.ref === ref); if (!s) return; const h = 9 + c.visits.length * 2; c.visits.push({ id: `v${Date.now()}${c.visits.length}`, kind, ref, bairro: s.bairro, time: `${String(Math.min(h, 18)).padStart(2, "0")}:00`, goal: s.why[0][0], seller: role().own ? role().user : "Bruno Alves", in: null, out: null, note: "" }); };
+  if (ds.vadd) { addOne(ds.vadd); toast("Adicionado à rota."); return render(); }
+  if (ds.act === "vauto") { spSuggestions().slice(0, 4).forEach((s) => addOne(`${s.kind}:${s.ref}`)); toast("Rota montada com as 4 visitas mais importantes de SP."); return render(); }
+  const v = c.visits.find((x) => x.id === (ds.vin || ds.vout || ds.vorder || ds.vdel));
+  if (ds.vdel) { c.visits = c.visits.filter((x) => x !== v); return render(); }
+  if (ds.vin) { v.in = new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }); toast(`Check-in em ${visitName(v)} às ${v.in} (localização registrada).`); return render(); }
+  if (ds.vout) { v.out = new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }); v.note = $(`vnote-${v.id}`)?.value.trim() || ""; if (v.kind === "loja") { const x = c.prospects.find((y) => y.id === v.ref); if (x) { x.tries = x.tries || []; x.tries.unshift({ when: new Date().toISOString(), ch: "Visita", res: "Respondeu" }); x.hist.unshift({ when: new Date().toISOString(), msg: `Visita na loja${v.note ? `: ${v.note}` : ""}`, who: role().user }); } } toast("Check-out registrado."); return render(); }
+  if (ds.vorder) { go("pedidos"); startDraft(); draft.customer = v.ref; draft.channel = "Visita externa"; toast("Pedido na visita: inclua os itens e grave."); return render(); }
 }
 
 // ---------------------------------------------------------------------------
@@ -2055,7 +2115,7 @@ function vPainelVendedor() {
   return head(hello(), `Seu dia de vendas · ${new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" })}`, `<button class="btn" data-act="novo-painel">${icon("plus")}Novo pedido <kbd>F2</kbd></button>`) +
     `<div class="card"><h2>Minhas metas</h2><div class="rings">${ring2(st.callsToday, g.calls, `Ligações hoje · ${st.callsToday}/${g.calls}`)}${ring2(st.tries, g.tries, `Tentativas · ${st.tries}/${g.tries}`)}${ring2(st.quali, g.quali, `Qualificadas · ${st.quali}/${g.quali}`)}${ring2(st.visits, g.visits, `Visitas · ${st.visits}/${g.visits}`)}${ring2(st.sales, g.sales, `Vendas · ${money(st.sales).replace(",00", "")}`)}</div></div>
     <div class="grid g2">${dashCard(`Agenda de hoje <small>${ts.length}</small>`, ts.length ? `<div class="list">${ts.slice(0, 5).map((t) => `<div class="hbar"><div class="l"><span><b>${t.type}</b> · ${esc(t.l.company)}</span>${t.late ? pill(["atrasada", "p-bad"]) : ""}</div><small class="note">${esc(t.what || "")}</small></div>`).join("")}</div>` : `<p class="note">Nada pendente.</p>`, "prospeccao", "Ver agenda")}
-      ${dashCard(`Rota de visitas <small>${vis.length}</small>`, vis.length ? `<div class="list">${vis.map((v) => `<div class="hbar"><div class="l"><span>${v.time} · ${esc(cust(v.customer).name)}</span>${v.out ? pill(["feita", "p-good"]) : v.in ? pill(["em visita", "p-warn"]) : ""}</div><small class="note">${esc(v.city)} · ${esc(v.goal)}</small></div>`).join("")}</div>` : `<p class="note">Sem visitas hoje.</p>`, "rota", "Abrir rota")}
+      ${dashCard(`Rota de visitas <small>${vis.length}</small>`, vis.length ? `<div class="list">${vis.map((v) => `<div class="hbar"><div class="l"><span>${v.time} · ${esc(visitName(v))}</span>${v.out ? pill(["feita", "p-good"]) : v.in ? pill(["em visita", "p-warn"]) : ""}</div><small class="note">${esc(v.bairro)} · ${esc(v.goal)}</small></div>`).join("")}</div>` : `<p class="note">Rota de SP ainda não montada.</p>`, "rota", "Abrir rota")}
       ${dashCard(`Cotações abertas <small>${quotes.length}</small>`, quotes.length ? `<div class="list">${quotes.slice(0, 5).map((o) => `<div class="hbar"><div class="l"><button class="link" data-open="${o.id}">${code(o)} · ${esc(cust(o.customer).name)}</button><b class="num">${money(o.total)}</b></div><small class="note">${fdate(o.date)}</small></div>`).join("")}</div>` : `<p class="note">Nenhuma cotação aberta.</p>`, "pedidos", "Pedidos")}
       ${dashCard("Clientes para recomprar", rep.length ? `<div class="list">${rep.map((x) => `<div class="hbar"><div class="l"><button class="link" data-cli="${x.c.id}">${esc(x.c.name)}</button><small class="note">último ${fdate(x.s.last.date)}</small></div></div>`).join("")}</div>` : `<p class="note">Carteira em dia.</p>`, "posvenda", "Pós-venda")}</div>`;
 }
@@ -2296,7 +2356,7 @@ function vEstoque() {
   const need = schedDemand(30); const mlPub = {}; C().listings.forEach((l) => explode({ sku: l.sku, qty: l.pub * l.units }).forEach(([k, n]) => { mlPub[k] = (mlPub[k] || 0) + n; }));
   return head("Estoque", `Físico, reservado, bloqueado e disponível · ${esc(C().name)}`) + tabsH +
     (tab === "saldos" ? table([{ t: "SKU" }, { t: "Produto" }, { t: "Físico", r: 1 }, { t: "Reservado", r: 1 }, { t: "Bloqueado", r: 1 }, { t: "Disponível", r: 1 }, { t: "No ML", r: 1 }, { t: "Programado 30d", r: 1 }, { t: "Mínimo", r: 1 }, { t: "Situação" }],
-      C().products.filter((p) => !p.kit).map((p) => { const a = availSimple(p); return `<tr class="click" data-prod="${p.sku}"><td class="mono">${p.sku}</td><td>${esc(p.name)}</td><td class="r num">${nf.format(p.phys)}</td><td class="r num">${nf.format(p.res)}</td><td class="r num">${nf.format(p.blk)}</td><td class="r num"><b>${nf.format(a)}</b></td><td class="r num" style="${mlPub[p.sku] > a ? "color:var(--bad)" : ""}">${mlPub[p.sku] ? nf.format(mlPub[p.sku]) : "-"}</td><td class="r num" style="${need[p.sku] > a ? "color:var(--bad)" : ""}">${need[p.sku] ? nf.format(need[p.sku]) : "-"}</td><td class="r num">${nf.format(p.minStock)}</td><td>${a <= 0 ? pill(["Sem saldo", "p-bad"]) : a < p.minStock ? pill(["Abaixo do mínimo", "p-warn"]) : pill(["Ok", "p-good"])}</td></tr>`; })) +
+      C().products.filter((p) => !p.kit).map((p) => { const a = availSimple(p); return `<tr class="click" data-prod="${p.sku}"><td class="mono">${p.sku}</td><td>${esc(p.name)}</td><td class="r num">${nf.format(p.phys)}</td><td class="r num">${nf.format(p.res)}</td><td class="r num">${nf.format(p.blk)}</td><td class="r num"><b>${nf.format(a)}</b></td><td class="r num" style="${mlPub[p.sku] > a ? "color:var(--bad)" : ""}">${mlPub[p.sku] ? nf.format(mlPub[p.sku]) : "-"}</td><td class="r num" style="${need[p.sku] > a ? "color:var(--bad)" : ""}">${need[p.sku] ? nf.format(need[p.sku]) : "-"}</td><td class="r num">${nf.format(p.minStock)}</td><td>${a < 0 ? pill([`Negativo (${nf.format(a)})`, "p-bad"]) : a === 0 ? pill(["Sem saldo", "p-bad"]) : a < p.minStock ? pill(["Abaixo do mínimo", "p-warn"]) : pill(["Ok", "p-good"])}</td></tr>`; })) +
       (canMove ? `<div class="card"><h2>Lançar movimento</h2><div class="form">
         <label class="f" for="m-type">Tipo<select id="m-type">${["Entrada", "Devolução", "Ajuste (+)", "Ajuste (−)", "Bloqueio", "Desbloqueio"].map((x) => `<option>${x}</option>`).join("")}</select></label>
         <label class="f" for="m-sku">Produto<select id="m-sku">${C().products.filter((p) => !p.kit).map((p) => `<option>${p.sku}</option>`).join("")}</select></label>
@@ -2939,7 +2999,7 @@ function vPortal() {
   const andamento = os.filter((o) => ["AGUARDANDO", "APROVADO", "SEPARACAO", "CONFERENCIA", "PRONTO", "ENVIADO"].includes(o.status));
   const next = open.filter((r) => new Date(r.due) >= new Date(new Date().toDateString())).sort((a, b) => a.due.localeCompare(b.due))[0]; const overdue = open.filter((r) => new Date(r.due) < new Date(new Date().toDateString()));
   const cc = (o) => `A-${String(o.n).padStart(5, "0")}`;
-  const tabs = [["inicio", "Início"], ["pedidos", "Meus pedidos"], ["catalogo", `Fazer pedido${Object.keys(PT.cart).length ? ` (${Object.keys(PT.cart).length})` : ""}`], ["fin", "Boletos e notas"], ["prog", "Minhas programações"], ["dados", "Meus dados"], ["msg", "Fale com a MAX LED"]];
+  const tabs = [["inicio", "Início"], ["pedidos", "Cotações e pedidos"], ["catalogo", `Pedir cotação${Object.keys(PT.cart).length ? ` (${Object.keys(PT.cart).length})` : ""}`], ["dados", "Meus dados"], ["msg", "Fale com a MAX LED"]];
   const steps = (o) => { const idx = ["AGUARDANDO", "APROVADO", "SEPARACAO", "CONFERENCIA", "PRONTO", "ENVIADO", "ENTREGUE"].indexOf(o.status); const lab = ["Recebido", "Aprovado", "Separando", "Separando", "Pronto", "A caminho", "Entregue"]; const pts = [0, 1, 2, 4, 5, 6]; return `<div class="steps s6">${pts.map((p, i) => `<div class="step ${idx > p ? "done" : idx === p || (p === 2 && idx === 3) ? "now" : ""}"><i>${idx > p ? "&#10003;" : i + 1}</i>${lab[p]}</div>`).join("")}</div>`; };
   let body = "";
   if (PT.orderId) {
@@ -2947,28 +3007,21 @@ function vPortal() {
     body = `<div class="row"><button class="btn ghost" data-pt="back">Voltar</button>${o.status !== "COTACAO" ? `<button class="btn" data-ptrep="${o.id}">Repetir este pedido</button>` : ""}</div>
       <div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">Pedido ${cc(o)}</h2>${pill(STATUS[o.status])}</div><p class="note">${fdate(o.date)} · ${o.channel}</p>${o.status !== "CANCELADO" && o.status !== "COTACAO" ? steps(o) : ""}${o.tracking ? `<div class="alert info" style="margin-top:12px">${icon("expedicao")}<span>${esc(o.carrier)} · rastreio <b class="mono">${esc(o.tracking)}</b></span></div>` : ""}</div>` +
       table([{ t: "Produto" }, { t: "Qtd", r: 1 }, { t: "Preço", r: 1 }, { t: "Subtotal", r: 1 }], o.items.map((i) => `<tr><td><div class="who-cell">${thumb(co.products.find((p) => p.sku === i.sku), 28)}<span>${esc(co.products.find((p) => p.sku === i.sku).name)}<small>${i.sku}</small></span></div></td><td class="r num">${nf.format(i.qty)}</td><td class="r num">${money(i.price * (1 - i.disc / 100))}</td><td class="r num">${money(i.sub)}</td></tr>`)) +
-      `<div class="grid g2"><div class="card"><h2>Nota fiscal</h2>${d ? `<p>NF-e ${d.n} · série 1</p><div class="row"><button class="btn ghost" data-ptdl="DANFE ${d.n}">Baixar DANFE (PDF)</button><button class="btn ghost" data-ptdl="XML ${d.n}">Baixar XML</button></div>` : `<p class="note">A nota aparece aqui quando o pedido for faturado.</p>`}</div>
-      <div class="card"><h2>Parcelas</h2>${rec.filter((r) => r.order === o.id).map((r) => `<div class="hbar"><div class="l"><span>${r.inst} · vence ${fdate(r.due)}</span><span class="num">${money(r.amount)} ${pill(recvStatus(r))}</span></div></div>`).join("") || `<p class="note">Geradas no faturamento.</p>`}</div></div>`;
+      "";
   } else if (PT.tab === "inicio") {
-    body = `<div class="grid g4">${kpi("pedidos", "c1", "Pedidos em andamento", andamento.length)}${kpi("money", "c2", "Total em aberto", money(open.reduce((s, r) => s + r.amount - r.paid, 0)))}${kpi("clock", "c3", "Próximo vencimento", next ? `${fdate(next.due)}` : "-")}${kpi("financeiro", "c4", "Crédito disponível", money(Math.max(0, creditLimit(ME) - open.reduce((s, r) => s + r.amount - r.paid, 0))))}</div>
-      ${overdue.length ? `<div class="alert bad">${icon("alert")}<span>Você tem ${overdue.length} parcela(s) vencida(s), total ${money(overdue.reduce((s, r) => s + r.amount - r.paid, 0))}.</span><button class="btn" data-pt="fin" style="margin-left:auto">Ver 2ª via</button></div>` : ""}
+    body = `<div class="grid g2">${kpi("receipt", "c2", "Cotações abertas", os.filter((o) => o.status === "COTACAO").length)}${kpi("pedidos", "c1", "Pedidos em andamento", andamento.length)}</div>
+
       <div class="card"><h2>Acompanhe seus pedidos</h2>${andamento.length ? andamento.slice(0, 4).map((o) => `<div class="ptrack"><div class="row" style="justify-content:space-between"><button class="link" data-ptopen="${o.id}"><b>${cc(o)}</b></button><span class="note">${fdate(o.date)} · ${money(o.total)}</span></div>${steps(o)}</div>`).join("") : `<p class="note">Nenhum pedido em andamento.</p>`}</div>
-      <div class="grid g2"><div class="card"><h2>Compre de novo</h2><div class="list">${(() => { const bp = {}; os.filter(billed).forEach((o) => o.items.forEach((i) => { bp[i.sku] = (bp[i.sku] || 0) + i.qty; })); return Object.entries(bp).sort((a, b) => b[1] - a[1]).slice(0, 4).map(([k]) => { const p = co.products.find((x) => x.sku === k); return `<div class="stockrow">${thumb(p, 34)}<div style="flex:1"><div class="l"><span>${esc(p.name)}</span><button class="btn ghost" data-ptadd="${k}">Adicionar</button></div><small class="note">${money(p.price)} / un.</small></div></div>`; }).join(""); })()}</div></div>
-      <div class="card"><h2>Seu atendimento</h2><div class="who-cell">${avatar(me.seller)}<span><b>${esc(me.seller)}</b><small>vendedor responsável · (11) 98765-4321</small></span></div><p class="note">Condição: 30/60/90 dias no boleto · entrega em até 2 dias úteis após aprovação.</p><button class="btn" data-pt="msg">Enviar mensagem</button></div></div>`;
+      <div class="grid g2"><div class="card"><h2>Compre de novo</h2><div class="list">${(() => { const bp = {}; os.filter(billed).forEach((o) => o.items.forEach((i) => { bp[i.sku] = (bp[i.sku] || 0) + i.qty; })); return Object.entries(bp).sort((a, b) => b[1] - a[1]).slice(0, 4).map(([k]) => { const p = co.products.find((x) => x.sku === k); return `<div class="stockrow">${thumb(p, 34)}<div style="flex:1"><div class="l"><span>${esc(p.name)}</span><button class="btn ghost" data-ptadd="${k}">Adicionar</button></div><small class="note">${p.sku}</small></div></div>`; }).join(""); })()}</div></div>
+      <div class="card"><h2>Seu atendimento</h2><div class="who-cell">${avatar(me.seller)}<span><b>${esc(me.seller)}</b><small>vendedor responsável · (11) 98765-4321</small></span></div><p class="note">Peça uma cotação pelo portal e o vendedor responde com os valores.</p><button class="btn" data-pt="msg">Enviar mensagem</button></div></div>`;
   } else if (PT.tab === "pedidos") {
     body = table([{ t: "Pedido" }, { t: "Data" }, { t: "Itens" }, { t: "Status" }, { t: "Total", r: 1 }, { t: "" }], os.map((o) => `<tr><td><button class="link" data-ptopen="${o.id}">${cc(o)}</button></td><td class="num">${fdate(o.date)}</td><td><div class="thumbs">${o.items.slice(0, 4).map((i) => thumb(co.products.find((p) => p.sku === i.sku), 24)).join("")}</div></td><td>${pill(o.status === "COTACAO" ? ["Em análise", "p-neutral"] : STATUS[o.status])}</td><td class="r num">${money(o.total)}</td><td><button class="btn ghost" data-ptrep="${o.id}">Repetir</button></td></tr>`));
   } else if (PT.tab === "catalogo") {
     const ps = co.products.filter((p) => !PT.q || matchWords(`${p.sku} ${p.name}`, PT.q));
     const cart = Object.entries(PT.cart); const tot = cart.reduce((s, [k, q]) => s + q * co.products.find((p) => p.sku === k).price, 0);
     body = `<div class="grid g21"><div><div class="filters" style="margin-top:0"><label class="f grow" for="pt-q">Buscar produto<input id="pt-q" value="${esc(PT.q)}" placeholder="ex.: fita, relé, ESP32"></label></div>
-      <div class="pgrid">${ps.map((p) => { const a = p.kit ? Math.min(...p.kit.map(([s, q]) => Math.floor(availSimple(co.products.find((x) => x.sku === s)) / q))) : availSimple(p); return `<div class="pcard" style="cursor:default">${thumb(p, 56)}<div class="pc-b"><b>${esc(p.name)}</b><span class="mono note">${p.sku}</span><span class="price">${money(p.price)}</span><small class="note">${a > 0 ? "Pronta entrega" : "Sob consulta"}</small><button class="btn ghost" data-ptadd="${p.sku}">${PT.cart[p.sku] ? `No carrinho (${nf.format(PT.cart[p.sku])})` : "Adicionar"}</button></div></div>`; }).join("")}</div></div>
-      <div class="card ptcart"><h2>Seu pedido</h2>${cart.length ? `<div class="list">${cart.map(([k, q]) => { const p = co.products.find((x) => x.sku === k); return `<div class="stockrow">${thumb(p, 30)}<div style="flex:1;min-width:0"><div class="l"><span>${esc(p.name)}</span><button class="link" data-ptrm="${k}">remover</button></div><div class="row"><input type="number" min="1" value="${q}" data-ptqty="${k}" style="width:90px"><small class="note">${money(q * p.price)}</small></div></div></div>`; }).join("")}</div><p style="text-align:right"><b>${money(tot)}</b></p><label class="f" for="pt-obs">Observação<input id="pt-obs" placeholder="ex.: entregar na filial"></label><button class="btn" data-pt="send" style="width:100%;margin-top:10px">Enviar pedido</button><p class="note">O vendedor confirma preço, frete e prazo antes de faturar.</p>` : `<p class="note">Carrinho vazio. Adicione produtos ao lado.</p>`}</div></div>`;
-  } else if (PT.tab === "fin") {
-    body = table([{ t: "Parcela" }, { t: "Pedido" }, { t: "Vencimento" }, { t: "Valor", r: 1 }, { t: "Situação" }, { t: "" }], rec.slice().sort((a, b) => b.due.localeCompare(a.due)).map((r) => { const o = co.orders.find((x) => x.id === r.order); return `<tr><td>${r.inst}</td><td class="mono">${o ? cc(o) : "-"}</td><td class="num">${fdate(r.due)}</td><td class="r num">${money(r.amount)}</td><td>${pill(recvStatus(r))}</td><td>${r.paid < r.amount ? `<div class="row" style="flex-wrap:nowrap"><button class="btn ghost" data-ptdl="Boleto ${r.id}">2ª via do boleto</button><button class="btn ghost" data-ptdl="Pix ${r.id}">Pagar com Pix</button></div>` : `<button class="btn ghost" data-ptdl="Comprovante ${r.id}">Comprovante</button>`}</td></tr>`; }));
-  } else if (PT.tab === "prog") {
-    const ss = (co.schedules || []).filter((x) => x.customer === ME);
-    body = (ss.length ? table([{ t: "Frequência" }, { t: "Próxima" }, { t: "Produtos" }, { t: "Situação" }], ss.map((x) => `<tr><td>${x.freq}</td><td class="num">${fdate(x.next)}</td><td>${x.items.map(([k, q]) => `${nf.format(q)} × ${esc(co.products.find((p) => p.sku === k).name)}`).join("<br>")}</td><td>${pill(x.active ? ["Ativa", "p-good"] : ["Pausada", "p-neutral"])}</td></tr>`)) : `<p class="note">Você não tem compras programadas.</p>`) +
-      `<div class="card"><h2>Pedir alteração</h2><label class="f" for="pt-req">O que deseja mudar?<input id="pt-req" placeholder="ex.: passar a receber 3.000 LEDs por mês"></label><button class="btn" data-pt="sendreq" style="margin-top:10px">Enviar ao vendedor</button></div>`;
+      <div class="pgrid">${ps.map((p) => { const a = p.kit ? Math.min(...p.kit.map(([s, q]) => Math.floor(availSimple(co.products.find((x) => x.sku === s)) / q))) : availSimple(p); return `<div class="pcard" style="cursor:default">${thumb(p, 56)}<div class="pc-b"><b>${esc(p.name)}</b><span class="mono note">${p.sku}</span><small class="note">${a > 0 ? "Pronta entrega" : "Sob consulta"}</small><button class="btn ghost" data-ptadd="${p.sku}">${PT.cart[p.sku] ? `No carrinho (${nf.format(PT.cart[p.sku])})` : "Adicionar"}</button></div></div>`; }).join("")}</div></div>
+      <div class="card ptcart"><h2>Sua cotação</h2>${cart.length ? `<div class="list">${cart.map(([k, q]) => { const p = co.products.find((x) => x.sku === k); return `<div class="stockrow">${thumb(p, 30)}<div style="flex:1;min-width:0"><div class="l"><span>${esc(p.name)}</span><button class="link" data-ptrm="${k}">remover</button></div><div class="row"><input type="number" min="1" value="${q}" data-ptqty="${k}" style="width:90px"><small class="note">${p.unit || "un."}</small></div></div></div>`; }).join("")}</div><label class="f" for="pt-obs">Observação<input id="pt-obs" placeholder="ex.: entregar na filial"></label><button class="btn" data-pt="send" style="width:100%;margin-top:10px">Pedir cotação</button><p class="note">O vendedor responde com preços, frete e prazo; você aprova a proposta pelo link.</p>` : `<p class="note">Carrinho vazio. Adicione produtos ao lado.</p>`}</div></div>`;
   } else if (PT.tab === "dados") {
     const k = contactsOf(me);
     body = `<div class="grid g2"><div class="card"><h2>Cadastro</h2><dl class="kv"><dt>Razão social</dt><dd>${esc(me.name)}</dd><dt>CNPJ</dt><dd>${me.doc}</dd><dt>Cidade/UF</dt><dd>${esc(me.city)}</dd><dt>Condição</dt><dd>30/60/90 dias · boleto</dd><dt>E-mail NF-e</dt><dd>${k[2].email}</dd><dt>E-mail financeiro</dt><dd>${k[1].email}</dd></dl></div>
@@ -2995,7 +3048,7 @@ function portalAction(ds) {
   if (k === "send") {
     const items = Object.entries(PT.cart); if (!items.length) throw new Error("Carrinho vazio.");
     const prev = S.company; S.company = "A";
-    try { const me = cust(ME); const o = createOrder(ME, me.seller, items.map(([s, q]) => [s, q, prod(s).price, 0]), { inst: 3, channel: "Portal do cliente" }, true); const obs = $("pt-obs")?.value.trim(); log(o, `Enviado pelo cliente no portal${obs ? `: ${obs}` : ""}`); PT.cart = {}; PT.tab = "pedidos"; toast(`Pedido A-${String(o.n).padStart(5, "0")} enviado. O vendedor vai confirmar.`); }
+    try { const me = cust(ME); const o = createOrder(ME, me.seller, items.map(([s, q]) => [s, q, prod(s).price, 0]), { inst: 3, channel: "Portal do cliente" }, true); const obs = $("pt-obs")?.value.trim(); log(o, `Enviado pelo cliente no portal${obs ? `: ${obs}` : ""}`); PT.cart = {}; PT.tab = "pedidos"; toast(`Cotação A-${String(o.n).padStart(5, "0")} pedida. O vendedor vai responder com os valores.`); }
     finally { S.company = prev; }
     return render();
   }
@@ -3404,8 +3457,9 @@ function vConfig() {
     body = `<div class="grid g2"><div class="card"><h2>Comercial</h2><div class="form" style="grid-template-columns:repeat(2,minmax(0,1fr))">
         <label class="f" for="cfg-disc">Desconto máximo sem aprovação (%)<input id="cfg-disc" type="number" min="0" max="50" step="0.5" value="${c.maxDisc}"></label>
         <label class="f">Teto de pedido sem aprovação<input value="Sem teto" disabled></label>
-        <label class="f">Política de estoque<input value="Reserva na aprovação, baixa na expedição" disabled></label>
+        <label class="f">Política de estoque<input value="Reserva na aprovação, baixa na expedição${c.negOk ? " · aceita negativo" : ""}" disabled></label>
         <label class="f">Tabela padrão<input value="1 · Padrão" disabled></label>
+        <label class="f" style="flex-direction:row;align-items:center;gap:8px;grid-column:1/-1"><input type="checkbox" id="cfg-negok" ${c.negOk ? "checked" : ""}> Vender com estoque negativo (pedido reserva e expede sem saldo)</label>
         <label class="f" style="flex-direction:row;align-items:center;gap:8px;grid-column:1/-1"><input type="checkbox" id="cfg-autostock" ${c.autoStock ? "checked" : ""}> XML de fornecedor dá entrada no estoque sem conferência física</label></div>
         <p class="note" style="margin:12px 0 0">Alterar o desconto máximo já muda a regra de aprovação dos próximos pedidos.</p></div>
       <div class="card"><h2>Fiscal</h2><dl class="kv"><dt>Razão social</dt><dd>${esc(c.name)}</dd><dt>CNPJ</dt><dd>${c.code === "A" ? "11.222.333/0001-81" : "44.555.666/0001-71"} (teste)</dd><dt>UF</dt><dd>${EMIT_UF}</dd><dt>Regime</dt><dd>A confirmar com a contabilidade</dd><dt>Ambiente NF-e</dt><dd>${pill(["Homologação", "p-warn"])}</dd><dt>Série / próximo nº</dt><dd>1 / ${c.nf}</dd><dt>Certificado digital</dt><dd>${pill(["Não configurado", "p-bad"])}</dd></dl></div></div>`;
@@ -3459,7 +3513,8 @@ document.addEventListener("click", (ev) => {
     if (ds.gonf) { const e = (C().nfIn || []).find((x) => x.n === +ds.gonf); go(can("fiscal") ? "fiscal" : "estoque"); S.tab = can("fiscal") ? "entrada" : "receb"; NFI.open = e?.key || null; render(); return; }
     if (ds.act === "prop-open") { S.proposal = o.id; render(); return window.scrollTo(0, 0); }
     if (ds.act?.startsWith("prop-")) return propAction(ds.act);
-    if (ds.vin || ds.vout || ds.vorder) return rotaAction(ds);
+    if (ds.go2 && ds.pxopen) { go("prospeccao"); PX.open = ds.pxopen; render(); return window.scrollTo(0, 0); }
+    if (ds.vin || ds.vout || ds.vorder || ds.vadd || ds.vdel || ds.act === "vauto") return rotaAction(ds);
     if (ds.pvtab || ds.rmamv || ds.repfor || ds.act?.startsWith("rma-")) return pvAction(ds, ds.act);
     if (ds.act?.startsWith("auto-")) return autoAction(ds, ds.act);
     if (ds.copy) { try { navigator.clipboard.writeText(ds.copy); } catch (e) { /* sem área de transferência */ } return toast("Mensagem copiada."); }
@@ -3515,8 +3570,8 @@ document.addEventListener("click", (ev) => {
     }
     if (ds.pgrun) { runSchedule(C().schedules.find((x) => x.id === ds.pgrun)); return render(); }
     if (ds.pgtog) { const x = C().schedules.find((y) => y.id === ds.pgtog); x.active = !x.active; toast(x.active ? "Programação ativada." : "Programação pausada."); return render(); }
-    if (ds.mlsync) { const l = C().listings.find((x) => x.id === ds.mlsync); l.pub = Math.floor(avail(prod(l.sku)) / l.units); l.sync = `hoje ${now().split(" ")[1]}`; toast(`${l.id}: estoque publicado ajustado para ${l.pub}.`); return render(); }
-    if (ds.act === "ml-syncall") { C().listings.forEach((l) => { l.pub = Math.floor(avail(prod(l.sku)) / l.units); l.sync = `hoje ${now().split(" ")[1]}`; }); toast("Estoque de todos os anúncios sincronizado."); return render(); }
+    if (ds.mlsync) { const l = C().listings.find((x) => x.id === ds.mlsync); l.pub = Math.max(0, Math.floor(avail(prod(l.sku)) / l.units)); l.sync = `hoje ${now().split(" ")[1]}`; toast(`${l.id}: estoque publicado ajustado para ${l.pub}.`); return render(); }
+    if (ds.act === "ml-syncall") { C().listings.forEach((l) => { l.pub = Math.max(0, Math.floor(avail(prod(l.sku)) / l.units)); l.sync = `hoje ${now().split(" ")[1]}`; }); toast("Estoque de todos os anúncios sincronizado."); return render(); }
     if (ds.cli) { S.view = "clientes"; S.cliTab = null; S.clienteId = ds.cli; S.orderId = null; render(); return window.scrollTo(0, 0); }
     if (ds.act === "cli-back") { S.clienteId = null; return render(); }
     if (ds.newfor) { const id = ds.newfor; go("pedidos"); startDraft(); draft.customer = id; return render(); }
@@ -3574,6 +3629,7 @@ document.addEventListener("change", (ev) => {
   if (!el.isConnected) return;
   if (el.id === "pf-seller") { PF.seller = el.value; PF.page = 0; return render(); }
   if (el.id === "pf-period") { PF.period = el.value; PF.page = 0; return render(); }
+  if (el.id === "cfg-negok") { C().negOk = el.checked; toast(el.checked ? "Estoque negativo liberado: pedidos reservam mesmo sem saldo." : "Estoque negativo bloqueado: pedido sem saldo não é aprovado."); return render(); }
   if (el.id === "cfg-autostock") { C().autoStock = el.checked; toast(el.checked ? "Entrada automática ligada: XML de fornecedor já entra no estoque." : "Entrada automática desligada: XML aguarda conferência física."); return render(); }
   if (el.dataset.nfmap !== undefined || el.dataset.nfconf !== undefined) {
     const e = C().nfIn.find((x) => x.key === NFI.open); const it = e.items[+(el.dataset.nfmap ?? el.dataset.nfconf)];
