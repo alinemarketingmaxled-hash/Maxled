@@ -185,6 +185,17 @@ export async function saveQuote(session: Session, companyId: string, input: Orde
 
   const { scope } = getPermission(session.user.role, "pedidos");
   const sellerId = scope === "own" ? session.user.id : input.sellerId || contact.ownerId || session.user.id;
+  if (sellerId !== session.user.id) {
+    const seller = await prisma.user.findFirst({
+      where: {
+        id: sellerId,
+        deletedAt: null,
+        OR: [{ role: "MEDIATOR" }, { companies: { some: { companyId } } }],
+      },
+      select: { id: true },
+    });
+    if (!seller) throw new OrderError("Vendedor não opera esta empresa.");
+  }
 
   return prisma.$transaction(async (tx) => {
     let existing: { id: string; status: SalesOrderStatus } | null = null;

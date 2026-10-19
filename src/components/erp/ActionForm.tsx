@@ -50,8 +50,9 @@ export function ActionForm({
             setMsg(res.message || successMessage ? { ok: true, text: res.message || successMessage! } : null);
             setRequestKey(newKey());
             if (resetOnSuccess) formRef.current?.reset();
+            // push já busca a página nova; um refresh logo depois cancelava a navegação.
             if (res.redirectTo) router.push(res.redirectTo);
-            router.refresh();
+            else router.refresh();
           } else {
             setMsg({ ok: false, text: res.error });
           }
@@ -114,7 +115,7 @@ export function ActionButton({
             if (res.ok) {
               setError(null);
               if (res.redirectTo) router.push(res.redirectTo);
-              router.refresh();
+              else router.refresh();
             } else {
               setError(res.error);
             }

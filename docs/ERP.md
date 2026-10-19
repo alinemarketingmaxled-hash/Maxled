@@ -175,7 +175,7 @@ enviados ao navegador.
   de requisição da Vercel).
 - **Fiscal**: ver seção 3.
 
-Crons (Vercel, `vercel.json`), protegidos por `CRON_SECRET`:
+Crons (Vercel, `vercel.json`, diários por compatibilidade com o plano Hobby; em plano pago, a fila do Mercado Livre e os e-mails podem rodar a cada 15 min), protegidos por `CRON_SECRET`:
 `/api/cron/advance-deals` (CRM), `/api/cron/schedules`,
 `/api/cron/mercadolivre`, `/api/cron/emails`.
 
