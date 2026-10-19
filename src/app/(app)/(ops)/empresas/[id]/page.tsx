@@ -10,7 +10,7 @@ import { saveCompanyAction } from "../actions";
 const EMPTY: CompanyFormValues = {
   code: "", name: "", tradeName: null, cnpj: null, stateRegistration: null, taxRegime: null, street: null, number: null,
   district: null, city: null, state: null, postalCode: null, phone: null, email: null, description: null, active: true,
-  maxDiscountPct: "5", approvalAmountLimit: null, fiscalEnvironment: "HOMOLOGACAO", fiscalProvider: "simulador",
+  maxDiscountPct: "5", approvalAmountLimit: null, allowNegativeStock: true, fiscalEnvironment: "HOMOLOGACAO", fiscalProvider: "simulador",
   fiscalSeries: 1, nextFiscalNumber: 1,
 };
 

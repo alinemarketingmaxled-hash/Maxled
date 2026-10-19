@@ -378,41 +378,75 @@ export async function submitOrder(session: Session, companyId: string, orderId: 
   try {
     return await prisma.$transaction(async (tx) => {
       const order = await loadForTransition(tx, session, companyId, orderId);
-      if (order.status !== "COTACAO") throw new OrderError("Só cotações podem ser enviadas.");
-      if (order.items.length === 0) throw new OrderError("Pedido sem itens.");
-      const reasons = approvalReasons(
-        order,
-        order.items.map((i) => ({ belowMinPrice: i.belowMinPrice, discountPct: i.discountPct, sku: i.product.sku })),
-        order.company,
-      );
-      const now = new Date();
-      if (reasons.length > 0) {
-        await tx.salesOrder.update({
-          where: { id: order.id },
-          data: { status: "AGUARDANDO_APROVACAO", needsApproval: true, approvalReason: reasons.join(" "), submittedAt: now },
-        });
-        await addOrderEvent(tx, order.id, actor, "submitted", `Enviado para aprovação: ${reasons.join(" ")}`);
-        await logActivity(
-          { actorId: actor.id, entityType: "SalesOrder", entityId: order.id, action: "submitted", diff: { reasons }, companyId },
-          tx,
-        );
-        return { status: "AGUARDANDO_APROVACAO" as const, reasons };
-      }
-      await tx.salesOrder.update({
-        where: { id: order.id },
-        data: { status: "APROVADO", needsApproval: false, approvalReason: "Dentro dos limites comerciais: aprovação automática.", submittedAt: now, approvedAt: now },
-      });
-      await reserveOrderStock(tx, order.id, actor.id);
-      await addOrderEvent(tx, order.id, actor, "approved", "Aprovado automaticamente (dentro dos limites) e estoque reservado.");
-      await logActivity(
-        { actorId: actor.id, entityType: "SalesOrder", entityId: order.id, action: "approved", diff: { automatic: true }, companyId },
-        tx,
-      );
-      return { status: "APROVADO" as const, reasons };
+      return submitLoadedOrder(tx, order, { auditUserId: actor.id, eventActor: actor });
     });
   } catch (e) {
     friendly(e);
   }
+}
+
+type LoadedOrder = Awaited<ReturnType<typeof loadForTransition>>;
+
+/** Regra única de envio, usada pelo vendedor e pela aprovação do cliente
+ * no link da proposta: dentro dos limites aprova e reserva na hora; fora
+ * deles vai para a fila da gerência. `eventActor` null registra o evento
+ * como externo (ex.: "Cliente: Fulano"); a auditoria fica com o usuário
+ * responsável pelo pedido. */
+export async function submitLoadedOrder(
+  tx: Tx,
+  order: LoadedOrder,
+  opts: { auditUserId: string; eventActor: { id: string; name?: string | null } | null; eventName?: string; via?: string },
+) {
+  if (order.status !== "COTACAO") throw new OrderError("Só cotações podem ser enviadas.");
+  if (order.items.length === 0) throw new OrderError("Pedido sem itens.");
+  const reasons = approvalReasons(
+    order,
+    order.items.map((i) => ({ belowMinPrice: i.belowMinPrice, discountPct: i.discountPct, sku: i.product.sku })),
+    order.company,
+  );
+  const now = new Date();
+  const event = async (type: string, message: string) => {
+    if (opts.eventActor) await addOrderEvent(tx, order.id, opts.eventActor, type, message);
+    else await tx.orderEvent.create({ data: { orderId: order.id, userId: null, userName: opts.eventName ?? "Sistema", type, message } });
+  };
+  const companyId = order.companyId;
+  if (reasons.length > 0) {
+    await tx.salesOrder.update({
+      where: { id: order.id },
+      data: { status: "AGUARDANDO_APROVACAO", needsApproval: true, approvalReason: reasons.join(" "), submittedAt: now },
+    });
+    await event("submitted", `Enviado para aprovação: ${reasons.join(" ")}`);
+    await logActivity(
+      { actorId: opts.auditUserId, entityType: "SalesOrder", entityId: order.id, action: "submitted", diff: { reasons, ...(opts.via ? { via: opts.via } : {}) }, companyId },
+      tx,
+    );
+    return { status: "AGUARDANDO_APROVACAO" as const, reasons };
+  }
+  await tx.salesOrder.update({
+    where: { id: order.id },
+    data: { status: "APROVADO", needsApproval: false, approvalReason: "Dentro dos limites comerciais: aprovação automática.", submittedAt: now, approvedAt: now },
+  });
+  await reserveOrderStock(tx, order.id, opts.eventActor?.id ?? null);
+  await event("approved", "Aprovado automaticamente (dentro dos limites) e estoque reservado.");
+  await logActivity(
+    { actorId: opts.auditUserId, entityType: "SalesOrder", entityId: order.id, action: "approved", diff: { automatic: true, ...(opts.via ? { via: opts.via } : {}) }, companyId },
+    tx,
+  );
+  return { status: "APROVADO" as const, reasons };
+}
+
+/** Carrega o pedido para transição sem sessão (link público da proposta). */
+export async function loadOrderForTransitionById(tx: Tx, orderId: string) {
+  const order = await tx.salesOrder.findUnique({
+    where: { id: orderId },
+    include: { items: { include: { product: { select: { sku: true } } } }, company: true },
+  });
+  if (!order) throw new OrderError("Pedido não encontrado.");
+  return order;
+}
+
+export function friendlyOrderError(e: unknown): never {
+  friendly(e);
 }
 
 export async function approveOrder(session: Session, companyId: string, orderId: string) {

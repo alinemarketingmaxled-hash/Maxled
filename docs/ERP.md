@@ -75,6 +75,7 @@ Regras específicas:
 ## 3. Fluxo integrado (§5) e regras
 
 ```
+Cotação ──link da proposta──> cliente aprova online ──> (mesmas regras do "enviar")
 Cotação ──enviar──> [dentro dos limites] ──> Aprovado + reserva de estoque
                 └─> [fora dos limites]  ──> Aguardando aprovação ──aprovar──> Aprovado + reserva
 Aprovado ──> NF-e (homologação) ──autorizada──> Contas a receber (parcelas)
@@ -94,6 +95,12 @@ por produto; disponível = físico − reservado − bloqueado. Cada alteração
 saldo é um `StockMovement` com usuário, data, motivo, quantidade, documento e
 saldo resultante. Decrementos são `UPDATE` condicionais no banco (não há
 corrida que deixe saldo negativo).
+
+- **Estoque negativo** (`Company.allowNegativeStock`, ligado por padrão —
+  a MAX LED vende sem saldo): reserva e saída de pedido não exigem saldo e o
+  disponível fica negativo até a entrada chegar. Ajustes manuais, bloqueios
+  e transferências continuam exigindo saldo. Desligue em Empresas →
+  parâmetros comerciais.
 
 - Política de baixa (decisão §12, padrão adotado): **reserva na aprovação,
   baixa na expedição**. Cancelamento antes do envio libera a reserva.
@@ -147,7 +154,8 @@ precisam de aprovação da Diretoria antes do pagamento. Valores sempre em
 | Relatórios | `/relatorios` | Vendas, produtos, ML/kits, compras, fiscal, financeiro; exportação CSV. |
 | Empresas | `/empresas` | Cadastro, parâmetros, acesso de usuários por empresa. |
 | Portal do cliente (gestão) | `/portal-clientes` | Acessos de clientes e solicitações. |
-| Portal do cliente | `/portal` | Login próprio; só os dados do próprio cliente. |
+| Portal do cliente | `/portal` | Login próprio; só as cotações e os pedidos do próprio cliente (sem financeiro, documentos fiscais ou programações). |
+| Proposta comercial | `/pedidos/[id]/proposta` e `/proposta/[token]` | Documento com a marca para imprimir/PDF; link sem login (token de 192 bits, só o hash fica pesquisável, gerar outro invalida o anterior) para o cliente ver e aprovar uma única vez; vale até a validade da cotação ou 15 dias. |
 
 Interface: menu e painel escuros (preto/grafite/dourado discreto); telas
 operacionais em tema claro (§6). Layout fluido; tabelas rolam dentro do
@@ -221,6 +229,7 @@ Crons (Vercel, `vercel.json`, diários por compatibilidade com o plano Hobby; em
 | Dois valores mínimos do produto | Preço mínimo de venda (abaixo → aprovação) e estoque mínimo (alerta de reposição) | Cadastro do produto |
 | Aprovação comercial | Só fora dos limites: preço mínimo, desconto > limite, total > teto | Empresas → parâmetros comerciais |
 | Baixa de estoque | Reserva na aprovação, baixa na expedição | `orders.ts` |
+| Estoque negativo | Permitido para reserva/saída de pedido | Empresas → parâmetros comerciais |
 | Acesso às caixas | Caixa própria + compartilhamento explícito | E-mails → contas |
 | Hospedagem | Vercel + Postgres gerenciado (como o CRM atual) | — |
 | E-mail | Configurável por caixa (host, porta, TLS, usuário) | E-mails → contas |

@@ -14,6 +14,7 @@ import {
   type OrderInput,
 } from "@/lib/erp/orders";
 import { emitForOrder } from "@/lib/erp/fiscal";
+import { createProposalLink } from "@/lib/erp/proposal";
 
 const itemsSchema = z
   .array(
@@ -141,5 +142,14 @@ export async function duplicateOrderAction(fd: FormData): Promise<ActionResult> 
       })),
     });
     return { ok: true, message: "Cotação duplicada.", redirectTo: `/pedidos/${order.id}` };
+  });
+}
+
+export async function createProposalLinkAction(fd: FormData): Promise<ActionResult> {
+  const session = await requireEditAction("pedidos");
+  const companyId = await activeCompanyId(session);
+  return runAction(async () => {
+    await createProposalLink(session, companyId, str(fd, "orderId") ?? "");
+    return { ok: true, message: "Link gerado. Envie para o cliente." };
   });
 }

@@ -9,7 +9,7 @@ import { UFS } from "@/components/erp/empresas/ufs";
 
 const AUDITED = [
   "code", "name", "tradeName", "cnpj", "stateRegistration", "taxRegime", "street", "number", "district", "city",
-  "state", "postalCode", "phone", "email", "description", "active", "maxDiscountPct", "approvalAmountLimit",
+  "state", "postalCode", "phone", "email", "description", "active", "maxDiscountPct", "approvalAmountLimit", "allowNegativeStock",
   "fiscalEnvironment", "fiscalProvider", "fiscalSeries", "nextFiscalNumber",
 ] as const;
 
@@ -57,6 +57,7 @@ export async function saveCompanyAction(fd: FormData): Promise<ActionResult> {
       active: bool(fd, "active"),
       maxDiscountPct,
       approvalAmountLimit,
+      allowNegativeStock: bool(fd, "allowNegativeStock"),
       fiscalEnvironment,
       fiscalProvider,
       fiscalSeries,

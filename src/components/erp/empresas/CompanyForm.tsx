@@ -25,6 +25,7 @@ export type CompanyFormValues = {
   active: boolean;
   maxDiscountPct: string;
   approvalAmountLimit: string | null;
+  allowNegativeStock: boolean;
   fiscalEnvironment: "HOMOLOGACAO" | "PRODUCAO";
   fiscalProvider: string;
   fiscalSeries: number;
@@ -123,6 +124,10 @@ export function CompanyForm({
               className={inputCls}
             />
           </Field>
+          <label className="flex items-center gap-2 text-sm text-ink sm:col-span-2">
+            <input type="checkbox" name="allowNegativeStock" defaultChecked={company.allowNegativeStock} disabled={!editable} />
+            Vender com estoque negativo (o pedido reserva e expede mesmo sem saldo)
+          </label>
         </div>
       </Card>
 

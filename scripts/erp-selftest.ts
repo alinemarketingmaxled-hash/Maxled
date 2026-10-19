@@ -9,7 +9,11 @@
  *   - aprovação comercial registra autor e data;
  *   - despacho exige NF autorizada; NF em homologação gera contas a receber
  *     uma única vez; pagamento repetido (mesma requestKey) não baixa duas vezes;
- *   - isolamento: pedido de uma empresa não aparece na outra.
+ *   - isolamento: pedido de uma empresa não aparece na outra;
+ *   - proposta por link: só o token atual abre, o cliente aprova uma vez e
+ *     o pedido segue as mesmas regras do vendedor;
+ *   - estoque negativo: com o parâmetro ligado o pedido reserva sem saldo;
+ *     desligado, recusa.
  *
  * Uso: npm run erp:selftest   (NUNCA apontar para o banco de produção)
  */
@@ -19,6 +23,7 @@ import { prisma } from "../src/lib/prisma";
 import { saveQuote, submitOrder, approveOrder, advanceShipping, getOrderForSession, reserveOrderStock } from "../src/lib/erp/orders";
 import { emitForOrder } from "../src/lib/erp/fiscal";
 import { registerReceivablePayment } from "../src/lib/erp/finance";
+import { createProposalLink, viewProposal, acceptProposal } from "../src/lib/erp/proposal";
 
 if (process.env.NODE_ENV === "production" || /prod/i.test(process.env.DATABASE_URL ?? "")) {
   throw new Error("Recusado: o selftest cria dados e não roda contra produção.");
@@ -139,6 +144,47 @@ async function main() {
   });
   assert.equal(await getOrderForSession(seller, companyA.id, other.id), null);
   console.log("ok  isolamento entre empresas e carteira do vendedor");
+
+  // 9) Proposta por link: token novo invalida o anterior; aprovação única
+  // envia o pedido pelas regras normais; cliente não vê custo.
+  const quote = await saveQuote(seller, companyA.id, {
+    contactId: contact.id,
+    items: [{ productId: res.id, quantity: 10, unitPrice: 0.08, discountPct: 0 }],
+  });
+  const firstToken = await createProposalLink(seller, companyA.id, quote.id);
+  const token = await createProposalLink(seller, companyA.id, quote.id);
+  assert.equal(await viewProposal(firstToken), null);
+  const viewed = await viewProposal(token);
+  assert.ok(viewed && !viewed.expired);
+  assert.ok(!("unitCost" in viewed.order.items[0]) && !("internalNotes" in viewed.order));
+  await assert.rejects(acceptProposal(token, "ab"), /nome completo/i);
+  const accepted = await acceptProposal(token, "Comprador Teste");
+  assert.equal(accepted?.already, false);
+  assert.equal(accepted?.status, "APROVADO");
+  const again2 = await acceptProposal(token, "Comprador Teste");
+  assert.equal(again2?.already, true);
+  const q2 = await prisma.salesOrder.findUniqueOrThrow({ where: { id: quote.id } });
+  assert.equal(q2.proposalAcceptedBy, "Comprador Teste");
+  assert.equal(await prisma.orderEvent.count({ where: { orderId: quote.id, type: "proposal_accepted" } }), 1);
+  console.log("ok  proposta por link: token único, aprovação única pelas regras do pedido");
+
+  // 10) Estoque negativo: reserva acima do disponível só com o parâmetro ligado.
+  const esp = await prisma.product.findUniqueOrThrow({ where: { companyId_sku: { companyId: companyA.id, sku: "MOD-ESP32" } } });
+  const tooMuch = esp.stockPhysical - esp.stockReserved - esp.stockBlocked + 50;
+  const prevFlag = companyA.allowNegativeStock;
+  try {
+    await prisma.company.update({ where: { id: companyA.id }, data: { allowNegativeStock: false } });
+    const blocked = await saveQuote(seller, companyA.id, { contactId: contact.id, items: [{ productId: esp.id, quantity: tooMuch, unitPrice: Number(esp.price), discountPct: 0 }] });
+    await assert.rejects(submitOrder(seller, companyA.id, blocked.id), /Saldo insuficiente/);
+    await prisma.company.update({ where: { id: companyA.id }, data: { allowNegativeStock: true } });
+    const neg = await submitOrder(seller, companyA.id, blocked.id);
+    assert.equal(neg?.status, "APROVADO");
+    const espAfter = await prisma.product.findUniqueOrThrow({ where: { id: esp.id } });
+    assert.ok(espAfter.stockPhysical - espAfter.stockReserved - espAfter.stockBlocked < 0);
+  } finally {
+    await prisma.company.update({ where: { id: companyA.id }, data: { allowNegativeStock: prevFlag } });
+  }
+  console.log("ok  estoque negativo só com o parâmetro da empresa ligado");
 
   console.log("\nTodos os testes do núcleo passaram.");
 }

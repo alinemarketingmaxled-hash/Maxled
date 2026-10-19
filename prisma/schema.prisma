@@ -545,6 +545,10 @@ model Company {
   // abaixo do preço mínimo ou total acima do teto exigem aprovação.
   maxDiscountPct      Decimal  @default(5) @db.Decimal(5, 2)
   approvalAmountLimit Decimal? @db.Decimal(12, 2)
+  // A MAX LED vende com estoque negativo: o pedido reserva e expede mesmo
+  // sem saldo, e o disponível fica negativo até a entrada chegar. Ajustes
+  // manuais, bloqueios e transferências continuam exigindo saldo.
+  allowNegativeStock  Boolean  @default(true)
 
   fiscalEnvironment FiscalEnvironment @default(HOMOLOGACAO)
   fiscalProvider    String            @default("simulador")
@@ -816,6 +820,16 @@ model SalesOrder {
   notes           String?   @db.Text
   internalNotes   String?   @db.Text
   validUntil      DateTime?
+
+  // Proposta comercial enviada por link: o cliente vê e aprova sem login.
+  // Só o hash do token serve de busca; a cópia cifrada permite reexibir o
+  // link para o vendedor. Gerar um novo link invalida o anterior.
+  proposalTokenHash  String?   @unique
+  proposalTokenEnc   String?
+  proposalSentAt     DateTime?
+  proposalViewedAt   DateTime?
+  proposalAcceptedAt DateTime?
+  proposalAcceptedBy String?
 
   needsApproval   Boolean   @default(false)
   approvalReason  String?   @db.Text

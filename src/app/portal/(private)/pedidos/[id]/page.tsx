@@ -2,9 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireCustomer, companyLabel, PORTAL_EVENT_LABELS } from "@/lib/erp/portal";
-import { Card, EmptyState, PageHeader, Table, tdCls, thCls } from "@/components/erp/ui";
+import { Card, PageHeader, Table, tdCls, thCls } from "@/components/erp/ui";
 import { fmtDate, fmtDateTime, fmtMoney, orderCode } from "@/lib/erp/format";
-import { OrderStatusBadge, TitleStatusBadge } from "@/components/portal/badges";
+import { OrderStatusBadge } from "@/components/portal/badges";
 
 export default async function PortalOrderDetail({ params }: { params: Promise<{ id: string }> }) {
   const { contactId } = await requireCustomer();
@@ -32,15 +32,6 @@ export default async function PortalOrderDetail({ params }: { params: Promise<{ 
         orderBy: { createdAt: "asc" },
         select: { id: true, type: true, createdAt: true },
       },
-      fiscalDocuments: {
-        where: { status: "AUTORIZADA" },
-        select: { id: true, number: true, series: true, accessKey: true, authorizedAt: true, environment: true },
-      },
-      receivables: {
-        where: { status: { not: "CANCELADO" } },
-        orderBy: { installment: "asc" },
-        select: { id: true, installment: true, installmentsTotal: true, amount: true, paidAmount: true, dueDate: true, status: true },
-      },
     },
   });
   if (!order) notFound();
@@ -48,7 +39,7 @@ export default async function PortalOrderDetail({ params }: { params: Promise<{ 
   return (
     <div className="flex flex-col gap-4">
       <PageHeader
-        title={`Pedido ${orderCode(order.company.code, order.number)}`}
+        title={`${order.status === "COTACAO" ? "Cotação" : "Pedido"} ${orderCode(order.company.code, order.number)}`}
         subtitle={
           <span className="flex flex-wrap items-center gap-2">
             {companyLabel(order.company)} · {fmtDate(order.createdAt)} <OrderStatusBadge status={order.status} />
@@ -121,49 +112,6 @@ export default async function PortalOrderDetail({ params }: { params: Promise<{ 
                 </li>
               ))}
             </ol>
-          )}
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <Card title="Notas fiscais">
-          {order.fiscalDocuments.length === 0 ? (
-            <EmptyState>Nenhuma nota fiscal emitida.</EmptyState>
-          ) : (
-            <ul className="flex flex-col gap-2 text-sm">
-              {order.fiscalDocuments.map((d) => (
-                <li key={d.id} className="flex flex-wrap items-center justify-between gap-2">
-                  <span>
-                    NF-e {d.number} série {d.series} · {fmtDate(d.authorizedAt)}
-                    {d.environment === "HOMOLOGACAO" && <span className="ml-1 text-xs text-warning">(homologação, sem valor fiscal)</span>}
-                    <span className="block break-all text-[11px] text-ink-faint">{d.accessKey}</span>
-                  </span>
-                  <a href={`/api/erp/fiscal/${d.id}/xml`} className="text-xs font-semibold text-gold hover:underline">
-                    Baixar XML
-                  </a>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
-
-        <Card title="Pagamentos">
-          {order.receivables.length === 0 ? (
-            <EmptyState>As parcelas aparecem após a emissão da nota fiscal.</EmptyState>
-          ) : (
-            <ul className="divide-y divide-gold-deep/20 text-sm">
-              {order.receivables.map((r) => (
-                <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
-                  <span>
-                    Parcela {r.installment}/{r.installmentsTotal} · vence {fmtDate(r.dueDate)}
-                  </span>
-                  <span className="flex items-center gap-2 tabular-nums">
-                    {fmtMoney(r.amount.toString())}
-                    <TitleStatusBadge status={r.status} dueDate={r.dueDate} />
-                  </span>
-                </li>
-              ))}
-            </ul>
           )}
         </Card>
       </div>

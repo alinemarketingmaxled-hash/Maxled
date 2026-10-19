@@ -6,10 +6,7 @@ import { useState } from "react";
 
 const LINKS = [
   { href: "/portal", label: "Início" },
-  { href: "/portal/pedidos", label: "Pedidos" },
-  { href: "/portal/documentos", label: "Documentos" },
-  { href: "/portal/financeiro", label: "Financeiro" },
-  { href: "/portal/programacoes", label: "Programações" },
+  { href: "/portal/pedidos", label: "Cotações e pedidos" },
   { href: "/portal/solicitacoes", label: "Solicitações" },
 ];
 

@@ -5,8 +5,8 @@ import { listUserCompanies } from "@/lib/erp/company";
 
 /** Download do XML autorizado. Equipe: precisa ver o módulo Fiscal e ter
  * vínculo com a empresa da nota (não depende da empresa ativa no cookie,
- * para links abertos depois continuarem seguros). Cliente do portal: só
- * notas autorizadas de pedidos do próprio cadastro. */
+ * para links abertos depois continuarem seguros). Cliente do portal não
+ * baixa XML: o portal mostra só cotações e pedidos. */
 export async function GET(_request: Request, ctx: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user) return new Response("Não autenticado", { status: 401 });
@@ -20,10 +20,10 @@ export async function GET(_request: Request, ctx: { params: Promise<{ id: string
   const notFound = () => new Response("Documento não encontrado", { status: 404 });
   if (!doc) return notFound();
 
+  // O portal do cliente mostra só cotações e pedidos: documentos fiscais
+  // ficam com a equipe.
   if (session.user.role === "CUSTOMER") {
-    if (!session.user.contactId || doc.order.contactId !== session.user.contactId || doc.status !== "AUTORIZADA") {
-      return notFound();
-    }
+    return notFound();
   } else {
     if (!canView(session.user.role, "fiscal")) return new Response("Sem permissão", { status: 403 });
     const companies = await listUserCompanies(session);

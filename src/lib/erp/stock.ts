@@ -41,7 +41,8 @@ export type MovementInput = {
  * Aplica um movimento e atualiza os saldos do produto na mesma transação.
  * Cada decremento é um UPDATE condicional (o saldo é conferido pelo próprio
  * banco, não por uma leitura anterior), então duas reservas concorrentes
- * nunca deixam o disponível negativo.
+ * nunca deixam o disponível negativo — exceto reserva e saída de pedido em
+ * empresa que vende com estoque negativo (Company.allowNegativeStock).
  *
  * Retorna `skipped: true` quando a chave de idempotência já foi aplicada.
  */
@@ -64,6 +65,10 @@ export async function applyMovement(tx: Tx, input: MovementInput) {
   }
 
   const id = product.id;
+  // Venda com estoque negativo (parâmetro da empresa): reserva e saída do
+  // pedido não exigem saldo; o resto dos movimentos continua conferido.
+  const company = await tx.company.findUnique({ where: { id: input.companyId }, select: { allowNegativeStock: true } });
+  const negativeOk = company?.allowNegativeStock ?? false;
   let updated = 0;
   switch (input.type) {
     case "ENTRADA":
@@ -78,7 +83,9 @@ export async function applyMovement(tx: Tx, input: MovementInput) {
         WHERE id = ${id} AND "stockPhysical" - "stockReserved" - "stockBlocked" >= ${q}`;
       break;
     case "RESERVA":
-      updated = await tx.$executeRaw`UPDATE "Product" SET "stockReserved" = "stockReserved" + ${q}
+      updated = negativeOk
+        ? await tx.$executeRaw`UPDATE "Product" SET "stockReserved" = "stockReserved" + ${q} WHERE id = ${id}`
+        : await tx.$executeRaw`UPDATE "Product" SET "stockReserved" = "stockReserved" + ${q}
         WHERE id = ${id} AND "stockPhysical" - "stockReserved" - "stockBlocked" >= ${q}`;
       break;
     case "LIBERACAO":
@@ -87,7 +94,11 @@ export async function applyMovement(tx: Tx, input: MovementInput) {
       break;
     case "SAIDA":
       // Saída sempre consome uma reserva prévia (pedido aprovado → expedição).
-      updated = await tx.$executeRaw`UPDATE "Product" SET "stockPhysical" = "stockPhysical" - ${q},
+      updated = negativeOk
+        ? await tx.$executeRaw`UPDATE "Product" SET "stockPhysical" = "stockPhysical" - ${q},
+        "stockReserved" = "stockReserved" - ${q}
+        WHERE id = ${id} AND "stockReserved" >= ${q}`
+        : await tx.$executeRaw`UPDATE "Product" SET "stockPhysical" = "stockPhysical" - ${q},
         "stockReserved" = "stockReserved" - ${q}
         WHERE id = ${id} AND "stockReserved" >= ${q} AND "stockPhysical" >= ${q}`;
       break;

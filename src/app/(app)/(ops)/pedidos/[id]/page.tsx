@@ -65,6 +65,9 @@ export default async function PedidoPage({ params }: { params: Promise<{ id: str
           actions={
             <>
               <OrderStatusBadge status={order.status} />
+              <Link href={`/pedidos/${order.id}/proposta`} className={btnSecondary}>
+                {order.proposalAcceptedAt ? "Proposta (aprovada pelo cliente)" : "Proposta / link de aprovação"}
+              </Link>
               {editable && order.status === "COTACAO" && (
                 <>
                   <Link href={`/pedidos/${order.id}/editar`} className={btnSecondary}>Editar</Link>
