@@ -1,8 +1,3 @@
-<!doctype html>
-<html lang="pt-BR">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>MAX LED ERP</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -524,6 +519,34 @@ td input[type=checkbox], th input[type=checkbox] { width: 16px; height: 16px; ac
 .bellbox button:hover { background: rgba(242,204,91,.12); }
 @media (max-width: 1180px) { .g3x { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .g3x > :nth-child(2) { grid-column: span 2; order: 3; } }
 @media (max-width: 760px) { .g3x { grid-template-columns: minmax(0, 1fr); } .g3x > :nth-child(2) { grid-column: auto; } .sug button { grid-template-columns: 30px minmax(0, 1fr); } .sug button small { grid-column: 2; } }
+
+/* Telas completas */
+.hero { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; justify-content: space-between; }
+.abc { display: inline-grid; place-items: center; min-width: 26px; padding: 2px 8px; border-radius: 8px; font-weight: 800; font-size: 12px; }
+.abc-A { background: var(--grad); color: #1b1206; } .abc-B { background: rgba(242,204,91,.18); color: #f2cc5b; } .abc-C { background: rgba(255,255,255,.08); color: var(--text-2); }
+.mini { height: 6px; background: var(--neutral-soft); border-radius: 99px; overflow: hidden; margin: 4px 0 2px; }
+.mini i { display: block; height: 100%; border-radius: 99px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chips button { background: rgba(255,255,255,.05); border: 1px solid var(--border); color: var(--text-2); border-radius: 99px; padding: 6px 12px; cursor: pointer; font-size: 12.5px; font-weight: 600; }
+.chips button span { opacity: .6; margin-left: 4px; }
+.chips button.on { background: var(--grad); color: #1b1206; border-color: transparent; }
+.pgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
+.pcard { display: flex; gap: 14px; align-items: flex-start; text-align: left; background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 14px; color: var(--text); cursor: pointer; backdrop-filter: blur(14px); }
+.pcard:hover { border-color: rgba(242,204,91,.55); transform: translateY(-2px); transition: transform .15s; }
+.pc-b { display: grid; gap: 4px; min-width: 0; flex: 1; }
+.pc-b b { font-size: 14px; line-height: 1.3; }
+.price { font-weight: 800; color: #f2cc5b; font-size: 16px; }
+.balbars { display: flex; align-items: flex-end; gap: 2px; height: 150px; }
+.balbars i { flex: 1; background: rgba(123,232,176,.5); border-radius: 2px 2px 0 0; min-height: 2px; }
+.balbars i.neg { background: rgba(255,133,133,.7); }
+.aging { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; }
+.aging > div { display: grid; gap: 4px; }
+.aging span { font-size: 12.5px; color: var(--text-2); }
+.ufb { display: inline-block; min-width: 30px; text-align: center; background: rgba(242,204,91,.14); color: #f2cc5b; border-radius: 6px; padding: 1px 6px; margin-right: 6px; }
+.okdot { color: #f2cc5b; font-weight: 800; }
+.click-row { cursor: pointer; } .click-row:hover .l span { color: #f2cc5b; }
+@media (max-width: 760px) { .aging { grid-template-columns: 1fr 1fr; } .pgrid { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) { .pcard:hover { transform: none; } }
 </style>
 
 <header class="cbar">
@@ -554,18 +577,18 @@ td input[type=checkbox], th input[type=checkbox] { width: 16px; height: 16px; ac
 // ---------------------------------------------------------------------------
 const ROLES = {
   MEDIATOR: { label: "Mediador", user: "Aline", mods: "*" },
-  MANAGER: { label: "Diretoria", user: "Diretoria", mods: ["painel","pedidos","produtos","estoque","expedicao","compras","fiscal","financeiro","mercadolivre","relatorios"], approve: true },
-  SALES_MANAGER: { label: "Gerente comercial", user: "Gerente Comercial", mods: ["painel","pedidos","produtos","estoque","portal"], approve: true },
-  SELLER: { label: "Vendedor", user: "Bruno Alves", mods: ["painel","pedidos","produtos","estoque"], own: true, approve: false },
+  MANAGER: { label: "Diretoria", user: "Diretoria", mods: ["painel","pedidos","clientes","produtos","estoque","expedicao","compras","fiscal","financeiro","mercadolivre","relatorios","config"], approve: true },
+  SALES_MANAGER: { label: "Gerente comercial", user: "Gerente Comercial", mods: ["painel","pedidos","clientes","produtos","estoque","relatorios","portal"], approve: true },
+  SELLER: { label: "Vendedor", user: "Bruno Alves", mods: ["painel","pedidos","clientes","produtos","estoque","relatorios"], own: true, approve: false },
   STOCK: { label: "Estoque/expedição", user: "Equipe Estoque", mods: ["painel","pedidos","produtos","estoque","expedicao","mercadolivre"] },
-  FINANCE: { label: "Financeiro", user: "Equipe Financeiro", mods: ["painel","pedidos","financeiro","fiscal"] },
+  FINANCE: { label: "Financeiro", user: "Equipe Financeiro", mods: ["painel","pedidos","clientes","financeiro","fiscal","relatorios"] },
   FISCAL: { label: "Fiscal", user: "Equipe Fiscal", mods: ["painel","pedidos","fiscal"] },
   CUSTOMER: { label: "Cliente (portal)", user: "Distribuidora Sul", mods: ["portal"] },
 };
 const MODULES = [
-  ["painel", "Painel"], ["pedidos", "Cotações e pedidos"], ["produtos", "Produtos e kits"], ["estoque", "Estoque"],
+  ["painel", "Painel"], ["pedidos", "Cotações e pedidos"], ["clientes", "Clientes"], ["produtos", "Produtos e kits"], ["estoque", "Estoque"],
   ["expedicao", "Expedição"], ["compras", "Compras e importação"], ["fiscal", "Fiscal"], ["financeiro", "Financeiro"],
-  ["mercadolivre", "Mercado Livre"], ["relatorios", "Relatórios"], ["portal", "Portal do cliente"],
+  ["mercadolivre", "Mercado Livre"], ["relatorios", "Relatórios"], ["portal", "Portal do cliente"], ["config", "Configurações"],
 ];
 const ICON_PATHS = {
   painel: '<rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/>',
@@ -579,6 +602,8 @@ const ICON_PATHS = {
   mercadolivre: '<path d="M3 9 4.5 4h15L21 9"/><path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0M5 12v8h14v-8"/>',
   relatorios: '<path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/>',
   portal: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  clientes: '<circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M16 3.5a4 4 0 0 1 0 8M22 21a7 7 0 0 0-4-6.3"/>',
+  config: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
   money: '<path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
   receipt: '<path d="M4 2v20l3-2 3 2 2-2 2 2 3-2 3 2V2l-3 2-3-2-2 2-2-2-3 2z"/><path d="M8 9h8M8 13h6"/>',
   users: '<circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M16 3.5a4 4 0 0 1 0 8M22 21a7 7 0 0 0-4-6.3"/>',
@@ -824,7 +849,7 @@ function render() {
   renderShell();
   const v = $("view");
   v.className = "view";
-  const fn = { painel: vPainel, pedidos: S.orderId ? vPedido : vPedidos, produtos: vProdutos, estoque: vEstoque, expedicao: vExpedicao, compras: vCompras, fiscal: vFiscal, financeiro: vFinanceiro, mercadolivre: vML, relatorios: vRelatorios, portal: vPortal }[S.view];
+  const fn = { clientes: vClientes, config: vConfig, painel: vPainel, pedidos: S.orderId ? vPedido : vPedidos, produtos: vProdutos, estoque: vEstoque, expedicao: vExpedicao, compras: vCompras, fiscal: vFiscal, financeiro: vFinanceiro, mercadolivre: vML, relatorios: vRelatorios, portal: vPortal }[S.view];
   v.innerHTML = `<div class="wrap">${fn()}</div>`;
 }
 function head(title, sub, actions = "") { return `<div class="head"><div><h1>${esc(title)}</h1><p>${sub}</p></div><div class="row">${actions}</div></div>`; }
@@ -1016,7 +1041,7 @@ function vPainel() {
   </div>
   <div class="grid g3x">
     <div class="card"><h2>Melhores clientes <small>90 dias</small></h2><div class="list">
-      ${topC.map(([id, v]) => `<div class="hbar"><div class="l"><span class="who-cell">${avatar(cust(id).name)}<span>${esc(cust(id).name)}<small>${v.n} pedido(s) · ${esc(cust(id).city || "")}</small></span></span><b class="num">${money(v.v)}</b></div><div class="t"><i style="width:${(v.v / tcmax) * 100}%;background:var(--grad)"></i></div></div>`).join("") || `<p class="note">Sem vendas no período.</p>`}</div></div>
+      ${topC.map(([id, v]) => `<div class="hbar click-row" data-cli="${id}"><div class="l"><span class="who-cell">${avatar(cust(id).name)}<span>${esc(cust(id).name)}<small>${v.n} pedido(s) · ${esc(cust(id).city || "")}</small></span></span><b class="num">${money(v.v)}</b></div><div class="t"><i style="width:${(v.v / tcmax) * 100}%;background:var(--grad)"></i></div></div>`).join("") || `<p class="note">Sem vendas no período.</p>`}</div></div>
     <div class="card"><h2>Atividade recente</h2><ol class="timeline">${feed.map((f) => `<li><span><button class="link" data-open="${f.o.id}">${code(f.o)}</button> · ${esc(f.msg)}</span><small>${f.when} · ${esc(f.who)} · ${esc(cust(f.o.customer).name)}</small></li>`).join("")}</ol></div>
     <div class="card"><h2>Estoque crítico <small>${low.length} abaixo do mínimo</small></h2><div class="list">
       ${C().products.filter((p) => !p.kit).map((p) => ({ p, ratio: availSimple(p) / p.minStock })).sort((a, b) => a.ratio - b.ratio).slice(0, 5).map(({ p, ratio }) => `<div class="stockrow">${thumb(p, 38)}<div style="min-width:0;flex:1"><div class="l"><span>${esc(p.name)}</span><b class="num" style="color:${ratio < 1 ? "var(--bad)" : "var(--text)"}">${nf.format(availSimple(p))}</b></div><div class="t"><i style="width:${Math.min(100, ratio * 50)}%;background:${ratio < 1 ? "var(--bad)" : "var(--grad)"}"></i></div><small class="note">mínimo ${nf.format(p.minStock)} · ${ratio < 1 ? "repor" : "ok"}</small></div></div>`).join("")}</div></div>
@@ -1298,6 +1323,7 @@ function pickSug(i) {
   return true;
 }
 document.addEventListener("input", (ev) => {
+  if (ev.target.id === "cf-q" || ev.target.id === "pr-q") { const id = ev.target.id; (id === "cf-q" ? CF : PRF).q = ev.target.value; clearTimeout(window.__pfT); window.__pfT = setTimeout(() => { render(); const el = $(id); if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); } }, 250); return; }
   if (ev.target.id === "pf-q") { PF.q = ev.target.value; PF.page = 0; clearTimeout(window.__pfT); window.__pfT = setTimeout(() => { render(); const el = $("pf-q"); if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); } }, 250); return; } if (draft && (ev.target.id === "e-sku" || ev.target.id === "c-find")) showSug(ev.target); });
 document.addEventListener("mousedown", (ev) => { const b = ev.target.closest("[data-sug]"); if (b) { ev.preventDefault(); try { pickSug(+b.dataset.sug); } catch (e) { toast(e.message); } } });
 document.addEventListener("focusout", (ev) => {
@@ -1393,13 +1419,6 @@ function vPedido() {
       </div>
     </div>
     <div class="card"><h2>Histórico do pedido</h2><ol class="timeline">${o.events.map((e) => `<li>${esc(e.msg)}<small>${e.when} · ${esc(e.who)}</small></li>`).join("")}</ol></div>`;
-}
-
-function vProdutos() {
-  return head("Produtos e kits", `${C().products.length} SKUs · ${esc(C().name)}`, `<span class="note">${["MEDIATOR","MANAGER","SALES_MANAGER"].includes(S.role) ? "Seu perfil pode alterar preços." : "Seu perfil não altera preço nem custo."}</span>`) +
-    table([{ t: "SKU" }, { t: "Produto" }, { t: "Família" }, { t: "Tipo" }, { t: "NCM" }, { t: "Preço", r: 1 }, { t: "Preço mín.", r: 1 }].concat(seeCosts() ? [{ t: "Custo", r: 1 }] : []).concat([{ t: "Disponível", r: 1 }]),
-      C().products.map((p) => `<tr><td class="mono">${p.sku}</td><td>${esc(p.name)}${p.kit ? `<br><small class="note">composição: ${p.kit.map(([k, q]) => `${q} × ${k}`).join(", ")}</small>` : ""}</td><td>${p.fam}</td><td>${p.kit ? pill(["Kit", "p-info"]) : "Unidade"}</td><td class="mono">${p.ncm}</td><td class="r num">${money(p.price)}</td><td class="r num">${money(p.min)}</td>${seeCosts() ? `<td class="r num">${p.kit ? "-" : money(p.cost)}</td>` : ""}<td class="r num">${nf.format(avail(p))}</td></tr>`)) +
-    `<p class="note">Kits não têm saldo próprio: a disponibilidade é quantos kits completos os componentes permitem montar. Vender 1 kit de 25 LEDs reserva e baixa 25 unidades do SKU do LED.</p>`;
 }
 
 function vEstoque() {
@@ -1671,6 +1690,15 @@ function receiveImp(n) {
 }
 
 function vFinanceiro() {
+  const extra = { fluxo: vFluxo, aging: vAging, dre: vDre }[S.tab];
+  if (extra) return head("Financeiro", `Fluxo de caixa, inadimplência e resultado · ${esc(C().name)}`) + finTabs() + extra();
+  return vFinBase();
+}
+function finTabs() {
+  const t = S.tab || "receber";
+  return `<div class="tabs">${[["receber", "Contas a receber"], ["pagar", "Contas a pagar"], ["fluxo", "Fluxo de caixa"], ["aging", "Inadimplência"], ["dre", "Resultado (DRE)"]].map(([k, l]) => `<button data-tab="${k}" class="${t === k ? "on" : ""}">${l}</button>`).join("")}</div>`;
+}
+function vFinBase() {
   const tab = S.tab === "pagar" ? "pagar" : "receber";
   const recv = C().recv; const open = recv.filter((r) => r.paid < r.amount);
   const sumOpen = open.reduce((s, r) => s + r.amount - r.paid, 0);
@@ -1678,7 +1706,7 @@ function vFinanceiro() {
   const canPay = ["MEDIATOR","FINANCE","MANAGER"].includes(S.role);
   return head("Financeiro", `Faturamento, contas a receber, liquidação e conciliação · ${esc(C().name)}`) +
     `<div class="grid g4">${kpi("money", "c2", "A receber", money(sumOpen))}${kpi("alert", "c4", "Vencido", money(sumLate))}${kpi("financeiro", "c1", "A pagar", money(C().pays.reduce((s2, p) => s2 + p.amount - p.paid, 0)))}${kpi("relatorios", "c3", "Inadimplência", (sumOpen ? ((sumLate / sumOpen) * 100).toFixed(1) : "0.0").replace(".", ",") + "%")}</div>
-    <div class="tabs"><button data-tab="receber" class="${tab === "receber" ? "on" : ""}">Contas a receber</button><button data-tab="pagar" class="${tab === "pagar" ? "on" : ""}">Contas a pagar</button></div><div id="err"></div>` +
+    ${finTabs()}<div id="err"></div>` +
     (tab === "receber" ? table([{ t: "Pedido" }, { t: "Cliente" }, { t: "Parcela" }, { t: "Vencimento" }, { t: "Valor", r: 1 }, { t: "Pago", r: 1 }, { t: "Status" }, { t: "Baixa" }],
       recv.map((r) => { const o = C().orders.find((x) => x.id === r.order); return `<tr><td><button class="link" data-open="${o.id}">${code(o)}</button></td><td>${esc(cust(r.customer).name)}</td><td>${r.inst}</td><td class="num">${fdate(r.due)}</td><td class="r num">${money(r.amount)}</td><td class="r num">${money(r.paid)}</td><td>${pill(recvStatus(r))}</td><td>${canPay && r.paid < r.amount ? `<div class="row"><input aria-label="Valor da baixa" id="pay-${r.id}" type="number" step="0.01" min="0.01" value="${(r.amount - r.paid).toFixed(2)}" style="width:96px"><button class="btn ghost" data-pay="${r.id}">Baixar</button></div>` : ""}</td></tr>`; }), "Títulos aparecem quando uma NF-e é autorizada.")
     : table([{ t: "Descrição" }, { t: "Categoria" }, { t: "Vencimento" }, { t: "Valor", r: 1 }, { t: "Aprovação" }, { t: "Ação" }],
@@ -1704,14 +1732,201 @@ function vML() {
     <p class="note" style="margin-bottom:0">Notificações repetidas do mesmo pedido não criam um segundo pedido nem reservam duas vezes.</p></div>`;
 }
 
+// ---------------------------------------------------------------------------
+// Clientes: carteira com classificação ABC e ficha completa.
+// ---------------------------------------------------------------------------
+const CF = { q: "", cls: "" };
+function custStats(id) {
+  const os = C().orders.filter((o) => o.customer === id); const ok = os.filter(billed);
+  const since = new Date(); since.setMonth(since.getMonth() - 12);
+  const y = ok.filter((o) => new Date(o.date) >= since);
+  const open = C().recv.filter((r) => r.customer === id && r.paid < r.amount);
+  const late = open.filter((r) => new Date(r.due) < new Date());
+  const last = ok.slice().sort((a, b) => (b.date || "").localeCompare(a.date || ""))[0];
+  return { os, ok, total12: y.reduce((s, o) => s + o.total, 0), n12: y.length, open: open.reduce((s, r) => s + r.amount - r.paid, 0), late: late.reduce((s, r) => s + r.amount - r.paid, 0), last };
+}
+function abcMap(items) {
+  // Curva ABC: A = até 80% do faturamento acumulado, B = até 95%, C = o resto.
+  const tot = items.reduce((s, x) => s + x.v, 0) || 1; let acc = 0; const m = {};
+  items.slice().sort((a, b) => b.v - a.v).forEach((x) => { acc += x.v; m[x.k] = { cls: acc / tot <= 0.8 ? "A" : acc / tot <= 0.95 ? "B" : "C", pct: x.v / tot, acc: acc / tot }; });
+  return m;
+}
+const creditLimit = (id) => ({ c1: 25000, c2: 40000, c3: 15000, c4: 20000, c5: 30000, c6: 12000, c7: 18000, c8: 10000, c10: 35000, c11: 22000, c9: 80000, c12: 60000, c13: 90000 })[id] || 15000;
+function myCustomers() { return role().own ? C().customers.filter((x) => x.seller === role().user) : C().customers; }
+function vClientes() {
+  if (S.clienteId) return vCliente(S.clienteId);
+  const list = myCustomers().map((c) => ({ c, st: custStats(c.id) }));
+  const abc = abcMap(list.map((x) => ({ k: x.c.id, v: x.st.total12 })));
+  const rows = list.filter((x) => (!CF.q || matchWords(`${x.c.id} ${x.c.name} ${x.c.doc} ${x.c.city}`, CF.q)) && (!CF.cls || abc[x.c.id]?.cls === CF.cls)).sort((a, b) => b.st.total12 - a.st.total12);
+  const tot = list.reduce((s, x) => s + x.st.total12, 0); const lateN = list.filter((x) => x.st.late > 0).length;
+  return head("Clientes", `${list.length} clientes${role().own ? " na sua carteira" : ""} · ${esc(C().name)}`) +
+    `<div class="grid g4">${kpi("users", "c1", "Clientes ativos (12 meses)", list.filter((x) => x.st.n12).length)}${kpi("money", "c2", "Faturamento 12 meses", money(tot))}${kpi("ticket", "c3", "Curva A", `${Object.values(abc).filter((x) => x.cls === "A").length} clientes`)}${kpi("alert", "c4", "Com título vencido", lateN)}</div>
+    <div class="filters"><label class="f grow" for="cf-q">Buscar<input id="cf-q" value="${esc(CF.q)}" placeholder="Nome, código, CNPJ ou cidade"></label>
+      <label class="f" for="cf-cls">Curva ABC<select id="cf-cls"><option value="">Todas</option>${["A", "B", "C"].map((x) => `<option ${CF.cls === x ? "selected" : ""}>${x}</option>`).join("")}</select></label></div>` +
+    table([{ t: "Cliente" }, { t: "Vendedor" }, { t: "ABC" }, { t: "Pedidos 12m", r: 1 }, { t: "Faturamento 12m", r: 1 }, { t: "Último pedido" }, { t: "Em aberto", r: 1 }, { t: "Situação" }, { t: "Limite usado" }],
+      rows.map(({ c, st }) => { const lim = creditLimit(c.id); const used = Math.min(1, st.open / lim); return `<tr class="click" data-cli="${c.id}"><td><div class="who-cell">${avatar(c.name)}<span>${esc(c.name)}<small>${c.id.toUpperCase()} · ${c.doc} · ${esc(c.city)}</small></span></div></td><td>${esc(c.seller)}</td><td><span class="abc abc-${abc[c.id]?.cls || "C"}">${abc[c.id]?.cls || "C"}</span></td><td class="r num">${st.n12}</td><td class="r num">${money(st.total12)}</td><td class="num">${st.last ? new Date(st.last.date).toLocaleDateString("pt-BR") : "-"}</td><td class="r num">${money(st.open)}</td><td>${st.late > 0 ? pill(["Vencido", "p-bad"]) : st.open > 0 ? pill(["Em dia", "p-info"]) : pill(["Sem pendência", "p-good"])}</td><td style="min-width:120px"><div class="mini"><i style="width:${used * 100}%;background:${used > .8 ? "var(--bad)" : "var(--grad)"}"></i></div><small class="note">${Math.round(used * 100)}% de ${money(lim).replace(",00", "")}</small></td></tr>`; }), "Nenhum cliente com esses filtros.");
+}
+function vCliente(id) {
+  const c = cust(id); const st = custStats(id); const lim = creditLimit(id);
+  const months = lastMonths(12); const vals = months.map((m) => st.ok.filter((o) => monthKey(o.date) === m.key).reduce((s, o) => s + o.total, 0)); const mx = Math.max(...vals, 1);
+  const bp = {}; st.ok.forEach((o) => o.items.forEach((i) => { bp[i.sku] = bp[i.sku] || { q: 0, v: 0 }; bp[i.sku].q += i.qty; bp[i.sku].v += i.sub; }));
+  const topP = Object.entries(bp).sort((a, b) => b[1].v - a[1].v).slice(0, 6);
+  const recv = C().recv.filter((r) => r.customer === id).sort((a, b) => b.due.localeCompare(a.due)).slice(0, 8);
+  const freq = st.ok.length > 1 ? Math.round((new Date(st.ok[0].date) - new Date(st.ok[st.ok.length - 1].date)) / 864e5 / (st.ok.length - 1)) : null;
+  return `<div class="row"><button class="btn ghost" data-act="cli-back">Voltar aos clientes</button>${can("pedidos") && ["MEDIATOR","MANAGER","SALES_MANAGER","SELLER"].includes(S.role) ? `<button class="btn" data-newfor="${id}">${icon("plus")}Novo pedido para este cliente</button>` : ""}</div>` +
+    `<div class="card hero"><div class="who-cell">${avatar(c.name).replace('class="avatar"', 'class="avatar" style="width:58px;height:58px;font-size:18px"')}<div><h1 style="margin:0;font-size:24px">${esc(c.name)}</h1><p class="note" style="margin:4px 0 0">${c.id.toUpperCase()} · CNPJ ${c.doc} · ${esc(c.city)} · vendedor ${esc(c.seller)}</p></div></div>
+      <div class="row">${st.late > 0 ? pill(["Título vencido", "p-bad"]) : pill(["Crédito liberado", "p-good"])}${pill([`Compra a cada ${freq ?? "-"} dias`, "p-info"])}</div></div>
+    <div class="grid g4">${kpi("money", "c1", "Faturamento 12 meses", money(st.total12))}${kpi("receipt", "c2", "Pedidos 12 meses", st.n12)}${kpi("ticket", "c3", "Ticket médio", money(st.n12 ? st.total12 / st.n12 : 0))}${kpi("financeiro", "c4", `Em aberto · limite ${money(lim).replace(",00", "")}`, money(st.open))}</div>
+    <div class="grid g21">
+      <div class="card"><h2>Compras por mês <small>12 meses</small></h2><div class="daybars" style="height:140px">${vals.map((v, i) => `<i title="${months[i].label}: ${money(v)}" style="height:${Math.max(2, (v / mx) * 100)}%"></i>`).join("")}</div><div class="dayaxis">${months.filter((_, i) => i % 2 === 0).map((m) => `<span>${m.label}</span>`).join("")}</div></div>
+      <div class="card"><h2>Dados cadastrais</h2><dl class="kv"><dt>Razão social</dt><dd>${esc(c.name)}</dd><dt>CNPJ</dt><dd>${c.doc}</dd><dt>Cidade/UF</dt><dd>${esc(c.city)}</dd><dt>Vendedor</dt><dd>${esc(c.seller)}</dd><dt>Condição</dt><dd>30/60/90 dias · boleto</dd><dt>Tabela</dt><dd>1 · Padrão</dd><dt>E-mail NF-e</dt><dd>nfe@${c.name.split(" ")[0].toLowerCase().normalize("NFD").replace(/[^a-z]/g, "")}.com.br</dd></dl></div>
+    </div>
+    <div class="grid g2">
+      <div class="card"><h2>Produtos que mais compra</h2><div class="list">${topP.map(([sku, v]) => `<div class="stockrow">${thumb(prod(sku), 36)}<div style="flex:1;min-width:0"><div class="l"><span>${esc(prod(sku).name)}</span><b class="num">${money(v.v)}</b></div><small class="note">${nf.format(v.q)} un. · ${sku}</small></div></div>`).join("") || `<p class="note">Sem compras.</p>`}</div></div>
+      <div class="card"><h2>Títulos</h2>${recv.length ? `<div class="list">${recv.map((r) => `<div class="hbar"><div class="l"><span>Parcela ${r.inst} · vence ${fdate(r.due)}</span><span class="num">${money(r.amount)} ${pill(recvStatus(r))}</span></div></div>`).join("")}</div>` : `<p class="note">Sem títulos.</p>`}</div>
+    </div>` +
+    table([{ t: "Pedido" }, { t: "Data" }, { t: "Itens" }, { t: "Status" }, { t: "Total", r: 1 }],
+      st.os.slice().sort((a, b) => (b.date || "").localeCompare(a.date || "")).slice(0, 12).map((o) => `<tr class="click" data-open="${o.id}"><td><button class="link">${code(o)}</button></td><td class="num">${new Date(o.date).toLocaleDateString("pt-BR")}</td><td><div class="thumbs">${o.items.slice(0, 4).map((i) => thumb(prod(i.sku), 24)).join("")}</div></td><td>${pill(STATUS[o.status])}</td><td class="r num">${money(o.total)}</td></tr>`));
+}
+
+// ---------------------------------------------------------------------------
+// Produtos: catálogo em cartões e ficha do produto.
+// ---------------------------------------------------------------------------
+const PRF = { q: "", fam: "" };
+function prodSales(sku, months) { return months.map((m) => C().orders.filter((o) => billed(o) && monthKey(o.date) === m.key).reduce((s, o) => s + o.items.filter((i) => i.sku === sku).reduce((a, i) => a + i.qty, 0), 0)); }
+function unitCost(p) { return p.kit ? p.kit.reduce((s, [k, q]) => s + q * prod(k).cost, 0) : p.cost; }
+function vProdutos() {
+  if (S.prodSku) return vProduto(S.prodSku);
+  const fams = [...new Set(C().products.map((p) => p.fam))];
+  const ps = C().products.filter((p) => (!PRF.fam || p.fam === PRF.fam) && (!PRF.q || matchWords(`${p.sku} ${p.name} ${p.ncm}`, PRF.q)));
+  const months = lastMonths(3);
+  return head("Produtos e kits", `${C().products.length} SKUs · ${esc(C().name)}`, `<span class="note">${["MEDIATOR","MANAGER","SALES_MANAGER"].includes(S.role) ? "Seu perfil pode alterar preços." : "Seu perfil não altera preço nem custo."}</span>`) +
+    `<div class="filters"><label class="f grow" for="pr-q">Buscar<input id="pr-q" value="${esc(PRF.q)}" placeholder="Código, nome ou NCM"></label></div>
+    <div class="chips"><button data-fam="" class="${!PRF.fam ? "on" : ""}">Todas <span>${C().products.length}</span></button>${fams.map((f) => `<button data-fam="${f}" class="${PRF.fam === f ? "on" : ""}">${f} <span>${C().products.filter((p) => p.fam === f).length}</span></button>`).join("")}</div>
+    <div class="pgrid">${ps.map((p) => { const a = avail(p); const ratio = p.kit ? 1 : a / (p.minStock || 1); const sold = prodSales(p.sku, months).reduce((x, y) => x + y, 0); const mg = p.price ? (p.price - unitCost(p)) / p.price : 0;
+      return `<button class="pcard" data-prod="${p.sku}">${thumb(p, 64)}<div class="pc-b"><span class="mono note">${p.sku}${p.kit ? " · kit" : ""}</span><b>${esc(p.name)}</b><div class="row" style="justify-content:space-between"><span class="price">${money(p.price)}</span>${seeCosts() ? `<span class="note">margem ${Math.round(mg * 100)}%</span>` : ""}</div>
+        <div class="mini"><i style="width:${Math.min(100, ratio * 50)}%;background:${ratio < 1 ? "var(--bad)" : "var(--grad)"}"></i></div><small class="note">${nf.format(a)} disponível${p.kit ? " (montáveis)" : ` · mín. ${nf.format(p.minStock)}`} · ${nf.format(sold)} vendidos em 90 dias</small></div></button>`; }).join("") || `<p class="note">Nenhum produto.</p>`}</div>`;
+}
+function vProduto(sku) {
+  const p = prod(sku); const months = lastMonths(6); const sales = prodSales(sku, months); const mx = Math.max(...sales, 1);
+  const moves = C().moves.filter((m) => m.sku === sku || (p.kit && p.kit.some(([k]) => k === m.sku))).slice(0, 8);
+  const usedIn = C().products.filter((x) => x.kit && x.kit.some(([k]) => k === sku));
+  const cost = unitCost(p); const mg = p.price ? (p.price - cost) / p.price : 0;
+  const listing = C().listings.filter((l) => l.sku === sku);
+  return `<div class="row"><button class="btn ghost" data-act="prod-back">Voltar ao catálogo</button></div>
+    <div class="card hero">${thumb(p, 110)}<div style="flex:1;min-width:0"><span class="mono note">${p.sku} · ${p.fam}${p.kit ? " · kit" : ""}</span><h1 style="margin:4px 0;font-size:26px">${esc(p.name)}</h1>
+      <div class="row"><span class="price" style="font-size:22px">${money(p.price)}</span><span class="note">preço mínimo ${money(p.min)}</span>${seeCosts() ? `<span class="note">custo ${money(cost)} · margem ${Math.round(mg * 100)}%</span>` : ""}</div>
+      <div class="row" style="margin-top:8px">${pill([p.kit ? "Kit (sem estoque próprio)" : avail(p) < p.minStock ? "Abaixo do mínimo" : "Estoque ok", p.kit ? "p-info" : avail(p) < p.minStock ? "p-bad" : "p-good"])}${listing.length ? pill([`${listing.length} anúncio(s) no Mercado Livre`, "p-warn"]) : ""}</div></div></div>
+    <div class="grid g4">${p.kit ? kpi("produtos", "c1", "Kits montáveis", nf.format(avail(p))) : `${kpi("estoque", "c1", "Físico", nf.format(p.phys))}${kpi("clock", "c2", "Reservado", nf.format(p.res))}${kpi("alert", "c4", "Bloqueado/avaria", nf.format(p.blk))}`}${kpi("check", "c3", "Disponível", nf.format(avail(p)))}</div>
+    <div class="grid g21">
+      <div class="card"><h2>Vendas por mês <small>unidades · 6 meses</small></h2><div class="daybars" style="height:130px">${sales.map((v, i) => `<i title="${months[i].label}: ${nf.format(v)} un." style="height:${Math.max(2, (v / mx) * 100)}%"></i>`).join("")}</div><div class="dayaxis">${months.map((m) => `<span>${m.label}</span>`).join("")}</div></div>
+      <div class="card"><h2>Dados fiscais e logísticos</h2><dl class="kv"><dt>NCM</dt><dd class="mono">${p.ncm}</dd><dt>CEST</dt><dd>-</dd><dt>Origem</dt><dd>${p.sku.startsWith("IMP") ? "1 · Estrangeira (importação direta)" : "0 · Nacional"}</dd><dt>Unidade</dt><dd>UN</dd><dt>Estoque mínimo</dt><dd>${p.kit ? "-" : nf.format(p.minStock)}</dd><dt>Família</dt><dd>${p.fam}</dd></dl></div>
+    </div>
+    <div class="grid g2">
+      <div class="card"><h2>${p.kit ? "Composição do kit" : "Usado nos kits"}</h2>${p.kit ? `<div class="list">${p.kit.map(([k, q]) => `<div class="stockrow">${thumb(prod(k), 34)}<div style="flex:1"><div class="l"><span>${q} × ${esc(prod(k).name)}</span><b class="num">${nf.format(avail(prod(k)))} disp.</b></div><small class="note">${k}</small></div></div>`).join("")}</div>` : usedIn.length ? `<div class="list">${usedIn.map((x) => `<button class="link" data-prod="${x.sku}">${x.sku} · ${esc(x.name)}</button>`).join("")}</div>` : `<p class="note">Não faz parte de nenhum kit.</p>`}</div>
+      <div class="card"><h2>Últimas movimentações</h2>${moves.length ? `<ol class="timeline">${moves.map((m) => `<li><span>${m.type} de ${nf.format(m.qty)} · ${m.sku}</span><small>${m.when} · ${esc(m.doc)} · ${esc(m.user)}</small></li>`).join("")}</ol>` : `<p class="note">Sem movimentações registradas.</p>`}</div>
+    </div>`;
+}
+
+// ---------------------------------------------------------------------------
+// Financeiro: fluxo de caixa projetado, inadimplência por faixa e resultado.
+// ---------------------------------------------------------------------------
+function vFluxo() {
+  const days = Array.from({ length: 60 }, (_, i) => { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() + i); return d; });
+  const start = 48500; let bal = start; const key = (d) => d.toDateString();
+  const rows = days.map((d) => {
+    const inn = C().recv.filter((r) => r.paid < r.amount && key(new Date(Math.max(new Date(r.due), days[0]))) === key(d)).reduce((s, r) => s + r.amount - r.paid, 0);
+    const out = C().pays.filter((p) => p.paid < p.amount && key(new Date(Math.max(new Date(p.due), days[0]))) === key(d)).reduce((s, p) => s + p.amount - p.paid, 0) + (d.getDate() === 5 ? 18500 : 0) + (d.getDate() === 10 ? 6200 : 0);
+    bal += inn - out; return { d, inn, out, bal };
+  });
+  const mx = Math.max(...rows.map((r) => Math.abs(r.bal)), 1); const minB = Math.min(...rows.map((r) => r.bal));
+  return `<div class="grid g4">${kpi("money", "c1", "Saldo hoje (contas)", money(start))}${kpi("relatorios", "c2", "Entradas previstas 60d", money(rows.reduce((s, r) => s + r.inn, 0)))}${kpi("receipt", "c4", "Saídas previstas 60d", money(rows.reduce((s, r) => s + r.out, 0)))}${kpi("financeiro", "c3", "Menor saldo previsto", money(minB))}</div>
+    <div class="card"><h2>Saldo projetado <small>60 dias · inclui folha (dia 5) e aluguel (dia 10) como despesas fixas de exemplo</small></h2>
+      <div class="balbars">${rows.map((r) => `<i title="${r.d.toLocaleDateString("pt-BR")}: saldo ${money(r.bal)}" class="${r.bal < 0 ? "neg" : ""}" style="height:${Math.max(2, (Math.abs(r.bal) / mx) * 100)}%"></i>`).join("")}</div>
+      <div class="dayaxis"><span>hoje</span><span>${days[29].toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}</span><span>${days[59].toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}</span></div></div>` +
+    table([{ t: "Data" }, { t: "Entradas", r: 1 }, { t: "Saídas", r: 1 }, { t: "Saldo", r: 1 }], rows.filter((r) => r.inn || r.out).slice(0, 15).map((r) => `<tr><td class="num">${r.d.toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "2-digit" })}</td><td class="r num" style="color:var(--good)">${r.inn ? money(r.inn) : "-"}</td><td class="r num" style="color:var(--bad)">${r.out ? money(r.out) : "-"}</td><td class="r num"><b>${money(r.bal)}</b></td></tr>`));
+}
+function vAging() {
+  const today = new Date(); const open = C().recv.filter((r) => r.paid < r.amount);
+  const b = [["A vencer", (d) => d < 0], ["1 a 30 dias", (d) => d >= 0 && d <= 30], ["31 a 60 dias", (d) => d > 30 && d <= 60], ["61 a 90 dias", (d) => d > 60 && d <= 90], ["Mais de 90 dias", (d) => d > 90]];
+  const age = (r) => Math.floor((today - new Date(r.due)) / 864e5);
+  const sums = b.map(([l, f]) => ({ l, v: open.filter((r) => f(age(r))).reduce((s, r) => s + r.amount - r.paid, 0), n: open.filter((r) => f(age(r))).length }));
+  const tot = sums.reduce((s, x) => s + x.v, 0) || 1;
+  const byC = {}; open.filter((r) => age(r) >= 0).forEach((r) => { byC[r.customer] = byC[r.customer] || { v: 0, n: 0, max: 0 }; byC[r.customer].v += r.amount - r.paid; byC[r.customer].n++; byC[r.customer].max = Math.max(byC[r.customer].max, age(r)); });
+  return `<div class="card"><h2>Carteira em aberto por faixa de atraso <small>total ${money(tot)}</small></h2><div class="aging">${sums.map((x, i) => `<div><span>${x.l}</span><div class="mini" style="height:12px"><i style="width:${(x.v / tot) * 100}%;background:${i === 0 ? "var(--grad)" : i < 2 ? "var(--warn)" : "var(--bad)"}"></i></div><b class="num">${money(x.v)}</b><small class="note">${x.n} título(s) · ${Math.round((x.v / tot) * 100)}%</small></div>`).join("")}</div></div>` +
+    table([{ t: "Cliente" }, { t: "Títulos vencidos", r: 1 }, { t: "Valor vencido", r: 1 }, { t: "Maior atraso", r: 1 }, { t: "Ação sugerida" }],
+      Object.entries(byC).sort((a, b) => b[1].v - a[1].v).map(([id, x]) => `<tr class="click" data-cli="${id}"><td><div class="who-cell">${avatar(cust(id).name)}<span>${esc(cust(id).name)}<small>${cust(id).doc}</small></span></div></td><td class="r num">${x.n}</td><td class="r num">${money(x.v)}</td><td class="r num">${x.max} dias</td><td>${x.max > 60 ? pill(["Bloquear novos pedidos", "p-bad"]) : x.max > 15 ? pill(["Ligar e renegociar", "p-warn"]) : pill(["Enviar lembrete", "p-info"])}</td></tr>`), "Nenhum título vencido.");
+}
+function vDre() {
+  const months = lastMonths(3);
+  const col = (m) => { const os = C().orders.filter((o) => billed(o) && monthKey(o.date) === m.key); const rec = os.reduce((s, o) => s + o.total, 0); const cmv = os.reduce((s, o) => s + o.items.reduce((a, i) => a + i.qty * unitCost(prod(i.sku)), 0), 0); const ded = rec * 0.0; const desp = 24700; return { rec, ded, cmv, mb: rec - cmv, desp, res: rec - cmv - desp }; };
+  const cs = months.map(col);
+  const line = (l, k, strong, neg) => `<tr><td>${strong ? `<b>${l}</b>` : l}</td>${cs.map((c) => `<td class="r num" style="${neg ? "color:var(--bad)" : ""}">${strong ? `<b>${money(c[k])}</b>` : money(c[k])}</td>`).join("")}</tr>`;
+  return `<div class="alert warn">${icon("alert")}<span>Resultado gerencial simplificado: receita dos pedidos faturados, custo das mercadorias pelo custo médio e despesas fixas de exemplo. Tributos sobre vendas entram quando o regime for confirmado com a contabilidade.</span></div>` +
+    table([{ t: "Demonstrativo" }].concat(months.map((m, i) => ({ t: m.label + (i === 2 ? " (parcial)" : ""), r: 1 }))),
+      [line("Receita bruta de vendas", "rec", true), line("(−) Custo das mercadorias vendidas", "cmv", false, true), line("= Margem bruta", "mb", true), line("(−) Despesas operacionais", "desp", false, true), line("= Resultado operacional", "res", true)]) +
+    `<div class="grid g3">${cs.map((c, i) => `<div class="card kpi"><div class="lbl">Margem bruta · ${months[i].label}</div><div class="val num">${c.rec ? Math.round((c.mb / c.rec) * 100) : 0}%</div><small class="note">${money(c.mb)} de ${money(c.rec)}</small></div>`).join("")}</div>`;
+}
+
+// ---------------------------------------------------------------------------
+// Relatórios: curva ABC, vendedores, estados e consolidado.
+// ---------------------------------------------------------------------------
 function vRelatorios() {
-  const all = Object.values(S.companies);
-  const allowCons = ["MEDIATOR","MANAGER"].includes(S.role);
-  const rows = all.map((c) => { const os = c.orders.filter((o) => FLOW.indexOf(o.status) >= 2 && o.status !== "CANCELADO"); const t = os.reduce((s, o) => s + o.total, 0); return { c, n: os.length, t }; });
-  return head("Relatórios", allowCons ? "Visão consolidada (Diretoria): os registros continuam separados por empresa" : `Somente ${esc(C().name)}`) +
-    table([{ t: "Empresa" }, { t: "Pedidos aprovados", r: 1 }, { t: "Faturamento", r: 1 }, { t: "Ticket médio", r: 1 }, { t: "Cotações → pedidos", r: 1 }],
-      (allowCons ? rows : rows.filter((r) => r.c.code === S.company)).map(({ c, n, t }) => `<tr><td>${c.code} · ${esc(c.name)}</td><td class="r num">${n}</td><td class="r num">${money(t)}</td><td class="r num">${money(n ? t / n : 0)}</td><td class="r num">${c.orders.length ? Math.round((n / c.orders.length) * 100) : 0}%</td></tr>`).concat(allowCons ? [`<tr><td><b>Consolidado</b></td><td class="r num"><b>${rows.reduce((s, r) => s + r.n, 0)}</b></td><td class="r num"><b>${money(rows.reduce((s, r) => s + r.t, 0))}</b></td><td></td><td></td></tr>`] : [])) +
-    `<p class="note">No sistema real: vendas, produtos (giro, margem, parados, rupturas), Mercado Livre e kits, compras, fiscal e financeiro, com filtros e exportação CSV, cada aba liberada conforme o perfil.</p>`;
+  const tab = S.tab || "abc"; const allowCons = ["MEDIATOR","MANAGER"].includes(S.role);
+  const since = new Date(); since.setDate(since.getDate() - 90);
+  const os = visibleOrders().filter((o) => billed(o) && new Date(o.date) >= since);
+  const tabs = [["abc", "Curva ABC de produtos"], ["vend", "Vendedores"], ["uf", "Vendas por estado"], ["cons", "Consolidado por empresa"]].filter(([k]) => k !== "cons" || allowCons);
+  let body = "";
+  if (tab === "abc") {
+    const bp = {}; os.forEach((o) => o.items.forEach((i) => { bp[i.sku] = bp[i.sku] || { q: 0, v: 0 }; bp[i.sku].q += i.qty; bp[i.sku].v += i.sub; }));
+    const m = abcMap(Object.entries(bp).map(([k, x]) => ({ k, v: x.v })));
+    const rows = Object.entries(bp).sort((a, b) => b[1].v - a[1].v);
+    body = `<div class="grid g3">${["A", "B", "C"].map((cl) => { const ks = rows.filter(([k]) => m[k].cls === cl); return `<div class="card kpi"><div class="top-row"><span class="abc abc-${cl}" style="font-size:16px;padding:4px 12px">${cl}</span><span class="note">${ks.length} produto(s)</span></div><div class="val num">${money(ks.reduce((s, [, x]) => s + x.v, 0))}</div><small class="note">${cl === "A" ? "até 80% do faturamento: nunca deixar faltar" : cl === "B" ? "de 80% a 95%: repor com regularidade" : "últimos 5%: avaliar mix e estoque parado"}</small></div>`; }).join("")}</div>` +
+      table([{ t: "Classe" }, { t: "Produto" }, { t: "Quantidade", r: 1 }, { t: "Faturamento", r: 1 }, { t: "% do total", r: 1 }, { t: "% acumulado" }],
+        rows.map(([k, x]) => `<tr class="click" data-prod="${k}"><td><span class="abc abc-${m[k].cls}">${m[k].cls}</span></td><td><div class="who-cell">${thumb(prod(k), 30)}<span>${esc(prod(k).name)}<small>${k}</small></span></div></td><td class="r num">${nf.format(x.q)}</td><td class="r num">${money(x.v)}</td><td class="r num">${(m[k].pct * 100).toFixed(1).replace(".", ",")}%</td><td style="min-width:140px"><div class="mini"><i style="width:${m[k].acc * 100}%;background:var(--grad)"></i></div><small class="note">${(m[k].acc * 100).toFixed(0)}%</small></td></tr>`));
+  } else if (tab === "vend") {
+    const bs = {}; os.forEach((o) => { bs[o.seller] = bs[o.seller] || { v: 0, n: 0, c: new Set() }; bs[o.seller].v += o.total; bs[o.seller].n++; bs[o.seller].c.add(o.customer); });
+    const goal = { "Bruno Alves": 45000, "Carla Mendes": 30000, "Gerente Comercial": 50000 };
+    body = table([{ t: "Vendedor" }, { t: "Pedidos", r: 1 }, { t: "Clientes", r: 1 }, { t: "Ticket médio", r: 1 }, { t: "Faturamento 90d", r: 1 }, { t: "Meta 90d" }, { t: "Comissão (3%)", r: 1 }],
+      Object.entries(bs).sort((a, b) => b[1].v - a[1].v).map(([n, x]) => { const g = goal[n] || 30000; const pct = x.v / g; return `<tr><td><div class="who-cell">${avatar(n)}<span>${esc(n)}</span></div></td><td class="r num">${x.n}</td><td class="r num">${x.c.size}</td><td class="r num">${money(x.v / x.n)}</td><td class="r num">${money(x.v)}</td><td style="min-width:170px"><div class="mini"><i style="width:${Math.min(100, pct * 100)}%;background:${pct >= 1 ? "var(--good)" : "var(--grad)"}"></i></div><small class="note">${Math.round(pct * 100)}% de ${money(g).replace(",00", "")}</small></td><td class="r num">${money(x.v * 0.03)}</td></tr>`; }));
+  } else if (tab === "uf") {
+    const bu = {}; os.forEach((o) => { const uf = ufOf(cust(o.customer)) || "-"; bu[uf] = bu[uf] || { v: 0, n: 0 }; bu[uf].v += o.total; bu[uf].n++; });
+    const rows = Object.entries(bu).sort((a, b) => b[1].v - a[1].v); const mx = rows[0]?.[1].v || 1; const tot = rows.reduce((s, [, x]) => s + x.v, 0) || 1;
+    body = `<div class="card"><h2>Faturamento por estado <small>90 dias · CFOP ${EMIT_UF === "SP" ? "5xxx dentro de SP, 6xxx fora" : ""}</small></h2><div class="list">${rows.map(([uf, x]) => `<div class="hbar"><div class="l"><span><b class="ufb">${uf}</b> ${x.n} pedido(s) ${uf === EMIT_UF ? "· dentro do estado" : "· interestadual"}</span><b class="num">${money(x.v)} <small class="note">${Math.round((x.v / tot) * 100)}%</small></b></div><div class="t"><i style="width:${(x.v / mx) * 100}%;background:var(--grad)"></i></div></div>`).join("")}</div></div>`;
+  } else {
+    const rows = Object.values(S.companies).map((c) => { const o2 = c.orders.filter((o) => billed(o) && o.status !== "CANCELADO" && new Date(o.date) >= since); const t = o2.reduce((s, o) => s + o.total, 0); return { c, n: o2.length, t, tot: c.orders.filter((o) => new Date(o.date) >= since).length }; });
+    body = table([{ t: "Empresa" }, { t: "Pedidos aprovados", r: 1 }, { t: "Faturamento 90d", r: 1 }, { t: "Ticket médio", r: 1 }, { t: "Cotações → pedidos", r: 1 }],
+      rows.map(({ c, n, t, tot }) => `<tr><td>${c.code} · ${esc(c.name)}</td><td class="r num">${n}</td><td class="r num">${money(t)}</td><td class="r num">${money(n ? t / n : 0)}</td><td class="r num">${tot ? Math.round((n / tot) * 100) : 0}%</td></tr>`).concat([`<tr><td><b>Consolidado</b></td><td class="r num"><b>${rows.reduce((s, r) => s + r.n, 0)}</b></td><td class="r num"><b>${money(rows.reduce((s, r) => s + r.t, 0))}</b></td><td></td><td></td></tr>`])) +
+      `<p class="note">Os registros continuam separados por empresa; aqui só os totais são somados.</p>`;
+  }
+  return head("Relatórios", `Últimos 90 dias · ${esc(C().name)}${role().own ? " · sua carteira" : ""}`) + `<div class="tabs">${tabs.map(([k, l]) => `<button data-tab="${k}" class="${tab === k ? "on" : ""}">${l}</button>`).join("")}</div>` + body;
+}
+
+// ---------------------------------------------------------------------------
+// Configurações: parâmetros por empresa, perfis e integrações.
+// ---------------------------------------------------------------------------
+function vConfig() {
+  const tab = S.tab || "param";
+  const tabs = [["param", "Parâmetros da empresa"], ["perfis", "Perfis e permissões"], ["integ", "Integrações"]];
+  let body = "";
+  if (tab === "param") {
+    const c = C();
+    body = `<div class="grid g2"><div class="card"><h2>Comercial</h2><div class="form" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+        <label class="f" for="cfg-disc">Desconto máximo sem aprovação (%)<input id="cfg-disc" type="number" min="0" max="50" step="0.5" value="${c.maxDisc}"></label>
+        <label class="f">Teto de pedido sem aprovação<input value="Sem teto" disabled></label>
+        <label class="f">Política de estoque<input value="Reserva na aprovação, baixa na expedição" disabled></label>
+        <label class="f">Tabela padrão<input value="1 · Padrão" disabled></label></div>
+        <p class="note" style="margin:12px 0 0">Alterar o desconto máximo já muda a regra de aprovação dos próximos pedidos.</p></div>
+      <div class="card"><h2>Fiscal</h2><dl class="kv"><dt>Razão social</dt><dd>${esc(c.name)}</dd><dt>CNPJ</dt><dd>${c.code === "A" ? "11.222.333/0001-81" : "44.555.666/0001-71"} (teste)</dd><dt>UF</dt><dd>${EMIT_UF}</dd><dt>Regime</dt><dd>A confirmar com a contabilidade</dd><dt>Ambiente NF-e</dt><dd>${pill(["Homologação", "p-warn"])}</dd><dt>Série / próximo nº</dt><dd>1 / ${c.nf}</dd><dt>Certificado digital</dt><dd>${pill(["Não configurado", "p-bad"])}</dd></dl></div></div>`;
+  } else if (tab === "perfis") {
+    const mods = MODULES.filter(([k]) => k !== "config");
+    body = `<div class="tbl-wrap"><table><thead><tr><th>Perfil</th>${mods.map(([, l]) => `<th style="white-space:normal;min-width:70px">${l}</th>`).join("")}</tr></thead><tbody>${Object.entries(ROLES).map(([k, r]) => `<tr><td><b>${r.label}</b><small class="note" style="display:block">${r.own ? "só a própria carteira" : r.approve ? "aprova pedidos" : ""}</small></td>${mods.map(([m]) => `<td style="text-align:center">${r.mods === "*" || r.mods.includes(m) ? `<span class="okdot" title="acesso">✓</span>` : `<span class="note">-</span>`}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
+      <p class="note">No sistema real as permissões são verificadas no servidor; esconder o menu nunca é a única proteção.</p>`;
+  } else {
+    const items = [["NF-e (provedor fiscal)", "Simulador de homologação", "p-warn", "Informar o provedor atual e o certificado digital"], ["Mercado Livre", S.company === "A" ? "Conectado (exemplo)" : "Não conectado", S.company === "A" ? "p-good" : "p-neutral", "Autorizar a conta e vincular anúncios"], ["E-mail (IMAP/SMTP)", "Não configurado", "p-neutral", "Cadastrar as caixas do domínio"], ["Bancos (CNAB / conciliação)", "Não configurado", "p-neutral", "Escolher bancos e formato de retorno"], ["Backup", "Automático diário na nuvem", "p-good", "Testar restauração antes de produção"]];
+    body = table([{ t: "Integração" }, { t: "Situação" }, { t: "Próximo passo" }], items.map(([a, b, c2, d]) => `<tr><td><b>${a}</b></td><td>${pill([b, c2])}</td><td class="note">${d}</td></tr>`));
+  }
+  return head("Configurações", esc(C().name)) + `<div class="tabs">${tabs.map(([k, l]) => `<button data-tab="${k}" class="${tab === k ? "on" : ""}">${l}</button>`).join("")}</div>` + body;
 }
 
 function vPortal() {
@@ -1729,7 +1944,7 @@ function vPortal() {
 // Eventos
 // ---------------------------------------------------------------------------
 function err(e) { const box = $("err"); if (box) box.innerHTML = `<div class="alert bad" style="margin-top:10px">${esc(e.message)}</div>`; else toast(e.message); }
-function go(view) { S.batchErrors = null; S.view = view; S.orderId = null; S.tab = null; S.composing = false; S.danfe = null; S.impView = null; nfDraft = null; impDraft = null; render(); window.scrollTo(0, 0); }
+function go(view) { S.clienteId = null; S.prodSku = null; S.batchErrors = null; S.view = view; S.orderId = null; S.tab = null; S.composing = false; S.danfe = null; S.impView = null; nfDraft = null; impDraft = null; render(); window.scrollTo(0, 0); }
 
 document.addEventListener("click", (ev) => {
   if (ev.target.closest("#bell")) { $("bellbox").hidden = !$("bellbox").hidden; return; }
@@ -1741,7 +1956,7 @@ document.addEventListener("click", (ev) => {
     return render();
   }
   if (ev.target.closest("[data-nopen]")) return;
-  const t = ev.target.closest("button, tr[data-open]"); if (!t) return;
+  const t = ev.target.closest("button, tr[data-open], tr[data-cli], tr[data-prod], div[data-cli]"); if (!t) return;
   const ds = t.dataset; const o = S.orderId && C().orders.find((x) => x.id === S.orderId);
   try {
     if (ds.go) return go(ds.go);
@@ -1750,6 +1965,12 @@ document.addEventListener("click", (ev) => {
     if (ds.act === "novo") { return startDraft(); }
     if (ds.act === "e-add") { return includeItem(); }
     if (ds.act === "novo-painel") { return newSale(); }
+    if (ds.cli) { S.view = "clientes"; S.clienteId = ds.cli; S.orderId = null; render(); return window.scrollTo(0, 0); }
+    if (ds.act === "cli-back") { S.clienteId = null; return render(); }
+    if (ds.newfor) { const id = ds.newfor; go("pedidos"); startDraft(); draft.customer = id; return render(); }
+    if (ds.prod !== undefined && ds.prod) { S.view = "produtos"; S.prodSku = ds.prod; render(); return window.scrollTo(0, 0); }
+    if (ds.act === "prod-back") { S.prodSku = null; return render(); }
+    if (ds.fam !== undefined) { PRF.fam = ds.fam; return render(); }
     if (ds.sort) { PF.dir = PF.sort === ds.sort ? -PF.dir : -1; PF.sort = ds.sort; return render(); }
     if (ds.page) { PF.page += +ds.page; return render(); }
     if (ds.bulk) { if (ds.bulk === "clear") { PF.sel.clear(); return render(); } return bulk(ds.bulk); }
@@ -1798,7 +2019,9 @@ document.addEventListener("change", (ev) => {
   if (!el.isConnected) return;
   if (el.id === "pf-seller") { PF.seller = el.value; PF.page = 0; return render(); }
   if (el.id === "pf-period") { PF.period = el.value; PF.page = 0; return render(); }
-  if (el.id === "pf-q") return;
+  if (el.id === "pf-q" || el.id === "cf-q" || el.id === "pr-q") return;
+  if (el.id === "cf-cls") { CF.cls = el.value; return render(); }
+  if (el.id === "cfg-disc") { C().maxDisc = Math.max(0, +el.value || 0); toast(`Desconto máximo sem aprovação: ${C().maxDisc}%.`); return render(); }
   if (el.id === "company" || el.id === "role") { PF.sel.clear(); PF.seller = ""; PF.q = ""; S.danfe = null; S.impView = null; nfDraft = null; impDraft = null; }
   if (el.id === "company") { S.company = el.value; S.orderId = null; S.composing = false; S.tab = null; toast(`Empresa ${el.value} ativa: telas da empresa anterior foram fechadas.`); return render(); }
   if (el.id === "role") { S.role = el.value; S.orderId = null; S.composing = false; S.tab = null; if (S.role === "CUSTOMER") S.view = "portal"; return render(); }
@@ -1893,8 +2116,9 @@ function buildCmd(q) {
   }));
   if (can("pedidos")) visibleOrders().filter((x) => norm(`${code(x)} ${cust(x.customer).name}`).includes(t.replace(/^abrir\s+/, ""))).slice(0, 5)
     .forEach((x) => out.push({ g: "Pedidos", label: `${code(x)} · ${cust(x.customer).name}`, hint: STATUS[x.status][0], run: () => { S.view = "pedidos"; S.orderId = x.id; render(); } }));
+  if (can("clientes")) myCustomers().filter((c) => matchWords(`${c.id} ${c.name} ${c.doc} ${c.city}`, q)).slice(0, 4).forEach((c) => out.push({ g: "Clientes", label: c.name, hint: `${c.doc} · ${c.city}`, run: () => { S.view = "clientes"; S.clienteId = c.id; render(); } }));
   if (can("produtos")) C().products.filter((p) => norm(`${p.sku} ${p.name}`).includes(t)).slice(0, 5)
-    .forEach((p) => out.push({ g: "Produtos", label: `${p.sku} · ${p.name}`, hint: `${nf.format(avail(p))} disponíveis`, run: () => go(can("estoque") && !p.kit ? "estoque" : "produtos") }));
+    .forEach((p) => out.push({ g: "Produtos", label: `${p.sku} · ${p.name}`, hint: `${nf.format(avail(p))} disponíveis`, run: () => { S.view = "produtos"; S.prodSku = p.sku; render(); } }));
   return out;
 }
 function runCmd(t) {
@@ -1930,5 +2154,3 @@ document.addEventListener("keydown", (ev) => { if ((ev.ctrlKey || ev.metaKey) &&
 S = seed();
 render();
 </script>
-
-</html>
