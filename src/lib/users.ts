@@ -46,6 +46,18 @@ export async function createVendor(actorId: string, input: VendorInput) {
       commissionPct2: input.commissionPct2,
       commissionStepValue: input.commissionStepValue,
       passwordHash,
+      // Acesso inicial: Diretoria/Admin operam todas as empresas; os demais
+      // começam na primeira (ajustável em ERP > Empresas).
+      companies: {
+        create: (
+          await prisma.company.findMany({
+            where: { active: true },
+            orderBy: { code: "asc" },
+            take: input.role === "MANAGER" || input.role === "ADMIN" ? undefined : 1,
+            select: { id: true },
+          })
+        ).map((c) => ({ companyId: c.id })),
+      },
     },
   });
 

@@ -2,14 +2,9 @@ import Link from "next/link";
 import { LogoutButton } from "@/components/LogoutButton";
 import { SearchBar } from "@/components/shell/SearchBar";
 import { MenuIcon } from "@/components/shared/Icons";
+import { ROLE_LABELS } from "@/lib/permissions";
+import type { Role } from "@/generated/prisma/client";
 
-const ROLE_LABELS: Record<string, string> = {
-  ADMIN: "Admin",
-  MANAGER: "Diretor",
-  SELLER: "Vendedor",
-  SUPPORT: "Suporte",
-  MEDIATOR: "Mediador",
-};
 
 export function Topbar({
   name,
@@ -42,7 +37,7 @@ export function Topbar({
       )}
       <SearchBar />
       <div className="ml-auto flex items-center gap-2.5 sm:gap-3.5">
-        <span className="hidden text-xs text-ink-muted sm:inline">{ROLE_LABELS[role] ?? role}</span>
+        <span className="hidden text-xs text-ink-muted sm:inline">{ROLE_LABELS[role as Role] ?? role}</span>
         <Link href="/meu-perfil" title="Meu perfil">
           {avatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element

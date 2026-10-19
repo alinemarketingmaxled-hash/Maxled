@@ -3,14 +3,8 @@ import { requireView } from "@/lib/require-permission";
 import { canEdit } from "@/lib/permissions";
 import { listVendors, getTodaysBirthdays } from "@/lib/users";
 import { GiftIcon } from "@/components/shared/Icons";
+import { ROLE_LABELS } from "@/lib/permissions";
 
-const ROLE_LABELS: Record<string, string> = {
-  ADMIN: "Admin",
-  MANAGER: "Diretor",
-  SELLER: "Vendedor",
-  SUPPORT: "Suporte",
-  MEDIATOR: "Mediador",
-};
 
 function currency(v: number | null) {
   if (v === null) return "-";

@@ -6,6 +6,8 @@ import { listImportantPosts, getUnreadPostCount } from "@/lib/social";
 import { healProspectStages } from "@/lib/prospect-stages";
 import { getOverdueTaskCount } from "@/lib/tasks";
 import { AppShell } from "@/components/shell/AppShell";
+import { listUserCompanies, COMPANY_COOKIE } from "@/lib/erp/company";
+import { cookies } from "next/headers";
 
 export default async function AppLayout({
   children,
@@ -14,8 +16,10 @@ export default async function AppLayout({
 }) {
   const session = await auth();
   if (!session?.user) redirect("/login");
+  // Sessões do Portal do cliente nunca entram na área interna.
+  if (session.user.role === "CUSTOMER") redirect("/portal");
 
-  const [me, goal, importantPosts, overdueCount, unreadPostCount] = await Promise.all([
+  const [me, goal, importantPosts, overdueCount, unreadPostCount, , companies, jar] = await Promise.all([
     prisma.user.findUnique({
       where: { id: session.user.id },
       select: { name: true, avatarUrl: true },
@@ -25,7 +29,11 @@ export default async function AppLayout({
     getOverdueTaskCount(session),
     getUnreadPostCount(session),
     healProspectStages(),
+    listUserCompanies(session),
+    cookies(),
   ]);
+  const wantedCompany = jar.get(COMPANY_COOKIE)?.value;
+  const activeCompany = companies.find((c) => c.id === wantedCompany) ?? companies[0] ?? null;
 
   return (
     <AppShell
@@ -34,6 +42,8 @@ export default async function AppLayout({
       avatarUrl={me?.avatarUrl ?? null}
       overdueCount={overdueCount}
       unreadPostCount={unreadPostCount}
+      companies={companies.map((c) => ({ id: c.id, code: c.code, name: c.tradeName || c.name }))}
+      activeCompanyId={activeCompany?.id ?? null}
       commission={{
         achieved: goal?.achieved ?? 0,
         dealsWon: goal?.dealsWon ?? 0,

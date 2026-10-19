@@ -91,6 +91,37 @@
   --status-critical: #a01f1f;
 }
 
+/* Módulos operacionais do ERP (Documento Mestre §6: "dashboard executivo
+   escuro e módulos operacionais claros"): mesma paleta do tema claro,
+   aplicada só ao conteúdo das telas operacionais — menu e painel seguem
+   escuros. */
+.ops-light {
+  --black-ground: #f4f4f2;
+  --black-surface: #ffffff;
+  --black-surface-2: #f7f7f6;
+  --black-surface-3: #ececea;
+
+  --gold: #7d5d16;
+  --gold-bright: #6b4e0c;
+  --gold-deep: #c4a03a;
+
+  --gold-contrast: #ffffff;
+  --grid-line: rgba(107, 78, 12, 0.06);
+
+  --ink: #201a0d;
+  --ink-muted: #5c5340;
+  --ink-faint: #6d6450;
+
+  --status-good: #1e7a44;
+  --status-info: #1f5aa8;
+  --status-warning: #a8501e;
+  --status-critical: #a01f1f;
+
+  color-scheme: light;
+  background: var(--black-ground);
+  color: var(--ink);
+}
+
 :root[data-font-scale="large"] {
   --user-font-scale: 1.15;
 }

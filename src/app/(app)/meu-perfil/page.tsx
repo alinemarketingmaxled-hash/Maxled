@@ -5,14 +5,8 @@ import { MyProfileForm } from "@/components/perfil/MyProfileForm";
 import { MfaSettings } from "@/components/perfil/MfaSettings";
 import { BackLink } from "@/components/shell/BackLink";
 import { AppearanceSettings } from "@/components/shell/AppearanceSettings";
+import { ROLE_LABELS } from "@/lib/permissions";
 
-const ROLE_LABELS: Record<string, string> = {
-  ADMIN: "Admin",
-  MANAGER: "Diretor",
-  SELLER: "Vendedor",
-  SUPPORT: "Suporte",
-  MEDIATOR: "Mediador",
-};
 
 export default async function MeuPerfilPage() {
   const session = await auth();

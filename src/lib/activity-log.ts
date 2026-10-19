@@ -6,14 +6,24 @@ import type { Prisma } from "@/generated/prisma/client";
 
 export async function logActivity(params: {
   actorId: string;
-  entityType: "Contact" | "Deal" | "PipelineStage" | "User" | "Prospect";
+  entityType:
+    | "Contact" | "Deal" | "PipelineStage" | "User" | "Prospect"
+    // ERP
+    | "Company" | "Product" | "Supplier" | "SalesOrder" | "StockMovement" | "StockTransfer"
+    | "FiscalDocument" | "Receivable" | "Payable" | "PurchaseOrder" | "CustomerSchedule"
+    | "PortalUser" | "PortalRequest" | "MailAccount" | "MarketplaceListing" | "Integration";
   entityId: string;
-  action: "created" | "updated" | "deleted" | "restored" | "stage_changed" | "call_logged" | "unlocked";
+  action:
+    | "created" | "updated" | "deleted" | "restored" | "stage_changed" | "call_logged" | "unlocked"
+    | "submitted" | "approved" | "rejected" | "cancelled" | "price_changed" | "stock_adjusted"
+    | "emitted" | "paid" | "received" | "dispatched" | "delivered" | "reprocessed" | "reconciled"
+    | "access_changed";
   diff?: Prisma.InputJsonValue;
   contactId?: string;
   dealId?: string;
-}) {
-  await prisma.activityLog.create({
+  companyId?: string;
+}, db: Pick<typeof prisma, "activityLog"> = prisma) {
+  await db.activityLog.create({
     data: {
       actorId: params.actorId,
       entityType: params.entityType,
@@ -22,6 +32,7 @@ export async function logActivity(params: {
       diff: params.diff,
       contactId: params.contactId,
       dealId: params.dealId,
+      companyId: params.companyId,
     },
   });
 }

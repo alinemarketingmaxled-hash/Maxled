@@ -26,7 +26,8 @@ export class MfaInvalidError extends CredentialsSignin {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  session: { strategy: "jwt" },
+  // Sessões expiram (§7): 12h de inatividade máxima por token.
+  session: { strategy: "jwt", maxAge: 12 * 60 * 60 },
   pages: { signIn: "/login" },
   providers: [
     Credentials({
@@ -82,12 +83,55 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         };
       },
     }),
+    // Portal do cliente (§4.14): contas separadas da equipe (PortalUser),
+    // sessão com role CUSTOMER + contactId — a matriz de permissões nega
+    // todos os módulos internos e o portal só consulta pelo contactId.
+    Credentials({
+      id: "portal",
+      name: "Portal do cliente",
+      credentials: {
+        email: { label: "E-mail", type: "email" },
+        password: { label: "Senha", type: "password" },
+      },
+      async authorize(credentials) {
+        const email = credentials?.email;
+        const password = credentials?.password;
+        if (typeof email !== "string" || typeof password !== "string") return null;
+
+        const user = await prisma.portalUser.findUnique({
+          where: { email: email.trim().toLowerCase() },
+          include: { contact: { select: { deletedAt: true } } },
+        });
+        if (!user || !user.active || user.contact.deletedAt) return null;
+        if (user.lockedAt) throw new AccountLockedError();
+
+        const valid = await bcrypt.compare(password, user.passwordHash);
+        if (!valid) {
+          const attempts = user.failedLoginAttempts + 1;
+          await prisma.portalUser.update({
+            where: { id: user.id },
+            data:
+              attempts >= MAX_LOGIN_ATTEMPTS
+                ? { failedLoginAttempts: attempts, lockedAt: new Date() }
+                : { failedLoginAttempts: attempts },
+          });
+          if (attempts >= MAX_LOGIN_ATTEMPTS) throw new AccountLockedError();
+          return null;
+        }
+        await prisma.portalUser.update({
+          where: { id: user.id },
+          data: { failedLoginAttempts: 0, lastLoginAt: new Date() },
+        });
+        return { id: user.id, name: user.name, email: user.email, role: "CUSTOMER" as Role, contactId: user.contactId };
+      },
+    }),
   ],
   callbacks: {
     jwt({ token, user }) {
       if (user) {
         token.role = (user as { role: Role }).role;
         token.id = user.id as string;
+        token.contactId = (user as { contactId?: string }).contactId;
       }
       return token;
     },
@@ -95,6 +139,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as Role;
+        session.user.contactId = token.contactId as string | undefined;
       }
       return session;
     },

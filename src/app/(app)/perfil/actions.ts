@@ -14,6 +14,11 @@ import {
 } from "@/lib/users";
 import type { Role } from "@/generated/prisma/client";
 
+const STAFF_ROLES: Role[] = [
+  "SELLER", "SUPPORT", "MANAGER", "ADMIN", "MEDIATOR",
+  "SALES_MANAGER", "STOCK", "PURCHASING", "FINANCE", "FISCAL", "MARKETING",
+];
+
 async function requireMediator() {
   const session = await auth();
   if (!session?.user) redirect("/login");
@@ -34,7 +39,8 @@ function readVendorInput(formData: FormData): VendorInput {
   return {
     name: (formData.get("name") as string)?.trim() ?? "",
     email: (formData.get("email") as string)?.trim() ?? "",
-    role: (formData.get("role") as Role) ?? "SELLER",
+    // CUSTOMER is a portal-only session role — never assignable to staff.
+    role: STAFF_ROLES.includes(formData.get("role") as Role) ? (formData.get("role") as Role) : "SELLER",
     jobTitle: str("jobTitle"),
     birthday: birthday ? new Date(birthday) : null,
     goal1: num("goal1"),

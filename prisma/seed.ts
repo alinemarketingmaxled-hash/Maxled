@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import { prisma } from "../src/lib/prisma";
 import { ensureProspectStagesSeeded } from "../src/lib/prospect-stages";
+import { seedErp } from "./seed-erp";
 
 async function main() {
   const passwordHash = await bcrypt.hash("maxled123", 10);
@@ -150,6 +151,8 @@ async function main() {
       value: 12750,
     },
   });
+
+  await seedErp(seller.id, contact.id);
 
   console.log({ mediator: mediator.email, seller: seller.email, pipeline: pipeline.name });
 }

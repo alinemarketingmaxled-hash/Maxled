@@ -7,7 +7,10 @@ import { canView } from "@/lib/permissions";
 import { Logo } from "@/components/shell/Logo";
 import { CommissionWidget, type CommissionSummary } from "@/components/shell/CommissionWidget";
 import { ComunicadosWidget, type ImportantPost } from "@/components/shell/ComunicadosWidget";
-import { NAV_ITEMS } from "./nav-items";
+import { CompanySwitcher, type CompanyOption } from "@/components/shell/CompanySwitcher";
+import { NAV_ITEMS, type NavSection } from "./nav-items";
+
+const SECTIONS: NavSection[] = ["CRM", "ERP", "Gestão"];
 
 export function Sidebar({
   role,
@@ -17,7 +20,11 @@ export function Sidebar({
   unreadPostCount,
   open,
   onClose,
+  companies,
+  activeCompanyId,
 }: {
+  companies: CompanyOption[];
+  activeCompanyId: string | null;
   role: Role;
   commission: CommissionSummary | null;
   importantPosts: ImportantPost[];
@@ -52,7 +59,7 @@ export function Sidebar({
         <div className="flex items-center gap-2.5 px-2">
           <Logo size={34} />
           <span className="font-display text-lg">
-            Maxled <span className="text-gold-bright">CRM</span>
+            Maxled <span className="text-gold-bright">ERP</span>
           </span>
           <button
             onClick={onClose}
@@ -63,44 +70,57 @@ export function Sidebar({
           </button>
         </div>
 
-        <nav className="flex flex-col gap-0.5">
-          {NAV_ITEMS.filter((item) => canView(role, item.module)).map((item) => {
-            const active = pathname === item.href;
+        <CompanySwitcher companies={companies} activeId={activeCompanyId} />
+
+        <nav className="flex flex-col gap-3">
+          {SECTIONS.map((section) => {
+            const items = NAV_ITEMS.filter((item) => item.section === section && canView(role, item.module));
+            if (items.length === 0) return null;
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={onClose}
-                className={`flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-[13.5px] transition-colors ${
-                  active
-                    ? "bg-gold font-bold text-gold-contrast"
-                    : "text-ink-muted hover:bg-surface-2 hover:text-ink"
-                }`}
-              >
-                <item.icon className="h-[18px] w-[18px] flex-none opacity-90" />
-                {item.label}
-                {item.module === "perfil" && role === "MEDIATOR" && (
-                  <span className="ml-auto rounded-full bg-gold-deep px-1.5 py-0.5 text-[9.5px] uppercase tracking-wide text-ink">
-                    Mediador
-                  </span>
-                )}
-                {item.module === "agenda" && overdueCount > 0 && (
-                  <span
-                    title={`${overdueCount} atrasado(s)`}
-                    className="ml-auto flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-critical px-1 text-[10px] font-bold text-white"
-                  >
-                    {overdueCount > 99 ? "99+" : overdueCount}
-                  </span>
-                )}
-                {item.module === "social" && unreadPostCount > 0 && (
-                  <span
-                    title={`${unreadPostCount} publicação(ões) nova(s)`}
-                    className="ml-auto flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-gold-solid px-1 text-[10px] font-bold text-black"
-                  >
-                    {unreadPostCount > 99 ? "99+" : unreadPostCount}
-                  </span>
-                )}
-              </Link>
+              <div key={section} className="flex flex-col gap-0.5">
+                <span className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-ink-faint">
+                  {section}
+                </span>
+                {items.map((item) => {
+                  const active = item.href === "/" ? pathname === "/" : pathname === item.href || pathname.startsWith(`${item.href}/`);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={onClose}
+                      className={`flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-[13.5px] transition-colors ${
+                        active
+                          ? "bg-gold font-bold text-gold-contrast"
+                          : "text-ink-muted hover:bg-surface-2 hover:text-ink"
+                      }`}
+                    >
+                      <item.icon className="h-[18px] w-[18px] flex-none opacity-90" />
+                      {item.label}
+                      {item.module === "perfil" && role === "MEDIATOR" && (
+                        <span className="ml-auto rounded-full bg-gold-deep px-1.5 py-0.5 text-[9.5px] uppercase tracking-wide text-ink">
+                          Mediador
+                        </span>
+                      )}
+                      {item.module === "agenda" && overdueCount > 0 && (
+                        <span
+                          title={`${overdueCount} atrasado(s)`}
+                          className="ml-auto flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-critical px-1 text-[10px] font-bold text-white"
+                        >
+                          {overdueCount > 99 ? "99+" : overdueCount}
+                        </span>
+                      )}
+                      {item.module === "social" && unreadPostCount > 0 && (
+                        <span
+                          title={`${unreadPostCount} publicação(ões) nova(s)`}
+                          className="ml-auto flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-gold-solid px-1 text-[10px] font-bold text-black"
+                        >
+                          {unreadPostCount > 99 ? "99+" : unreadPostCount}
+                        </span>
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
             );
           })}
         </nav>

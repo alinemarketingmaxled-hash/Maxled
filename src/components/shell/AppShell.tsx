@@ -7,6 +7,7 @@ import { Topbar } from "@/components/shell/Topbar";
 import { CircuitBackground } from "@/components/shell/CircuitBackground";
 import type { CommissionSummary } from "@/components/shell/CommissionWidget";
 import type { ImportantPost } from "@/components/shell/ComunicadosWidget";
+import type { CompanyOption } from "@/components/shell/CompanySwitcher";
 
 /** Owns the mobile drawer state so the hamburger button (in Topbar) and the
  * sidebar it opens (a separate element in the tree) can share it. On
@@ -19,8 +20,12 @@ export function AppShell({
   importantPosts,
   overdueCount,
   unreadPostCount,
+  companies,
+  activeCompanyId,
   children,
 }: {
+  companies: CompanyOption[];
+  activeCompanyId: string | null;
   role: Role;
   name: string;
   avatarUrl: string | null;
@@ -41,6 +46,8 @@ export function AppShell({
         importantPosts={importantPosts}
         overdueCount={overdueCount}
         unreadPostCount={unreadPostCount}
+        companies={companies}
+        activeCompanyId={activeCompanyId}
         open={navOpen}
         onClose={() => setNavOpen(false)}
       />

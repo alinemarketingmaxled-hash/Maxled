@@ -6,11 +6,14 @@ declare module "next-auth" {
     user: {
       id: string;
       role: Role;
+      /** Só nas sessões do Portal do cliente (role CUSTOMER). */
+      contactId?: string;
     } & DefaultSession["user"];
   }
 
   interface User {
     role?: Role;
+    contactId?: string;
   }
 }
 
@@ -18,5 +21,6 @@ declare module "next-auth/jwt" {
   interface JWT {
     id?: string;
     role?: Role;
+    contactId?: string;
   }
 }

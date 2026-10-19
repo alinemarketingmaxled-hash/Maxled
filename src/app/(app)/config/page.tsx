@@ -1,21 +1,17 @@
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { requireView } from "@/lib/require-permission";
-import { canView, getPermissionMatrix, getPermission, type Module } from "@/lib/permissions";
+import { canView, getPermissionMatrix, getPermission, ROLE_LABELS, type Module } from "@/lib/permissions";
 import { listActivity } from "@/lib/activity-log";
 import { listVendors } from "@/lib/users";
 import { ActivityLogFilters } from "@/components/config/ActivityLogFilters";
 import { DownloadIcon } from "@/components/shared/Icons";
 import type { Role } from "@/generated/prisma/client";
 
-const ROLE_LABELS: Record<Role, string> = {
-  SELLER: "Vendedor",
-  SUPPORT: "Suporte",
-  MANAGER: "Diretor",
-  ADMIN: "Admin",
-  MEDIATOR: "Mediador",
-};
-const ROLE_ORDER: Role[] = ["MEDIATOR", "ADMIN", "MANAGER", "SELLER", "SUPPORT"];
+const ROLE_ORDER: Role[] = [
+  "MEDIATOR", "ADMIN", "MANAGER", "SALES_MANAGER", "SELLER", "SUPPORT",
+  "STOCK", "PURCHASING", "FINANCE", "FISCAL", "MARKETING",
+];
 
 const MODULE_LABELS: Record<Module, string> = {
   analitica: "Início",
@@ -28,9 +24,25 @@ const MODULE_LABELS: Record<Module, string> = {
   perfil: "Perfil",
   config: "Config",
   activityLogs: "Logs",
+  painel: "Painel ERP",
+  produtos: "Produtos",
+  estoque: "Estoque",
+  pedidos: "Pedidos",
+  expedicao: "Expedição",
+  compras: "Compras",
+  fiscal: "Fiscal",
+  financeiro: "Financeiro",
+  programacao: "Programação",
+  mercadolivre: "Mercado Livre",
+  emails: "E-mails",
+  relatorios: "Relatórios",
+  empresas: "Empresas",
+  portalAdmin: "Portal",
 };
 const MODULE_ORDER: Module[] = [
   "analitica", "vendas", "negocios", "prospeccoes", "agenda", "social", "ia", "perfil", "config", "activityLogs",
+  "painel", "produtos", "estoque", "pedidos", "expedicao", "compras", "fiscal", "financeiro",
+  "programacao", "mercadolivre", "emails", "relatorios", "empresas", "portalAdmin",
 ];
 
 const ACTION_LABEL: Record<string, string> = {

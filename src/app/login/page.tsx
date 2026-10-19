@@ -1,12 +1,13 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { landingFor } from "@/lib/permissions";
 import { LoginForm } from "@/components/LoginForm";
 import { Logo } from "@/components/shell/Logo";
 import { CircuitBackground } from "@/components/shell/CircuitBackground";
 
 export default async function LoginPage() {
   const session = await auth();
-  if (session?.user) redirect("/");
+  if (session?.user) redirect(landingFor(session.user.role));
 
   return (
     <main className="relative flex flex-1 flex-col items-center justify-center gap-8 px-6">
@@ -20,6 +21,9 @@ export default async function LoginPage() {
       <div className="relative z-10">
         <LoginForm />
       </div>
+      <a href="/portal/login" className="relative z-10 text-xs text-ink-muted hover:text-gold-bright">
+        É cliente? Acesse o Portal do cliente
+      </a>
     </main>
   );
 }

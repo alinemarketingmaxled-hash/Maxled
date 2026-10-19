@@ -26,6 +26,12 @@ const ROLES: { value: string; label: string }[] = [
   { value: "MANAGER", label: "Diretor" },
   { value: "ADMIN", label: "Admin" },
   { value: "MEDIATOR", label: "Mediador" },
+  { value: "SALES_MANAGER", label: "Gerente comercial" },
+  { value: "STOCK", label: "Estoque/expedição" },
+  { value: "PURCHASING", label: "Compras/importação" },
+  { value: "FINANCE", label: "Financeiro" },
+  { value: "FISCAL", label: "Fiscal" },
+  { value: "MARKETING", label: "Marketing" },
 ];
 
 function Field({

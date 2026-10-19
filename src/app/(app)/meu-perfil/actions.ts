@@ -10,7 +10,7 @@ const MAX_AVATAR_LENGTH = 400_000;
 
 export async function updateOwnProfileAction(formData: FormData) {
   const session = await auth();
-  if (!session?.user) redirect("/login");
+  if (!session?.user || session.user.role === "CUSTOMER") redirect("/login");
 
   const name = (formData.get("name") as string)?.trim();
   if (!name) throw new Error("Nome é obrigatório.");
@@ -36,7 +36,7 @@ export async function updateOwnProfileAction(formData: FormData) {
  * so an abandoned setup never leaves a half-enabled state in the DB. */
 export async function startMfaSetupAction(): Promise<{ secret: string; qrDataUrl: string }> {
   const session = await auth();
-  if (!session?.user) redirect("/login");
+  if (!session?.user || session.user.role === "CUSTOMER") redirect("/login");
 
   const secret = generateMfaSecret();
   const { qrDataUrl } = await buildMfaSetup(secret, session.user.email ?? session.user.name ?? "usuário");
@@ -48,7 +48,7 @@ export async function confirmMfaSetupAction(
   code: string,
 ): Promise<{ error?: string; ok?: boolean }> {
   const session = await auth();
-  if (!session?.user) redirect("/login");
+  if (!session?.user || session.user.role === "CUSTOMER") redirect("/login");
 
   if (!verifyMfaToken(secret, code, session.user.email ?? "")) {
     return { error: "Código inválido. Confira o app autenticador e tente de novo." };
@@ -60,7 +60,7 @@ export async function confirmMfaSetupAction(
 
 export async function disableMfaAction(): Promise<void> {
   const session = await auth();
-  if (!session?.user) redirect("/login");
+  if (!session?.user || session.user.role === "CUSTOMER") redirect("/login");
   await disableMfa(session.user.id);
   revalidatePath("/meu-perfil");
 }
