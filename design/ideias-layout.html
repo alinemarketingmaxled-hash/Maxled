@@ -1,0 +1,146 @@
+<title>Ideias de layout MAX LED</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap">
+<style>
+/* Galeria escura no visual escolhido (vidro + dourado metálico); cada
+   prancha mostra só a organização da tela, com o mesmo conteúdo. */
+:root {
+  color-scheme: dark;
+  --bg: #0f0e0c;
+  --glass: rgba(255, 255, 255, .055);
+  --glass-2: rgba(255, 255, 255, .09);
+  --line: rgba(255, 255, 255, .11);
+  --text: #f6f1e7;
+  --muted: #bdb4a4;
+  --faint: #8a8274;
+  --gold: #f2cc5b;
+  --grad: linear-gradient(135deg, #fff1b8 0%, #f2cc5b 22%, #c9952a 52%, #f0cf6a 78%, #a87a1c 100%);
+  --good: #7be8b0;
+  --bad: #ff8585;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; color: var(--text); font-family: "Sora", "Segoe UI", sans-serif;
+  background: radial-gradient(900px 600px at 8% -5%, rgba(201,149,42,.38), transparent 60%), radial-gradient(800px 700px at 100% 100%, rgba(168,122,28,.25), transparent 60%), var(--bg);
+  background-attachment: fixed;
+}
+.page { max-width: 1180px; margin: 0 auto; padding-block: 36px 60px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 26px; }
+header h1 { margin: 0; font-size: 30px; letter-spacing: -.02em; }
+header p { margin: 8px 0 0; color: var(--muted); max-width: 68ch; line-height: 1.55; }
+.board { display: grid; grid-template-columns: minmax(0, 290px) minmax(0, 1fr); gap: 22px; padding: 22px; border: 1px solid var(--line); border-radius: 20px; background: var(--glass); backdrop-filter: blur(12px); align-items: start; }
+.about .n { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .14em; color: #1b1206; background: var(--grad); border-radius: 99px; padding: 3px 10px; }
+.about h2 { margin: 10px 0 8px; font-size: 21px; }
+.about p { margin: 0 0 10px; color: var(--muted); font-size: 14px; line-height: 1.55; }
+.about ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 13px; line-height: 1.65; }
+.frame { min-width: 0; overflow-x: auto; }
+.screen { min-width: 660px; height: 340px; border-radius: 14px; border: 1px solid var(--line); background: rgba(0,0,0,.28); overflow: hidden; position: relative; font-size: 11px; }
+footer { text-align: center; color: var(--muted); }
+@media (max-width: 860px) { .board { grid-template-columns: 1fr; } }
+
+/* Peças reutilizadas nas maquetes */
+.g { background: var(--glass); border: 1px solid var(--line); border-radius: 10px; }
+.btn { background: var(--grad); color: #1b1206; font-weight: 700; border-radius: 8px; padding: 5px 10px; font-size: 10.5px; display: inline-block; box-shadow: inset 0 1px 0 rgba(255,255,255,.5); }
+.kpi { padding: 9px; } .kpi small { color: var(--faint); display: block; font-size: 9.5px; } .kpi b { font-size: 15px; display: block; margin-top: 3px; }
+.bars { display: flex; align-items: flex-end; gap: 6px; height: 70px; } .bars i { flex: 1; background: var(--grad); border-radius: 4px 4px 0 0; opacity: .9; }
+.row { display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; border-bottom: 1px solid var(--line); } .row:last-child { border-bottom: 0; }
+.pill { font-size: 9px; padding: 2px 6px; border-radius: 99px; background: rgba(242,204,91,.14); color: var(--gold); }
+.pill.ok { background: rgba(123,232,176,.13); color: var(--good); }
+.dot { width: 22px; height: 22px; border-radius: 7px; background: var(--glass-2); border: 1px solid var(--line); display: grid; place-items: center; color: var(--muted); font-size: 10px; }
+.dot.on { background: var(--grad); color: #1b1206; border: 0; }
+.lbl { color: var(--faint); font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; }
+
+/* A: trilho de ícones + painel de atividade à direita */
+.a { display: grid; grid-template-columns: 46px 1fr 170px; height: 100%; }
+.a .rail { border-right: 1px solid var(--line); display: grid; gap: 8px; align-content: start; justify-items: center; padding-top: 12px; background: rgba(0,0,0,.2); }
+.a .mid { padding: 12px; display: grid; gap: 10px; align-content: start; }
+.a .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.a .feed { border-left: 1px solid var(--line); padding: 12px 10px; display: grid; gap: 8px; align-content: start; background: rgba(0,0,0,.15); }
+.a .feed div { padding: 7px; }
+
+/* B: home com blocos de aplicativo */
+.b { padding: 16px; display: grid; gap: 12px; align-content: start; }
+.b .top { display: flex; justify-content: space-between; align-items: center; }
+.b .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.b .tile { padding: 12px; display: grid; gap: 8px; min-height: 92px; }
+.b .tile b { font-size: 18px; } .b .tile .ic { width: 26px; height: 26px; border-radius: 8px; background: var(--grad); }
+.b .tile.big { grid-column: span 2; }
+
+/* C: lista + detalhe (estilo caixa de e-mail) */
+.c { display: grid; grid-template-columns: 120px 210px 1fr; height: 100%; }
+.c .menu { padding: 10px 8px; display: grid; gap: 4px; align-content: start; border-right: 1px solid var(--line); background: rgba(0,0,0,.2); }
+.c .menu span { padding: 6px 8px; border-radius: 7px; color: var(--muted); } .c .menu span.on { background: var(--grad); color: #1b1206; font-weight: 700; }
+.c .list { border-right: 1px solid var(--line); overflow: hidden; }
+.c .list .it { padding: 9px 10px; border-bottom: 1px solid var(--line); display: grid; gap: 3px; }
+.c .list .it.on { background: rgba(242,204,91,.08); box-shadow: inset 2px 0 0 var(--gold); }
+.c .det { padding: 14px; display: grid; gap: 10px; align-content: start; }
+
+/* D: barra de comandos + dock inferior */
+.d { padding: 14px 14px 64px; display: grid; gap: 10px; align-content: start; height: 100%; }
+.d .cmd { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 12px; }
+.d .cmd kbd { margin-left: auto; font-family: inherit; font-size: 9px; color: var(--faint); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
+.d .cols { display: grid; grid-template-columns: 1.3fr 1fr; gap: 10px; }
+.d .dock { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); display: flex; gap: 8px; padding: 8px 10px; border-radius: 16px; background: rgba(20,18,14,.7); border: 1px solid var(--line); backdrop-filter: blur(10px); }
+.d .dock .dot { width: 28px; height: 28px; border-radius: 9px; }
+</style>
+
+<div class="page">
+  <header>
+    <h1>Quatro ideias de layout</h1>
+    <p>Mesmo visual (vidro e dourado metálico), organização diferente. Cada maquete mostra a tela inicial do ERP. Escolha a letra que mais gostar.</p>
+  </header>
+
+  <section class="board">
+    <div class="about"><span class="n">IDEIA A</span><h2>Ícones + painel de atividade</h2><p>Menu lateral fininho só com ícones, conteúdo no centro e uma coluna à direita com o que acabou de acontecer.</p><ul><li>Muito espaço para o conteúdo</li><li>Avisos e aprovações sempre à vista na direita</li><li>Nome do módulo aparece ao passar o mouse</li></ul></div>
+    <div class="frame"><div class="screen"><div class="a">
+      <div class="rail"><div class="dot on">M</div><div class="dot">▦</div><div class="dot">◫</div><div class="dot">▤</div><div class="dot">⛟</div><div class="dot">$</div><div class="dot">≡</div></div>
+      <div class="mid">
+        <div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:15px">Olá, Aline</b><span class="btn">+ Nova cotação</span></div>
+        <div class="kpis"><div class="g kpi"><small>Vendas do mês</small><b>R$ 48.320</b></div><div class="g kpi"><small>Pedidos</small><b>126</b></div><div class="g kpi"><small>Ticket médio</small><b>R$ 383</b></div><div class="g kpi"><small>Clientes</small><b>58</b></div></div>
+        <div class="g" style="padding:10px"><div class="lbl">Vendas (6 meses)</div><div class="bars" style="margin-top:8px"><i style="height:40%"></i><i style="height:58%"></i><i style="height:50%"></i><i style="height:70%"></i><i style="height:64%"></i><i style="height:86%"></i></div></div>
+        <div class="g"><div class="row"><span>A-00128 · Distribuidora Sul</span><span class="pill ok">Aprovado</span></div><div class="row"><span>A-00127 · Automação Paulista</span><span class="pill">Aguardando</span></div></div>
+      </div>
+      <div class="feed"><div class="lbl">Atividade</div><div class="g">Pedido A-00127 aguarda sua aprovação</div><div class="g">NF-e 312 autorizada</div><div class="g">Estoque baixo: LED 3mm vermelho</div><div class="g">Pedido ML importado</div></div>
+    </div></div></div>
+  </section>
+
+  <section class="board">
+    <div class="about"><span class="n">IDEIA B</span><h2>Blocos de aplicativo</h2><p>Tela inicial como a de um celular: um bloco grande por módulo, já com o número que importa. Clicou, abre o módulo em tela cheia.</p><ul><li>Muito fácil para quem não usa sistema</li><li>Cada bloco mostra sua pendência</li><li>Funciona bem em tablet e celular</li></ul></div>
+    <div class="frame"><div class="screen"><div class="b">
+      <div class="top"><b style="font-size:16px">MAX LED</b><span style="color:var(--muted)">Empresa A · Aline</span></div>
+      <div class="tiles">
+        <div class="g tile big"><span class="lbl">Vendas do mês</span><b>R$ 48.320</b><div class="bars" style="height:34px"><i style="height:40%"></i><i style="height:58%"></i><i style="height:50%"></i><i style="height:70%"></i><i style="height:64%"></i><i style="height:86%"></i></div></div>
+        <div class="g tile"><div class="ic"></div><span>Pedidos</span><b>3 <small style="font-size:10px;color:var(--gold)">a aprovar</small></b></div>
+        <div class="g tile"><div class="ic"></div><span>Estoque</span><b>1 <small style="font-size:10px;color:var(--bad)">baixo</small></b></div>
+        <div class="g tile"><div class="ic"></div><span>Expedição</span><b>5</b></div>
+        <div class="g tile"><div class="ic"></div><span>Fiscal</span><b>2</b></div>
+        <div class="g tile"><div class="ic"></div><span>Financeiro</span><b>R$ 9.840</b></div>
+        <div class="g tile"><div class="ic"></div><span>Mercado Livre</span><b>12</b></div>
+      </div>
+    </div></div></div>
+  </section>
+
+  <section class="board">
+    <div class="about"><span class="n">IDEIA C</span><h2>Lista + detalhe</h2><p>Como uma caixa de e-mail: a lista de pedidos fica sempre à esquerda e o pedido escolhido abre ao lado, sem trocar de tela.</p><ul><li>Rápido para quem aprova e confere muitos pedidos</li><li>Nunca perde a lista de vista</li><li>Ações do pedido sempre no mesmo lugar</li></ul></div>
+    <div class="frame"><div class="screen"><div class="c">
+      <div class="menu"><b style="padding:4px 8px 8px">MAX LED</b><span>Painel</span><span class="on">Pedidos</span><span>Estoque</span><span>Expedição</span><span>Fiscal</span><span>Financeiro</span></div>
+      <div class="list"><div class="it on"><b>A-00128</b><span style="color:var(--muted)">Distribuidora Sul · R$ 1.240</span><span class="pill" style="justify-self:start">Aguardando</span></div><div class="it"><b>A-00127</b><span style="color:var(--muted)">Automação Paulista · R$ 3.980</span></div><div class="it"><b>A-00126</b><span style="color:var(--muted)">Eletro Norte · R$ 712</span></div><div class="it"><b>A-00125</b><span style="color:var(--muted)">Distribuidora Sul · R$ 590</span></div></div>
+      <div class="det"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:16px">Pedido A-00128</b><span class="btn">Aprovar</span></div><span style="color:var(--muted)">Distribuidora Sul · vendedor Bruno Alves</span>
+        <div class="g"><div class="row"><span>KIT-LED-25 × 40</span><span>R$ 396,00</span></div><div class="row"><span>REL-12V-10A × 100</span><span>R$ 690,00</span></div><div class="row"><b>Total</b><b>R$ 1.240,00</b></div></div>
+        <div class="g" style="padding:8px"><span class="lbl">Motivo da aprovação</span><div style="margin-top:4px;color:var(--muted)">Desconto de 8% acima do limite de 5%</div></div></div>
+    </div></div></div>
+  </section>
+
+  <section class="board">
+    <div class="about"><span class="n">IDEIA D</span><h2>Busca central + dock</h2><p>Sem menu tradicional: uma barra de busca/comandos no topo ("aprovar A-00128", "estoque LED") e um dock com os módulos embaixo, como no Mac.</p><ul><li>Visual limpo e diferente</li><li>Acha qualquer coisa digitando</li><li>Módulos sempre a um clique no dock</li></ul></div>
+    <div class="frame"><div class="screen"><div class="d">
+      <div class="g cmd"><span style="color:var(--gold)">⌕</span><span style="color:var(--muted)">Buscar ou digitar um comando... ex.: aprovar A-00128</span><kbd>Ctrl K</kbd></div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px"><div class="g kpi"><small>Vendas do mês</small><b>R$ 48.320</b></div><div class="g kpi"><small>Pedidos</small><b>126</b></div><div class="g kpi"><small>Ticket médio</small><b>R$ 383</b></div><div class="g kpi"><small>Clientes</small><b>58</b></div></div>
+      <div class="cols"><div class="g" style="padding:10px"><div class="lbl">Vendas</div><div class="bars" style="margin-top:8px;height:60px"><i style="height:40%"></i><i style="height:58%"></i><i style="height:50%"></i><i style="height:70%"></i><i style="height:64%"></i><i style="height:86%"></i></div></div><div class="g"><div class="row"><span>Aguardando aprovação</span><b style="color:var(--gold)">3</b></div><div class="row"><span>Para separar</span><b style="color:var(--gold)">5</b></div><div class="row"><span>Sem NF-e</span><b style="color:var(--gold)">2</b></div></div></div>
+      <div class="dock"><div class="dot on">▦</div><div class="dot">◫</div><div class="dot">▤</div><div class="dot">⛟</div><div class="dot">§</div><div class="dot">$</div><div class="dot">ML</div><div class="dot">≡</div></div>
+    </div></div></div>
+  </section>
+
+  <footer>Responda no chat com a letra escolhida (A, B, C ou D) e eu monto o protótipo completo nesse layout.</footer>
+</div>
