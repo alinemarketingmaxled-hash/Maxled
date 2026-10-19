@@ -1,0 +1,758 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MAX LED ERP</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: menu lateral escuro fixo + área de conteúdo; o Painel é escuro
+   (executivo) e os módulos operacionais são claros, como pede o §6 do
+   Documento Mestre. Visual único e deliberado: não segue o tema do sistema. */
+:root {
+  color-scheme: dark;
+  --ink-0: #0b0a08;        /* preto do menu */
+  --graphite: #17161a;     /* grafite dos painéis escuros */
+  --graphite-2: #222127;
+  --line-dark: #34312b;
+  --gold: #b8943e;         /* dourado metálico discreto */
+  --gold-hi: #d9bc74;
+  --paper: #f3f2ef;        /* fundo dos módulos claros */
+  --card: #ffffff;
+  --line: #dedbd3;
+  --text: #1d1b17;
+  --text-2: #5b574d;
+  --text-dark: #efeae0;
+  --text-dark-2: #a39d90;
+  --good: #2f7d4f;
+  --info: #2b5fa6;
+  --warn: #a35a1f;
+  --bad: #a3282b;
+  --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --body: "IBM Plex Sans", -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { background: var(--ink-0); color: var(--text-dark); font-family: var(--body); font-size: 14px; }
+button, input, select, textarea { font: inherit; }
+.num { font-variant-numeric: tabular-nums; }
+.mono { font-family: var(--mono); font-size: .92em; }
+
+.app { display: flex; min-height: 100%; }
+.side {
+  width: 236px; flex: none; background: var(--ink-0); border-right: 1px solid var(--line-dark);
+  padding: 18px 12px; padding-left: max(12px, env(safe-area-inset-left, 0px));
+  display: flex; flex-direction: column; gap: 16px; position: sticky; top: 0; height: 100vh; overflow-y: auto;
+}
+.brand { display: flex; align-items: center; gap: 10px; padding: 0 6px; }
+.brand-mark { width: 30px; height: 30px; border: 1.5px solid var(--gold); border-radius: 50%; display: grid; place-items: center; font-family: var(--display); font-weight: 800; color: var(--gold-hi); font-size: 14px; }
+.brand b { font-family: var(--display); font-weight: 800; letter-spacing: .02em; font-size: 16px; }
+.brand b span { color: var(--gold-hi); }
+.ctx { display: grid; gap: 8px; }
+.ctx label { display: grid; gap: 4px; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--text-dark-2); }
+.ctx select { width: 100%; min-width: 0; background: var(--graphite-2); color: var(--text-dark); border: 1px solid var(--line-dark); border-radius: 8px; padding: 7px 8px; font-size: 12.5px; }
+.ctx select:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
+.nav-sec { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--text-dark-2); padding: 0 10px 4px; }
+.nav { display: grid; gap: 2px; }
+.nav button {
+  text-align: left; border: 0; background: transparent; color: var(--text-dark-2); padding: 8px 10px; border-radius: 8px;
+  cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 13.5px;
+}
+.nav button:hover { background: var(--graphite-2); color: var(--text-dark); }
+.nav button.on { background: var(--gold); color: #12100c; font-weight: 600; }
+.nav button:focus-visible { outline: 2px solid var(--gold-hi); }
+.nav .count { margin-left: auto; font-size: 10.5px; background: var(--bad); color: #fff; border-radius: 99px; padding: 1px 6px; }
+.side-foot { margin-top: auto; font-size: 11px; color: var(--text-dark-2); padding: 0 8px; line-height: 1.5; }
+
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; display: flex; align-items: center; gap: 12px;
+  background: var(--ink-0); border-bottom: 1px solid var(--line-dark);
+  padding-block: 10px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--ink-0); }
+.burger { display: none; background: none; border: 1px solid var(--line-dark); color: var(--text-dark); border-radius: 8px; width: 34px; height: 34px; cursor: pointer; }
+.demo-tag { font-size: 11.5px; color: var(--gold-hi); border: 1px solid var(--line-dark); border-radius: 99px; padding: 3px 10px; }
+.who { margin-left: auto; font-size: 12px; color: var(--text-dark-2); text-align: right; }
+.who b { color: var(--text-dark); font-weight: 600; display: block; }
+
+.view { flex: 1; padding-block: 22px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.view.light { background: var(--paper); color: var(--text); }
+.view.dark { background: var(--graphite); color: var(--text-dark); }
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; gap: 18px; }
+
+.head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.head h1 { font-family: var(--display); font-weight: 800; font-size: 26px; margin: 0; letter-spacing: -.01em; text-wrap: balance; }
+.head p { margin: 4px 0 0; color: var(--text-2); font-size: 13px; }
+.dark .head p { color: var(--text-dark-2); }
+
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; min-width: 0; }
+.dark .card { background: var(--graphite-2); border-color: var(--line-dark); }
+.card h2 { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--gold); margin: 0 0 12px; font-weight: 600; }
+.dark .card h2 { color: var(--gold-hi); }
+.grid { display: grid; gap: 14px; }
+.g4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.g2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.g21 { grid-template-columns: 2fr 1fr; }
+.kpi .lbl { font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--text-2); }
+.dark .kpi .lbl { color: var(--text-dark-2); }
+.kpi .val { font-family: var(--display); font-weight: 700; font-size: 26px; margin-top: 4px; }
+.kpi .sub { font-size: 12px; color: var(--text-2); margin-top: 2px; }
+.dark .kpi .sub { color: var(--text-dark-2); }
+
+.btn { border: 1px solid var(--gold); background: var(--gold); color: #14110b; font-weight: 600; font-size: 12.5px; border-radius: 8px; padding: 8px 14px; cursor: pointer; }
+.btn:hover { background: var(--gold-hi); }
+.btn.ghost { background: transparent; color: inherit; border-color: var(--line); }
+.dark .btn.ghost { border-color: var(--line-dark); }
+.btn.ghost:hover { border-color: var(--gold); }
+.btn.danger { background: transparent; color: var(--bad); border-color: color-mix(in srgb, var(--bad) 50%, transparent); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+
+.tbl-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--card); color: var(--text); }
+table { width: 100%; border-collapse: collapse; min-width: 620px; color: inherit; font-size: inherit; }
+th { text-align: left; font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-2); font-weight: 600; padding: 10px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 9px 12px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+td.r, th.r { text-align: right; }
+tr.click { cursor: pointer; }
+tr.click:hover td { background: #faf8f3; }
+.link { color: var(--gold); font-weight: 600; background: none; border: 0; padding: 0; cursor: pointer; font-family: var(--mono); }
+
+.pill { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; border-radius: 99px; padding: 2px 9px; border: 1px solid; white-space: nowrap; }
+.pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.p-good { color: var(--good); border-color: color-mix(in srgb, var(--good) 35%, transparent); background: color-mix(in srgb, var(--good) 8%, transparent); }
+.p-info { color: var(--info); border-color: color-mix(in srgb, var(--info) 35%, transparent); background: color-mix(in srgb, var(--info) 8%, transparent); }
+.p-warn { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 35%, transparent); background: color-mix(in srgb, var(--warn) 8%, transparent); }
+.p-bad { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 35%, transparent); background: color-mix(in srgb, var(--bad) 8%, transparent); }
+.p-neutral { color: var(--text-2); border-color: var(--line); background: #f7f6f2; }
+
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+.tabs button { border: 0; background: transparent; padding: 6px 12px; border-radius: 8px; cursor: pointer; color: var(--text-2); font-weight: 600; font-size: 12.5px; }
+.tabs button.on { background: var(--text); color: var(--paper); }
+
+.form { display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.f { display: grid; gap: 4px; font-size: 12px; color: var(--text-2); min-width: 0; }
+.f input, .f select, .f textarea { border: 1px solid var(--line); background: #fbfaf7; border-radius: 8px; padding: 8px 9px; color: var(--text); width: 100%; min-width: 0; }
+.span2 { grid-column: span 2; } .span3 { grid-column: 1 / -1; }
+
+.note { font-size: 12.5px; color: var(--text-2); line-height: 1.5; }
+.alert { border-radius: 10px; padding: 10px 12px; font-size: 13px; border: 1px solid; }
+.alert.bad { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 35%, transparent); background: color-mix(in srgb, var(--bad) 6%, transparent); }
+.alert.good { color: var(--good); border-color: color-mix(in srgb, var(--good) 35%, transparent); background: color-mix(in srgb, var(--good) 6%, transparent); }
+.alert.warn { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 35%, transparent); background: color-mix(in srgb, var(--warn) 6%, transparent); }
+
+.steps { display: flex; flex-wrap: wrap; gap: 0; }
+.step { flex: 1 1 0; min-width: 92px; padding: 10px 8px 0; border-top: 3px solid var(--line); font-size: 11.5px; color: var(--text-2); }
+.step.done { border-color: var(--gold); color: var(--text); }
+.step.now { border-color: var(--text); color: var(--text); font-weight: 600; }
+
+.bars { display: flex; align-items: flex-end; gap: 10px; height: 170px; }
+.bar { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; height: 100%; font-size: 11px; color: var(--text-dark-2); min-width: 0; }
+.bar i { display: block; width: 100%; max-width: 46px; background: var(--gold); border-radius: 4px 4px 0 0; min-height: 2px; }
+.bar.cur i { background: var(--gold-hi); }
+.bar .v { color: var(--text-dark); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.hbar { display: grid; gap: 4px; }
+.hbar .l { display: flex; justify-content: space-between; gap: 8px; font-size: 12.5px; }
+.hbar .t { height: 6px; background: var(--line-dark); border-radius: 3px; overflow: hidden; }
+.hbar .t i { display: block; height: 100%; background: var(--gold); }
+.list { display: grid; gap: 10px; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 13px; }
+.kv dt { color: var(--text-2); } .kv dd { margin: 0; }
+.timeline { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 12.5px; }
+.timeline li { border-left: 2px solid var(--gold); padding-left: 10px; }
+.timeline small { color: var(--text-2); display: block; }
+
+.toast { position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); background: var(--ink-0); color: var(--text-dark); border: 1px solid var(--gold); border-radius: 10px; padding: 10px 14px; font-size: 13px; z-index: 30; max-width: 360px; }
+
+.portal-top { background: var(--ink-0); color: var(--text-dark); border-radius: 12px; padding: 14px 16px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+
+@media (max-width: 980px) {
+  .g4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .g21, .g3 { grid-template-columns: 1fr; }
+  .form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+  .side { position: fixed; z-index: 20; left: 0; top: 0; transform: translateX(-100%); transition: transform .2s; }
+  .side.open { transform: none; box-shadow: 0 0 0 100vmax rgba(0,0,0,.55); }
+  .burger { display: grid; place-items: center; }
+  .who { display: none; }
+  .g2, .g4 { grid-template-columns: 1fr 1fr; }
+  .form { grid-template-columns: 1fr; }
+  .span2 { grid-column: auto; }
+}
+@media (max-width: 440px) { .g4, .g2 { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) { .side { transition: none; } }
+</style>
+
+<div class="app">
+  <aside class="side" id="side" aria-label="Menu">
+    <div class="brand"><div class="brand-mark">M</div><b>MAX LED <span>ERP</span></b></div>
+    <div class="ctx">
+      <label for="company">Empresa ativa
+        <select id="company"></select>
+      </label>
+      <label for="role">Perfil (simulação de acesso)
+        <select id="role"></select>
+      </label>
+    </div>
+    <div>
+      <div class="nav-sec">Módulos</div>
+      <nav class="nav" id="nav"></nav>
+    </div>
+    <div class="side-foot">Protótipo navegável com dados de exemplo. O sistema real (Next.js + PostgreSQL) aplica as mesmas regras no servidor.</div>
+  </aside>
+  <div class="main">
+    <header class="top">
+      <button class="burger" id="burger" aria-label="Abrir menu">≡</button>
+      <span class="demo-tag">Homologação · dados de exemplo</span>
+      <div class="who" id="who"></div>
+    </header>
+    <main class="view" id="view"></main>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+// ---------------------------------------------------------------------------
+// Dados de exemplo. Cada empresa tem seus próprios produtos, pedidos, notas e
+// títulos: trocar de empresa troca o conjunto inteiro (§2).
+// ---------------------------------------------------------------------------
+const ROLES = {
+  MEDIATOR: { label: "Mediador", user: "Aline", mods: "*" },
+  MANAGER: { label: "Diretoria", user: "Diretoria", mods: ["painel","pedidos","produtos","estoque","expedicao","compras","fiscal","financeiro","mercadolivre","relatorios"], approve: true },
+  SALES_MANAGER: { label: "Gerente comercial", user: "Gerente Comercial", mods: ["painel","pedidos","produtos","estoque","portal"], approve: true },
+  SELLER: { label: "Vendedor", user: "Bruno Alves", mods: ["painel","pedidos","produtos","estoque"], own: true },
+  STOCK: { label: "Estoque/expedição", user: "Equipe Estoque", mods: ["painel","pedidos","produtos","estoque","expedicao","mercadolivre"] },
+  FINANCE: { label: "Financeiro", user: "Equipe Financeiro", mods: ["painel","pedidos","financeiro","fiscal"] },
+  FISCAL: { label: "Fiscal", user: "Equipe Fiscal", mods: ["painel","pedidos","fiscal"] },
+  CUSTOMER: { label: "Cliente (portal)", user: "Distribuidora Sul", mods: ["portal"] },
+};
+const MODULES = [
+  ["painel", "Painel"], ["pedidos", "Cotações e pedidos"], ["produtos", "Produtos e kits"], ["estoque", "Estoque"],
+  ["expedicao", "Expedição"], ["compras", "Compras e importação"], ["fiscal", "Fiscal"], ["financeiro", "Financeiro"],
+  ["mercadolivre", "Mercado Livre"], ["relatorios", "Relatórios"], ["portal", "Portal do cliente"],
+];
+const STATUS = {
+  COTACAO: ["Cotação", "p-neutral"], AGUARDANDO: ["Aguardando aprovação", "p-warn"], APROVADO: ["Aprovado", "p-info"],
+  SEPARACAO: ["Em separação", "p-info"], CONFERENCIA: ["Em conferência", "p-info"], PRONTO: ["Pronto p/ expedição", "p-info"],
+  ENVIADO: ["Enviado", "p-good"], ENTREGUE: ["Entregue", "p-good"], CANCELADO: ["Cancelado", "p-bad"],
+};
+const FLOW = ["COTACAO","AGUARDANDO","APROVADO","SEPARACAO","CONFERENCIA","PRONTO","ENVIADO","ENTREGUE"];
+
+function seed() {
+  const A = {
+    code: "A", name: "MAX LED Iluminação e Tecnologia", maxDisc: 5,
+    customers: [
+      { id: "c1", name: "Distribuidora Sul", doc: "12.345.678/0001-95", city: "Porto Alegre/RS", seller: "Bruno Alves" },
+      { id: "c2", name: "Eletro Norte Comércio", doc: "98.765.432/0001-10", city: "Belém/PA", seller: "Gerente Comercial" },
+      { id: "c3", name: "Automação Paulista", doc: "45.123.789/0001-33", city: "Campinas/SP", seller: "Bruno Alves" },
+    ],
+    products: [
+      { sku: "LED-5MM-BR", name: "LED 5mm branco alto brilho", fam: "LEDs", ncm: "85414100", price: 0.45, min: 0.35, cost: 0.12, phys: 5000, res: 0, blk: 0, minStock: 1000 },
+      { sku: "LED-3MM-VM", name: "LED 3mm vermelho difuso", fam: "LEDs", ncm: "85414100", price: 0.30, min: 0.22, cost: 0.08, phys: 300, res: 0, blk: 0, minStock: 500 },
+      { sku: "RES-1K-14W", name: "Resistor 1kΩ 1/4W 5%", fam: "Resistores", ncm: "85332190", price: 0.08, min: 0.05, cost: 0.01, phys: 20000, res: 0, blk: 0, minStock: 2000 },
+      { sku: "CAP-100UF-25V", name: "Capacitor eletrolítico 100µF 25V", fam: "Capacitores", ncm: "85322200", price: 0.60, min: 0.45, cost: 0.18, phys: 1500, res: 0, blk: 0, minStock: 300 },
+      { sku: "DIO-1N4007", name: "Diodo retificador 1N4007", fam: "Diodos", ncm: "85411000", price: 0.15, min: 0.10, cost: 0.03, phys: 8000, res: 0, blk: 0, minStock: 1000 },
+      { sku: "REL-12V-10A", name: "Relé 12V 10A 1 contato", fam: "Relés", ncm: "85364900", price: 6.90, min: 5.50, cost: 2.40, phys: 120, res: 0, blk: 4, minStock: 50 },
+      { sku: "MOD-ESP32", name: "Módulo ESP32 DevKit", fam: "Módulos", ncm: "85176299", price: 49.90, min: 42.00, cost: 21.50, phys: 40, res: 0, blk: 0, minStock: 10 },
+      { sku: "KIT-LED-25", name: "Kit 25 LEDs 5mm brancos", fam: "LEDs", ncm: "85414100", price: 9.90, min: 8.00, kit: [["LED-5MM-BR", 25]] },
+    ],
+    orders: [], docs: [], recv: [], moves: [], pays: [
+      { id: "p1", desc: "Distribuidora Componentes SP · NF 3321", cat: "Fornecedores", amount: 1840.00, due: days(3), approved: true, paid: 0 },
+      { id: "p2", desc: "Frete Correios outubro", cat: "Frete", amount: 412.60, due: days(-2), approved: false, paid: 0 },
+    ],
+    purchases: [
+      { n: 1, supplier: "Distribuidora Componentes SP", status: "Recebida", total: 1840.00, imp: false },
+    ],
+    listings: [
+      { id: "MLB3312890451", title: "Kit 25 LEDs 5mm Branco Alto Brilho", sku: "KIT-LED-25", units: 1, sync: "hoje 09:12" },
+      { id: "MLB3312890777", title: "Relé 12V 10A Arduino", sku: "REL-12V-10A", units: 1, sync: "hoje 09:12" },
+    ],
+    events: [
+      { key: "ml:orders:2000009871", status: "PROCESSADO", msg: "Pedido ML 2000009871 importado como A-00003" },
+      { key: "ml:orders:2000009902", status: "ERRO", msg: "Anúncio MLB3399120001 sem vínculo de SKU" },
+    ],
+    seq: 1, nf: 1,
+  };
+  const B = {
+    code: "B", name: "MAX LED Importação e Exportação", maxDisc: 3,
+    customers: [{ id: "c9", name: "Iluminação Atlântico Ltda", doc: "33.222.111/0001-44", city: "Santos/SP", seller: "Gerente Comercial" }],
+    products: [
+      { sku: "IMP-PAINEL-60", name: "Painel LED 60x60 40W (importado)", fam: "LEDs", ncm: "94054200", price: 89.00, min: 75.00, cost: 41.30, phys: 600, res: 0, blk: 0, minStock: 100 },
+      { sku: "IMP-FITA-5M", name: "Fita LED 5m 12V (importada)", fam: "LEDs", ncm: "94054200", price: 24.90, min: 19.00, cost: 9.80, phys: 85, res: 0, blk: 0, minStock: 120 },
+    ],
+    orders: [], docs: [], recv: [], moves: [], pays: [
+      { id: "p9", desc: "Shenzhen Opto Co. · invoice SO-8812", cat: "Importação", amount: 38420.55, due: days(12), approved: false, paid: 0 },
+    ],
+    purchases: [
+      { n: 1, supplier: "Shenzhen Opto Co. (USD)", status: "Aprovada, aguardando recebimento", total: 38420.55, imp: true },
+    ],
+    listings: [], events: [], seq: 1, nf: 1,
+  };
+  const st = { companies: { A, B }, company: "A", role: "MEDIATOR", view: "painel", orderId: null, tab: null };
+  // Pedidos de exemplo passando pelas regras reais do protótipo.
+  ctxOf = () => st.companies[st.company];
+  S = st;
+  const o1 = createOrder("c1", "Bruno Alves", [["KIT-LED-25", 4, 9.90, 0], ["RES-1K-14W", 200, 0.08, 0]], { freight: 18, inst: 2 }, true);
+  submit(o1, true); emitNF(o1, true); advance(o1, "SEPARACAO", true); advance(o1, "CONFERENCIA", true); advance(o1, "PRONTO", true);
+  const o2 = createOrder("c3", "Bruno Alves", [["MOD-ESP32", 5, 49.90, 12]], { freight: 0, inst: 1 }, true);
+  submit(o2, true);
+  const o3 = createOrder("c2", "Gerente Comercial", [["REL-12V-10A", 20, 6.90, 0], ["DIO-1N4007", 500, 0.15, 0]], { freight: 35, inst: 3, channel: "Mercado Livre" }, true);
+  submit(o3, true); emitNF(o3, true); advance(o3, "SEPARACAO", true); advance(o3, "CONFERENCIA", true); advance(o3, "PRONTO", true); advance(o3, "ENVIADO", true);
+  payRecv(st.companies.A.recv.find((r) => r.order === o3.id), 50.00, true);
+  createOrder("c1", "Bruno Alves", [["LED-3MM-VM", 400, 0.30, 0]], { freight: 0, inst: 1 }, true);
+  st.company = "B";
+  const b1 = createOrder("c9", "Gerente Comercial", [["IMP-PAINEL-60", 40, 89.00, 2]], { freight: 120, inst: 2 }, true);
+  submit(b1, true); emitNF(b1, true);
+  st.company = "A";
+  return st;
+}
+
+let S; let ctxOf;
+function days(n) { const d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() + n); return d.toISOString(); }
+const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
+const nf = new Intl.NumberFormat("pt-BR");
+const money = (v) => brl.format(v);
+const fdate = (iso) => new Date(iso).toLocaleDateString("pt-BR");
+const r2 = (v) => Math.round(v * 100) / 100;
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const C = () => S.companies[S.company];
+const role = () => ROLES[S.role];
+const prod = (sku) => C().products.find((p) => p.sku === sku);
+const avail = (p) => p.kit ? Math.min(...p.kit.map(([s, q]) => Math.floor(availSimple(prod(s)) / q))) : availSimple(p);
+function availSimple(p) { return p.phys - p.res - p.blk; }
+const code = (o) => `${C().code}-${String(o.n).padStart(5, "0")}`;
+const now = () => new Date().toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+
+// ---------------------------------------------------------------------------
+// Regras (espelham src/lib/erp no sistema real).
+// ---------------------------------------------------------------------------
+function explode(item) {
+  const p = prod(item.sku);
+  return p.kit ? p.kit.map(([s, q]) => [s, q * item.qty]) : [[item.sku, item.qty]];
+}
+function move(type, sku, qty, doc, key) {
+  const c = C();
+  if (key && c.moves.some((m) => m.key === key)) return false; // idempotência: mesma chave não movimenta de novo
+  const p = prod(sku);
+  if (type === "Reserva") { if (availSimple(p) < qty) throw new Error(`Saldo insuficiente de ${sku} para reservar ${qty}.`); p.res += qty; }
+  if (type === "Liberação") p.res -= qty;
+  if (type === "Saída") { p.res -= qty; p.phys -= qty; }
+  if (type === "Entrada") p.phys += qty;
+  if (type === "Bloqueio") { if (availSimple(p) < qty) throw new Error("Saldo insuficiente para bloquear."); p.blk += qty; }
+  c.moves.unshift({ when: now(), type, sku, qty, doc, key, user: role().user, after: `${p.phys} / ${p.res} / ${p.blk}` });
+  return true;
+}
+function totals(o) {
+  o.items.forEach((i) => { i.sub = r2(i.qty * i.price * (1 - i.disc / 100)); });
+  o.itemsTotal = r2(o.items.reduce((s, i) => s + i.sub, 0));
+  o.total = r2(o.itemsTotal + o.freight - o.discount);
+}
+function createOrder(cid, seller, items, opts, silent) {
+  const c = C();
+  const o = {
+    id: `${c.code}${c.seq}`, n: c.seq++, customer: cid, seller, status: "COTACAO", channel: opts.channel || "Venda direta",
+    items: items.map(([sku, qty, price, disc]) => ({ sku, qty, price, disc })), freight: opts.freight || 0, discount: 0,
+    inst: opts.inst || 1, events: [], created: now(), carrier: "", tracking: "",
+  };
+  totals(o); c.orders.unshift(o); log(o, "Cotação criada");
+  if (!silent) toast(`Cotação ${code(o)} criada.`);
+  return o;
+}
+function log(o, msg) { o.events.unshift({ when: now(), who: role().user, msg }); }
+function approvalReasons(o) {
+  const c = C(); const r = [];
+  o.items.forEach((i) => { const p = prod(i.sku); if (i.price * (1 - i.disc / 100) < p.min) r.push(`${i.sku} abaixo do preço mínimo`); });
+  const maxD = Math.max(0, ...o.items.map((i) => i.disc));
+  if (maxD > c.maxDisc) r.push(`desconto de ${maxD}% acima do limite de ${c.maxDisc}%`);
+  return r;
+}
+function reserve(o) {
+  // Primeiro confere tudo, depois reserva: ou o pedido inteiro reserva, ou nada.
+  const need = {};
+  o.items.forEach((i) => explode(i).forEach(([s, q]) => { need[s] = (need[s] || 0) + q; }));
+  for (const [s, q] of Object.entries(need)) if (availSimple(prod(s)) < q) throw new Error(`Saldo insuficiente de ${s}: precisa ${q}, disponível ${availSimple(prod(s))}.`);
+  o.items.forEach((i, idx) => explode(i).forEach(([s, q]) => move("Reserva", s, q, code(o), `order:${o.id}:reserve:${idx}:${s}`)));
+}
+function submit(o, silent) {
+  const reasons = approvalReasons(o);
+  if (reasons.length) { o.status = "AGUARDANDO"; o.reasons = reasons; log(o, `Enviado para aprovação: ${reasons.join("; ")}`); if (!silent) toast("Fora dos limites: enviado para aprovação da gerência."); return; }
+  reserve(o); o.status = "APROVADO"; o.approvedBy = "Aprovação automática"; o.approvedAt = now();
+  log(o, "Aprovado automaticamente (dentro dos limites) e estoque reservado");
+  if (!silent) toast(`${code(o)} aprovado e estoque reservado.`);
+}
+function approve(o) {
+  if (!role().approve && S.role !== "MEDIATOR") throw new Error("Apenas gerência ou diretoria aprova pedidos.");
+  reserve(o); o.status = "APROVADO"; o.approvedBy = role().user; o.approvedAt = now();
+  log(o, `Aprovado por ${role().user} e estoque reservado`); toast(`${code(o)} aprovado.`);
+}
+function activeDoc(o) { return C().docs.find((d) => d.order === o.id && d.status !== "Cancelada"); }
+function accessKey(c, n) {
+  const base = `35${new Date().toISOString().slice(2, 4)}${new Date().toISOString().slice(5, 7)}${c.code === "A" ? "11222333000181" : "44555666000171"}55001${String(n).padStart(9, "0")}1${String(Math.floor(Math.random() * 1e8)).padStart(8, "0")}`;
+  let sum = 0, w = 2; for (let i = base.length - 1; i >= 0; i--) { sum += +base[i] * w; w = w === 9 ? 2 : w + 1; }
+  const dv = sum % 11 < 2 ? 0 : 11 - (sum % 11);
+  return (base + dv).replace(/(\d{4})(?=\d)/g, "$1 ");
+}
+function emitNF(o, silent) {
+  const c = C(); const d = activeDoc(o);
+  if (d && d.status === "Autorizada") { if (!silent) toast("Nota já autorizada para este pedido: nada foi duplicado."); return; }
+  const n = c.nf++;
+  const doc = { id: `${c.code}nf${n}`, order: o.id, n, key: accessKey(c, n), status: "Autorizada", total: o.total, when: now(), proto: `135${String(Math.floor(Math.random() * 1e12)).padStart(12, "0")}` };
+  c.docs.unshift(doc);
+  // Parcelas nascem da nota autorizada, uma por vencimento.
+  const base = Math.floor((o.total * 100) / o.inst); const rest = Math.round(o.total * 100) - base * o.inst;
+  for (let i = 0; i < o.inst; i++) c.recv.push({ id: `${o.id}-${i + 1}`, order: o.id, customer: o.customer, inst: `${i + 1}/${o.inst}`, amount: (base + (i === 0 ? rest : 0)) / 100, paid: 0, due: days(30 + i * 30 - (o.n === 3 ? 45 : 0)) });
+  log(o, `NF-e ${n} autorizada em homologação; ${o.inst} parcela(s) geradas`);
+  if (!silent) toast(`NF-e ${n} autorizada (homologação).`);
+}
+function advance(o, to, silent) {
+  if (to === "CONFERENCIA" && !silent && o.pickedBy === role().user && S.role !== "MEDIATOR") throw new Error("A conferência deve ser feita por outra pessoa que não separou.");
+  if (to === "ENVIADO") {
+    const d = activeDoc(o); if (!d || d.status !== "Autorizada") throw new Error("Despacho exige nota fiscal autorizada.");
+    o.items.forEach((i, idx) => explode(i).forEach(([s, q]) => move("Saída", s, q, code(o), `order:${o.id}:ship:${idx}:${s}`)));
+    o.carrier = o.carrier || "Correios SEDEX"; o.tracking = o.tracking || `BR${Math.floor(Math.random() * 1e9)}BR`;
+  }
+  if (to === "CONFERENCIA") o.pickedBy = role().user;
+  o.status = to;
+  const msg = { SEPARACAO: "Separação iniciada", CONFERENCIA: "Separação concluída", PRONTO: "Conferido e embalado", ENVIADO: `Despachado via ${o.carrier} (rastreio ${o.tracking}); baixa de estoque`, ENTREGUE: "Entrega confirmada" }[to];
+  log(o, msg); if (!silent) toast(msg + ".");
+}
+function cancel(o, reason) {
+  if (!reason || reason.trim().length < 3) throw new Error("Informe o motivo do cancelamento.");
+  if (FLOW.indexOf(o.status) >= FLOW.indexOf("ENVIADO")) throw new Error("Pedido já enviado: registre uma devolução.");
+  const d = activeDoc(o); if (d) throw new Error("Existe NF-e autorizada: o Fiscal precisa cancelar a nota antes.");
+  if (o.status !== "COTACAO" && o.status !== "AGUARDANDO" && !role().approve && S.role !== "MEDIATOR") throw new Error("Pedido aprovado só pode ser cancelado pela gerência.");
+  o.items.forEach((i, idx) => explode(i).forEach(([s, q]) => {
+    if (C().moves.some((m) => m.key === `order:${o.id}:reserve:${idx}:${s}`)) move("Liberação", s, q, code(o), `order:${o.id}:release:${idx}:${s}`);
+  }));
+  o.status = "CANCELADO"; log(o, `Cancelado: ${reason}`); toast(`${code(o)} cancelado; reserva liberada.`);
+}
+function payRecv(r, amount, silent) {
+  const left = r2(r.amount - r.paid);
+  if (!(amount > 0) || amount > left + 1e-9) throw new Error(`Valor deve estar entre R$ 0,01 e ${money(left)}.`);
+  r.paid = r2(r.paid + amount); if (!silent) toast(`Baixa de ${money(amount)} registrada.`);
+}
+const recvStatus = (r) => r.paid >= r.amount ? ["Pago", "p-good"] : r.paid > 0 ? ["Parcial", "p-info"] : new Date(r.due) < new Date() ? ["Vencido", "p-bad"] : ["Em aberto", "p-neutral"];
+
+// ---------------------------------------------------------------------------
+// Interface
+// ---------------------------------------------------------------------------
+const $ = (id) => document.getElementById(id);
+let toastTimer;
+function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 3200); }
+function can(mod) { const m = role().mods; return m === "*" || m.includes(mod); }
+function visibleOrders() { const os = C().orders; return role().own ? os.filter((o) => o.seller === role().user) : os; }
+const cust = (id) => C().customers.find((c) => c.id === id) || Object.values(S.companies).flatMap((c) => c.customers).find((c) => c.id === id);
+const pill = ([t, cls]) => `<span class="pill ${cls}">${esc(t)}</span>`;
+const seeCosts = () => ["MEDIATOR", "MANAGER", "FINANCE", "FISCAL"].includes(S.role);
+
+function renderShell() {
+  $("company").innerHTML = Object.values(S.companies).map((c) => `<option value="${c.code}" ${c.code === S.company ? "selected" : ""}>${c.code} · ${esc(c.name)}</option>`).join("");
+  $("company").disabled = S.role === "CUSTOMER";
+  $("role").innerHTML = Object.entries(ROLES).map(([k, r]) => `<option value="${k}" ${k === S.role ? "selected" : ""}>${esc(r.label)}</option>`).join("");
+  const pend = C().orders.filter((o) => o.status === "AGUARDANDO").length;
+  $("nav").innerHTML = MODULES.filter(([k]) => can(k)).map(([k, l]) =>
+    `<button data-go="${k}" class="${S.view === k ? "on" : ""}">${esc(l)}${k === "pedidos" && pend && (role().approve || S.role === "MEDIATOR") ? `<span class="count" title="aguardando aprovação">${pend}</span>` : ""}</button>`).join("");
+  $("who").innerHTML = `<b>${esc(role().user)}</b>${esc(role().label)} · empresa ${C().code}`;
+}
+function render() {
+  if (!can(S.view)) S.view = role().mods === "*" ? "painel" : role().mods[0];
+  renderShell();
+  const v = $("view");
+  v.className = "view " + (S.view === "painel" ? "dark" : "light");
+  const fn = { painel: vPainel, pedidos: S.orderId ? vPedido : vPedidos, produtos: vProdutos, estoque: vEstoque, expedicao: vExpedicao, compras: vCompras, fiscal: vFiscal, financeiro: vFinanceiro, mercadolivre: vML, relatorios: vRelatorios, portal: vPortal }[S.view];
+  v.innerHTML = `<div class="wrap">${fn()}</div>`;
+  $("side").classList.remove("open");
+}
+function head(title, sub, actions = "") { return `<div class="head"><div><h1>${esc(title)}</h1><p>${sub}</p></div><div class="row">${actions}</div></div>`; }
+function table(cols, rows, empty = "Nada por aqui.") {
+  return `<div class="tbl-wrap"><table><thead><tr>${cols.map((c) => `<th class="${c.r ? "r" : ""}">${esc(c.t)}</th>`).join("")}</tr></thead><tbody>${rows.length ? rows.join("") : `<tr><td colspan="${cols.length}" class="note">${esc(empty)}</td></tr>`}</tbody></table></div>`;
+}
+
+function vPainel() {
+  const os = visibleOrders().filter((o) => FLOW.indexOf(o.status) >= FLOW.indexOf("APROVADO"));
+  const sales = os.reduce((s, o) => s + o.total, 0);
+  const custs = new Set(os.map((o) => o.customer)).size;
+  const months = ["mai", "jun", "jul", "ago", "set", "out"];
+  const hist = S.company === "A" ? [3120, 4380, 3910, 5200, 4870, sales] : [21400, 0, 18750, 26100, 30420, sales];
+  const max = Math.max(...hist, 1);
+  const byProd = {};
+  os.forEach((o) => o.items.forEach((i) => { byProd[i.sku] = (byProd[i.sku] || 0) + i.sub; }));
+  const top = Object.entries(byProd).sort((a, b) => b[1] - a[1]).slice(0, 5); const tmax = top[0]?.[1] || 1;
+  const low = C().products.filter((p) => !p.kit && availSimple(p) < p.minStock);
+  const overdue = C().recv.filter((r) => r.paid < r.amount && new Date(r.due) < new Date());
+  return head("Painel", `${esc(C().name)} · mês atual${role().own ? " · somente seus pedidos" : ""}`) + `
+  <div class="grid g4">
+    <div class="card kpi"><div class="lbl">Vendas do mês</div><div class="val num">${money(sales)}</div><div class="sub">pedidos aprovados</div></div>
+    <div class="card kpi"><div class="lbl">Pedidos</div><div class="val num">${os.length}</div><div class="sub">sem cancelados</div></div>
+    <div class="card kpi"><div class="lbl">Ticket médio</div><div class="val num">${money(os.length ? sales / os.length : 0)}</div><div class="sub">por pedido</div></div>
+    <div class="card kpi"><div class="lbl">Clientes ativos</div><div class="val num">${custs}</div><div class="sub">compraram nos últimos 90 dias</div></div>
+  </div>
+  <div class="grid g21">
+    <div class="card"><h2>Evolução das vendas (6 meses)</h2>
+      <div class="bars">${hist.map((v, i) => `<div class="bar ${i === 5 ? "cur" : ""}"><span class="v">${v ? money(v).replace(",00", "") : "R$ 0"}</span><i style="height:${Math.max(1, (v / max) * 120)}px"></i><span>${months[i]}</span></div>`).join("")}</div>
+    </div>
+    <div class="card"><h2>Pendências</h2><div class="list">
+      ${[["Aguardando aprovação", visibleOrders().filter((o) => o.status === "AGUARDANDO").length, "pedidos"],
+         ["Para separar/conferir", visibleOrders().filter((o) => ["APROVADO","SEPARACAO","CONFERENCIA"].includes(o.status)).length, "expedicao"],
+         ["Aprovados sem NF-e", visibleOrders().filter((o) => FLOW.indexOf(o.status) >= 2 && o.status !== "CANCELADO" && !activeDoc(o)).length, "fiscal"],
+         ["Estoque abaixo do mínimo", low.length, "estoque"],
+         ["Títulos vencidos", can("financeiro") ? overdue.length : "-", "financeiro"]]
+        .map(([l, n, go]) => `<div class="hbar"><div class="l"><span>${l}</span>${can(go) ? `<button class="link" data-go="${go}">${n}</button>` : `<span class="num">${n}</span>`}</div></div>`).join("")}
+    </div></div>
+  </div>
+  <div class="grid g2">
+    <div class="card"><h2>Produtos mais vendidos (R$)</h2><div class="list">
+      ${top.length ? top.map(([sku, v]) => `<div class="hbar"><div class="l"><span><span class="mono">${sku}</span> · ${esc(prod(sku).name)}</span><span class="num">${money(v)}</span></div><div class="t"><i style="width:${(v / tmax) * 100}%"></i></div></div>`).join("") : `<p class="note">Sem vendas no período.</p>`}
+    </div></div>
+    <div class="card"><h2>${seeCosts() ? "Margem bruta" : "Canais de venda"}</h2>
+      ${seeCosts() ? (() => { let cost = 0; os.forEach((o) => o.items.forEach((i) => { const p = prod(i.sku); cost += i.qty * (p.kit ? p.kit.reduce((s, [k, q]) => s + q * prod(k).cost, 0) : p.cost); })); const m = sales - cost; return `<div class="kpi"><div class="val num">${money(m)}</div><div class="sub">${sales ? ((m / sales) * 100).toFixed(1) : 0}% sobre ${money(sales)} · custo do pedido no momento da venda</div></div>`; })()
+        : `<p class="note">Custos e margens ficam ocultos para este perfil (§3).</p>`}
+      ${(() => { const ch = {}; os.forEach((o) => { ch[o.channel] = (ch[o.channel] || 0) + o.total; }); return `<div class="list" style="margin-top:14px">${Object.entries(ch).map(([k, v]) => `<div class="hbar"><div class="l"><span>${esc(k)}</span><span class="num">${money(v)}</span></div><div class="t"><i style="width:${(v / (sales || 1)) * 100}%"></i></div></div>`).join("")}</div>`; })()}
+    </div>
+  </div>`;
+}
+
+function vPedidos() {
+  const tab = S.tab || "todos";
+  const groups = { todos: () => true, cotacoes: (o) => o.status === "COTACAO", aprovacao: (o) => o.status === "AGUARDANDO", andamento: (o) => ["APROVADO","SEPARACAO","CONFERENCIA","PRONTO"].includes(o.status), enviados: (o) => ["ENVIADO","ENTREGUE"].includes(o.status), cancelados: (o) => o.status === "CANCELADO" };
+  const labels = { todos: "Todos", cotacoes: "Cotações", aprovacao: "Aguardando aprovação", andamento: "Em andamento", enviados: "Enviados/entregues", cancelados: "Cancelados" };
+  const os = visibleOrders();
+  const canEdit = ["MEDIATOR","MANAGER","SALES_MANAGER","SELLER"].includes(S.role);
+  return head("Cotações e pedidos", `${esc(C().name)}${role().own ? " · sua carteira" : ""}`, canEdit ? `<button class="btn" data-act="novo">Nova cotação</button>` : "") +
+    `<div class="tabs">${Object.keys(groups).map((k) => `<button data-tab="${k}" class="${tab === k ? "on" : ""}">${labels[k]} <span class="num">${os.filter(groups[k]).length}</span></button>`).join("")}</div>` +
+    (S.composing ? vNovaCotacao() : "") +
+    table([{ t: "Número" }, { t: "Cliente" }, { t: "Vendedor" }, { t: "Canal" }, { t: "Status" }, { t: "Total", r: 1 }, { t: "Criado" }],
+      os.filter(groups[tab]).map((o) => `<tr class="click" data-open="${o.id}"><td><button class="link">${code(o)}</button></td><td>${esc(cust(o.customer).name)}</td><td>${esc(o.seller)}</td><td>${esc(o.channel)}</td><td>${pill(STATUS[o.status])}</td><td class="r num">${money(o.total)}</td><td class="num">${o.created}</td></tr>`),
+      "Nenhum pedido nesta aba.");
+}
+let draft = null;
+function vNovaCotacao() {
+  const d = draft; const c = C();
+  const custs = role().own ? c.customers.filter((x) => x.seller === role().user) : c.customers;
+  totals(d);
+  const reasons = d.items.length ? approvalReasons(d) : [];
+  return `<div class="card"><h2>Nova cotação</h2>
+  <div class="form">
+    <label class="f span2" for="q-cust">Cliente<select id="q-cust">${custs.map((x) => `<option value="${x.id}" ${x.id === d.customer ? "selected" : ""}>${esc(x.name)} · ${x.doc}</option>`).join("")}</select></label>
+    <label class="f" for="q-inst">Parcelas<select id="q-inst">${[1, 2, 3, 4, 6].map((n) => `<option ${n === d.inst ? "selected" : ""}>${n}</option>`).join("")}</select></label>
+    <label class="f span2" for="q-sku">Adicionar item por SKU (Enter)<input id="q-sku" list="skus" placeholder="ex.: KIT-LED-25" autocomplete="off"><datalist id="skus">${c.products.map((p) => `<option value="${p.sku}">${esc(p.name)}</option>`).join("")}</datalist></label>
+    <label class="f" for="q-freight">Frete (R$)<input id="q-freight" type="number" min="0" step="0.01" value="${d.freight}"></label>
+  </div>
+  <div style="margin-top:12px">${table([{ t: "SKU" }, { t: "Produto" }, { t: "Disponível", r: 1 }, { t: "Qtd", r: 1 }, { t: "Preço un.", r: 1 }, { t: "Desc. %", r: 1 }, { t: "Subtotal", r: 1 }, { t: "" }],
+    d.items.map((i, idx) => { const p = prod(i.sku); const a = avail(p); return `<tr><td class="mono">${i.sku}${p.kit ? ` <span class="pill p-neutral">kit</span>` : ""}</td><td>${esc(p.name)}</td><td class="r num" style="color:${a < i.qty ? "var(--bad)" : "inherit"}">${nf.format(a)}</td>
+      <td class="r"><input aria-label="Quantidade" data-qi="${idx}" data-k="qty" type="number" min="1" step="1" value="${i.qty}" style="width:84px"></td>
+      <td class="r"><input aria-label="Preço" data-qi="${idx}" data-k="price" type="number" min="0" step="0.01" value="${i.price}" style="width:90px"></td>
+      <td class="r"><input aria-label="Desconto" data-qi="${idx}" data-k="disc" type="number" min="0" max="100" step="0.5" value="${i.disc}" style="width:70px"></td>
+      <td class="r num">${money(i.sub)}</td><td><button class="btn ghost" data-rm="${idx}">Remover</button></td></tr>`; }), "Digite um SKU acima e tecle Enter.")}</div>
+  <div class="row" style="justify-content:space-between;margin-top:12px">
+    <div class="note">Itens ${money(d.itemsTotal)} + frete ${money(d.freight)} = <b class="num" style="color:var(--text)">${money(d.total)}</b>. Tributos calculados pelo provedor fiscal na emissão.
+      ${reasons.length ? `<div class="alert warn" style="margin-top:8px">Vai para aprovação: ${esc(reasons.join("; "))}.</div>` : d.items.length ? `<div class="alert good" style="margin-top:8px">Dentro dos limites: será aprovada automaticamente ao enviar.</div>` : ""}</div>
+    <div class="row"><button class="btn ghost" data-act="descartar">Descartar</button><button class="btn" data-act="salvar" ${d.items.length ? "" : "disabled"}>Salvar cotação</button></div>
+  </div></div>`;
+}
+
+function vPedido() {
+  const o = C().orders.find((x) => x.id === S.orderId);
+  if (!o || (role().own && o.seller !== role().user)) { S.orderId = null; return `<div class="alert bad">Pedido não encontrado nesta empresa.</div>`; }
+  const d = activeDoc(o); const st = o.status; const isApprover = role().approve || S.role === "MEDIATOR";
+  const fiscalOk = ["MEDIATOR","FISCAL"].includes(S.role); const stockOk = ["MEDIATOR","STOCK"].includes(S.role);
+  const sellerOk = ["MEDIATOR","MANAGER","SALES_MANAGER","SELLER"].includes(S.role);
+  const acts = [];
+  if (st === "COTACAO" && sellerOk) acts.push(`<button class="btn" data-o="submit">Enviar pedido</button>`);
+  if (st === "AGUARDANDO" && isApprover) acts.push(`<button class="btn" data-o="approve">Aprovar</button>`);
+  if (FLOW.indexOf(st) >= 2 && st !== "CANCELADO" && !d && fiscalOk) acts.push(`<button class="btn" data-o="nf">Emitir NF-e</button>`);
+  const next = { APROVADO: ["SEPARACAO", "Iniciar separação"], SEPARACAO: ["CONFERENCIA", "Concluir separação"], CONFERENCIA: ["PRONTO", "Conferir e embalar"], PRONTO: ["ENVIADO", "Despachar"], ENVIADO: ["ENTREGUE", "Confirmar entrega"] }[st];
+  if (next && stockOk) acts.push(`<button class="btn ghost" data-o="adv" data-to="${next[0]}">${next[1]}</button>`);
+  const canCancel = sellerOk && FLOW.indexOf(st) < FLOW.indexOf("ENVIADO") && st !== "CANCELADO";
+  const recv = C().recv.filter((r) => r.order === o.id);
+  const stepIdx = FLOW.indexOf(st);
+  return `<div class="row"><button class="btn ghost" data-act="voltar">Voltar aos pedidos</button></div>` +
+    head(`Pedido ${code(o)}`, `${esc(cust(o.customer).name)} · vendedor ${esc(o.seller)} · ${esc(o.channel)}`, pill(STATUS[st])) +
+    (st !== "CANCELADO" ? `<div class="steps">${["Cotação","Aprovação","Aprovado","Separação","Conferência","Pronto","Enviado","Entregue"].map((l, i) => `<div class="step ${i < stepIdx ? "done" : i === stepIdx ? "now" : ""}">${l}</div>`).join("")}</div>` : "") +
+    `<div class="card"><div class="row" style="justify-content:space-between"><div class="row">${acts.join("") || `<span class="note">Nenhuma ação disponível para o perfil ${esc(role().label)} nesta etapa.</span>`}</div>
+      ${canCancel ? `<div class="row"><label class="f" for="cancel-reason" style="min-width:200px">Motivo do cancelamento<input id="cancel-reason" placeholder="obrigatório"></label><button class="btn danger" data-o="cancel" style="align-self:flex-end">Cancelar pedido</button></div>` : ""}</div>
+      <div id="err"></div>
+      ${st === "AGUARDANDO" ? `<div class="alert warn" style="margin-top:10px">Motivo da aprovação: ${esc((o.reasons || []).join("; "))}.</div>` : ""}
+      ${o.approvedAt ? `<p class="note" style="margin:10px 0 0">Aprovação: <b>${esc(o.approvedBy)}</b> em ${o.approvedAt}.</p>` : ""}
+    </div>
+    <div class="grid g21">
+      <div>${table([{ t: "SKU" }, { t: "Produto" }, { t: "Qtd", r: 1 }, { t: "Preço", r: 1 }, { t: "Desc.", r: 1 }, { t: "Subtotal", r: 1 }].concat(seeCosts() ? [{ t: "Margem", r: 1 }] : []),
+        o.items.map((i) => { const p = prod(i.sku); const cost = p.kit ? p.kit.reduce((s, [k, q]) => s + q * prod(k).cost, 0) : p.cost; return `<tr><td class="mono">${i.sku}</td><td>${esc(p.name)}${p.kit ? `<br><small class="note">baixa ${p.kit.map(([k, q]) => `${q * i.qty} × ${k}`).join(", ")}</small>` : ""}</td><td class="r num">${nf.format(i.qty)}</td><td class="r num">${money(i.price)}</td><td class="r num">${i.disc}%</td><td class="r num">${money(i.sub)}</td>${seeCosts() ? `<td class="r num">${(((i.sub - cost * i.qty) / i.sub) * 100).toFixed(0)}%</td>` : ""}</tr>`; }))}
+        <p class="note" style="text-align:right">Itens ${money(o.itemsTotal)} · frete ${money(o.freight)} · <b style="color:var(--text)">total ${money(o.total)}</b> em ${o.inst}x</p></div>
+      <div class="grid">
+        <div class="card"><h2>Fiscal</h2>${d ? `<dl class="kv"><dt>NF-e</dt><dd class="num">${d.n} · série 1</dd><dt>Status</dt><dd>${pill(["Autorizada", "p-good"])}</dd><dt>Chave</dt><dd class="mono" style="word-break:break-all">${d.key}</dd></dl><p class="note">Homologação: sem valor fiscal.</p>` : `<p class="note">Sem nota emitida.</p>`}</div>
+        <div class="card"><h2>Contas a receber</h2>${recv.length ? `<div class="list">${recv.map((r) => `<div class="hbar"><div class="l"><span>${r.inst} · vence ${fdate(r.due)}</span><span class="num">${money(r.amount)} ${pill(recvStatus(r))}</span></div></div>`).join("")}</div>` : `<p class="note">Geradas quando a NF-e é autorizada.</p>`}</div>
+        ${o.tracking ? `<div class="card"><h2>Expedição</h2><dl class="kv"><dt>Transportadora</dt><dd>${esc(o.carrier)}</dd><dt>Rastreio</dt><dd class="mono">${esc(o.tracking)}</dd></dl></div>` : ""}
+      </div>
+    </div>
+    <div class="card"><h2>Histórico do pedido</h2><ol class="timeline">${o.events.map((e) => `<li>${esc(e.msg)}<small>${e.when} · ${esc(e.who)}</small></li>`).join("")}</ol></div>`;
+}
+
+function vProdutos() {
+  return head("Produtos e kits", `${C().products.length} SKUs · ${esc(C().name)}`, `<span class="note">${["MEDIATOR","MANAGER","SALES_MANAGER"].includes(S.role) ? "Seu perfil pode alterar preços." : "Seu perfil não altera preço nem custo."}</span>`) +
+    table([{ t: "SKU" }, { t: "Produto" }, { t: "Família" }, { t: "Tipo" }, { t: "NCM" }, { t: "Preço", r: 1 }, { t: "Preço mín.", r: 1 }].concat(seeCosts() ? [{ t: "Custo", r: 1 }] : []).concat([{ t: "Disponível", r: 1 }]),
+      C().products.map((p) => `<tr><td class="mono">${p.sku}</td><td>${esc(p.name)}${p.kit ? `<br><small class="note">composição: ${p.kit.map(([k, q]) => `${q} × ${k}`).join(", ")}</small>` : ""}</td><td>${p.fam}</td><td>${p.kit ? pill(["Kit", "p-info"]) : "Unidade"}</td><td class="mono">${p.ncm}</td><td class="r num">${money(p.price)}</td><td class="r num">${money(p.min)}</td>${seeCosts() ? `<td class="r num">${p.kit ? "-" : money(p.cost)}</td>` : ""}<td class="r num">${nf.format(avail(p))}</td></tr>`)) +
+    `<p class="note">Kits não têm saldo próprio: a disponibilidade é quantos kits completos os componentes permitem montar. Vender 1 kit de 25 LEDs reserva e baixa 25 unidades do SKU do LED.</p>`;
+}
+
+function vEstoque() {
+  const tab = S.tab === "mov" ? "mov" : "saldos";
+  const canMove = ["MEDIATOR","STOCK"].includes(S.role);
+  return head("Estoque", `Físico, reservado, bloqueado e disponível · ${esc(C().name)}`) +
+    `<div class="tabs"><button data-tab="saldos" class="${tab === "saldos" ? "on" : ""}">Saldos</button><button data-tab="mov" class="${tab === "mov" ? "on" : ""}">Movimentações <span class="num">${C().moves.length}</span></button></div>` +
+    (tab === "saldos" ? table([{ t: "SKU" }, { t: "Produto" }, { t: "Físico", r: 1 }, { t: "Reservado", r: 1 }, { t: "Bloqueado", r: 1 }, { t: "Disponível", r: 1 }, { t: "Mínimo", r: 1 }, { t: "Situação" }],
+      C().products.filter((p) => !p.kit).map((p) => { const a = availSimple(p); return `<tr><td class="mono">${p.sku}</td><td>${esc(p.name)}</td><td class="r num">${nf.format(p.phys)}</td><td class="r num">${nf.format(p.res)}</td><td class="r num">${nf.format(p.blk)}</td><td class="r num"><b>${nf.format(a)}</b></td><td class="r num">${nf.format(p.minStock)}</td><td>${a <= 0 ? pill(["Sem saldo", "p-bad"]) : a < p.minStock ? pill(["Abaixo do mínimo", "p-warn"]) : pill(["Ok", "p-good"])}</td></tr>`; })) +
+      (canMove ? `<div class="card"><h2>Lançar movimento</h2><div class="form">
+        <label class="f" for="m-type">Tipo<select id="m-type"><option>Entrada</option><option>Bloqueio</option></select></label>
+        <label class="f" for="m-sku">Produto<select id="m-sku">${C().products.filter((p) => !p.kit).map((p) => `<option>${p.sku}</option>`).join("")}</select></label>
+        <label class="f" for="m-qty">Quantidade<input id="m-qty" type="number" min="1" value="100"></label>
+        <label class="f span2" for="m-reason">Motivo (obrigatório)<input id="m-reason" placeholder="ex.: recebimento NF 3321 / avaria na conferência"></label>
+        <div class="f" style="align-self:end"><button class="btn" data-act="mov">Registrar</button></div></div><div id="err"></div></div>` : `<p class="note">Seu perfil consulta saldos; ajustes são feitos pela equipe de estoque.</p>`)
+    : table([{ t: "Data" }, { t: "Tipo" }, { t: "SKU" }, { t: "Qtd", r: 1 }, { t: "Documento" }, { t: "Usuário" }, { t: "Físico / reserv. / bloq. após" }],
+      C().moves.map((m) => `<tr><td class="num">${m.when}</td><td>${m.type}</td><td class="mono">${m.sku}</td><td class="r num">${nf.format(m.qty)}</td><td class="mono">${esc(m.doc)}</td><td>${esc(m.user)}</td><td class="num">${m.after}</td></tr>`)));
+}
+
+function vExpedicao() {
+  const cols = [["APROVADO", "Para separar"], ["SEPARACAO", "Em separação"], ["CONFERENCIA", "Em conferência"], ["PRONTO", "Prontos para expedir"], ["ENVIADO", "Aguardando entrega"]];
+  return head("Expedição", "Separação, conferência por outra pessoa, embalagem e despacho") +
+    `<div class="grid g3">${cols.map(([s, l]) => { const os = C().orders.filter((o) => o.status === s); return `<div class="card"><h2>${l} · ${os.length}</h2><div class="list">${os.map((o) => `<div class="hbar"><div class="l"><button class="link" data-open="${o.id}">${code(o)}</button><span>${esc(cust(o.customer).name)}</span></div><small class="note">${o.items.length} item(ns) · ${money(o.total)}${s === "PRONTO" && !activeDoc(o) ? " · aguardando NF-e" : ""}</small></div>`).join("") || `<p class="note">Vazio.</p>`}</div></div>`; }).join("")}</div>
+    <p class="note">O despacho só é liberado com NF-e autorizada e dá a baixa definitiva do estoque reservado, uma única vez por item.</p>`;
+}
+
+function vFiscal() {
+  const pend = C().orders.filter((o) => FLOW.indexOf(o.status) >= 2 && o.status !== "CANCELADO" && !activeDoc(o));
+  return head("Fiscal", "Ambiente de homologação · provedor: simulador (sem valor fiscal)") +
+    `<div class="alert warn">O provedor fiscal real e o certificado digital ainda precisam ser configurados. Até lá, as notas são emitidas só em homologação.</div>
+    <div class="card"><h2>Pendentes de emissão · ${pend.length}</h2>${pend.length ? `<div class="list">${pend.map((o) => `<div class="row" style="justify-content:space-between"><span><button class="link" data-open="${o.id}">${code(o)}</button> · ${esc(cust(o.customer).name)} · ${money(o.total)}</span>${["MEDIATOR","FISCAL"].includes(S.role) ? `<button class="btn" data-nf="${o.id}">Emitir NF-e</button>` : ""}</div>`).join("")}</div>` : `<p class="note">Nenhum pedido aprovado sem nota.</p>`}</div>` +
+    table([{ t: "NF-e" }, { t: "Pedido" }, { t: "Chave de acesso" }, { t: "Status" }, { t: "Total", r: 1 }, { t: "Autorizada em" }],
+      C().docs.map((d) => { const o = C().orders.find((x) => x.id === d.order); return `<tr><td class="num">${d.n}</td><td><button class="link" data-open="${o.id}">${code(o)}</button></td><td class="mono">${d.key}</td><td>${pill(["Autorizada", "p-good"])}</td><td class="r num">${money(d.total)}</td><td class="num">${d.when}</td></tr>`; }), "Nenhuma nota emitida.");
+}
+
+function vFinanceiro() {
+  const tab = S.tab === "pagar" ? "pagar" : "receber";
+  const recv = C().recv; const open = recv.filter((r) => r.paid < r.amount);
+  const sumOpen = open.reduce((s, r) => s + r.amount - r.paid, 0);
+  const sumLate = open.filter((r) => new Date(r.due) < new Date()).reduce((s, r) => s + r.amount - r.paid, 0);
+  const canPay = ["MEDIATOR","FINANCE","MANAGER"].includes(S.role);
+  return head("Financeiro", `Faturamento, contas a receber, liquidação e conciliação · ${esc(C().name)}`) +
+    `<div class="grid g4"><div class="card kpi"><div class="lbl">A receber</div><div class="val num">${money(sumOpen)}</div></div><div class="card kpi"><div class="lbl">Vencido</div><div class="val num" style="color:var(--bad)">${money(sumLate)}</div></div>
+     <div class="card kpi"><div class="lbl">A pagar</div><div class="val num">${money(C().pays.reduce((s, p) => s + p.amount - p.paid, 0))}</div></div><div class="card kpi"><div class="lbl">Inadimplência</div><div class="val num">${sumOpen ? ((sumLate / sumOpen) * 100).toFixed(1) : "0,0"}%</div></div></div>
+    <div class="tabs"><button data-tab="receber" class="${tab === "receber" ? "on" : ""}">Contas a receber</button><button data-tab="pagar" class="${tab === "pagar" ? "on" : ""}">Contas a pagar</button></div><div id="err"></div>` +
+    (tab === "receber" ? table([{ t: "Pedido" }, { t: "Cliente" }, { t: "Parcela" }, { t: "Vencimento" }, { t: "Valor", r: 1 }, { t: "Pago", r: 1 }, { t: "Status" }, { t: "Baixa" }],
+      recv.map((r) => { const o = C().orders.find((x) => x.id === r.order); return `<tr><td><button class="link" data-open="${o.id}">${code(o)}</button></td><td>${esc(cust(r.customer).name)}</td><td>${r.inst}</td><td class="num">${fdate(r.due)}</td><td class="r num">${money(r.amount)}</td><td class="r num">${money(r.paid)}</td><td>${pill(recvStatus(r))}</td><td>${canPay && r.paid < r.amount ? `<div class="row"><input aria-label="Valor da baixa" id="pay-${r.id}" type="number" step="0.01" min="0.01" value="${(r.amount - r.paid).toFixed(2)}" style="width:96px"><button class="btn ghost" data-pay="${r.id}">Baixar</button></div>` : ""}</td></tr>`; }), "Títulos aparecem quando uma NF-e é autorizada.")
+    : table([{ t: "Descrição" }, { t: "Categoria" }, { t: "Vencimento" }, { t: "Valor", r: 1 }, { t: "Aprovação" }, { t: "Ação" }],
+      C().pays.map((p) => `<tr><td>${esc(p.desc)}</td><td>${p.cat}</td><td class="num">${fdate(p.due)}</td><td class="r num">${money(p.amount)}</td><td>${p.paid >= p.amount ? pill(["Pago", "p-good"]) : p.approved ? pill(["Aprovada", "p-info"]) : pill(["A aprovar", "p-warn"])}</td>
+        <td>${p.paid >= p.amount ? "" : !p.approved ? (["MEDIATOR","MANAGER"].includes(S.role) ? `<button class="btn ghost" data-papprove="${p.id}">Aprovar</button>` : `<span class="note">aguarda Diretoria</span>`) : canPay ? `<button class="btn ghost" data-ppay="${p.id}">Pagar</button>` : ""}</td></tr>`)));
+}
+
+function vCompras() {
+  return head("Compras e importação", "Solicitação, cotação, aprovação, recebimento e rateio de custos") +
+    table([{ t: "Nº" }, { t: "Fornecedor" }, { t: "Tipo" }, { t: "Status" }, { t: "Total (R$)", r: 1 }],
+      C().purchases.map((p) => `<tr><td class="num">${p.n}</td><td>${esc(p.supplier)}</td><td>${p.imp ? pill(["Importação", "p-info"]) : "Nacional"}</td><td>${esc(p.status)}</td><td class="r num">${money(p.total)}</td></tr>`)) +
+    `<div class="card"><h2>Como o custo de importação é calculado</h2><p class="note">Itens em moeda estrangeira × câmbio, mais frete, seguro, despesas aduaneiras e tributos rateados por valor, quantidade ou peso (critério validado pela contabilidade). No recebimento, o custo médio do produto é atualizado e as contas a pagar ficam aguardando aprovação da Diretoria.</p></div>`;
+}
+
+function vML() {
+  const c = C();
+  return head("Mercado Livre", c.listings.length ? "Conta conectada · pedidos pagos entram já aprovados, com reserva de estoque" : "Esta empresa não opera no Mercado Livre") +
+    table([{ t: "Anúncio" }, { t: "Título" }, { t: "SKU vinculado" }, { t: "Unid./venda", r: 1 }, { t: "Disponível p/ anúncio", r: 1 }, { t: "Último sync" }],
+      c.listings.map((l) => `<tr><td class="mono">${l.id}</td><td>${esc(l.title)}</td><td class="mono">${l.sku}</td><td class="r num">${l.units}</td><td class="r num">${nf.format(Math.floor(avail(prod(l.sku)) / l.units))}</td><td>${l.sync}</td></tr>`), "Nenhum anúncio vinculado.") +
+    `<div class="card"><h2>Fila de integração</h2>${c.events.length ? `<div class="list">${c.events.map((e) => `<div class="row" style="justify-content:space-between"><span class="mono">${e.key}</span><span>${esc(e.msg)}</span>${e.status === "ERRO" ? `<span class="row">${pill(["Erro", "p-bad"])}<button class="btn ghost" data-reproc="${e.key}">Reprocessar</button></span>` : pill(["Processado", "p-good"])}</div>`).join("")}</div>` : `<p class="note">Sem eventos.</p>`}
+    <p class="note" style="margin-bottom:0">Notificações repetidas do mesmo pedido não criam um segundo pedido nem reservam duas vezes.</p></div>`;
+}
+
+function vRelatorios() {
+  const all = Object.values(S.companies);
+  const allowCons = ["MEDIATOR","MANAGER"].includes(S.role);
+  const rows = all.map((c) => { const os = c.orders.filter((o) => FLOW.indexOf(o.status) >= 2 && o.status !== "CANCELADO"); const t = os.reduce((s, o) => s + o.total, 0); return { c, n: os.length, t }; });
+  return head("Relatórios", allowCons ? "Visão consolidada (Diretoria): os registros continuam separados por empresa" : `Somente ${esc(C().name)}`) +
+    table([{ t: "Empresa" }, { t: "Pedidos aprovados", r: 1 }, { t: "Faturamento", r: 1 }, { t: "Ticket médio", r: 1 }, { t: "Cotações → pedidos", r: 1 }],
+      (allowCons ? rows : rows.filter((r) => r.c.code === S.company)).map(({ c, n, t }) => `<tr><td>${c.code} · ${esc(c.name)}</td><td class="r num">${n}</td><td class="r num">${money(t)}</td><td class="r num">${money(n ? t / n : 0)}</td><td class="r num">${c.orders.length ? Math.round((n / c.orders.length) * 100) : 0}%</td></tr>`).concat(allowCons ? [`<tr><td><b>Consolidado</b></td><td class="r num"><b>${rows.reduce((s, r) => s + r.n, 0)}</b></td><td class="r num"><b>${money(rows.reduce((s, r) => s + r.t, 0))}</b></td><td></td><td></td></tr>`] : [])) +
+    `<p class="note">No sistema real: vendas, produtos (giro, margem, parados, rupturas), Mercado Livre e kits, compras, fiscal e financeiro, com filtros e exportação CSV, cada aba liberada conforme o perfil.</p>`;
+}
+
+function vPortal() {
+  const me = "c1"; // Distribuidora Sul
+  const os = Object.values(S.companies).flatMap((c) => c.orders.filter((o) => o.customer === me).map((o) => ({ o, c })));
+  const rec = Object.values(S.companies).flatMap((c) => c.recv.filter((r) => r.customer === me));
+  return `<div class="portal-top"><b style="font-family:var(--display)">MAX LED · Portal do cliente</b><span>${esc(cust(me).name)} · ${cust(me).doc}</span></div>` +
+    `<p class="note">O cliente só vê o próprio cadastro: pedidos, notas, parcelas e entrega. Custos, margens, observações internas e outros clientes nunca aparecem.</p>` +
+    table([{ t: "Pedido" }, { t: "Empresa" }, { t: "Status" }, { t: "Total", r: 1 }, { t: "Rastreio" }],
+      os.map(({ o, c }) => `<tr><td class="mono">${c.code}-${String(o.n).padStart(5, "0")}</td><td>${esc(c.name)}</td><td>${pill(STATUS[o.status])}</td><td class="r num">${money(o.total)}</td><td class="mono">${esc(o.tracking || "-")}</td></tr>`)) +
+    `<div class="card"><h2>Minhas parcelas</h2>${rec.length ? `<div class="list">${rec.map((r) => `<div class="hbar"><div class="l"><span>Parcela ${r.inst} · vence ${fdate(r.due)}</span><span class="num">${money(r.amount)} ${pill(recvStatus(r))}</span></div></div>`).join("")}</div>` : `<p class="note">Nenhuma parcela em aberto.</p>`}</div>`;
+}
+
+// ---------------------------------------------------------------------------
+// Eventos
+// ---------------------------------------------------------------------------
+function err(e) { const box = $("err"); if (box) box.innerHTML = `<div class="alert bad" style="margin-top:10px">${esc(e.message)}</div>`; else toast(e.message); }
+function go(view) { S.view = view; S.orderId = null; S.tab = null; S.composing = false; render(); window.scrollTo(0, 0); }
+
+document.addEventListener("click", (ev) => {
+  const t = ev.target.closest("button, tr[data-open]"); if (!t) return;
+  const ds = t.dataset; const o = S.orderId && C().orders.find((x) => x.id === S.orderId);
+  try {
+    if (ds.go) return go(ds.go);
+    if (ds.tab) { S.tab = ds.tab; return render(); }
+    if (ds.open || t.closest("[data-open]")) { const id = ds.open || t.closest("[data-open]").dataset.open; S.view = "pedidos"; S.orderId = id; S.composing = false; render(); return window.scrollTo(0, 0); }
+    if (ds.act === "novo") { const c = C(); const custs = role().own ? c.customers.filter((x) => x.seller === role().user) : c.customers; draft = { customer: custs[0]?.id, items: [], freight: 0, discount: 0, inst: 1 }; S.composing = true; return render(); }
+    if (ds.act === "descartar") { S.composing = false; draft = null; return render(); }
+    if (ds.act === "salvar") { const n = createOrder(draft.customer, role().user === "Aline" ? cust(draft.customer).seller : role().user, draft.items.map((i) => [i.sku, i.qty, i.price, i.disc]), { freight: draft.freight, inst: draft.inst }); S.composing = false; draft = null; S.orderId = n.id; return render(); }
+    if (ds.rm !== undefined) { draft.items.splice(+ds.rm, 1); return render(); }
+    if (ds.act === "voltar") { S.orderId = null; return render(); }
+    if (ds.o === "submit") { submit(o); return render(); }
+    if (ds.o === "approve") { approve(o); return render(); }
+    if (ds.o === "nf") { emitNF(o); return render(); }
+    if (ds.o === "adv") { advance(o, ds.to); return render(); }
+    if (ds.o === "cancel") { cancel(o, $("cancel-reason").value); return render(); }
+    if (ds.nf) { emitNF(C().orders.find((x) => x.id === ds.nf)); return render(); }
+    if (ds.pay) { payRecv(C().recv.find((r) => r.id === ds.pay), Number($(`pay-${ds.pay}`).value)); return render(); }
+    if (ds.papprove) { C().pays.find((p) => p.id === ds.papprove).approved = true; toast("Pagamento aprovado pela Diretoria."); return render(); }
+    if (ds.ppay) { const p = C().pays.find((x) => x.id === ds.ppay); p.paid = p.amount; toast("Pagamento registrado."); return render(); }
+    if (ds.reproc) { const e = C().events.find((x) => x.key === ds.reproc); e.attempts = (e.attempts || 1) + 1; e.msg = `Tentativa ${e.attempts}: anúncio ainda sem vínculo de SKU. Vincule o anúncio e reprocesse.`; toast("Reprocessado: continua com erro até o anúncio ser vinculado."); return render(); }
+    if (ds.act === "mov") {
+      const qty = Math.floor(Number($("m-qty").value)); const reason = $("m-reason").value.trim();
+      if (!(qty > 0)) throw new Error("Quantidade deve ser maior que zero.");
+      if (!reason) throw new Error("Informe o motivo do movimento.");
+      move($("m-type").value, $("m-sku").value, qty, reason); toast("Movimento registrado e auditado."); return render();
+    }
+  } catch (e) { err(e); }
+});
+document.addEventListener("change", (ev) => {
+  const el = ev.target;
+  if (el.id === "company") { S.company = el.value; S.orderId = null; S.composing = false; S.tab = null; toast(`Empresa ${el.value} ativa: telas da empresa anterior foram fechadas.`); return render(); }
+  if (el.id === "role") { S.role = el.value; S.orderId = null; S.composing = false; S.tab = null; if (S.role === "CUSTOMER") S.view = "portal"; return render(); }
+  if (!draft || el.id === "q-sku") return;
+  if (el.id === "q-cust") { draft.customer = el.value; }
+  if (el.id === "q-inst") { draft.inst = +el.value; }
+  if (el.id === "q-freight") { draft.freight = Math.max(0, Number(el.value) || 0); }
+  if (el.dataset.qi !== undefined) { const i = draft.items[+el.dataset.qi]; const v = Number(el.value); i[el.dataset.k] = el.dataset.k === "qty" ? Math.max(1, Math.floor(v) || 1) : Math.max(0, v || 0); }
+  // "change" dispara no blur, às vezes no meio de um clique: redesenha depois.
+  setTimeout(render, 0);
+});
+document.addEventListener("keydown", (ev) => {
+  if (ev.target.id !== "q-sku" || ev.key !== "Enter") return;
+  ev.preventDefault();
+  const [sku, q] = ev.target.value.trim().toUpperCase().split("*");
+  const p = prod(sku);
+  if (!p) { toast(`SKU ${sku || "(vazio)"} não existe nesta empresa.`); return; }
+  const qty = Math.max(1, parseInt(q || "1", 10) || 1);
+  const ex = draft.items.find((i) => i.sku === sku);
+  if (ex) ex.qty += qty; else draft.items.push({ sku, qty, price: p.price, disc: 0 });
+  render(); const inp = $("q-sku"); if (inp) inp.focus();
+});
+$("burger").addEventListener("click", () => $("side").classList.toggle("open"));
+
+S = seed();
+render();
+</script>
+
+</html>
