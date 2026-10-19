@@ -170,7 +170,7 @@ async function main() {
 
   // 10) Estoque negativo: reserva acima do disponível só com o parâmetro ligado.
   const esp = await prisma.product.findUniqueOrThrow({ where: { companyId_sku: { companyId: companyA.id, sku: "MOD-ESP32" } } });
-  const tooMuch = esp.stockPhysical - esp.stockReserved - esp.stockBlocked + 50;
+  const tooMuch = Math.max(0, esp.stockPhysical - esp.stockReserved - esp.stockBlocked) + 50;
   const prevFlag = companyA.allowNegativeStock;
   try {
     await prisma.company.update({ where: { id: companyA.id }, data: { allowNegativeStock: false } });
