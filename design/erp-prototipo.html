@@ -799,8 +799,32 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; gap: 8
 .sugv > div { display: grid; gap: 2px; }
 .kindb { font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; border-radius: 6px; padding: 2px 7px; flex: none; }
 .kindb.cliente { background: var(--grad); color: #1b1206; } .kindb.loja { background: rgba(120,160,255,.18); color: #9cc3ff; }
+
+/* Computador: barra lateral fixa. Celular/tablet: botões embaixo. */
+.side { display: none; }
+@media (min-width: 1100px) {
+  body { padding-left: 248px; }
+  .side { display: flex; flex-direction: column; position: fixed; z-index: 25; left: 0; top: 0; bottom: 0; width: 248px; box-sizing: border-box; padding: 18px 12px 14px; background: rgba(16, 14, 11, .88); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-right: 1px solid var(--border); }
+  .dock { display: none !important; }
+  .view { padding-bottom: 48px !important; }
+  .cbar .brand, .cbar .who-name { display: none; }
+}
+.side-brand { display: flex; gap: 10px; align-items: center; padding: 2px 8px 16px; }
+.side-brand b { display: block; font-size: 16px; letter-spacing: .02em; } .side-brand small { color: var(--text-3); font-size: 11.5px; }
+.side-nav { flex: 1; overflow-y: auto; display: grid; gap: 14px; align-content: start; padding-right: 2px; scrollbar-width: thin; }
+.side-g { display: grid; gap: 2px; }
+.side-h { margin: 0 0 4px; padding: 0 10px; font-size: 10.5px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--text-3); }
+.side-i { display: flex; align-items: center; gap: 11px; width: 100%; text-align: left; background: none; border: 0; color: var(--text-2); font: inherit; font-size: 13.5px; font-weight: 600; padding: 9px 10px; border-radius: 11px; cursor: pointer; }
+.side-i svg.i { width: 18px; height: 18px; flex: none; }
+.side-i span:not(.count-in) { flex: 1; }
+.side-i:hover { background: rgba(255,255,255,.06); color: var(--text); }
+.side-i.on { background: var(--grad); color: #1b1206; box-shadow: inset 0 1px 0 rgba(255,255,255,.5), 0 6px 16px rgba(201,149,42,.3); }
+.side-i.on .count-in { background: #1b1206; color: #f2cc5b; }
+.side-foot { display: flex; gap: 10px; align-items: center; padding: 12px 8px 0; border-top: 1px solid var(--border); margin-top: 10px; }
+.side-foot span { display: grid; min-width: 0; } .side-foot b { font-size: 13px; } .side-foot small { font-size: 11.5px; color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 </style>
 
+<aside class="side" id="side" aria-label="Módulos"></aside>
 <header class="cbar">
   <div class="cbar-in">
     <div class="brand"><div class="brand-mark">M</div><div><b>MAX LED</b><small id="titleline">ERP integrado</small></div></div>
@@ -1101,7 +1125,7 @@ function renderShell() {
   $("company").disabled = S.role === "CUSTOMER";
   $("role").innerHTML = Object.entries(ROLES).map(([k, r]) => `<option value="${k}" ${k === S.role ? "selected" : ""}>${esc(r.label)}</option>`).join("");
   const pend = C().orders.filter((o) => o.status === "AGUARDANDO").length;
-  renderDock();
+  renderDock(); renderSide();
   renderMenus();
   const al = alertsList(); $("bellc").hidden = !al.length; $("bellc").textContent = al.length;
   $("bellbox").innerHTML = `<div class="bb-h">Notificações</div>${al.map(([ic, t, v, tab], i) => `<button data-alert="${i}">${icon(ic)}<span>${esc(t)}</span></button>`).join("") || `<p class="note" style="padding:10px">Tudo em dia.</p>`}`;
@@ -1753,6 +1777,14 @@ function modBadge(k) {
   if (k === "prospeccao" && can("prospeccao")) return cadTasks().length || 0;
   if (k === "fiscal" && can("fiscal")) return (C().nfIn || []).filter((x) => !x.status.startsWith("Entrada")).length || 0;
   return 0;
+}
+// No computador os módulos ficam numa barra lateral fixa; no celular, nos
+// botões de baixo (renderDock). Os dois leem os mesmos grupos.
+function renderSide() {
+  const gs = GROUPS.map(([g, l, ic, mods]) => [g, l, mods.filter((k) => can(k))]).filter(([, , m]) => m.length);
+  $("side").innerHTML = `<div class="side-brand"><div class="brand-mark">M</div><div><b>MAX LED</b><small>ERP integrado</small></div></div><nav class="side-nav">` +
+    gs.map(([g, l, mods]) => `<div class="side-g">${mods.length > 1 ? `<p class="side-h">${esc(l)}</p>` : ""}${mods.map((k) => { const b = modBadge(k); return `<button data-go="${k}" class="side-i ${S.view === k ? "on" : ""}" ${S.view === k ? 'aria-current="page"' : ""}>${icon(k)}<span>${esc(MODULES.find(([m]) => m === k)[1])}</span>${b ? `<span class="count-in">${b}</span>` : ""}</button>`; }).join("")}</div>`).join("") +
+    `</nav><div class="side-foot">${avatar(role().user)}<span><b>${esc(role().user)}</b><small>${esc(role().label)} · empresa ${C().code}</small></span></div>`;
 }
 function renderDock() {
   const gs = GROUPS.map(([g, l, ic, mods]) => [g, l, ic, mods.filter((k) => can(k))]).filter(([, , , m]) => m.length);
