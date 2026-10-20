@@ -1705,17 +1705,32 @@ function crmTabs() {
   const n = cadTasks().length;
   return `<div class="tabs">${[["funil", "Funil (Kanban)"], ["hoje", `Agenda de hoje ${n ? `<span class="count-in">${n}</span>` : ""}`], ["cad", "Cadências"]].map(([k, l]) => `<button data-crmtab="${k}" class="${PF2.tab === k ? "on" : ""}">${l}</button>`).join("")}</div>`;
 }
+// Cadastro editável da empresa na base de prospecção (nova ou existente).
+function prospectEditForm() {
+  const isNew = PF2.edit === "new"; const x = isNew ? { name: "", cnpj: "", seg: Object.keys(SEGS)[0], size: "EPP", city: "São Paulo", uf: "SP", bairro: "", contact: "", phone: "", email: "", source: "Cadastro manual", signals: [] } : (C().prospects || []).find((y) => y.id === PF2.edit);
+  if (!x) return "";
+  const f = (id, l, val, span, type = "text") => `<label class="f ${span ? "span2" : ""}" for="pe-${id}">${l}<input id="pe-${id}" type="${type}" value="${esc(val ?? "")}"></label>`;
+  const sel = (id, l, val, opts) => `<label class="f" for="pe-${id}">${l}<select id="pe-${id}">${opts.map((o) => `<option ${o === val ? "selected" : ""}>${o}</option>`).join("")}</select></label>`;
+  return `<div class="card"><h2>${isNew ? "Adicionar empresa" : `Editar · ${esc(x.name)}`}</h2><div class="form">
+    ${f("name", "Empresa (razão social ou fantasia)", x.name, true)}${f("cnpj", "CNPJ", x.cnpj)}
+    ${sel("seg", "Segmento", x.seg, Object.keys(SEGS))}${sel("size", "Porte", x.size, ["ME", "EPP", "Média", "Grande"])}
+    ${f("city", "Cidade", x.city)}${f("uf", "UF", x.uf)}${f("bairro", "Bairro", x.bairro)}
+    ${f("contact", "Contato", x.contact)}${f("phone", "Telefone / WhatsApp", x.phone)}${f("email", "E-mail", x.email, false, "email")}
+    ${f("source", "Origem", x.source)}${f("signals", "Sinais de compra (separe por vírgula)", (x.signals || []).join(", "), true)}
+  </div><div id="err"></div><div class="row" style="margin-top:12px"><button class="btn" data-act="pr-save">${isNew ? "Adicionar à base" : "Salvar alterações"}</button><button class="btn ghost" data-act="pr-cancel">Cancelar</button></div></div>`;
+}
 function vProspeccao() {
   const all = C().prospects || []; const ufs = [...new Set(all.map((x) => x.uf))].sort();
   const ls = all.filter((x) => x.status !== "Descartado" && (!PF2.seg || x.seg === PF2.seg) && (!PF2.uf || x.uf === PF2.uf) && fitScore(x) >= PF2.min && (!PF2.q || matchWords(`${x.name} ${x.city} ${x.cnpj}`, PF2.q))).sort((a, b) => fitScore(b) - fitScore(a));
   const sel = [...PF2.sel].filter((id) => ls.some((x) => x.id === id && x.status === "Novo"));
   return `<div class="grid g4">${kpi("users", "c1", "Empresas na base", all.filter((x) => x.status !== "Descartado").length)}${kpi("check", "c3", "Alto potencial (70+)", all.filter((x) => x.status === "Novo" && fitScore(x) >= 70).length)}${kpi("users", "c2", "Viraram clientes", all.filter((x) => x.appr?.status === "APROVADO").length)}${kpi("alert", "c4", "Com sinal de compra", all.filter((x) => x.status === "Novo" && x.signals.length).length)}</div>
-    <div class="row"><button class="btn" data-act="pr-find">${icon("plus")}Buscar novas empresas</button><button class="btn ghost" data-act="pr-import">Importar lista (CSV)</button></div>
+    <div class="row"><button class="btn" data-act="pr-find">${icon("plus")}Buscar novas empresas</button><button class="btn ghost" data-act="pr-add">${icon("plus")}Adicionar empresa</button><button class="btn ghost" data-act="pr-import">Importar lista (CSV)</button></div>
+    ${PF2.edit ? prospectEditForm() : ""}
     ${PF2.find ? `<div class="card"><h2>Buscar empresas por segmento e região</h2><div class="form"><label class="f" for="pr-seg">Segmento<select id="pr-seg">${Object.keys(SEGS).map((x) => `<option>${x}</option>`).join("")}</select></label><label class="f" for="pr-city">Cidade/UF<input id="pr-city" value="Campinas/SP"></label><label class="f" for="pr-size">Porte mínimo<select id="pr-size"><option>ME</option><option selected>EPP</option><option>Média</option></select></label><div class="f" style="align-self:end"><button class="btn" data-act="pr-run">Buscar</button></div></div><p class="note">Consulta a base pública de CNPJ pelo CNAE do segmento. Empresas que já são clientes ou já estão na base não entram de novo.</p><div id="err"></div></div>` : ""}
     <div class="filters"><label class="f grow" for="pp-q">Buscar<input id="pp-q" value="${esc(PF2.q)}" placeholder="Empresa, cidade ou CNPJ"></label><label class="f" for="pp-seg">Segmento<select id="pp-seg"><option value="">Todos</option>${Object.keys(SEGS).map((x) => `<option ${PF2.seg === x ? "selected" : ""}>${x}</option>`).join("")}</select></label><label class="f" for="pp-uf">UF<select id="pp-uf"><option value="">Todas</option>${ufs.map((x) => `<option ${PF2.uf === x ? "selected" : ""}>${x}</option>`).join("")}</select></label><label class="f" for="pp-min">Potencial mínimo<select id="pp-min">${[0, 50, 70].map((x) => `<option value="${x}" ${PF2.min === x ? "selected" : ""}>${x ? `${x}+` : "Qualquer"}</option>`).join("")}</select></label></div>
     ${sel.length ? `<div class="bulkbar"><b>${sel.length} selecionada(s)</b><button class="btn" data-act="pr-tofunnel">Iniciar prospecção (etapas)</button><button class="btn ghost" data-act="pr-discard">Descartar</button></div>` : ""}` +
-    table([{ t: "" }, { t: "Empresa" }, { t: "Segmento" }, { t: "Porte" }, { t: "Potencial" }, { t: "Sinais" }, { t: "Origem" }, { t: "Situação" }],
-      ls.map((x) => { const sc = fitScore(x); return `<tr><td>${x.status === "Novo" ? `<input type="checkbox" data-ppsel="${x.id}" ${PF2.sel.has(x.id) ? "checked" : ""} aria-label="Selecionar ${esc(x.name)}">` : ""}</td><td><div class="who-cell">${avatar(x.name)}<span>${esc(x.name)}<small>${x.cnpj} · ${esc(x.city)}/${x.uf} · ${esc(x.contact)} · ${x.phone}</small></span></div></td><td>${esc(x.seg)}</td><td>${x.size}</td><td style="min-width:110px"><div class="mini"><i style="width:${sc}%;background:${sc >= 70 ? "var(--grad)" : sc >= 50 ? "var(--warn)" : "var(--neutral-soft)"}"></i></div><small class="note"><b style="color:var(--text)">${sc}</b>/100</small></td><td>${x.signals.map((s) => `<span class="sig">${esc(s)}</span>`).join("") || `<span class="note">-</span>`}</td><td class="note">${esc(x.source)}</td><td>${x.appr?.status === "APROVADO" ? pill(["Cliente", "p-good"]) : x.status === "Novo" ? pill(["Novo", "p-info"]) : pill([PSTAGES.find(([k]) => k === x.stage)?.[1] || x.status, "p-warn"])}</td></tr>`; }), "Nenhuma empresa com esses filtros.") +
+    table([{ t: "" }, { t: "Empresa" }, { t: "Segmento" }, { t: "Porte" }, { t: "Potencial" }, { t: "Sinais" }, { t: "Origem" }, { t: "Situação" }, { t: "" }],
+      ls.map((x) => { const sc = fitScore(x); return `<tr><td>${x.status === "Novo" ? `<input type="checkbox" data-ppsel="${x.id}" ${PF2.sel.has(x.id) ? "checked" : ""} aria-label="Selecionar ${esc(x.name)}">` : ""}</td><td><div class="who-cell">${avatar(x.name)}<span>${esc(x.name)}<small>${x.cnpj} · ${esc(x.city)}/${x.uf} · ${esc(x.contact)} · ${x.phone}</small></span></div></td><td>${esc(x.seg)}</td><td>${x.size}</td><td style="min-width:110px"><div class="mini"><i style="width:${sc}%;background:${sc >= 70 ? "var(--grad)" : sc >= 50 ? "var(--warn)" : "var(--neutral-soft)"}"></i></div><small class="note"><b style="color:var(--text)">${sc}</b>/100</small></td><td>${x.signals.map((s) => `<span class="sig">${esc(s)}</span>`).join("") || `<span class="note">-</span>`}</td><td class="note">${esc(x.source)}</td><td>${x.appr?.status === "APROVADO" ? pill(["Cliente", "p-good"]) : x.status === "Novo" ? pill(["Novo", "p-info"]) : pill([PSTAGES.find(([k]) => k === x.stage)?.[1] || x.status, "p-warn"])}</td><td><button class="btn ghost" data-ppedit="${x.id}">Editar</button></td></tr>`; }), "Nenhuma empresa com esses filtros.") +
     `<p class="note">Potencial = segmento + porte + região atendida + sinais de compra. Ajuste os pesos em Configurações quando tiver histórico de conversão.</p>`;
 }
 function vAgendaHoje() {
@@ -1735,6 +1750,27 @@ function vCadencias() {
 function prospAction(ds, act) {
   const c = C();
   if (ds.crmtab) { S.view = "crm"; PF2.tab = ds.crmtab; KF.leadId = null; return render(); }
+  if (act === "pr-add") { PF2.edit = "new"; PF2.find = false; return render(); }
+  if (ds.ppedit) { PF2.edit = ds.ppedit; if (ds.fromdetail) { S.view = "prospeccao"; PX.open = null; PX.tab = "lista"; } render(); return window.scrollTo(0, 0); }
+  if (act === "pr-cancel") { PF2.edit = null; return render(); }
+  if (act === "pr-save") {
+    const g = (k) => ($(`pe-${k}`)?.value || "").trim();
+    const v = { name: g("name"), cnpj: g("cnpj"), seg: g("seg"), size: g("size"), city: g("city"), uf: g("uf").toUpperCase(), bairro: g("bairro"), contact: g("contact"), phone: g("phone"), email: g("email"), source: g("source") || "Cadastro manual", signals: g("signals").split(",").map((t) => t.trim()).filter(Boolean) };
+    if (v.name.length < 2) throw new Error("Informe o nome da empresa.");
+    if (v.cnpj && v.cnpj.replace(/\D/g, "").length !== 14) throw new Error("CNPJ deve ter 14 dígitos (ou deixe em branco).");
+    if (!/^[A-Z]{2}$/.test(v.uf)) throw new Error("UF com 2 letras, ex.: SP.");
+    if (v.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v.email)) throw new Error("E-mail inválido.");
+    const digits = v.cnpj.replace(/\D/g, "");
+    if (digits && c.prospects.some((y) => y.id !== PF2.edit && (y.cnpj || "").replace(/\D/g, "") === digits)) throw new Error("Já existe uma empresa com esse CNPJ na base.");
+    if (PF2.edit === "new") {
+      c.prospects.unshift({ id: `PM${Date.now() % 1e6}`, ...v, status: "Novo", stage: "PESQ", owner: role().own ? role().user : "Bruno Alves", since: new Date().toISOString(), hist: [{ when: new Date().toISOString(), msg: "Empresa cadastrada manualmente", who: role().user }], tries: [] });
+      toast(`${v.name} adicionada à base.`);
+    } else {
+      const x = c.prospects.find((y) => y.id === PF2.edit); Object.assign(x, v); (x.hist = x.hist || []).unshift({ when: new Date().toISOString(), msg: "Dados da empresa editados", who: role().user });
+      toast("Dados da empresa salvos.");
+    }
+    PF2.edit = null; return render();
+  }
   if (act === "pr-find") { PF2.find = !PF2.find; return render(); }
   if (act === "pr-run") {
     const seg = $("pr-seg").value; const [city, uf] = $("pr-city").value.split("/").map((x) => x.trim()); if (!city || !uf || uf.length !== 2) throw new Error("Cidade no formato Cidade/UF.");
@@ -1871,7 +1907,7 @@ function vProspEtapas() {
 function vProspDetalhe(x) {
   const i = PSTAGES.findIndex(([k]) => k === x.stage); const req = pReqs(x); const canAdv = req.length && req.every((r) => r[1]); const d = x.decisor || {}; const q = x.qual || {};
   return `<div class="row"><button class="btn ghost" data-act="px-back">Voltar às etapas</button></div>
-    <div class="card hero"><div class="who-cell">${avatar(x.name)}<div><h1 style="margin:0;font-size:24px">${esc(x.name)}</h1><p class="note" style="margin:4px 0 0">${x.cnpj} · ${esc(x.seg)} · ${x.size} · ${esc(x.city)}/${x.uf} · origem ${esc(x.source)}</p></div></div><div class="row">${pill([x.stage === "DESC" ? `Descartada: ${x.lost}` : PSTAGES[i][1], x.stage === "DESC" ? "p-bad" : x.stage === "QUALI" ? "p-good" : "p-info"])}<span class="scb ${fitScore(x) >= 70 ? "hi" : "mid"}" title="Potencial">${fitScore(x)}/100</span></div></div>
+    <div class="card hero"><div class="who-cell">${avatar(x.name)}<div><h1 style="margin:0;font-size:24px">${esc(x.name)}</h1><p class="note" style="margin:4px 0 0">${x.cnpj} · ${esc(x.seg)} · ${x.size} · ${esc(x.city)}/${x.uf} · origem ${esc(x.source)} · <button class="link" data-ppedit="${x.id}" data-fromdetail="1">editar dados</button></p></div></div><div class="row">${pill([x.stage === "DESC" ? `Descartada: ${x.lost}` : PSTAGES[i][1], x.stage === "DESC" ? "p-bad" : x.stage === "QUALI" ? "p-good" : "p-info"])}<span class="scb ${fitScore(x) >= 70 ? "hi" : "mid"}" title="Potencial">${fitScore(x)}/100</span></div></div>
     ${x.stage !== "DESC" ? `<div class="card"><div class="steps" style="grid-template-columns:repeat(6,minmax(0,1fr))">${PSTAGES.map(([, l], j) => `<div class="step ${j < i ? "done" : j === i ? "now" : ""}"><i>${j < i ? "&#10003;" : j + 1}</i>${l}</div>`).join("")}</div>
       ${req.length ? `<div class="reqs"><h3>Para avançar para <b>${PSTAGES[i + 1][1]}</b></h3>${req.map(([t, ok]) => `<div class="rq ${ok ? "ok" : ""}"><span>${ok ? "✓" : "○"}</span>${t}</div>`).join("")}</div>
       <div class="row" style="margin-top:12px">${i > 0 && x.stage !== "QUALI" ? `<button class="btn ghost" data-pxmv="-1">Voltar etapa</button>` : ""}<button class="btn" data-pxmv="1" ${canAdv ? "" : "disabled"}>${`Avançar para ${PSTAGES[i + 1][1]}`}</button>${canAdv ? "" : `<span class="note">Complete os itens acima para liberar.</span>`}</div>` : clientApprovalPanel(x)}
@@ -3575,7 +3611,7 @@ function vConfig() {
 // Eventos
 // ---------------------------------------------------------------------------
 function err(e) { const box = $("err"); if (box) box.innerHTML = `<div class="alert bad" style="margin-top:10px">${esc(e.message)}</div>`; else toast(e.message); }
-function go(view) { S.proposal = null; S.dockOpen = null; PX.open = null; NFI.open = null; KF.leadId = null; KF.newLead = false; S.cliTab = null; mailDraft = null; pgDraft = null; cliDraft = null; PT.orderId = null; S.clienteId = null; S.prodSku = null; S.batchErrors = null; S.view = view; S.orderId = null; S.tab = null; S.composing = false; S.danfe = null; S.impView = null; nfDraft = null; impDraft = null; render(); window.scrollTo(0, 0); }
+function go(view) { PF2.edit = null; S.proposal = null; S.dockOpen = null; PX.open = null; NFI.open = null; KF.leadId = null; KF.newLead = false; S.cliTab = null; mailDraft = null; pgDraft = null; cliDraft = null; PT.orderId = null; S.clienteId = null; S.prodSku = null; S.batchErrors = null; S.view = view; S.orderId = null; S.tab = null; S.composing = false; S.danfe = null; S.impView = null; nfDraft = null; impDraft = null; render(); window.scrollTo(0, 0); }
 
 document.addEventListener("click", (ev) => {
   if (S.dockOpen && !ev.target.closest("#nav")) { S.dockOpen = null; renderDock(); }
@@ -3609,6 +3645,7 @@ document.addEventListener("click", (ev) => {
     if (ds.pxwa) { const x = (C().prospects || []).find((y) => y.id === PX.open); if (x) { x.tries = x.tries || []; x.tries.unshift({ when: new Date().toISOString(), ch: "WhatsApp", res: "Sem resposta" }); x.hist.unshift({ when: new Date().toISOString(), msg: "WhatsApp enviado pelo roteiro", who: role().user }); toast("WhatsApp aberto e tentativa registrada."); setTimeout(render, 300); } return; }
     if (ds.dock) { S.dockOpen = S.dockOpen === ds.dock ? null : ds.dock; return renderDock(); }
     if ((ds.pxtab || ds.pxopen || ds.pxmv || ds.act?.startsWith("px-")) && !ds.go2) return pxAction(ds, ds.act);
+    if (ds.ppedit) return prospAction(ds, ds.act);
     if (ds.crmtab || ds.act?.startsWith("pr-") || ds.tkdone !== undefined || ds.tkskip !== undefined) return prospAction(ds, ds.act);
     if (ds.lead) { S.view = "crm"; }
     if (ds.lead) { KF.leadId = ds.lead; render(); return window.scrollTo(0, 0); }
