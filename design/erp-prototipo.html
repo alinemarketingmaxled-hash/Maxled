@@ -822,6 +822,17 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; gap: 8
 .side-i.on .count-in { background: #1b1206; color: #f2cc5b; }
 .side-foot { display: flex; gap: 10px; align-items: center; padding: 12px 8px 0; border-top: 1px solid var(--border); margin-top: 10px; }
 .side-foot span { display: grid; min-width: 0; } .side-foot b { font-size: 13px; } .side-foot small { font-size: 11.5px; color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.appr { margin-top: 14px; padding: 14px; border: 1px solid rgba(242,204,91,.35); border-radius: 14px; background: rgba(242,204,91,.05); }
+.apkv { margin-top: 10px; }
+.goalc { margin: 10px 4px 0; padding: 12px; border-radius: 14px; background: rgba(242,204,91,.07); border: 1px solid rgba(242,204,91,.28); display: grid; gap: 5px; }
+.goal-h { margin: 0; font-size: 10.5px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--text-3); }
+.goal-v { margin: 0; font-size: 19px; font-weight: 800; color: #f2cc5b; } .goal-v small { font-size: 11.5px; color: var(--text-2); font-weight: 600; }
+.goal-bar { position: relative; height: 7px; border-radius: 99px; background: rgba(255,255,255,.1); }
+.goal-bar i { position: absolute; inset: 0 auto 0 0; border-radius: 99px; background: var(--grad); }
+.goal-bar span { position: absolute; top: -3px; width: 2px; height: 13px; background: #fff; opacity: .7; border-radius: 2px; }
+.goal-s { margin: 0; font-size: 11.5px; color: var(--text-2); }
+@media (min-width: 1100px) { .mobile-goals { display: none; } }
 </style>
 
 <aside class="side" id="side" aria-label="Módulos"></aside>
@@ -853,16 +864,16 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; gap: 8
 // ---------------------------------------------------------------------------
 const ROLES = {
   MEDIATOR: { label: "Mediador", user: "Aline", mods: "*" },
-  MANAGER: { label: "Diretoria", user: "Diretoria", mods: ["painel","pedidos","prospeccao","crm","metas","rota","posvenda","clientes","programacao","emails","produtos","estoque","expedicao","compras","fiscal","financeiro","mercadolivre","relatorios","config"], approve: true },
-  SALES_MANAGER: { label: "Gerente comercial", user: "Gerente Comercial", mods: ["painel","pedidos","prospeccao","crm","metas","rota","posvenda","clientes","programacao","emails","produtos","estoque","relatorios","portal"], approve: true },
-  SELLER: { label: "Vendedor", user: "Bruno Alves", mods: ["painel","pedidos","prospeccao","crm","metas","rota","posvenda","clientes","programacao","emails","produtos","estoque","relatorios"], own: true, approve: false },
+  MANAGER: { label: "Diretoria", user: "Diretoria", mods: ["painel","pedidos","prospeccao","crm","rota","posvenda","clientes","programacao","emails","produtos","estoque","expedicao","compras","fiscal","financeiro","mercadolivre","relatorios","config"], approve: true },
+  SALES_MANAGER: { label: "Gerente comercial", user: "Gerente Comercial", mods: ["painel","pedidos","prospeccao","crm","rota","posvenda","clientes","programacao","emails","produtos","estoque","relatorios","portal"], approve: true },
+  SELLER: { label: "Vendedor", user: "Bruno Alves", mods: ["painel","pedidos","prospeccao","crm","rota","posvenda","clientes","programacao","emails","produtos","estoque","relatorios"], own: true, approve: false },
   STOCK: { label: "Estoque/expedição", user: "Equipe Estoque", mods: ["painel","pedidos","produtos","estoque","expedicao","mercadolivre","emails"] },
   FINANCE: { label: "Financeiro", user: "Equipe Financeiro", mods: ["painel","pedidos","clientes","emails","financeiro","fiscal","relatorios"] },
   FISCAL: { label: "Fiscal", user: "Equipe Fiscal", mods: ["painel","pedidos","fiscal","emails"] },
   CUSTOMER: { label: "Cliente (portal)", user: "Distribuidora Sul", mods: ["portal"] },
 };
 const MODULES = [
-  ["painel", "Painel"], ["pedidos", "Cotações e pedidos"], ["prospeccao", "Prospecção"], ["crm", "CRM e funil"], ["metas", "Metas e ranking"], ["rota", "Rota de visitas"], ["posvenda", "Pós-venda"], ["clientes", "Clientes"], ["programacao", "Programação"], ["emails", "E-mails"], ["produtos", "Produtos e kits"], ["estoque", "Estoque"],
+  ["painel", "Painel"], ["pedidos", "Cotações e pedidos"], ["prospeccao", "Prospecção"], ["crm", "CRM e funil"], ["rota", "Rota de visitas"], ["posvenda", "Pós-venda"], ["clientes", "Clientes"], ["programacao", "Programação"], ["emails", "E-mails"], ["produtos", "Produtos e kits"], ["estoque", "Estoque"],
   ["expedicao", "Expedição"], ["compras", "Compras e importação"], ["fiscal", "Fiscal"], ["financeiro", "Financeiro"],
   ["mercadolivre", "Mercado Livre"], ["relatorios", "Relatórios"], ["portal", "Portal do cliente"], ["config", "Configurações"],
 ];
@@ -1137,7 +1148,7 @@ function render() {
   renderShell();
   const v = $("view");
   v.className = "view";
-  const fn = { metas: vMetas, rota: vRota, posvenda: vPosVenda, prospeccao: vProspeccaoMod, crm: vCrm, programacao: vProgramacao, emails: vEmails, clientes: vClientes, config: vConfig, painel: vPainel, pedidos: S.proposal ? () => vProposta(C().orders.find((x) => x.id === S.proposal)) : S.orderId ? vPedido : vPedidos, produtos: vProdutos, estoque: vEstoque, expedicao: vExpedicao, compras: vCompras, fiscal: vFiscal, financeiro: vFinanceiro, mercadolivre: vML, relatorios: vRelatorios, portal: vPortal }[S.view];
+  const fn = { rota: vRota, posvenda: vPosVenda, prospeccao: vProspeccaoMod, crm: vCrm, programacao: vProgramacao, emails: vEmails, clientes: vClientes, config: vConfig, painel: vPainel, pedidos: S.proposal ? () => vProposta(C().orders.find((x) => x.id === S.proposal)) : S.orderId ? vPedido : vPedidos, produtos: vProdutos, estoque: vEstoque, expedicao: vExpedicao, compras: vCompras, fiscal: vFiscal, financeiro: vFinanceiro, mercadolivre: vML, relatorios: vRelatorios, portal: vPortal }[S.view];
   v.innerHTML = `<div class="wrap">${fn()}</div>`;
 }
 function head(title, sub, actions = "") { return `<div class="head"><div><h1>${esc(title)}</h1><p>${sub}</p></div><div class="row">${actions}</div></div>`; }
@@ -1404,6 +1415,7 @@ function alertsList() {
   const low = c.products.filter((p) => !p.kit && availSimple(p) < p.minStock); if (low.length && can("estoque")) out.push(["alert", `${low.length} produto(s) abaixo do estoque mínimo`, "estoque"]);
   const ov = c.recv.filter((r) => r.paid < r.amount && new Date(r.due) < new Date()); if (ov.length && can("financeiro")) out.push(["financeiro", `${ov.length} título(s) vencido(s) · ${money(ov.reduce((s, r) => s + r.amount - r.paid, 0))}`, "financeiro"]);
   const pa = c.pays.filter((p) => !p.approved && p.paid < p.amount); if (pa.length && ["MEDIATOR","MANAGER"].includes(S.role)) out.push(["receipt", `${pa.length} pagamento(s) para aprovar`, "financeiro", "pagar"]);
+  const apr = (c.prospects || []).filter((x) => x.appr?.status === "PENDENTE"); if (apr.length && S.role === "MEDIATOR") out.push(["users", `${apr.length} empresa(s) aguardando aprovação para virar cliente`, "prospeccao"]);
   (c.autoTasks || []).slice(0, 3).forEach((t) => out.push(["clock", t, "config", "auto"]));
   const ml = c.events.filter((e) => e.status === "ERRO"); if (ml.length && can("mercadolivre")) out.push(["mercadolivre", `${ml.length} pedido(s) do Mercado Livre com erro`, "mercadolivre"]);
   return out;
@@ -1691,19 +1703,19 @@ function cadTasks() {
 }
 function crmTabs() {
   const n = cadTasks().length;
-  return `<div class="tabs">${[["funil", "Funil (Kanban)"], ["prosp", "Prospecção"], ["hoje", `Agenda de hoje ${n ? `<span class="count-in">${n}</span>` : ""}`], ["cad", "Cadências"]].map(([k, l]) => `<button data-crmtab="${k}" class="${PF2.tab === k ? "on" : ""}">${l}</button>`).join("")}</div>`;
+  return `<div class="tabs">${[["funil", "Funil (Kanban)"], ["hoje", `Agenda de hoje ${n ? `<span class="count-in">${n}</span>` : ""}`], ["cad", "Cadências"]].map(([k, l]) => `<button data-crmtab="${k}" class="${PF2.tab === k ? "on" : ""}">${l}</button>`).join("")}</div>`;
 }
 function vProspeccao() {
   const all = C().prospects || []; const ufs = [...new Set(all.map((x) => x.uf))].sort();
   const ls = all.filter((x) => x.status !== "Descartado" && (!PF2.seg || x.seg === PF2.seg) && (!PF2.uf || x.uf === PF2.uf) && fitScore(x) >= PF2.min && (!PF2.q || matchWords(`${x.name} ${x.city} ${x.cnpj}`, PF2.q))).sort((a, b) => fitScore(b) - fitScore(a));
   const sel = [...PF2.sel].filter((id) => ls.some((x) => x.id === id && x.status === "Novo"));
-  return `<div class="grid g4">${kpi("users", "c1", "Empresas na base", all.filter((x) => x.status !== "Descartado").length)}${kpi("check", "c3", "Alto potencial (70+)", all.filter((x) => x.status === "Novo" && fitScore(x) >= 70).length)}${kpi("crm", "c2", "Já no funil", all.filter((x) => x.status === "No funil").length)}${kpi("alert", "c4", "Com sinal de compra", all.filter((x) => x.status === "Novo" && x.signals.length).length)}</div>
+  return `<div class="grid g4">${kpi("users", "c1", "Empresas na base", all.filter((x) => x.status !== "Descartado").length)}${kpi("check", "c3", "Alto potencial (70+)", all.filter((x) => x.status === "Novo" && fitScore(x) >= 70).length)}${kpi("users", "c2", "Viraram clientes", all.filter((x) => x.appr?.status === "APROVADO").length)}${kpi("alert", "c4", "Com sinal de compra", all.filter((x) => x.status === "Novo" && x.signals.length).length)}</div>
     <div class="row"><button class="btn" data-act="pr-find">${icon("plus")}Buscar novas empresas</button><button class="btn ghost" data-act="pr-import">Importar lista (CSV)</button></div>
     ${PF2.find ? `<div class="card"><h2>Buscar empresas por segmento e região</h2><div class="form"><label class="f" for="pr-seg">Segmento<select id="pr-seg">${Object.keys(SEGS).map((x) => `<option>${x}</option>`).join("")}</select></label><label class="f" for="pr-city">Cidade/UF<input id="pr-city" value="Campinas/SP"></label><label class="f" for="pr-size">Porte mínimo<select id="pr-size"><option>ME</option><option selected>EPP</option><option>Média</option></select></label><div class="f" style="align-self:end"><button class="btn" data-act="pr-run">Buscar</button></div></div><p class="note">Consulta a base pública de CNPJ pelo CNAE do segmento. Empresas que já são clientes ou já estão na base não entram de novo.</p><div id="err"></div></div>` : ""}
     <div class="filters"><label class="f grow" for="pp-q">Buscar<input id="pp-q" value="${esc(PF2.q)}" placeholder="Empresa, cidade ou CNPJ"></label><label class="f" for="pp-seg">Segmento<select id="pp-seg"><option value="">Todos</option>${Object.keys(SEGS).map((x) => `<option ${PF2.seg === x ? "selected" : ""}>${x}</option>`).join("")}</select></label><label class="f" for="pp-uf">UF<select id="pp-uf"><option value="">Todas</option>${ufs.map((x) => `<option ${PF2.uf === x ? "selected" : ""}>${x}</option>`).join("")}</select></label><label class="f" for="pp-min">Potencial mínimo<select id="pp-min">${[0, 50, 70].map((x) => `<option value="${x}" ${PF2.min === x ? "selected" : ""}>${x ? `${x}+` : "Qualquer"}</option>`).join("")}</select></label></div>
-    ${sel.length ? `<div class="bulkbar"><b>${sel.length} selecionada(s)</b><label class="f" for="pp-cad" style="flex-direction:row;align-items:center;gap:8px">Cadência<select id="pp-cad"><option value="">Sem cadência</option>${C().cadences.map((c) => `<option value="${c.id}">${esc(c.name)}</option>`).join("")}</select></label><button class="btn" data-act="pr-tofunnel">Levar para o funil</button><button class="btn ghost" data-act="pr-discard">Descartar</button></div>` : ""}` +
+    ${sel.length ? `<div class="bulkbar"><b>${sel.length} selecionada(s)</b><button class="btn" data-act="pr-tofunnel">Iniciar prospecção (etapas)</button><button class="btn ghost" data-act="pr-discard">Descartar</button></div>` : ""}` +
     table([{ t: "" }, { t: "Empresa" }, { t: "Segmento" }, { t: "Porte" }, { t: "Potencial" }, { t: "Sinais" }, { t: "Origem" }, { t: "Situação" }],
-      ls.map((x) => { const sc = fitScore(x); return `<tr><td>${x.status === "Novo" ? `<input type="checkbox" data-ppsel="${x.id}" ${PF2.sel.has(x.id) ? "checked" : ""} aria-label="Selecionar ${esc(x.name)}">` : ""}</td><td><div class="who-cell">${avatar(x.name)}<span>${esc(x.name)}<small>${x.cnpj} · ${esc(x.city)}/${x.uf} · ${esc(x.contact)} · ${x.phone}</small></span></div></td><td>${esc(x.seg)}</td><td>${x.size}</td><td style="min-width:110px"><div class="mini"><i style="width:${sc}%;background:${sc >= 70 ? "var(--grad)" : sc >= 50 ? "var(--warn)" : "var(--neutral-soft)"}"></i></div><small class="note"><b style="color:var(--text)">${sc}</b>/100</small></td><td>${x.signals.map((s) => `<span class="sig">${esc(s)}</span>`).join("") || `<span class="note">-</span>`}</td><td class="note">${esc(x.source)}</td><td>${x.status === "No funil" ? pill(["No funil", "p-good"]) : pill(["Novo", "p-info"])}</td></tr>`; }), "Nenhuma empresa com esses filtros.") +
+      ls.map((x) => { const sc = fitScore(x); return `<tr><td>${x.status === "Novo" ? `<input type="checkbox" data-ppsel="${x.id}" ${PF2.sel.has(x.id) ? "checked" : ""} aria-label="Selecionar ${esc(x.name)}">` : ""}</td><td><div class="who-cell">${avatar(x.name)}<span>${esc(x.name)}<small>${x.cnpj} · ${esc(x.city)}/${x.uf} · ${esc(x.contact)} · ${x.phone}</small></span></div></td><td>${esc(x.seg)}</td><td>${x.size}</td><td style="min-width:110px"><div class="mini"><i style="width:${sc}%;background:${sc >= 70 ? "var(--grad)" : sc >= 50 ? "var(--warn)" : "var(--neutral-soft)"}"></i></div><small class="note"><b style="color:var(--text)">${sc}</b>/100</small></td><td>${x.signals.map((s) => `<span class="sig">${esc(s)}</span>`).join("") || `<span class="note">-</span>`}</td><td class="note">${esc(x.source)}</td><td>${x.appr?.status === "APROVADO" ? pill(["Cliente", "p-good"]) : x.status === "Novo" ? pill(["Novo", "p-info"]) : pill([PSTAGES.find(([k]) => k === x.stage)?.[1] || x.status, "p-warn"])}</td></tr>`; }), "Nenhuma empresa com esses filtros.") +
     `<p class="note">Potencial = segmento + porte + região atendida + sinais de compra. Ajuste os pesos em Configurações quando tiver histórico de conversão.</p>`;
 }
 function vAgendaHoje() {
@@ -1722,7 +1734,7 @@ function vCadencias() {
 }
 function prospAction(ds, act) {
   const c = C();
-  if (ds.crmtab) { S.view = "prospeccao"; PX.tab = ds.crmtab === "prosp" ? "lista" : ds.crmtab; PX.open = null; return render(); }
+  if (ds.crmtab) { S.view = "crm"; PF2.tab = ds.crmtab; KF.leadId = null; return render(); }
   if (act === "pr-find") { PF2.find = !PF2.find; return render(); }
   if (act === "pr-run") {
     const seg = $("pr-seg").value; const [city, uf] = $("pr-city").value.split("/").map((x) => x.trim()); if (!city || !uf || uf.length !== 2) throw new Error("Cidade no formato Cidade/UF.");
@@ -1740,10 +1752,9 @@ function prospAction(ds, act) {
     const ids = [...PF2.sel]; const cad = $("pp-cad")?.value;
     ids.forEach((id) => { const x = c.prospects.find((y) => y.id === id); if (!x || x.status !== "Novo") return;
       if (act === "pr-discard") { x.status = "Descartado"; x.stage = "DESC"; return; }
-      x.status = "No funil"; x.stage = "QUALI";
-      c.leads.unshift({ id: `L${Date.now() % 1e6}${id}`, company: x.name, contact: x.contact, email: x.email, phone: x.phone, city: `${x.city}/${x.uf}`, seller: role().own ? role().user : "Gerente Comercial", stage: "NOVO", value: { ME: 4000, EPP: 9000, "Média": 20000, Grande: 45000 }[x.size] || 5000, source: `Prospecção · ${x.source}`, next: cad ? "Seguir a cadência" : "Primeiro contato", nextDate: days(0), cad: cad ? { id: cad, start: days(0), done: [] } : null, acts: [{ when: new Date().toISOString(), type: "Tarefa", msg: `Vindo da prospecção (potencial ${fitScore(x)}/100)${x.signals.length ? `: ${x.signals.join(", ")}` : ""}`, who: role().user }] });
+      x.status = "Em prospecção"; x.owner = role().own ? role().user : x.owner || "Bruno Alves"; x.since = new Date().toISOString(); (x.hist = x.hist || []).unshift({ when: new Date().toISOString(), msg: "Prospecção iniciada", who: role().user });
     });
-    PF2.sel.clear(); toast(act === "pr-discard" ? `${ids.length} empresa(s) descartada(s).` : `${ids.length} empresa(s) levada(s) para o funil${cad ? " com cadência: as tarefas já aparecem na Agenda de hoje" : ""}.`); return render();
+    PF2.sel.clear(); toast(act === "pr-discard" ? `${ids.length} empresa(s) descartada(s).` : `${ids.length} empresa(s) colocada(s) nas etapas de prospecção.`); return render();
   }
   if (ds.tkdone !== undefined || ds.tkskip !== undefined) {
     const t = cadTasks()[+(ds.tkdone ?? ds.tkskip)]; if (!t) return render();
@@ -1758,14 +1769,14 @@ function prospAction(ds, act) {
 // ---------------------------------------------------------------------------
 const GROUPS = [
   ["painel", "Painel", "painel", ["painel"]],
-  ["vendas", "Vendas", "pedidos", ["pedidos", "prospeccao", "crm", "clientes", "metas", "rota", "programacao", "posvenda", "portal"]],
+  ["vendas", "Vendas", "pedidos", ["pedidos", "prospeccao", "crm", "clientes", "rota", "programacao", "posvenda", "portal"]],
   ["operacao", "Operação", "estoque", ["produtos", "estoque", "expedicao", "compras"]],
   ["fin", "Financeiro", "financeiro", ["financeiro", "fiscal"]],
   ["canais", "Canais", "emails", ["mercadolivre", "emails"]],
   ["gestao", "Gestão", "relatorios", ["relatorios", "config"]],
 ];
 const MOD_DESC = {
-  painel: "Indicadores do dia e alertas", pedidos: "Cotações, pedidos e aprovação", prospeccao: "Encontrar e abordar empresas por etapas", crm: "Funil de vendas, cadências e agenda",
+  painel: "Indicadores do dia e alertas", pedidos: "Cotações, pedidos e aprovação", prospeccao: "Etapas até virar cliente (aprovação do Mediador)", crm: "Oportunidades, agenda e cadências",
   clientes: "Carteira, ficha 360 e crédito", metas: "Metas da equipe e ranking por pontos", rota: "Rota em São Paulo: clientes e lojas, check-in e pedido", posvenda: "Garantia, NPS e lembrete de recompra", programacao: "Pedidos recorrentes de clientes", portal: "O que o cliente vê", produtos: "Catálogo, kits e ficha técnica",
   estoque: "Saldos, ML, recebimento e inventário", expedicao: "Separação, conferência e despacho", compras: "Cotação, fornecedores e importação", financeiro: "Receber, pagar, caixa e conciliação",
   fiscal: "NF-e de saída e XML de entrada", mercadolivre: "Anúncios e fila de integração", emails: "Caixas comercial, fiscal e financeiro", relatorios: "ABC, vendedores, estados e consolidado", config: "Empresa, usuários, integrações e auditoria",
@@ -1780,11 +1791,25 @@ function modBadge(k) {
 }
 // No computador os módulos ficam numa barra lateral fixa; no celular, nos
 // botões de baixo (renderDock). Os dois leem os mesmos grupos.
+// Meta do mês no rodapé da barra lateral: a do vendedor logado ou a da
+// equipe para gerente/diretoria.
+function goalCard() {
+  if (!["SELLER", "SALES_MANAGER", "MANAGER", "MEDIATOR"].includes(S.role)) return "";
+  const g = C().goals; const mine = S.role === "SELLER";
+  const stats = mine ? [sellerStats(role().user)] : SELLERS.map(sellerStats);
+  const sales = stats.reduce((x, r) => x + r.sales, 0); const goal = g.sales * stats.length; const pct = goal ? sales / goal : 0;
+  const t = new Date(); const dayFrac = t.getDate() / new Date(t.getFullYear(), t.getMonth() + 1, 0).getDate();
+  const vis = stats.reduce((x, r) => x + r.visits, 0); const calls = stats.reduce((x, r) => x + r.callsToday, 0);
+  return `<div class="goalc"><p class="goal-h">${mine ? "Minha meta" : "Meta da equipe"} · ${t.toLocaleDateString("pt-BR", { month: "long" })}</p><p class="goal-v num">${money(sales).replace(",00", "")}<small> de ${money(goal).replace(",00", "")}</small></p>
+    <div class="goal-bar"><i style="width:${Math.min(100, pct * 100)}%"></i><span style="left:${dayFrac * 100}%" title="Ritmo esperado para hoje"></span></div>
+    <p class="goal-s"><b>${Math.round(pct * 100)}%</b> ${pct >= dayFrac ? "· no ritmo" : `· faltam ${money(Math.max(0, goal - sales)).replace(",00", "")}`}</p>
+    <p class="goal-s">Ligações hoje ${calls}/${g.calls * stats.length} · visitas ${vis}/${g.visits * stats.length}</p></div>`;
+}
 function renderSide() {
   const gs = GROUPS.map(([g, l, ic, mods]) => [g, l, mods.filter((k) => can(k))]).filter(([, , m]) => m.length);
   $("side").innerHTML = `<div class="side-brand"><div class="brand-mark">M</div><div><b>MAX LED</b><small>ERP integrado</small></div></div><nav class="side-nav">` +
     gs.map(([g, l, mods]) => `<div class="side-g">${mods.length > 1 ? `<p class="side-h">${esc(l)}</p>` : ""}${mods.map((k) => { const b = modBadge(k); return `<button data-go="${k}" class="side-i ${S.view === k ? "on" : ""}" ${S.view === k ? 'aria-current="page"' : ""}>${icon(k)}<span>${esc(MODULES.find(([m]) => m === k)[1])}</span>${b ? `<span class="count-in">${b}</span>` : ""}</button>`; }).join("")}</div>`).join("") +
-    `</nav><div class="side-foot">${avatar(role().user)}<span><b>${esc(role().user)}</b><small>${esc(role().label)} · empresa ${C().code}</small></span></div>`;
+    `</nav>${goalCard()}<div class="side-foot">${avatar(role().user)}<span><b>${esc(role().user)}</b><small>${esc(role().label)} · empresa ${C().code}</small></span></div>`;
 }
 function renderDock() {
   const gs = GROUPS.map(([g, l, ic, mods]) => [g, l, ic, mods.filter((k) => can(k))]).filter(([, , , m]) => m.length);
@@ -1799,7 +1824,7 @@ function renderDock() {
 // vira lead no funil de vendas. Cada etapa tem o que precisa estar feito
 // para avançar.
 // ---------------------------------------------------------------------------
-const PSTAGES = [["PESQ", "Pesquisa"], ["DECISOR", "Decisor identificado"], ["ABORD", "Primeira abordagem"], ["CONV", "Em conversa"], ["REUN", "Reunião agendada"], ["QUALI", "Qualificado"]];
+const PSTAGES = [["PESQ", "Pesquisa"], ["DECISOR", "Decisor identificado"], ["ABORD", "Primeira abordagem"], ["CONV", "Em conversa"], ["REUN", "Reunião agendada"], ["QUALI", "Tornar cliente"]];
 const PX = { open: null, tab: "etapas", seller: "" };
 const RESULTS = ["Sem resposta", "Caixa postal", "Pediu retorno", "Respondeu", "Sem interesse"];
 function pReqs(x) {
@@ -1825,7 +1850,8 @@ function seedPstages(st) {
     x.tries = idx >= 2 ? [{ when: days(-4), ch: "E-mail", res: "Sem resposta" }, { when: days(-2), ch: "Ligação", res: idx >= 3 ? "Respondeu" : "Caixa postal" }] : [];
     if (idx >= 4) x.meeting = { when: days(2), type: "Visita" };
     if (idx >= 5) x.qual = { need: "Fitas e drivers para obras", volume: 18000, current: "Distribuidor local", when: "30 dias" };
-    if (x.stage === "DESC") { x.lost = "Sem interesse"; x.status = "Descartado"; } else x.status = x.stage === "QUALI" ? "No funil" : "Novo";
+    if (x.stage === "DESC") { x.lost = "Sem interesse"; x.status = "Descartado"; } else x.status = x.stage === "QUALI" ? "Tornar cliente" : "Novo";
+    if (x.stage === "QUALI") x.appr = { status: "PENDENTE", sentBy: x.owner, sentAt: "ontem 16:40", data: { razao: `${x.name} Ltda`, cnpj: x.cnpj, ie: "123.456.789.110", emailFin: `financeiro@${x.email.split("@")[1]}`, emailNfe: `nfe@${x.email.split("@")[1]}`, fat: `${x.city}/${x.uf}`, ent: "Mesmo do faturamento", cond: "30/60 dias · boleto", valor: 18000 } };
   });
   A.prospects.forEach((x) => { if (x.stage === "DESC") x.tries = [{ when: days(-6), ch: "Ligação", res: "Sem interesse" }]; });
 }
@@ -1835,10 +1861,11 @@ function vProspEtapas() {
   const reached = (i) => active.filter((x) => PSTAGES.findIndex(([k]) => k === x.stage) >= i).length;
   const funnel = PSTAGES.map(([k, l], i) => ({ k, l, n: active.filter((x) => x.stage === k).length, r: reached(i) }));
   const owners = [...new Set((C().prospects || []).map((x) => x.owner))];
-  return `<div class="pfun">${funnel.map((f, i) => `<div class="pf-step"><span class="pf-n">${i + 1}</span><b>${f.l}</b><span class="num pf-c">${f.n}</span><small class="note">${i ? `${funnel[i - 1].r ? Math.round((f.r / funnel[i - 1].r) * 100) : 0}% passam da etapa anterior` : `${f.r} empresas no total`}</small><div class="mini"><i style="width:${active.length ? (f.r / active.length) * 100 : 0}%;background:var(--grad)"></i></div></div>`).join("")}</div>
+  const pend = (C().prospects || []).filter((x) => x.appr?.status === "PENDENTE");
+  return (isMediator() && pend.length ? `<div class="alert warn">${icon("alert")}<span>${pend.length} empresa(s) aguardando sua aprovação para virar cliente: ${pend.map((x) => `<button class="link" data-pxopen="${x.id}">${esc(x.name)}</button>`).join(", ")}</span></div>` : "") + `<div class="pfun">${funnel.map((f, i) => `<div class="pf-step"><span class="pf-n">${i + 1}</span><b>${f.l}</b><span class="num pf-c">${f.n}</span><small class="note">${i ? `${funnel[i - 1].r ? Math.round((f.r / funnel[i - 1].r) * 100) : 0}% passam da etapa anterior` : `${f.r} empresas no total`}</small><div class="mini"><i style="width:${active.length ? (f.r / active.length) * 100 : 0}%;background:var(--grad)"></i></div></div>`).join("")}</div>
     ${role().own ? "" : `<div class="filters"><label class="f" for="px-seller">Responsável<select id="px-seller"><option value="">Todos</option>${owners.map((o) => `<option ${PX.seller === o ? "selected" : ""}>${esc(o)}</option>`).join("")}</select></label></div>`}
     <div class="kanban pk">${PSTAGES.map(([k, l], i) => { const xs = ps.filter((x) => x.stage === k); return `<div class="lane"><h3><span><span class="pf-n sm">${i + 1}</span>${l}</span><span class="pill p-neutral">${xs.length}</span></h3>
-      ${xs.map((x) => { const req = pReqs(x); const done = req.filter((r) => r[1]).length; const sc = fitScore(x); const stale = daysIn(x) > 5 && k !== "QUALI"; return `<button class="ticket lead" data-pxopen="${x.id}"><span class="row" style="justify-content:space-between;flex-wrap:nowrap"><b>${esc(x.name)}</b><span class="scb ${sc >= 70 ? "hi" : sc >= 50 ? "mid" : ""}">${sc}</span></span><small class="note">${esc(x.seg)} · ${esc(x.city)}/${x.uf}</small>${req.length ? `<div class="reqbar" title="${done} de ${req.length} requisitos para avançar">${req.map((r) => `<i class="${r[1] ? "ok" : ""}"></i>`).join("")}</div><small class="note">${done}/${req.length} para avançar · ${(x.tries || []).length} tentativa(s)</small>` : `<small style="color:var(--good)">Virou lead no funil de vendas</small>`}<span class="row" style="gap:6px;justify-content:space-between">${avatar(x.owner)}<small style="color:${stale ? "var(--bad)" : "var(--text-2)"}">${daysIn(x)} dia(s) na etapa</small></span></button>`; }).join("") || `<p class="note" style="margin:0">Nenhuma empresa</p>`}</div>`; }).join("")}</div>
+      ${xs.map((x) => { const req = pReqs(x); const done = req.filter((r) => r[1]).length; const sc = fitScore(x); const stale = daysIn(x) > 5 && k !== "QUALI"; return `<button class="ticket lead" data-pxopen="${x.id}"><span class="row" style="justify-content:space-between;flex-wrap:nowrap"><b>${esc(x.name)}</b><span class="scb ${sc >= 70 ? "hi" : sc >= 50 ? "mid" : ""}">${sc}</span></span><small class="note">${esc(x.seg)} · ${esc(x.city)}/${x.uf}</small>${req.length ? `<div class="reqbar" title="${done} de ${req.length} requisitos para avançar">${req.map((r) => `<i class="${r[1] ? "ok" : ""}"></i>`).join("")}</div><small class="note">${done}/${req.length} para avançar · ${(x.tries || []).length} tentativa(s)</small>` : (x.appr?.status === "APROVADO" ? `<small style="color:var(--good)">Cliente aprovado</small>` : x.appr?.status === "PENDENTE" ? `<small style="color:var(--warn)">Aguardando Mediador</small>` : x.appr?.status === "RECUSADO" ? `<small style="color:var(--bad)">Recusado: corrigir</small>` : `<small style="color:var(--warn)">Preencher cadastro</small>`)}<span class="row" style="gap:6px;justify-content:space-between">${avatar(x.owner)}<small style="color:${stale ? "var(--bad)" : "var(--text-2)"}">${daysIn(x)} dia(s) na etapa</small></span></button>`; }).join("") || `<p class="note" style="margin:0">Nenhuma empresa</p>`}</div>`; }).join("")}</div>
     <p class="note">Descartadas: ${ps.filter((x) => x.stage === "DESC").length}. Empresas há mais de 5 dias paradas na mesma etapa ficam com o contador em vermelho.</p>`;
 }
 function vProspDetalhe(x) {
@@ -1847,7 +1874,7 @@ function vProspDetalhe(x) {
     <div class="card hero"><div class="who-cell">${avatar(x.name)}<div><h1 style="margin:0;font-size:24px">${esc(x.name)}</h1><p class="note" style="margin:4px 0 0">${x.cnpj} · ${esc(x.seg)} · ${x.size} · ${esc(x.city)}/${x.uf} · origem ${esc(x.source)}</p></div></div><div class="row">${pill([x.stage === "DESC" ? `Descartada: ${x.lost}` : PSTAGES[i][1], x.stage === "DESC" ? "p-bad" : x.stage === "QUALI" ? "p-good" : "p-info"])}<span class="scb ${fitScore(x) >= 70 ? "hi" : "mid"}" title="Potencial">${fitScore(x)}/100</span></div></div>
     ${x.stage !== "DESC" ? `<div class="card"><div class="steps" style="grid-template-columns:repeat(6,minmax(0,1fr))">${PSTAGES.map(([, l], j) => `<div class="step ${j < i ? "done" : j === i ? "now" : ""}"><i>${j < i ? "&#10003;" : j + 1}</i>${l}</div>`).join("")}</div>
       ${req.length ? `<div class="reqs"><h3>Para avançar para <b>${PSTAGES[i + 1][1]}</b></h3>${req.map(([t, ok]) => `<div class="rq ${ok ? "ok" : ""}"><span>${ok ? "✓" : "○"}</span>${t}</div>`).join("")}</div>
-      <div class="row" style="margin-top:12px">${i > 0 && x.stage !== "QUALI" ? `<button class="btn ghost" data-pxmv="-1">Voltar etapa</button>` : ""}<button class="btn" data-pxmv="1" ${canAdv ? "" : "disabled"}>${i === 4 ? "Qualificar e enviar para o funil de vendas" : `Avançar para ${PSTAGES[i + 1][1]}`}</button>${canAdv ? "" : `<span class="note">Complete os itens acima para liberar.</span>`}</div>` : `<div class="alert good" style="margin-top:12px">${icon("check")}<span>Qualificada: virou lead no funil de vendas${x.lead ? "" : ""}.</span>${x.lead ? `<button class="btn" data-lead="${x.lead}" style="margin-left:auto">Abrir no funil</button>` : ""}</div>`}
+      <div class="row" style="margin-top:12px">${i > 0 && x.stage !== "QUALI" ? `<button class="btn ghost" data-pxmv="-1">Voltar etapa</button>` : ""}<button class="btn" data-pxmv="1" ${canAdv ? "" : "disabled"}>${`Avançar para ${PSTAGES[i + 1][1]}`}</button>${canAdv ? "" : `<span class="note">Complete os itens acima para liberar.</span>`}</div>` : clientApprovalPanel(x)}
       ${x.stage !== "QUALI" ? `<div class="row" style="margin-top:12px"><label class="f" for="px-lost">Descartar por<select id="px-lost">${["Sem interesse", "Não tem volume", "Fora da região", "Já compra direto da fábrica", "Contato inválido"].map((y) => `<option>${y}</option>`).join("")}</select></label><button class="btn danger" data-act="px-discard" style="align-self:end">Descartar</button></div>` : ""}<div id="err"></div></div>` : `<div class="row"><button class="btn ghost" data-act="px-reopen">Reabrir na Pesquisa</button></div>`}
     ${x.stage !== "DESC" && x.stage !== "QUALI" ? scriptCard(x) : ""}
     <div class="grid g2">
@@ -1859,14 +1886,26 @@ function vProspDetalhe(x) {
     </div>
     <div class="card"><h2>Histórico</h2><ol class="timeline">${(x.hist || []).map((h) => `<li>${esc(h.msg)}<small>${fdate(h.when)}${h.who ? ` · ${esc(h.who)}` : ""}</small></li>`).join("")}</ol></div>`;
 }
+const isMediator = () => S.role === "MEDIATOR";
+function clientApprovalPanel(x) {
+  const ap = x.appr || {}; const d = x.decisor || {}; const v = ap.data || { razao: x.name, cnpj: x.cnpj, ie: "", emailFin: d.email || x.email || "", emailNfe: d.email || x.email || "", fat: `${x.bairro ? `${x.bairro}, ` : ""}${x.city}/${x.uf}`, ent: "Mesmo do faturamento", cond: "30/60/90 dias · boleto", valor: x.qual?.volume || 0 };
+  if (ap.status === "APROVADO") return `<div class="alert good" style="margin-top:12px">${icon("check")}<span>Cliente aprovado por ${esc(ap.by)} em ${ap.at}. Já está na carteira de ${esc(x.owner)}.</span>${x.customer ? `<button class="btn" data-cli="${x.customer}" style="margin-left:auto">Abrir ficha do cliente</button>` : ""}</div>`;
+  if (ap.status === "PENDENTE") return `<div class="appr"><div class="row" style="justify-content:space-between"><h3 style="margin:0">Aguardando aprovação do Mediador</h3>${pill([`enviado por ${ap.sentBy} em ${ap.sentAt}`, "p-warn"])}</div>
+    <dl class="kv apkv"><dt>Razão social</dt><dd>${esc(v.razao)}</dd><dt>CNPJ</dt><dd>${esc(v.cnpj)}</dd><dt>Inscrição estadual</dt><dd>${esc(v.ie)}</dd><dt>E-mail financeiro</dt><dd>${esc(v.emailFin)}</dd><dt>E-mail NF-e</dt><dd>${esc(v.emailNfe)}</dd><dt>Faturamento</dt><dd>${esc(v.fat)}</dd><dt>Entrega</dt><dd>${esc(v.ent)}</dd><dt>Condição</dt><dd>${esc(v.cond)}</dd><dt>Compra mensal prevista</dt><dd>${money(v.valor)}</dd></dl>
+    ${isMediator() ? `<div class="row" style="margin-top:12px"><button class="btn" data-act="px-approve">Aprovar e cadastrar cliente</button><label class="f" for="px-rej" style="flex:1;min-width:200px">Motivo da recusa<input id="px-rej" placeholder="obrigatório para recusar"></label><button class="btn danger" data-act="px-reject" style="align-self:end">Recusar</button></div>` : `<p class="note" style="margin:10px 0 0">Só o Mediador aprova. Você é avisado quando sair a decisão.</p>`}<div id="err"></div></div>`;
+  const f = (id, l, val, span) => `<label class="f ${span ? "span2" : ""}" for="ap-${id}">${l}<input id="ap-${id}" value="${esc(val || "")}"></label>`;
+  return `<div class="appr">${ap.status === "RECUSADO" ? `<div class="alert bad">${icon("alert")}<span>Recusado por ${esc(ap.by)}: ${esc(ap.reason)}. Corrija e envie de novo.</span></div>` : ""}<h3 style="margin:0 0 4px">Cadastro para virar cliente</h3><p class="note" style="margin:0 0 10px">Os mesmos dados do Sintegra. Ao enviar, vai para o Mediador aprovar; aprovado, a empresa entra em Clientes.</p>
+    <div class="form">${f("razao", "Razão social", v.razao, true)}${f("cnpj", "CNPJ", v.cnpj)}${f("ie", "Inscrição estadual", v.ie)}${f("emailFin", "E-mail financeiro", v.emailFin)}${f("emailNfe", "E-mail para NF-e", v.emailNfe)}${f("fat", "Endereço de faturamento", v.fat, true)}${f("ent", "Endereço de entrega", v.ent, true)}${f("cond", "Condição de pagamento", v.cond)}${f("valor", "Compra mensal prevista (R$)", v.valor)}</div>
+    <div class="row" style="margin-top:12px"><button class="btn" data-act="px-sendappr">Enviar para aprovação do Mediador</button></div><div id="err"></div></div>`;
+}
 function vProspeccaoMod() {
   const x = PX.open && (C().prospects || []).find((y) => y.id === PX.open);
   if (x) return vProspDetalhe(x);
   const n = cadTasks().length;
-  const tabs = [["etapas", "Etapas"], ["lista", "Base de empresas"], ["hoje", `Agenda de hoje ${n ? `<span class="count-in">${n}</span>` : ""}`], ["cad", "Cadências"]];
-  return head("Prospecção", `Da pesquisa à empresa qualificada · ${esc(C().name)}`, `<button class="btn" data-pxtab="lista" data-act="pr-find">${icon("plus")}Buscar empresas</button>`) +
+  const tabs = [["etapas", "Etapas"], ["lista", "Base de empresas"]];
+  return head("Prospecção", `Da pesquisa até virar cliente (aprovação do Mediador) · ${esc(C().name)}`, `<button class="btn" data-pxtab="lista" data-act="pr-find">${icon("plus")}Buscar empresas</button>`) +
     `<div class="tabs">${tabs.map(([k, l]) => `<button data-pxtab="${k}" class="${PX.tab === k ? "on" : ""}">${l}</button>`).join("")}</div>` +
-    ({ etapas: vProspEtapas, lista: vProspeccao, hoje: vAgendaHoje, cad: vCadencias })[PX.tab]();
+    (PX.tab === "lista" ? vProspeccao() : vProspEtapas());
 }
 function pxAction(ds, act) {
   const x = (C().prospects || []).find((y) => y.id === PX.open);
@@ -1879,6 +1918,24 @@ function pxAction(ds, act) {
   if (act === "px-try") { const t = { when: new Date().toISOString(), ch: $("pxt-ch").value, res: $("pxt-res").value }; x.tries = x.tries || []; x.tries.unshift(t); hist(`${t.ch}: ${t.res}`); toast(t.res === "Sem interesse" ? "Registrado. Se não houver mais chance, descarte a empresa." : "Tentativa registrada."); return render(); }
   if (act === "px-meet") { const v = $("pxm-date").value; if (!v) throw new Error("Escolha a data."); x.meeting = { when: new Date(`${v}T12:00:00`).toISOString(), type: $("pxm-type").value }; hist(`${x.meeting.type} agendada para ${fdate(x.meeting.when)}`); toast("Reunião agendada."); return render(); }
   if (act === "px-qual") { x.qual = { need: $("pxq-need").value.trim(), volume: +$("pxq-vol").value || 0, current: $("pxq-cur").value.trim(), when: $("pxq-when").value }; hist("Qualificação atualizada"); toast("Qualificação salva."); return render(); }
+  if (act === "px-sendappr") {
+    const g = (k) => ($(`ap-${k}`)?.value || "").trim();
+    const data = { razao: g("razao"), cnpj: g("cnpj"), ie: g("ie"), emailFin: g("emailFin"), emailNfe: g("emailNfe"), fat: g("fat"), ent: g("ent"), cond: g("cond"), valor: +g("valor").replace(/\./g, "").replace(",", ".") || 0 };
+    const miss = [["razao", "razão social"], ["cnpj", "CNPJ"], ["ie", "inscrição estadual"], ["emailFin", "e-mail financeiro"], ["emailNfe", "e-mail para NF-e"], ["fat", "endereço de faturamento"], ["ent", "endereço de entrega"], ["cond", "condição de pagamento"]].filter(([k]) => !data[k]).map(([, l]) => l);
+    if (miss.length) throw new Error(`Preencha: ${miss.join(", ")}.`);
+    if (data.cnpj.replace(/\D/g, "").length !== 14) throw new Error("CNPJ deve ter 14 dígitos.");
+    if (![data.emailFin, data.emailNfe].every((e) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e))) throw new Error("E-mail inválido.");
+    x.appr = { status: "PENDENTE", data, sentBy: role().user, sentAt: now() }; hist("Cadastro enviado para aprovação do Mediador"); toast("Enviado para aprovação do Mediador."); return render();
+  }
+  if (act === "px-approve" || act === "px-reject") {
+    if (!isMediator()) throw new Error("Só o Mediador aprova clientes.");
+    if (act === "px-reject") { const r = $("px-rej").value.trim(); if (!r) throw new Error("Informe o motivo da recusa."); x.appr = { ...x.appr, status: "RECUSADO", by: role().user, at: now(), reason: r }; hist(`Cliente recusado: ${r}`); toast("Cadastro recusado; o vendedor vê o motivo."); return render(); }
+    const dd = x.appr.data.cnpj.replace(/\D/g, ""); const dup = C().customers.find((c) => c.doc.replace(/\D/g, "") === dd);
+    const id = dup ? dup.id : `c${Date.now() % 100000}`;
+    if (!dup) C().customers.push({ id, name: x.appr.data.razao, doc: `${dd.slice(0, 2)}.${dd.slice(2, 5)}.${dd.slice(5, 8)}/${dd.slice(8, 12)}-${dd.slice(12)}`, city: `${x.city}/${x.uf}`, seller: x.owner, bairro: x.bairro });
+    x.customer = id; x.status = "Cliente ativo"; x.appr = { ...x.appr, status: "APROVADO", by: role().user, at: now() }; hist(dup ? `Aprovado: CNPJ já era cliente (${dup.name})` : "Aprovado: virou cliente");
+    toast(dup ? `CNPJ já cadastrado: vinculado a ${dup.name}.` : `${x.appr.data.razao} agora é cliente de ${x.owner}.`); return render();
+  }
   if (act === "px-discard") { x.lost = $("px-lost").value; x.stage = "DESC"; x.status = "Descartado"; hist(`Descartada: ${x.lost}`); toast(`${x.name} descartada (${x.lost}).`); return render(); }
   if (act === "px-reopen") { x.stage = "PESQ"; x.status = "Novo"; x.since = new Date().toISOString(); hist("Reaberta"); return render(); }
   if (ds.pxmv) {
@@ -1886,9 +1943,7 @@ function pxAction(ds, act) {
     if (+ds.pxmv > 0 && !pReqs(x).every((r) => r[1])) throw new Error("Complete os requisitos da etapa antes de avançar.");
     const ni = i + +ds.pxmv; x.stage = PSTAGES[ni][0]; x.since = new Date().toISOString(); hist(`Etapa: ${PSTAGES[ni][1]}`);
     if (x.stage === "QUALI") {
-      const d = x.decisor || {}; const id = `L${Date.now() % 1e6}`;
-      C().leads.unshift({ id, company: x.name, contact: d.name || "-", email: d.email || "-", phone: d.phone || "-", city: `${x.city}/${x.uf}`, seller: x.owner, stage: "QUALIF", value: (x.qual.volume || 0) * 3, source: `Prospecção · ${x.source}`, next: `${x.meeting?.type || "Contato"}: apresentar proposta`, nextDate: x.meeting?.when || days(1), acts: [{ when: new Date().toISOString(), type: "Tarefa", msg: `Qualificada na prospecção: ${x.qual.need}; ${money(x.qual.volume)}/mês; compra hoje de ${x.qual.current}; decide em ${x.qual.when}`, who: role().user }] });
-      x.lead = id; x.status = "No funil"; toast(`${x.name} qualificada: entrou no funil de vendas na etapa Qualificação.`);
+      x.status = "Tornar cliente"; toast(`${x.name}: preencha o cadastro e envie para aprovação do Mediador.`);
     } else toast(`${x.name}: ${PSTAGES[ni][1]}.`);
     return render();
   }
@@ -2145,8 +2200,8 @@ function vPainelVendedor() {
   const rep = myCustomers().map((c) => ({ c, s: custStats(c.id) })).filter((x) => x.s.last && (Date.now() - new Date(x.s.last.date)) / 864e5 > 30).slice(0, 5);
   const ring2 = (v, goal, l) => { const p = Math.min(1, goal ? v / goal : 0); return `<div class="gring"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15.5" class="bg"/><circle cx="18" cy="18" r="15.5" class="fg" stroke-dasharray="${p * 97.4} 97.4"/></svg><b>${Math.round(p * 100)}%</b><small>${l}</small></div>`; };
   return head(hello(), `Seu dia de vendas · ${new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" })}`, `<button class="btn" data-act="novo-painel">${icon("plus")}Novo pedido <kbd>F2</kbd></button>`) +
-    `<div class="card"><h2>Minhas metas</h2><div class="rings">${ring2(st.callsToday, g.calls, `Ligações hoje · ${st.callsToday}/${g.calls}`)}${ring2(st.tries, g.tries, `Tentativas · ${st.tries}/${g.tries}`)}${ring2(st.quali, g.quali, `Qualificadas · ${st.quali}/${g.quali}`)}${ring2(st.visits, g.visits, `Visitas · ${st.visits}/${g.visits}`)}${ring2(st.sales, g.sales, `Vendas · ${money(st.sales).replace(",00", "")}`)}</div></div>
-    <div class="grid g2">${dashCard(`Agenda de hoje <small>${ts.length}</small>`, ts.length ? `<div class="list">${ts.slice(0, 5).map((t) => `<div class="hbar"><div class="l"><span><b>${t.type}</b> · ${esc(t.l.company)}</span>${t.late ? pill(["atrasada", "p-bad"]) : ""}</div><small class="note">${esc(t.what || "")}</small></div>`).join("")}</div>` : `<p class="note">Nada pendente.</p>`, "prospeccao", "Ver agenda")}
+    `<div class="card mobile-goals"><h2>Minhas metas</h2><div class="rings">${ring2(st.callsToday, g.calls, `Ligações hoje · ${st.callsToday}/${g.calls}`)}${ring2(st.tries, g.tries, `Tentativas · ${st.tries}/${g.tries}`)}${ring2(st.quali, g.quali, `Qualificadas · ${st.quali}/${g.quali}`)}${ring2(st.visits, g.visits, `Visitas · ${st.visits}/${g.visits}`)}${ring2(st.sales, g.sales, `Vendas · ${money(st.sales).replace(",00", "")}`)}</div></div>
+    <div class="grid g2">${dashCard(`Agenda de hoje <small>${ts.length}</small>`, ts.length ? `<div class="list">${ts.slice(0, 5).map((t) => `<div class="hbar"><div class="l"><span><b>${t.type}</b> · ${esc(t.l.company)}</span>${t.late ? pill(["atrasada", "p-bad"]) : ""}</div><small class="note">${esc(t.what || "")}</small></div>`).join("")}</div>` : `<p class="note">Nada pendente.</p>`, "crm", "Ver agenda")}
       ${dashCard(`Rota de visitas <small>${vis.length}</small>`, vis.length ? `<div class="list">${vis.map((v) => `<div class="hbar"><div class="l"><span>${v.time} · ${esc(visitName(v))}</span>${v.out ? pill(["feita", "p-good"]) : v.in ? pill(["em visita", "p-warn"]) : ""}</div><small class="note">${esc(v.bairro)} · ${esc(v.goal)}</small></div>`).join("")}</div>` : `<p class="note">Rota de SP ainda não montada.</p>`, "rota", "Abrir rota")}
       ${dashCard(`Cotações abertas <small>${quotes.length}</small>`, quotes.length ? `<div class="list">${quotes.slice(0, 5).map((o) => `<div class="hbar"><div class="l"><button class="link" data-open="${o.id}">${code(o)} · ${esc(cust(o.customer).name)}</button><b class="num">${money(o.total)}</b></div><small class="note">${fdate(o.date)}</small></div>`).join("")}</div>` : `<p class="note">Nenhuma cotação aberta.</p>`, "pedidos", "Pedidos")}
       ${dashCard("Clientes para recomprar", rep.length ? `<div class="list">${rep.map((x) => `<div class="hbar"><div class="l"><button class="link" data-cli="${x.c.id}">${esc(x.c.name)}</button><small class="note">último ${fdate(x.s.last.date)}</small></div></div>`).join("")}</div>` : `<p class="note">Carteira em dia.</p>`, "posvenda", "Pós-venda")}</div>`;
@@ -2175,10 +2230,10 @@ function vPainelFiscal() {
     ${dashCard("XML de fornecedores", xml.length ? `<div class="list">${xml.map((x) => `<div class="hbar"><div class="l"><span>NF ${x.n} · ${esc(x.supplier)}</span>${pill([x.status, "p-warn"])}</div></div>`).join("")}</div>` : `<p class="note">Nenhum pendente.</p>`, "fiscal")}</div>`;
 }
 function vPainelGerente() {
-  const rows = SELLERS.map(sellerStats).sort((a, b) => b.pts - a.pts); const ap = C().orders.filter((o) => o.status === "AGUARDANDO");
+  const ap = C().orders.filter((o) => o.status === "AGUARDANDO");
   const ps = (C().prospects || []).filter((x) => x.stage !== "DESC"); const funnel = PSTAGES.map(([k, l]) => [l, ps.filter((x) => x.stage === k).length]);
-  return vPainelExec() + `<div class="grid g3">${dashCard(`Aprovações <small>${ap.length}</small>`, ap.length ? `<div class="list">${ap.map((o) => `<div class="hbar"><div class="l"><button class="link" data-open="${o.id}">${code(o)} · ${esc(o.seller)}</button><b class="num">${money(o.total)}</b></div><small class="note">${esc((o.reasons || []).join("; "))}</small></div>`).join("")}</div>` : `<p class="note">Nada para aprovar.</p>`, "pedidos")}
-    ${dashCard("Ranking da equipe", `<div class="list">${rows.map((r, i) => `<div class="hbar"><div class="l"><span>${["🥇", "🥈", "🥉"][i] || ""} ${esc(r.n)}</span><b class="num">${r.pts} pts</b></div></div>`).join("")}</div>`, "metas", "Metas")}
+  return vPainelExec() + `<div class="grid g2">${dashCard(`Aprovações <small>${ap.length}</small>`, ap.length ? `<div class="list">${ap.map((o) => `<div class="hbar"><div class="l"><button class="link" data-open="${o.id}">${code(o)} · ${esc(o.seller)}</button><b class="num">${money(o.total)}</b></div><small class="note">${esc((o.reasons || []).join("; "))}</small></div>`).join("")}</div>` : `<p class="note">Nada para aprovar.</p>`, "pedidos")}
+    
     ${dashCard("Prospecção", `<div class="list">${funnel.map(([l, n]) => `<div class="hbar"><div class="l"><span>${l}</span><b class="num">${n}</b></div></div>`).join("")}</div>`, "prospeccao")}</div>`;
 }
 
@@ -3129,12 +3184,12 @@ function seedCrm(st) {
 function myLeads() { return (C().leads || []).filter((l) => !role().own || l.seller === role().user); }
 function vCrm() {
   if (KF.leadId) return vLead(KF.leadId);
-  if (PF2.tab !== "funil" && false) return head("CRM e prospecção", `Encontrar, abordar e converter clientes · ${esc(C().name)}`) + crmTabs() + ({ prosp: vProspeccao, hoje: vAgendaHoje, cad: vCadencias })[PF2.tab]();
+  if (PF2.tab === "hoje" || PF2.tab === "cad") return head("CRM e funil de vendas", `Agenda e cadências das oportunidades · ${esc(C().name)}`) + crmTabs() + (PF2.tab === "hoje" ? vAgendaHoje() : vCadencias());
   const all = myLeads(); const sellers = [...new Set(all.map((l) => l.seller))];
   const ls = all.filter((l) => (!KF.seller || l.seller === KF.seller) && (!KF.q || matchWords(`${l.company} ${l.contact} ${l.city}`, KF.q)));
   const open = ls.filter((l) => !["GANHO", "PERDIDO"].includes(l.stage)); const won = all.filter((l) => l.stage === "GANHO").length; const lost = all.filter((l) => l.stage === "PERDIDO").length;
   const late = open.filter((l) => l.nextDate && new Date(l.nextDate) < new Date(new Date().toDateString()));
-  return head("CRM e funil de vendas", `Oportunidades da qualificação até a conversão · ${esc(C().name)}${role().own ? " · seus leads" : ""}`, `<button class="btn ghost" data-go="prospeccao">${icon("prospeccao")}Prospecção</button><button class="btn" data-act="lead-new">${icon("plus")}Novo lead</button>`) +
+  return head("CRM e funil de vendas", `Oportunidades da qualificação até a conversão · ${esc(C().name)}${role().own ? " · seus leads" : ""}`, `<button class="btn" data-act="lead-new">${icon("plus")}Nova oportunidade</button>`) + crmTabs() +
     `<div class="grid g4">${kpi("users", "c1", "Leads em aberto", open.length)}${kpi("money", "c2", "Valor no funil", money(open.reduce((s, l) => s + l.value, 0)))}${kpi("check", "c3", "Taxa de conversão", `${won + lost ? Math.round((won / (won + lost)) * 100) : 0}%`)}${kpi("alert", "c4", "Próximo passo atrasado", late.length)}</div>` +
     (KF.newLead ? `<div class="card"><h2>Novo lead</h2><div class="form"><label class="f span2" for="ld-company">Empresa<input id="ld-company"></label><label class="f" for="ld-contact">Contato<input id="ld-contact"></label><label class="f" for="ld-email">E-mail<input id="ld-email"></label><label class="f" for="ld-city">Cidade/UF<input id="ld-city" placeholder="Campinas/SP"></label><label class="f" for="ld-value">Valor estimado (R$)<input id="ld-value" type="number" min="0" value="5000"></label><label class="f" for="ld-source">Origem<select id="ld-source">${["Site", "Indicação", "Mercado Livre", "Feira", "Prospecção ativa", "E-mail"].map((x) => `<option>${x}</option>`).join("")}</select></label></div><div id="err"></div><div class="row" style="margin-top:12px"><button class="btn" data-act="lead-save">Criar lead</button><button class="btn ghost" data-act="lead-cancel">Cancelar</button></div></div>` : "") +
     `<div class="filters"><label class="f grow" for="kf-q">Buscar<input id="kf-q" value="${esc(KF.q)}" placeholder="Empresa, contato ou cidade"></label>${role().own ? "" : `<label class="f" for="kf-seller">Vendedor<select id="kf-seller"><option value="">Todos</option>${sellers.map((s) => `<option ${KF.seller === s ? "selected" : ""}>${esc(s)}</option>`).join("")}</select></label>`}<label class="f" style="flex-direction:row;align-items:center;gap:8px;align-self:end"><input type="checkbox" id="kf-lost" ${KF.showLost ? "checked" : ""}> Mostrar perdidos (${lost})</label></div>
@@ -3491,6 +3546,7 @@ function vConfig() {
         <label class="f">Teto de pedido sem aprovação<input value="Sem teto" disabled></label>
         <label class="f">Política de estoque<input value="Reserva na aprovação, baixa na expedição${c.negOk ? " · aceita negativo" : ""}" disabled></label>
         <label class="f">Tabela padrão<input value="1 · Padrão" disabled></label>
+        ${role().approve || S.role === "MEDIATOR" ? [["sales", "Meta de vendas por vendedor / mês (R$)"], ["calls", "Ligações por dia"], ["visits", "Visitas no mês"], ["quali", "Empresas para virar cliente / mês"]].map(([k, l]) => `<label class="f" for="goal-${k}">${l}<input id="goal-${k}" type="number" min="0" value="${c.goals[k]}"></label>`).join("") : ""}
         <label class="f" style="flex-direction:row;align-items:center;gap:8px;grid-column:1/-1"><input type="checkbox" id="cfg-negok" ${c.negOk ? "checked" : ""}> Vender com estoque negativo (pedido reserva e expede sem saldo)</label>
         <label class="f" style="flex-direction:row;align-items:center;gap:8px;grid-column:1/-1"><input type="checkbox" id="cfg-autostock" ${c.autoStock ? "checked" : ""}> XML de fornecedor dá entrada no estoque sem conferência física</label></div>
         <p class="note" style="margin:12px 0 0">Alterar o desconto máximo já muda a regra de aprovação dos próximos pedidos.</p></div>
@@ -3552,7 +3608,7 @@ document.addEventListener("click", (ev) => {
     if (ds.copy) { try { navigator.clipboard.writeText(ds.copy); } catch (e) { /* sem área de transferência */ } return toast("Mensagem copiada."); }
     if (ds.pxwa) { const x = (C().prospects || []).find((y) => y.id === PX.open); if (x) { x.tries = x.tries || []; x.tries.unshift({ when: new Date().toISOString(), ch: "WhatsApp", res: "Sem resposta" }); x.hist.unshift({ when: new Date().toISOString(), msg: "WhatsApp enviado pelo roteiro", who: role().user }); toast("WhatsApp aberto e tentativa registrada."); setTimeout(render, 300); } return; }
     if (ds.dock) { S.dockOpen = S.dockOpen === ds.dock ? null : ds.dock; return renderDock(); }
-    if (ds.pxtab || ds.pxopen || ds.pxmv || ds.act?.startsWith("px-")) return pxAction(ds, ds.act);
+    if ((ds.pxtab || ds.pxopen || ds.pxmv || ds.act?.startsWith("px-")) && !ds.go2) return pxAction(ds, ds.act);
     if (ds.crmtab || ds.act?.startsWith("pr-") || ds.tkdone !== undefined || ds.tkskip !== undefined) return prospAction(ds, ds.act);
     if (ds.lead) { S.view = "crm"; }
     if (ds.lead) { KF.leadId = ds.lead; render(); return window.scrollTo(0, 0); }
