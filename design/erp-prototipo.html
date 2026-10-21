@@ -988,6 +988,24 @@ button.pt-item { cursor: pointer; } button.pt-item:hover { background: rgba(255,
   .pth-acts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); } .pth-acts button { width: auto; }
   .pth-steps { display: none; } .pt-item { grid-template-columns: minmax(0, 1fr) auto; } .pt-item .pt-prog { display: none; }
 }
+
+/* Portal: cartão principal dourado */
+.pth { color: #1d1505; background: radial-gradient(120% 90% at 85% 0%, rgba(255,250,225,.55), transparent 55%), linear-gradient(150deg, #f7dc85 0%, #e3b649 38%, #c9952a 72%, #a8761b 100%);
+  border-color: rgba(255,236,170,.7); box-shadow: 0 30px 60px -28px rgba(201,149,42,.55), inset 0 1px 0 rgba(255,255,255,.55), inset 0 -1px 0 rgba(90,60,10,.35); }
+.pth::before { background-image: linear-gradient(rgba(60,40,5,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(60,40,5,.05) 1px, transparent 1px); }
+.pth-hi, .pth-sub, .pth-barh, .pth-stat small { color: rgba(29,21,5,.66); }
+.pth-lbl { color: rgba(29,21,5,.78); } .pth-lbl .link { color: #1d1505; text-decoration: underline; text-underline-offset: 3px; }
+.pth-big span { color: rgba(29,21,5,.5); } .pth-barh b { color: #1d1505; }
+.pth-tag.ok { color: #0f5132; background: rgba(255,255,255,.5); } .pth-tag.late { color: #8a1c1c; background: rgba(255,255,255,.5); }
+.pth .pth-bar { background: rgba(29,21,5,.14); } .pth .pth-bar i { background: linear-gradient(90deg, #2a2110, #4a3a17); }
+.pth-steps { color: rgba(29,21,5,.38); } .pth-steps span.on { color: rgba(29,21,5,.85); font-weight: 600; }
+.pth-stats { border-color: rgba(29,21,5,.16); background: rgba(255,255,255,.22); } .pth-stat + .pth-stat { border-color: rgba(29,21,5,.14); } .pth-stat span { color: rgba(29,21,5,.55); }
+.pth-acts button { color: #1d1505; border-color: rgba(29,21,5,.16); background: rgba(255,255,255,.25); } .pth-acts button:hover { border-color: rgba(29,21,5,.4); background: rgba(255,255,255,.4); }
+.pth-ic { background: rgba(29,21,5,.1); }
+.pth-wait { color: #1d1505; border-color: rgba(29,21,5,.16); background: rgba(255,255,255,.22); } .pth-wait small { color: rgba(29,21,5,.6); }
+.pth-wait.todo { border-color: rgba(29,21,5,.45); background: rgba(29,21,5,.88); color: #f7dc85; } .pth-wait.todo small { color: rgba(247,220,133,.7); } .pth-wait.todo .pth-ic { background: rgba(247,220,133,.18); color: #f7dc85; }
+.pth-go { color: #f7dc85; }
+@media (max-width: 700px) { .pth-stat + .pth-stat { border-color: rgba(29,21,5,.14); } }
 </style>
 
 <aside class="side" id="side" aria-label="Módulos"></aside>
