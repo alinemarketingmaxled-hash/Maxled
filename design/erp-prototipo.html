@@ -1009,6 +1009,50 @@ button.pt-item { cursor: pointer; } button.pt-item:hover { background: rgba(255,
 .pth-wait.todo { border-color: transparent; background: linear-gradient(110deg, #f7dc85, #e3b649 50%, #c9952a); color: #120d03; } .pth-wait.todo small { color: rgba(18,13,3,.7); } .pth-wait.todo .pth-ic { background: #120d03; color: #f2cc5b; }
 .pth-go { color: #120d03; }
 @media (max-width: 700px) { .pth-stat + .pth-stat { border-color: rgba(242,204,91,.2); } }
+
+/* Painéis: financeiro e vendedor */
+.lc .ax { fill: var(--text-3); font-size: 11px; } .lc .ay { text-anchor: end; } .lc .axm { text-anchor: middle; }
+.ftiles { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; }
+.ftile { display: grid; gap: 3px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 13px 14px; min-width: 0; }
+.ftile small { font-size: 11.5px; color: var(--text-2); } .ftile b { font-size: 21px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ftile span { font-size: 11px; color: var(--text-3); }
+.ftile.good b { color: var(--good); } .ftile.bad b { color: var(--bad); }
+@media (max-width: 1280px) { .ftiles { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .ftiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } .ftile b { font-size: 18px; } }
+.dgrid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 14px; } .dgrid > .card { margin: 0; min-width: 0; }
+.dgrid .c3 { grid-column: span 3; } .dgrid .c4 { grid-column: span 4; } .dgrid .c6 { grid-column: span 6; } .dgrid .c8 { grid-column: span 8; } .dgrid .c12 { grid-column: span 12; }
+@media (max-width: 1100px) { .dgrid .c4, .dgrid .c3 { grid-column: span 6; } .dgrid .c8 { grid-column: span 12; } }
+@media (max-width: 700px) { .dgrid > .card { grid-column: 1 / -1 !important; } }
+.bh { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; } .bh h2 { margin: 0; }
+.dnut { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; } .dnut-l { display: grid; gap: 6px; flex: 1; min-width: 150px; font-size: 12.5px; }
+.dnut-l span { display: flex; align-items: center; gap: 8px; } .dnut-l i { width: 10px; height: 10px; border-radius: 3px; flex: none; } .dnut-l b { margin-left: auto; }
+.fin-conc { margin-top: 12px; padding: 11px 14px; }
+.qrow { display: flex; justify-content: space-between; align-items: center; gap: 10px; } .qrow > span:first-child { min-width: 0; }
+.ib.wa { display: inline-grid; place-items: center; text-decoration: none; color: #7be8b0; } .ib.wa svg.i { width: 14px; height: 14px; }
+.btn.sm { padding: 5px 10px; font-size: 12px; }
+.shero { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 22px; padding: 24px 26px; border-radius: 24px; color: #f4efe2;
+  background: radial-gradient(90% 80% at 95% 0%, rgba(242,204,91,.2), transparent 60%), linear-gradient(160deg, #141310, #070707); box-shadow: 0 0 0 1px rgba(242,204,91,.5), 0 24px 60px -30px rgba(242,204,91,.3); position: relative; overflow: hidden; }
+.shero::after { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 3px; background: linear-gradient(90deg, transparent, #f7dc85, #c9952a, transparent); }
+.sh-main { display: grid; gap: 8px; } .sh-main > small { color: rgba(244,239,226,.6); font-size: 13px; }
+.sh-big { font-size: 46px; font-weight: 800; line-height: 1; background: linear-gradient(180deg, #fff1bf, #f2cc5b 50%, #c9952a); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.sh-meta { color: rgba(244,239,226,.7); font-size: 14px; } .sh-meta b { color: #f2cc5b; }
+.shero .pth-bar { position: relative; overflow: visible; background: rgba(242,204,91,.14); height: 9px; } .shero .pth-bar i { background: linear-gradient(90deg, #a8761b, #f2cc5b, #fff1bf); }
+.shero .pth-bar em { position: absolute; top: -4px; width: 2px; height: 17px; background: #f4efe2; border-radius: 2px; }
+.sh-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; } .sh-sub { font-size: 13px; color: rgba(244,239,226,.62); } .sh-sub b { color: #f4efe2; }
+.sh-side { display: grid; gap: 10px; align-content: center; } .sh-side > div { display: grid; gap: 2px; padding: 12px 14px; border-radius: 16px; border: 1px solid rgba(242,204,91,.25); background: rgba(242,204,91,.05); }
+.sh-side small { font-size: 12px; color: rgba(244,239,226,.6); } .sh-side b { font-size: 24px; color: #f7dc85; } .sh-side span { font-size: 11.5px; color: rgba(244,239,226,.5); }
+@media (max-width: 900px) { .shero { grid-template-columns: 1fr; padding: 20px; } .sh-big { font-size: 38px; } }
+/* Pedido: automações */
+.autotag { justify-self: start; width: max-content; display: inline-block; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 99px; background: rgba(123,232,176,.14); color: #7be8b0; margin-left: 4px; text-transform: none; letter-spacing: 0; } .autotag.man { background: rgba(255,255,255,.08); color: var(--text-2); }
+.pf-auto { border: 1px dashed rgba(242,204,91,.45); background: rgba(242,204,91,.05); border-radius: 16px; padding: 14px 16px; }
+.pfa-h { display: flex; justify-content: space-between; align-items: center; gap: 10px; } .pfa-h h3 { margin: 0; font-size: 14px; display: flex; gap: 8px; align-items: center; color: #f2cc5b; } .pfa-h h3 svg.i { width: 16px; height: 16px; }
+.pf-auto .note { margin: 8px 0 6px; }
+.pfs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; }
+.pfs { display: flex; align-items: center; gap: 10px; text-align: left; padding: 8px 10px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font: inherit; cursor: pointer; min-width: 0; }
+.pfs:hover { border-color: #f2cc5b; } .pfs-t { display: grid; min-width: 0; flex: 1; } .pfs-t b { font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .pfs-t small { font-size: 11px; color: var(--text-3); }
+.link.plain { font-family: inherit; font-weight: 700; }
+.pfs-q { font-weight: 800; color: #f2cc5b; font-size: 13px; white-space: nowrap; }
+.pf-pastebtn { font-size: 12px; margin-left: 10px; font-weight: 600; }
+.pf-paste { display: grid; gap: 8px; margin-top: 10px; padding: 12px; border-radius: 12px; background: rgba(255,255,255,.03); border: 1px solid var(--border); }
 </style>
 
 <aside class="side" id="side" aria-label="Módulos"></aside>
@@ -2397,18 +2441,6 @@ function autoAction(ds, act) {
 // ---------------------------------------------------------------------------
 function dashCard(title, body, go2, label) { return `<div class="card dcard"><div class="row" style="justify-content:space-between"><h2 style="margin:0">${title}</h2>${go2 ? `<button class="link" data-go="${go2}">${label || "Abrir"} →</button>` : ""}</div>${body}</div>`; }
 function hello() { const h = new Date().getHours(); return `${h < 12 ? "Bom dia" : h < 18 ? "Boa tarde" : "Boa noite"}, ${role().user.split(" ")[0]}`; }
-function vPainelVendedor() {
-  const me = role().user; const st = sellerStats(me); const g = C().goals; const ts = cadTasks();
-  const quotes = C().orders.filter((o) => o.seller === me && o.status === "COTACAO"); const vis = (C().visits || []).filter((v) => v.seller === me);
-  const rep = myCustomers().map((c) => ({ c, s: custStats(c.id) })).filter((x) => x.s.last && (Date.now() - new Date(x.s.last.date)) / 864e5 > 30).slice(0, 5);
-  const ring2 = (v, goal, l) => { const p = Math.min(1, goal ? v / goal : 0); return `<div class="gring"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15.5" class="bg"/><circle cx="18" cy="18" r="15.5" class="fg" stroke-dasharray="${p * 97.4} 97.4"/></svg><b>${Math.round(p * 100)}%</b><small>${l}</small></div>`; };
-  return head(hello(), `Seu dia de vendas · ${new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" })}`, `<button class="btn" data-act="novo-painel">${icon("plus")}Novo pedido <kbd>F2</kbd></button>`) +
-    `<div class="card mobile-goals"><h2>Minhas metas</h2><div class="rings">${ring2(st.callsToday, g.calls, `Ligações hoje · ${st.callsToday}/${g.calls}`)}${ring2(st.tries, g.tries, `Tentativas · ${st.tries}/${g.tries}`)}${ring2(st.quali, g.quali, `Qualificadas · ${st.quali}/${g.quali}`)}${ring2(st.visits, g.visits, `Visitas · ${st.visits}/${g.visits}`)}${ring2(st.sales, g.sales, `Vendas · ${money(st.sales).replace(",00", "")}`)}</div></div>
-    <div class="grid g2">${dashCard(`Agenda de hoje <small>${ts.length}</small>`, ts.length ? `<div class="list">${ts.slice(0, 5).map((t) => `<div class="hbar"><div class="l"><span><b>${t.type}</b> · ${esc(t.l.company)}</span>${t.late ? pill(["atrasada", "p-bad"]) : ""}</div><small class="note">${esc(t.what || "")}</small></div>`).join("")}</div>` : `<p class="note">Nada pendente.</p>`, "crm", "Ver agenda")}
-      ${dashCard(`Rota de visitas <small>${vis.length}</small>`, vis.length ? `<div class="list">${vis.map((v) => `<div class="hbar"><div class="l"><span>${v.time} · ${esc(visitName(v))}</span>${v.out ? pill(["feita", "p-good"]) : v.in ? pill(["em visita", "p-warn"]) : ""}</div><small class="note">${esc(v.bairro)} · ${esc(v.goal)}</small></div>`).join("")}</div>` : `<p class="note">Rota de SP ainda não montada.</p>`, "rota", "Abrir rota")}
-      ${dashCard(`Cotações abertas <small>${quotes.length}</small>`, quotes.length ? `<div class="list">${quotes.slice(0, 5).map((o) => `<div class="hbar"><div class="l"><button class="link" data-open="${o.id}">${code(o)} · ${esc(cust(o.customer).name)}</button><b class="num">${money(o.total)}</b></div><small class="note">${fdate(o.date)}</small></div>`).join("")}</div>` : `<p class="note">Nenhuma cotação aberta.</p>`, "pedidos", "Pedidos")}
-      ${dashCard("Clientes para recomprar", rep.length ? `<div class="list">${rep.map((x) => `<div class="hbar"><div class="l"><button class="link" data-cli="${x.c.id}">${esc(x.c.name)}</button><small class="note">último ${fdate(x.s.last.date)}</small></div></div>`).join("")}</div>` : `<p class="note">Carteira em dia.</p>`, "posvenda", "Pós-venda")}</div>`;
-}
 function vPainelEstoque() {
   const sep = C().orders.filter((o) => ["APROVADO", "SEPARACAO", "CONFERENCIA"].includes(o.status)); const ready = C().orders.filter((o) => o.status === "PRONTO");
   const xml = (C().nfIn || []).filter((x) => !x.status.startsWith("Entrada")); const low = C().products.filter((p) => !p.kit && availSimple(p) < p.minStock); const mlOver = C().listings.filter((l) => l.pub > Math.floor(avail(prod(l.sku)) / l.units));
@@ -2417,14 +2449,6 @@ function vPainelEstoque() {
     ${dashCard("Recebimentos (XML do e-mail)", xml.length ? `<div class="list">${xml.map((x) => `<div class="hbar"><div class="l"><span>NF ${x.n} · ${esc(x.supplier)}</span>${pill([x.status, x.status === "Produto sem vínculo" ? "p-bad" : "p-warn"])}</div></div>`).join("")}</div>` : `<p class="note">Nada para conferir.</p>`, "estoque", "Conferir")}
     ${dashCard("Abaixo do mínimo", low.length ? `<div class="list">${low.map((p) => `<div class="hbar"><div class="l"><span>${p.sku} · ${esc(p.name)}</span><b class="num" style="color:var(--bad)">${nf.format(availSimple(p))}/${nf.format(p.minStock)}</b></div></div>`).join("")}</div>` : `<p class="note">Tudo acima do mínimo.</p>`, "estoque")}
     ${dashCard("Mercado Livre", mlOver.length ? `<div class="alert bad">${icon("alert")}<span>${mlOver.length} anúncio(s) com estoque publicado acima do disponível.</span></div>` : `<div class="alert good">${icon("check")}<span>Anúncios sincronizados.</span></div>`, "estoque", "Ver anúncios")}</div>`;
-}
-function vPainelFinanceiro() {
-  const today = new Date(new Date().toDateString()); const tm = new Date(today.getTime() + 864e5);
-  const rHoje = C().recv.filter((r) => r.paid < r.amount && new Date(r.due) >= today && new Date(r.due) < tm); const ov = C().recv.filter((r) => r.paid < r.amount && new Date(r.due) < today);
-  const pHoje = C().pays.filter((p) => p.paid < p.amount && new Date(p.due) < tm); const bank = (C().bank || []).filter((b) => !b.ok);
-  return head(hello(), "Financeiro de hoje") + `<div class="grid g4">${kpi("money", "c3", "A receber hoje", money(rHoje.reduce((s, r) => s + r.amount - r.paid, 0)))}${kpi("receipt", "c4", "A pagar até hoje", money(pHoje.reduce((s, p) => s + p.amount - p.paid, 0)))}${kpi("alert", "c4", "Vencidos a receber", money(ov.reduce((s, r) => s + r.amount - r.paid, 0)))}${kpi("financeiro", "c1", "Extrato para conciliar", bank.length)}</div>
-    <div class="grid g2">${dashCard("Pagamentos de hoje", pHoje.length ? `<div class="list">${pHoje.map((p) => `<div class="hbar"><div class="l"><span>${esc(p.desc)}</span><b class="num">${money(p.amount)}</b></div><small class="note">${p.approved ? "aprovado" : "aguardando aprovação"} · ${fdate(p.due)}</small></div>`).join("")}</div>` : `<p class="note">Nada a pagar hoje.</p>`, "financeiro")}
-    ${dashCard("Maiores vencidos", ov.length ? `<div class="list">${ov.sort((a, b) => b.amount - a.amount).slice(0, 6).map((r) => `<div class="hbar"><div class="l"><button class="link" data-cli="${r.customer}">${esc(cust(r.customer).name)}</button><b class="num">${money(r.amount - r.paid)}</b></div><small class="note">vencido em ${fdate(r.due)}</small></div>`).join("")}</div>` : `<p class="note">Sem vencidos.</p>`, "financeiro", "Inadimplência")}</div>`;
 }
 function vPainelFiscal() {
   const pend = C().orders.filter((o) => FLOW.indexOf(o.status) >= 2 && o.status !== "CANCELADO" && !activeDoc(o)); const xml = (C().nfIn || []).filter((x) => !x.status.startsWith("Entrada"));
@@ -2443,6 +2467,8 @@ function vPainelGerente() {
 function vNovaCotacao() {
   const d = draft; const c = C(); const e = d.entry;
   const custs = role().own ? c.customers.filter((x) => x.seller === role().user) : c.customers;
+  if (d.autoCust !== d.customer) applyCustDefaults(d);
+  if (!d.freightTyped) d.freight = autoFreight(d);
   totals(d);
   const reasons = d.items.length ? approvalReasons(d) : [];
   const p = prod(e.sku.trim().toUpperCase());
@@ -2458,9 +2484,9 @@ function vNovaCotacao() {
     </div>
     <div class="pf-head2">
       <label class="f">Emissão<input value="${today}" readonly></label>
-      <label class="f" for="e-entrega">Entrega prevista<input id="e-entrega" type="date" value="${d.entrega}"></label>
+      <label class="f" for="e-entrega">Entrega prevista <small class="autotag">auto · ${cu && ufOf(cu) === "SP" ? "SP 1 dia útil" : "4 dias úteis"}</small><input id="e-entrega" type="date" value="${d.entrega}"></label>
       <label class="f" for="e-tabela">Tabela de preço<select id="e-tabela"><option value="1">1 · Padrão</option></select></label>
-      <label class="f">Condição<input value="${d.inst === 1 ? "À vista / 30 dias" : `${d.inst} parcelas`}" readonly></label>
+      <label class="f">Condição <small class="autotag">auto · a mais usada</small><input value="${d.inst === 1 ? "À vista / 30 dias" : `${d.inst} parcelas`}" readonly></label>
     </div>
     <div class="pf-cli">
       <label class="f sugwrap" for="c-find">Cliente<div class="inp-ic">${icon("clientes")}<input id="c-find" autocomplete="off" placeholder="Buscar por código, nome ou CNPJ" value="${esc(cu ? cu.name : "")}"></div><div class="sug" id="c-sug" hidden></div></label>
@@ -2468,8 +2494,9 @@ function vNovaCotacao() {
         <div class="pf-cli-stats"><span><small>Em aberto</small><b class="num">${money(cst.open)}</b></span><span><small>Limite livre</small><b class="num" style="color:${lim - cst.open < 0 ? "var(--bad)" : "var(--good)"}">${money(Math.max(0, lim - cst.open))}</b></span><span><small>Situação</small>${cst.late > 0 ? pill(["Título vencido", "p-bad"]) : pill(["Em dia", "p-good"])}</span></div></div>` : ""}
       ${last.length ? `<div class="pf-repeat"><span class="note">Repetir um pedido anterior:</span>${last.map((o) => `<button class="chipbtn" data-repeat="${o.id}" title="Copia os itens para este pedido"><b class="mono">${code(o)}</b><span>${fdate(o.date)} · ${o.items.length} item(ns) · ${money(o.total)}</span></button>`).join("")}</div>` : ""}
     </div>
+    ${pfSuggestBox(d)}
     <div class="pf-add">
-      <div class="pf-add-h"><h3>Incluir item</h3><span class="keys"><span><kbd>Enter</kbd> inclui</span><span><kbd>↑</kbd><kbd>↓</kbd> escolhe</span><span><kbd>texto*qtd</kbd> já informa a quantidade</span><span><kbd>F8</kbd> grava</span><span><kbd>F9</kbd> grava e envia</span></span></div>
+      <div class="pf-add-h"><h3>Incluir item <button class="link plain pf-pastebtn" data-act="pf-paste">${d.pasteOpen ? "fechar lista" : "ou colar lista de itens"}</button></h3><span class="keys"><span><kbd>Enter</kbd> inclui</span><span><kbd>↑</kbd><kbd>↓</kbd> escolhe</span><span><kbd>texto*qtd</kbd> já informa a quantidade</span><span><kbd>F8</kbd> grava</span><span><kbd>F9</kbd> grava e envia</span></span></div>
       <div class="pf-line">
         <label class="f sugwrap" for="e-sku">Produto<div class="inp-ic">${icon("produtos")}<input id="e-sku" value="${esc(e.sku)}" placeholder="Código ou parte do nome · ex.: kit led*3" autocomplete="off"></div><div class="sug" id="e-sug" hidden></div></label>
         <label class="f" for="e-qty">Qtd<input id="e-qty" class="num r" type="number" min="1" step="1" value="${e.qty}"></label>
@@ -2479,17 +2506,19 @@ function vNovaCotacao() {
         <div class="f pf-btn"><button class="btn" data-act="e-add">${icon("plus")}Incluir</button></div>
       </div>
       ${p ? `<div class="pf-prev">${thumb(p, 48)}<div class="pf-prev-i"><b>${esc(p.name)}${p.kit ? ` <span class="kitb">KIT</span>` : ""}</b><span class="mono note">${p.sku} · NCM ${p.ncm} · ${prodTech(p).pack}</span></div><div class="pf-prev-s"><span><small>Disponível</small>${stockChip(p, e.qty || 1)}</span><span><small>Tabela</small><b class="num">${money(p.price)}</b></span><span><small>Mínimo</small><b class="num">${money(p.min)}</b></span>${seeCosts() ? `<span><small>Margem</small><b class="num">${Math.round(((p.price - unitCost(p)) / p.price) * 100)}%</b></span>` : ""}</div></div>` : ""}
+      ${pfPasteBox(d)}
       <details class="pf-obs" ${e.obs ? "open" : ""}><summary>Observação do item (opcional)</summary><textarea id="e-obs" rows="2" placeholder="Ex.: embalar separado, cor do LED, prazo especial...">${esc(e.obs)}</textarea></details>
     </div>` +
     `<div class="ig-head"><h3>Itens do pedido <span class="pill p-neutral">${d.items.length}</span></h3><span class="note">Quantidade, valor e desconto podem ser alterados direto na grade.</span></div>` + itemsGrid(d.items, { editable: true }) + (d.items.length ? itemsSummary(d) : "") +
     `<div class="row" style="justify-content:space-between">
       <div class="row">
-        <label class="f" for="q-freight" style="width:130px">Frete (R$)<input id="q-freight" type="number" min="0" step="0.01" value="${d.freight}"></label>
-        <label class="f" for="q-inst" style="width:110px">Parcelas<select id="q-inst">${[1, 2, 3, 4, 6].map((n) => `<option ${n === d.inst ? "selected" : ""}>${n}</option>`).join("")}</select></label>
+        <label class="f" for="q-freight" style="width:150px">Frete (R$) <small class="autotag ${d.freightTyped ? "man" : ""}">${d.freightTyped ? "manual" : "auto"}</small><input id="q-freight" type="number" min="0" step="0.01" value="${d.freight}"></label>
+        <label class="f" for="q-inst" style="width:110px">Parcelas <small class="autotag">auto</small><select id="q-inst">${[1, 2, 3, 4, 6].map((n) => `<option ${n === d.inst ? "selected" : ""}>${n}</option>`).join("")}</select></label>
 
       </div>
       <div class="row"><button class="btn ghost" data-act="descartar">Cancelar</button><button class="btn ghost" data-act="salvar" ${d.items.length ? "" : "disabled"}>Gravar <kbd>F8</kbd></button><button class="btn" data-act="salvar-enviar" ${d.items.length ? "" : "disabled"}>${icon("check")}Gravar e enviar <kbd>F9</kbd></button></div>
     </div>
+    <p class="note" style="margin:0">Frete automático: grátis acima de R$ 1.500 em SP e R$ 3.000 nos demais estados${d.freightTyped ? ` · <button class="link" data-act="pf-freightauto">voltar ao automático</button>` : ""}.</p>
     ${reasons.length ? `<div class="alert warn">${icon("alert")}<span>Vai para aprovação: ${esc(reasons.join("; "))}.</span></div>` : d.items.length ? `<div class="alert good">${icon("check")}<span>Dentro dos limites: aprovado automaticamente ao enviar.</span></div>` : ""}
     <div id="err"></div>
   </div>`;
@@ -2970,13 +2999,14 @@ function receiveImp(n) {
 }
 
 function vFinanceiro() {
+  if (!S.tab || S.tab === "painel") return head("Financeiro", `Visão geral do caixa, resultado e recebíveis · ${esc(C().name)}`) + finTabs() + vFinDash();
   const extra = { fluxo: vFluxo, aging: vAging, dre: vDre, concil: vConcilia }[S.tab];
   if (extra) return head("Financeiro", `Fluxo de caixa, inadimplência e resultado · ${esc(C().name)}`) + finTabs() + extra();
   return vFinBase();
 }
 function finTabs() {
-  const t = S.tab || "receber";
-  return `<div class="tabs">${[["receber", "Contas a receber"], ["pagar", "Contas a pagar"], ["fluxo", "Fluxo de caixa"], ["aging", "Inadimplência"], ["concil", "Conciliação bancária"], ["dre", "Resultado (DRE)"]].map(([k, l]) => `<button data-tab="${k}" class="${t === k ? "on" : ""}">${l}</button>`).join("")}</div>`;
+  const t = S.tab || "painel";
+  return `<div class="tabs">${[["painel", "Visão geral"], ["receber", "Contas a receber"], ["pagar", "Contas a pagar"], ["fluxo", "Fluxo de caixa"], ["aging", "Inadimplência"], ["concil", "Conciliação bancária"], ["dre", "Resultado (DRE)"]].map(([k, l]) => `<button data-tab="${k}" class="${t === k ? "on" : ""}">${l}</button>`).join("")}</div>`;
 }
 
 
@@ -4158,6 +4188,219 @@ document.addEventListener("change", (ev) => {
   if (el.id === "xp-ch") { XP.ch = el.value; return render(); }
 });
 
+// ---------------------------------------------------------------------------
+// Gráficos dos painéis: linhas com valores negativos e colunas agrupadas.
+// ---------------------------------------------------------------------------
+const kfmt = (v) => (Math.abs(v) >= 1000 ? `${(v / 1000).toLocaleString("pt-BR", { maximumFractionDigits: Math.abs(v) >= 10000 ? 0 : 1 })} mil` : String(Math.round(v)));
+function niceScale(min, max) {
+  const span = Math.max(1, max - min); const step0 = span / 4; const mag = Math.pow(10, Math.floor(Math.log10(step0)));
+  const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => s >= step0);
+  return { lo: Math.floor(min / step) * step, hi: Math.ceil(max / step) * step, step };
+}
+function lineChart(labels, series, opts = {}) {
+  const W = 640, H = opts.h || 220, L = 54, R = 14, T = 12, B = 26;
+  const all = series.flatMap((s) => s.values); const sc = niceScale(Math.min(0, ...all), Math.max(1, ...all));
+  const x = (i) => L + (i * (W - L - R)) / Math.max(1, labels.length - 1); const y = (v) => T + (H - T - B) * (1 - (v - sc.lo) / (sc.hi - sc.lo));
+  let g = "";
+  for (let v = sc.lo; v <= sc.hi + 1e-9; v += sc.step) g += `<line class="grid-l" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text class="ax ay" x="${L - 8}" y="${y(v) + 4}">${kfmt(v)}</text>`;
+  if (sc.lo < 0) g += `<line x1="${L}" x2="${W - R}" y1="${y(0)}" y2="${y(0)}" stroke="var(--bad)" stroke-dasharray="4 4" stroke-opacity=".6"/>`;
+  const every = Math.ceil(labels.length / (opts.ticks || 8));
+  labels.forEach((l, i) => { if (i % every === 0 || i === labels.length - 1) g += `<text class="ax axm" x="${x(i)}" y="${H - 8}">${l}</text>`; });
+  series.forEach((s, si) => {
+    const pts = s.values.map((v, i) => `${x(i)},${y(v)}`).join(" "); const id = `lc${Math.random().toString(36).slice(2, 7)}`;
+    if (s.fill) g += `<defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${s.color}" stop-opacity=".3"/><stop offset="1" stop-color="${s.color}" stop-opacity="0"/></linearGradient></defs><polygon points="${x(0)},${y(Math.max(sc.lo, 0))} ${pts} ${x(s.values.length - 1)},${y(Math.max(sc.lo, 0))}" fill="url(#${id})"/>`;
+    g += `<polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="${s.dash ? 1.6 : 2.5}" ${s.dash ? `stroke-dasharray="5 5"` : ""} stroke-linejoin="round"/>`;
+    if (!s.dash) { const li = s.values.length - 1; g += `<circle cx="${x(li)}" cy="${y(s.values[li])}" r="4.5" fill="${s.color}" stroke="var(--surface)" stroke-width="2"/>`; }
+    (s.marks || []).forEach((i) => { g += `<circle cx="${x(i)}" cy="${y(s.values[i])}" r="4" fill="var(--bad)"/>`; });
+  });
+  return `<svg class="chart lc" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(opts.label || "Gráfico")}">${g}</svg>`;
+}
+function colChart(labels, series, opts = {}) {
+  const W = opts.w || 640, H = opts.h || 220, L = 54, R = 10, T = 12, B = 26;
+  const all = series.flatMap((s) => s.values); const sc = niceScale(Math.min(0, ...all), Math.max(1, ...all));
+  const y = (v) => T + (H - T - B) * (1 - (v - sc.lo) / (sc.hi - sc.lo)); const gw = (W - L - R) / labels.length; const bw = Math.min(26, (gw * 0.78) / series.length);
+  let g = "";
+  for (let v = sc.lo; v <= sc.hi + 1e-9; v += sc.step) g += `<line class="grid-l" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text class="ax ay" x="${L - 8}" y="${y(v) + 4}">${kfmt(v)}</text>`;
+  labels.forEach((l, i) => {
+    const x0 = L + i * gw + (gw - bw * series.length) / 2;
+    series.forEach((s, si) => { const v = s.values[i]; const top = y(Math.max(0, v)), bot = y(Math.min(0, v)); g += `<rect x="${x0 + si * bw}" y="${top}" width="${bw - 3}" height="${Math.max(1, bot - top)}" rx="4" fill="${typeof s.color === "function" ? s.color(v) : s.color}"><title>${l}: ${money(v)}</title></rect>`; });
+    g += `<text class="ax axm" x="${L + i * gw + gw / 2}" y="${H - 8}">${l}</text>`;
+  });
+  return `<svg class="chart lc" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(opts.label || "Gráfico")}">${g}</svg>`;
+}
+const lgd = (items) => `<span class="legend">${items.map(([c, l, dash]) => `<span><i style="background:${dash ? "transparent" : c};${dash ? `border-top:2px dashed ${c};height:0;margin-top:4px` : ""}"></i>${l}</span>`).join("")}</span>`;
+const monthsBack = (n) => Array.from({ length: n }, (_, i) => { const d = new Date(); d.setDate(1); d.setHours(0, 0, 0, 0); d.setMonth(d.getMonth() - (n - 1 - i)); return d; });
+const mLabel = (d) => d.toLocaleDateString("pt-BR", { month: "short" }).replace(".", "");
+const inMonth = (iso, d) => { const x = new Date(iso); return x.getFullYear() === d.getFullYear() && x.getMonth() === d.getMonth(); };
+
+// ---------------------------------------------------------------------------
+// Painel financeiro: caixa projetado, resultado, aging, despesas e prazos.
+// ---------------------------------------------------------------------------
+const CASH_START = 48500;
+function finSeries() {
+  const c = C(); const ms = monthsBack(6);
+  const rev = ms.map((m) => c.orders.filter((o) => billed(o) && o.status !== "CANCELADO" && inMonth(o.date, m)).reduce((s2, o) => s2 + o.total, 0));
+  const cmv = ms.map((m) => c.orders.filter((o) => billed(o) && o.status !== "CANCELADO" && inMonth(o.date, m)).reduce((s2, o) => s2 + o.items.reduce((a, i) => a + itemCost(i), 0), 0));
+  // Despesas operacionais de exemplo: base fixa + parte variável (frete, comissão, tarifas).
+  const opex = rev.map((r) => r2(9800 + r * 0.11));
+  const exp = rev.map((_, i) => r2(cmv[i] + opex[i]));
+  return { ms, rev, cmv, opex, exp, res: rev.map((r, i) => r2(r - exp[i])) };
+}
+function cashProjection(nDays) {
+  const c = C(); const left = (x) => x.amount - x.paid; let bal = CASH_START; const out = [];
+  for (let i = 0; i < nDays; i++) {
+    const d = new Date(days(i)); const match = (iso) => Math.max(0, dayDiff(iso)) === i;
+    const inn = c.recv.filter((r) => r.paid < r.amount && match(r.due) && dayDiff(r.due) >= 0).reduce((s2, r) => s2 + left(r), 0);
+    const o = c.pays.filter((p) => p.paid < p.amount && match(p.due)).reduce((s2, p) => s2 + left(p), 0) + (d.getDate() === 5 ? 18500 : 0) + (d.getDate() === 10 ? 6200 : 0);
+    bal += inn - o; out.push({ d, inn, out: o, bal });
+  }
+  return out;
+}
+function vFinDash() {
+  const c = C(); const left = (x) => r2(x.amount - x.paid);
+  const openR = c.recv.filter((r) => r.paid < r.amount); const openP = c.pays.filter((p) => p.paid < p.amount);
+  const lateR = openR.filter((r) => dayDiff(r.due) < 0); const sumOpen = openR.reduce((s2, r) => s2 + left(r), 0); const sumLate = lateR.reduce((s2, r) => s2 + left(r), 0);
+  const r30 = openR.filter((r) => dayDiff(r.due) >= 0 && dayDiff(r.due) <= 30).reduce((s2, r) => s2 + left(r), 0);
+  const p30 = openP.filter((p) => dayDiff(p.due) <= 30).reduce((s2, p) => s2 + left(p), 0) + 18500 + 6200;
+  const fs = finSeries(); const cur = fs.ms.length - 1;
+  const daily = (fs.rev[cur - 1] || fs.rev[cur] || 1) / 30; const pmr = Math.round(sumOpen / Math.max(1, daily));
+  const proj = cashProjection(90); const minP = proj.reduce((m, x) => (x.bal < m.bal ? x : m), proj[0]);
+  const weeks = Array.from({ length: 13 }, (_, w) => proj.slice(w * 7, w * 7 + 7));
+  const negIdx = proj.map((x, i) => (x.bal < 0 ? i : -1)).filter((i) => i >= 0);
+  const buckets = [["A vencer", (n) => n >= 0], ["1–30 dias", (n) => n < 0 && n >= -30], ["31–60", (n) => n < -30 && n >= -60], ["61–90", (n) => n < -60 && n >= -90], ["+90 dias", (n) => n < -90]].map(([l, f]) => [l, openR.filter((r) => f(dayDiff(r.due))).reduce((s2, r) => s2 + left(r), 0)]);
+  const PAL = ["#f2cc5b", "#7be8b0", "#8fb8ff", "#ff9a9a", "#c7a6ff", "#ffb36b", "#9aa3b2"];
+  const byCat = {}; openP.forEach((p) => { byCat[p.cat] = (byCat[p.cat] || 0) + left(p); }); const cats = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
+  const byCli = {}; lateR.forEach((r) => { byCli[r.customer] = (byCli[r.customer] || 0) + left(r); });
+  const pHoje = openP.filter((p) => dayDiff(p.due) <= 0).sort((a, b) => new Date(a.due) - new Date(b.due));
+  const bank = (c.bank || []).filter((b) => !b.ok);
+  const mg = fs.rev[cur] ? fs.res[cur] / fs.rev[cur] : 0;
+  const tile = (l, v, sub, tone) => `<div class="ftile ${tone || ""}"><small>${l}</small><b class="num">${v}</b><span>${sub}</span></div>`;
+  const K = (v) => money(v).replace(",00", "");
+  return `<div class="ftiles">${tile("Saldo em contas", K(CASH_START), "bancos conciliados até ontem")}${tile("A receber em 30 dias", K(r30), `${openR.filter((r) => dayDiff(r.due) >= 0 && dayDiff(r.due) <= 30).length} título(s)`, "good")}${tile("A pagar em 30 dias", K(p30), "inclui folha e aluguel")}${tile("Resultado do mês", K(fs.res[cur]), `margem ${(mg * 100).toFixed(1).replace(".", ",")}%`, fs.res[cur] < 0 ? "bad" : "good")}${tile("Inadimplência", `${(sumOpen ? (sumLate / sumOpen) * 100 : 0).toFixed(1).replace(".", ",")}%`, `${K(sumLate)} vencido`, sumLate ? "bad" : "")}${tile("Prazo médio de recebimento", `${pmr} dias`, "saldo a receber ÷ venda diária")}</div>
+  <div class="dgrid">
+    <div class="card c8"><div class="bh"><h2>Caixa projetado · 90 dias</h2>${lgd([["#f2cc5b", "Saldo"]])}</div>${lineChart(proj.map((x) => x.d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })), [{ values: proj.map((x) => r2(x.bal)), color: "#f2cc5b", fill: true, marks: negIdx.slice(0, 1) }], { ticks: 7, label: "Caixa projetado" })}
+      <p class="note" style="margin:6px 0 0">${minP.bal < 0 ? `<b style="color:var(--bad)">Atenção:</b> o saldo fica negativo em ${minP.d.toLocaleDateString("pt-BR")} (${money(minP.bal)}). Antecipe recebíveis ou renegocie pagamentos dessa semana.` : `Menor saldo previsto: ${money(minP.bal)} em ${minP.d.toLocaleDateString("pt-BR")}.`}</p></div>
+    <div class="card c4"><h2>Entradas × saídas por semana</h2>${colChart(weeks.map((w, i) => `S${i + 1}`), [{ values: weeks.map((w) => r2(w.reduce((s2, x) => s2 + x.inn, 0))), color: "#7be8b0" }, { values: weeks.map((w) => r2(w.reduce((s2, x) => s2 + x.out, 0))), color: "#f2cc5b" }], { w: 380, h: 300, label: "Entradas e saídas" })}${lgd([["#7be8b0", "Entradas"], ["#f2cc5b", "Saídas"]])}</div>
+    <div class="card c8"><div class="bh"><h2>Receita, despesas e resultado · 6 meses</h2>${lgd([["#f2cc5b", "Receita"], ["rgba(255,255,255,.35)", "Despesas"], ["#7be8b0", "Resultado"]])}</div>${colChart(fs.ms.map(mLabel), [{ values: fs.rev, color: "#f2cc5b" }, { values: fs.exp, color: "rgba(255,255,255,.3)" }, { values: fs.res, color: (v) => (v < 0 ? "#ff9a9a" : "#7be8b0") }], { label: "Resultado mensal" })}
+      <p class="note" style="margin:6px 0 0">Despesas = custo das mercadorias vendidas + despesas operacionais. No sistema real vêm do plano de contas.</p></div>
+    <div class="card c4"><h2>Contas a pagar por categoria</h2><div class="dnut">${donut(cats.map(([, v], i) => ({ v, color: PAL[i % PAL.length] })))}<div class="dnut-l">${cats.map(([k, v], i) => `<span><i style="background:${PAL[i % PAL.length]}"></i>${esc(k)}<b class="num">${K(v)}</b></span>`).join("")}</div></div></div>
+    <div class="card c4"><h2>Aging dos recebíveis</h2>${hbars(buckets)}<p class="note" style="margin:8px 0 0">Total em aberto ${money(sumOpen)}</p></div>
+    <div class="card c4"><div class="bh"><h2>Maiores devedores</h2><button class="pt-more" data-go2fin="aging">Inadimplência ›</button></div>${hbars(Object.entries(byCli).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([id, v]) => [esc(cust(id).name), v]), money, "bad")}</div>
+    <div class="card c4"><div class="bh"><h2>Pagar hoje e atrasados</h2><button class="pt-more" data-go2fin="pagar">Contas a pagar ›</button></div>${pHoje.length ? `<div class="list">${pHoje.slice(0, 5).map((p) => `<div class="row" style="justify-content:space-between"><span>${esc(p.desc)}<small class="note" style="display:block">${p.approved ? "aprovado" : "aguardando aprovação"} · ${dueTxt(p.due)}</small></span><b class="num">${money(left(p))}</b></div>`).join("")}</div>` : `<p class="note">Nada a pagar hoje.</p>`}
+      ${bank.length ? `<button class="pth-wait todo fin-conc" data-go2fin="concil"><span><b>${bank.length} lançamento(s) do extrato para conciliar</b><small>abrir conciliação bancária</small></span><span class="pth-go">›</span></button>` : ""}</div>
+  </div>`;
+}
+function vPainelFinanceiro() { return head(hello(), `Visão financeira · ${esc(C().name)}`, `<button class="btn ghost" data-go2fin="receber">Contas a receber</button><button class="btn" data-go2fin="pagar">Contas a pagar</button>`) + vFinDash(); }
+
+// ---------------------------------------------------------------------------
+// Painel do vendedor: meta, ritmo, comissão, carteira e cotações.
+// ---------------------------------------------------------------------------
+const COMMISSION = 0.03;
+function vPainelVendedor() {
+  const me = role().user; const st = sellerStats(me); const g = C().goals; const ts = cadTasks(); const c = C();
+  const now0 = new Date(); const mStart = new Date(now0.getFullYear(), now0.getMonth(), 1); const dim = new Date(now0.getFullYear(), now0.getMonth() + 1, 0).getDate(); const today = now0.getDate();
+  const mine = c.orders.filter((o) => o.seller === me && o.status !== "CANCELADO");
+  const monthO = mine.filter((o) => billed(o) && new Date(o.date) >= mStart);
+  const lStart = new Date(now0.getFullYear(), now0.getMonth() - 1, 1);
+  const lastO = mine.filter((o) => billed(o) && new Date(o.date) >= lStart && new Date(o.date) < mStart);
+  const cum = (os, n, base) => { let s2 = 0; return Array.from({ length: n }, (_, i) => { s2 += os.filter((o) => new Date(o.date).getDate() === i + 1 && new Date(o.date).getMonth() === base.getMonth()).reduce((a, o) => a + o.total, 0); return r2(s2); }); };
+  const curC = cum(monthO, today, mStart); const lastC = cum(lastO, dim, lStart).slice(0, dim);
+  const sales = st.sales; const pct = g.sales ? sales / g.sales : 0; const projV = today ? (sales / today) * dim : 0;
+  const bizLeft = Array.from({ length: dim - today }, (_, i) => new Date(now0.getFullYear(), now0.getMonth(), today + 1 + i)).filter((d) => d.getDay() % 6 !== 0).length;
+  const need = Math.max(0, g.sales - sales); const perDay = bizLeft ? need / bizLeft : need;
+  const ticket = monthO.length ? sales / monthO.length : 0; const lastTicket = lastO.length ? lastO.reduce((a, o) => a + o.total, 0) / lastO.length : 0;
+  const created = mine.filter((o) => new Date(o.date) >= mStart); const conv = created.length ? created.filter(billed).length / created.length : 0;
+  const carteira = myCustomers(); const posit = new Set(monthO.map((o) => o.customer)).size;
+  const quotes = mine.filter((o) => o.status === "COTACAO").map((o) => ({ o, age: Math.max(0, -dayDiff(o.date)) })).sort((a, b) => b.o.total - a.o.total);
+  const neg = quotes.reduce((a, x) => a + x.o.total, 0);
+  const topCli = {}; monthO.forEach((o) => { topCli[o.customer] = (topCli[o.customer] || 0) + o.total; });
+  const topP = {}; monthO.forEach((o) => o.items.forEach((i) => { topP[i.sku] = (topP[i.sku] || 0) + i.sub; }));
+  const rep = carteira.map((cu) => { const os = mine.filter((o) => o.customer === cu.id && billed(o)).sort((a, b) => new Date(b.date) - new Date(a.date)); if (!os.length) return null; const gaps = os.slice(0, -1).map((o, i) => (new Date(o.date) - new Date(os[i + 1].date)) / 864e5); const every = gaps.length ? Math.max(7, Math.round(gaps.reduce((a, b) => a + b, 0) / gaps.length)) : 30; const since = Math.round((Date.now() - new Date(os[0].date)) / 864e5); return { cu, every, since, due: since - every, avg: os.reduce((a, o) => a + o.total, 0) / os.length }; }).filter((x) => x && x.due >= -3).sort((a, b) => b.due - a.due).slice(0, 5);
+  const ring2 = (v, goal, l) => { const p = Math.min(1, goal ? v / goal : 0); return `<div class="gring"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15.5" class="bg"/><circle cx="18" cy="18" r="15.5" class="fg" stroke-dasharray="${p * 97.4} 97.4"/></svg><b>${Math.round(p * 100)}%</b><small>${l}</small></div>`; };
+  const K = (v) => money(v).replace(",00", "");
+  const tile = (l, v, sub, tone) => `<div class="ftile ${tone || ""}"><small>${l}</small><b class="num">${v}</b><span>${sub}</span></div>`;
+  const delta = (a, b) => (b ? `${a >= b ? "▲" : "▼"} ${Math.abs(((a - b) / b) * 100).toFixed(0)}% vs mês passado` : "primeiro mês");
+  const msgQ = (o) => `Olá! Aqui é ${me} da MAX LED. Conseguiu ver a cotação ${code(o)} (${money(o.total)})? Se quiser, ajusto quantidades ou prazo para fecharmos hoje.`;
+  return head(hello(), `Seu mês de vendas · faltam ${bizLeft} dia(s) úteis`, `<button class="btn ghost" data-go="clientes">Carteira</button><button class="btn" data-act="novo-painel">${icon("plus")}Novo pedido <kbd>F2</kbd></button>`) +
+    `<section class="shero"><div class="sh-main"><small>Vendido no mês</small><div class="sh-big num">${K(sales)}</div><div class="sh-meta">de ${K(g.sales)} · <b>${Math.round(pct * 100)}%</b> da meta</div><div class="pth-bar"><i style="width:${Math.min(100, pct * 100)}%"></i><em style="left:${Math.min(100, (today / dim) * 100)}%" title="Onde deveria estar hoje"></em></div>
+      <div class="sh-row"><span class="pth-tag ${projV >= g.sales ? "ok" : "late"}">${projV >= g.sales ? "No ritmo da meta" : "Abaixo do ritmo"}</span><span class="sh-sub">projeção do mês: <b>${K(projV)}</b>${need ? ` · faltam ${K(need)} (${K(perDay)} por dia útil)` : " · meta batida!"}</span></div></div>
+      <div class="sh-side"><div><small>Comissão estimada</small><b class="num">${K(sales * COMMISSION)}</b><span>${(COMMISSION * 100).toFixed(0)}% do faturado · se bater a meta: ${K(Math.max(sales, g.sales) * COMMISSION)}</span></div><div><small>Em negociação</small><b class="num">${K(neg)}</b><span>${quotes.length} cotação(ões) abertas</span></div></div></section>` +
+    `<div class="ftiles">${tile("Pedidos no mês", monthO.length, `${lastO.length} no mês passado`)}${tile("Ticket médio", K(ticket), delta(ticket, lastTicket), ticket >= lastTicket ? "good" : "bad")}${tile("Conversão de cotações", `${Math.round(conv * 100)}%`, `${created.filter(billed).length} de ${created.length} viraram pedido`)}${tile("Clientes positivados", `${posit}/${carteira.length}`, `${carteira.length ? Math.round((posit / carteira.length) * 100) : 0}% da carteira comprou no mês`)}${tile("Ligações hoje", `${st.callsToday}/${g.calls}`, `${st.tries} tentativas no mês`)}${tile("Visitas no mês", `${st.visits}/${g.visits}`, `${(c.visits || []).filter((v) => v.seller === me && !v.out).length} agendada(s)`)}</div>
+    <div class="card mobile-goals"><h2>Minhas metas</h2><div class="rings">${ring2(st.callsToday, g.calls, `Ligações hoje · ${st.callsToday}/${g.calls}`)}${ring2(st.tries, g.tries, `Tentativas · ${st.tries}/${g.tries}`)}${ring2(st.quali, g.quali, `Qualificadas · ${st.quali}/${g.quali}`)}${ring2(st.visits, g.visits, `Visitas · ${st.visits}/${g.visits}`)}${ring2(st.sales, g.sales, `Vendas · ${K(st.sales)}`)}</div></div>
+    <div class="dgrid">
+      <div class="card c8"><div class="bh"><h2>Vendas acumuladas no mês</h2>${lgd([["#f2cc5b", "Este mês"], ["rgba(255,255,255,.45)", "Mês passado", 1], ["#7be8b0", "Ritmo da meta", 1]])}</div>${lineChart(Array.from({ length: dim }, (_, i) => String(i + 1)), [{ values: lastC, color: "rgba(255,255,255,.45)", dash: 1 }, { values: Array.from({ length: dim }, (_, i) => r2((g.sales * (i + 1)) / dim)), color: "#7be8b0", dash: 1 }, { values: curC, color: "#f2cc5b", fill: true }], { ticks: 10, label: "Vendas acumuladas" })}</div>
+      <div class="card c4"><div class="bh"><h2>Cotações para fechar</h2><button class="pt-more" data-go="pedidos">Todas ›</button></div>${quotes.length ? `<div class="list">${quotes.slice(0, 5).map(({ o, age }) => `<div class="qrow"><span><button class="link" data-open="${o.id}">${code(o)}</button> · ${esc(cust(o.customer).name)}<small class="note" style="display:block;color:${age > 3 ? "var(--warn)" : ""}">${age ? `parada há ${age} dia(s)` : "criada hoje"}</small></span><span class="row" style="flex-wrap:nowrap"><b class="num">${K(o.total)}</b><a class="ib wa" href="${waLink(custPhone(cust(o.customer)), msgQ(o))}" target="_blank" rel="noopener" title="Cobrar retorno pelo WhatsApp">${icon("emails")}</a></span></div>`).join("")}</div>` : `<p class="note">Nenhuma cotação aberta. Que tal ligar para os clientes da lista de recompra?</p>`}</div>
+      <div class="card c4"><div class="bh"><h2>Hora de recomprar</h2><button class="pt-more" data-go="posvenda">Pós-venda ›</button></div>${rep.length ? `<div class="list">${rep.map((x) => `<div class="qrow"><span><button class="link plain" data-cli="${x.cu.id}">${esc(x.cu.name)}</button><small class="note" style="display:block">compra a cada ~${x.every} dias · última há ${x.since} dias</small></span><button class="btn ghost sm" data-newfor="${x.cu.id}">Pedido</button></div>`).join("")}</div>` : `<p class="note">Carteira em dia: ninguém passou do ciclo de compra.</p>`}</div>
+      <div class="card c4"><h2>Top clientes do mês</h2>${hbars(Object.entries(topCli).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([id, v]) => [esc(cust(id).name), v]))}</div>
+      <div class="card c4"><h2>Produtos que mais vendi</h2>${hbars(Object.entries(topP).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([k, v]) => [esc(prod(k)?.name || k), v, k]))}</div>
+      <div class="card c6">${`<div class="bh"><h2>Agenda de hoje <small class="note">${ts.length}</small></h2><button class="pt-more" data-go="crm">Ver agenda ›</button></div>`}${ts.length ? `<div class="list">${ts.slice(0, 5).map((t) => `<div class="qrow"><span><b>${t.type}</b> · ${esc(t.l.company)}<small class="note" style="display:block">${esc(t.what || "")}</small></span>${t.late ? pill(["atrasada", "p-bad"]) : ""}</div>`).join("")}</div>` : `<p class="note">Nada pendente.</p>`}</div>
+      <div class="card c6">${(() => { const vis = (c.visits || []).filter((v) => v.seller === me); return `<div class="bh"><h2>Rota de visitas <small class="note">${vis.length}</small></h2><button class="pt-more" data-go="rota">Abrir rota ›</button></div>${vis.length ? `<div class="list">${vis.map((v) => `<div class="qrow"><span>${v.time} · ${esc(visitName(v))}<small class="note" style="display:block">${esc(v.bairro)} · ${esc(v.goal)}</small></span>${v.out ? pill(["feita", "p-good"]) : v.in ? pill(["em visita", "p-warn"]) : ""}</div>`).join("")}</div>` : `<p class="note">Rota de SP ainda não montada.</p>`}`; })()}</div>
+    </div>`;
+}
+
+// ---------------------------------------------------------------------------
+// Pedido de venda: condições automáticas, sugestões e colar lista.
+// ---------------------------------------------------------------------------
+function autoFreight(d) {
+  const cu = cust(d.customer); if (!cu || !d.items.length) return 0;
+  const sub = d.items.reduce((s2, i) => s2 + i.qty * i.price * (1 - i.disc / 100), 0); const sp = ufOf(cu) === "SP";
+  if (sub >= (sp ? 1500 : 3000)) return 0;
+  return r2(Math.max(sp ? 18 : 35, sub * (sp ? 0.02 : 0.035)));
+}
+function applyCustDefaults(d) {
+  const cu = cust(d.customer); if (!cu) return;
+  const os = C().orders.filter((o) => o.customer === cu.id && o.status !== "CANCELADO");
+  const freq = {}; os.forEach((o) => { freq[o.inst] = (freq[o.inst] || 0) + 1; });
+  d.inst = +(Object.entries(freq).sort((a, b) => b[1] - a[1])[0]?.[0] || 1);
+  const e = new Date(); let add = ufOf(cu) === "SP" ? 1 : 4; while (add > 0) { e.setDate(e.getDate() + 1); if (e.getDay() % 6 !== 0) add--; }
+  d.entrega = e.toISOString().slice(0, 10); d.freightTyped = false; d.autoCust = cu.id;
+}
+const niceQty = (q) => (q >= 500 ? Math.round(q / 100) * 100 : q >= 50 ? Math.round(q / 10) * 10 : Math.max(1, Math.round(q)));
+function custSuggestions(d) {
+  const cu = cust(d.customer); if (!cu) return { hist: [], cross: [] };
+  const inDraft = new Set(d.items.map((i) => i.sku)); const os = C().orders.filter((o) => o.customer === cu.id && billed(o));
+  const agg = {}; os.forEach((o) => o.items.forEach((i) => { const a = (agg[i.sku] = agg[i.sku] || { n: 0, q: 0, last: o.date }); a.n++; a.q += i.qty; if (o.date > a.last) a.last = o.date; }));
+  const hist = Object.entries(agg).filter(([k]) => !inDraft.has(k) && prod(k)).map(([k, a]) => ({ sku: k, q: niceQty(a.q / a.n), n: a.n, last: a.last })).sort((a, b) => b.n - a.n || b.q - a.q).slice(0, 6);
+  const co = {}; if (d.items.length) C().orders.filter(billed).forEach((o) => { const ks = o.items.map((i) => i.sku); if (!ks.some((k) => inDraft.has(k))) return; o.items.forEach((i) => { if (!inDraft.has(i.sku) && !hist.some((h) => h.sku === i.sku)) { co[i.sku] = co[i.sku] || { n: 0, q: 0 }; co[i.sku].n++; co[i.sku].q += i.qty; } }); });
+  const cross = Object.entries(co).filter(([k, v]) => v.n >= 2 && prod(k)).sort((a, b) => b[1].n - a[1].n).slice(0, 4).map(([k, v]) => ({ sku: k, q: niceQty(v.q / v.n), n: v.n }));
+  return { hist, cross };
+}
+function addToDraft(sku, qty) {
+  const p = prod(sku); if (!p) throw new Error(`Produto ${sku} não existe nesta empresa.`);
+  const ex = draft.items.find((i) => i.sku === sku && i.price === p.price && !i.disc && !i.obs);
+  if (ex) ex.qty += qty; else draft.items.push({ sku, qty, price: p.price, disc: 0, obs: "" });
+  return !!ex;
+}
+function findAny(code) {
+  const c = code.trim(); if (!c) return null; const up = c.toUpperCase();
+  return prod(up) || C().products.find((p) => !p.kit && prodTech(p).ean === c) || (() => { const m = C().products.filter((p) => matchWords(`${p.sku} ${p.name}`, c)); return m.length === 1 ? m[0] : null; })();
+}
+function pfSuggestBox(d) {
+  const cu = cust(d.customer); if (!cu) return "";
+  const { hist, cross } = custSuggestions(d);
+  const chip = (x, why) => { const p = prod(x.sku); return `<button class="pfs" data-pfsug="${x.sku}" data-pfq="${x.q}" title="Incluir ${nf.format(x.q)} × ${x.sku}">${thumb(p, 34)}<span class="pfs-t"><b>${esc(p.name)}</b><small>${why}</small></span><span class="pfs-q num">+${nf.format(x.q)}</span></button>`; };
+  if (!hist.length && !cross.length) return "";
+  return `<div class="pf-auto"><div class="pfa-h"><h3>${icon("check")}Sugestões automáticas</h3>${hist.length ? `<button class="btn ghost sm" data-act="pf-sugall">Incluir as ${hist.length} de sempre</button>` : ""}</div>
+    ${hist.length ? `<p class="note">O que ${esc(cu.name.split(" ")[0])} costuma comprar (quantidade média por pedido):</p><div class="pfs-grid">${hist.map((x) => chip(x, `${x.n} pedido(s) · último em ${fdate(x.last)}`)).join("")}</div>` : ""}
+    ${cross.length ? `<p class="note" style="margin-top:10px">Quem compra esses itens também leva:</p><div class="pfs-grid">${cross.map((x) => chip(x, `junto em ${x.n} pedidos`)).join("")}</div>` : ""}</div>`;
+}
+function pfPasteBox(d) {
+  return d.pasteOpen ? `<div class="pf-paste"><label class="f" for="pf-paste">Cole a lista do cliente (uma linha por item: código, EAN ou nome e a quantidade)<textarea id="pf-paste" rows="5" placeholder="LED-5MM-BR 2000\n300 RES-1K-14W\nfita 5050; 25">${esc(d.paste || "")}</textarea></label><div class="row"><button class="btn" data-act="pf-paste-go">Incluir itens da lista</button><button class="btn ghost" data-act="pf-paste">Fechar</button></div></div>` : "";
+}
+function pfAction(ds, act) {
+  if (ds.pfsug) { const merged = addToDraft(ds.pfsug, +ds.pfq); toast(`${nf.format(+ds.pfq)} × ${ds.pfsug} ${merged ? "somado ao item já incluído" : "incluído"}.`); return render(); }
+  if (act === "pf-sugall") { const { hist } = custSuggestions(draft); hist.forEach((x) => addToDraft(x.sku, x.q)); toast(`${hist.length} item(ns) de sempre incluídos: revise as quantidades na grade.`); return render(); }
+  if (act === "pf-paste") { draft.pasteOpen = !draft.pasteOpen; render(); return setTimeout(() => $("pf-paste")?.focus()); }
+  if (act === "pf-paste-go") {
+    const lines = ($("pf-paste")?.value || draft.paste || "").split("\n").map((l) => l.trim()).filter(Boolean); const bad = []; const ok = [];
+    lines.forEach((l) => { let m = l.match(/^(.+?)[\s;,\t]+(\d+)$/); let name, q; if (m) { name = m[1]; q = +m[2]; } else if ((m = l.match(/^(\d+)[\s;,\tx×]+(.+)$/i))) { name = m[2]; q = +m[1]; } const p = name && findAny(name.replace(/[;,]$/, "")); if (!p || !(q > 0)) bad.push(l); else ok.push([p.sku, q]); });
+    if (!ok.length) throw new Error(bad.length ? `Não reconheci nenhuma linha (ex.: ${bad[0]}).` : "Cole ao menos uma linha.");
+    ok.forEach(([s2, q]) => addToDraft(s2, q)); draft.paste = bad.join("\n"); draft.pasteOpen = bad.length > 0;
+    toast(`${ok.length} item(ns) incluídos da lista${bad.length ? `; ${bad.length} linha(s) não reconhecida(s) ficaram na caixa` : ""}.`); return render();
+  }
+}
+document.addEventListener("input", (ev) => { if (ev.target.id === "pf-paste" && draft) draft.paste = ev.target.value; });
+
 function go(view) { ST.inline = null; PF2.edit = null; S.proposal = null; S.dockOpen = null; PX.open = null; NFI.open = null; KF.leadId = null; KF.newLead = false; S.cliTab = null; mailDraft = null; pgDraft = null; cliDraft = null; PT.orderId = null; S.clienteId = null; S.prodSku = null; S.batchErrors = null; S.view = view; S.orderId = null; S.tab = null; S.composing = false; S.danfe = null; S.impView = null; nfDraft = null; impDraft = null; render(); window.scrollTo(0, 0); }
 
 document.addEventListener("click", (ev) => {
@@ -4179,6 +4422,9 @@ document.addEventListener("click", (ev) => {
     if (ds.open || t.closest("[data-open]")) { const id = ds.open || t.closest("[data-open]").dataset.open; S.view = "pedidos"; S.orderId = id; S.composing = false; render(); return window.scrollTo(0, 0); }
     if (ds.act === "novo") { return startDraft(); }
     if (ds.act === "e-add") { return includeItem(); }
+    if (ds.pfsug || ["pf-sugall", "pf-paste", "pf-paste-go"].includes(ds.act)) return pfAction(ds, ds.act);
+    if (ds.act === "pf-freightauto") { draft.freightTyped = false; return render(); }
+    if (ds.go2fin) { go("financeiro"); S.tab = ds.go2fin; render(); return window.scrollTo(0, 0); }
     if (ds.act === "novo-painel") { return newSale(); }
     if (ds.stsit !== undefined || ds.qtype || ds.qundo !== undefined || ds.stin || ["qm-go", "st-lote", "st-lote-go", "in-cancel", "in-go", "st-clear", "st-buy"].includes(ds.act)) return stockAction(ds, ds.act);
     if (ds.nfopen || ds.act === "nfin-close" || ds.act === "nfin-sync" || ds.act === "nfin-ok") return nfinAction(ds, ds.act);
@@ -4378,10 +4624,10 @@ document.addEventListener("change", (ev) => {
     if (el.id === "e-tipo") { draft.tipo = el.value; setTimeout(render, 0); }
     return;
   }
-  if (!draft || !S.composing || !el.closest(".pedform") || el.id === "q-sku") return;
+  if (!draft || !S.composing || !el.closest(".pedform") || el.id === "q-sku" || el.id === "pf-paste") return;
   if (el.id === "q-cust") { draft.customer = el.value; }
   if (el.id === "q-inst") { draft.inst = +el.value; }
-  if (el.id === "q-freight") { draft.freight = Math.max(0, Number(el.value) || 0); }
+  if (el.id === "q-freight") { draft.freight = Math.max(0, Number(el.value) || 0); draft.freightTyped = true; }
   if (el.dataset.qi !== undefined) { const i = draft.items[+el.dataset.qi]; const v = Number(el.value); i[el.dataset.k] = el.dataset.k === "qty" ? Math.max(1, Math.floor(v) || 1) : Math.max(0, v || 0); }
   // "change" dispara no blur, às vezes no meio de um clique: redesenha depois.
   setTimeout(render, 0);
