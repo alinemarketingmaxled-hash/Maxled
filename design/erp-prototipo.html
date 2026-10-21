@@ -933,7 +933,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; gap: 8
 td.ck, th.ck { width: 34px; }
 .keyc { margin-right: 6px; } .fs-g td.num, .fs-g td.mono, .fs-g .link { white-space: nowrap; } .fs-g td { padding-left: 10px; padding-right: 10px; }
 .cat { font-size: 12px; padding: 2px 8px; border-radius: 99px; background: rgba(255,255,255,.07); white-space: nowrap; }
-.steps { display: flex; gap: 4px; margin-bottom: 3px; } .steps span { width: 22px; height: 6px; border-radius: 99px; background: rgba(255,255,255,.1); } .steps span.on { background: #f2cc5b; }
+.cpsteps { display: flex; gap: 4px; margin-bottom: 3px; } .cpsteps span { width: 22px; height: 6px; border-radius: 99px; background: rgba(255,255,255,.1); } .cpsteps span.on { background: #f2cc5b; }
 .cal14 { display: grid; grid-template-columns: repeat(14, minmax(0, 1fr)); gap: 6px; height: 150px; }
 .cal14 .d { display: grid; grid-template-rows: 1fr auto; gap: 4px; min-width: 0; }
 .cal14 .bars { display: flex; gap: 2px; align-items: flex-end; height: 100%; border-bottom: 1px solid var(--border); }
@@ -944,6 +944,50 @@ td.ck, th.ck { width: 34px; }
 a.btn.wa { text-decoration: none; display: inline-flex; gap: 6px; align-items: center; } a.btn.wa svg.i { width: 14px; height: 14px; }
 .mlt table { min-width: 1100px; font-size: 13px; } .mlt td:first-child { min-width: 250px; } .mlt .btn { padding: 6px 10px; font-size: 12px; } .mlt th, .mlt td { padding-left: 9px; padding-right: 9px; } .mlt td.num, .mlt small.mono { white-space: nowrap; }
 @media print { body.printing #nav, body.printing .side, body.printing header { display: none !important; } }
+
+/* Portal do cliente: cartão principal */
+.pth { position: relative; overflow: hidden; border-radius: 26px; padding: 28px 28px 22px; display: grid; gap: 14px; color: #f4f1ea;
+  background: radial-gradient(120% 90% at 85% 0%, rgba(242,204,91,.16), transparent 55%), linear-gradient(160deg, #2a2b30 0%, #17181c 70%, #101114 100%);
+  border: 1px solid rgba(255,255,255,.1); box-shadow: 0 30px 60px -30px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.08); }
+.pth::before { content: ""; position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px); background-size: 36px 36px; mask-image: linear-gradient(180deg, #000, transparent 60%); pointer-events: none; }
+.pth > * { position: relative; }
+.pth-hi { font-size: 13px; color: rgba(244,241,234,.6); }
+.pth-lbl { font-size: 14px; color: rgba(244,241,234,.75); } .pth-lbl .link { font-size: 14px; }
+.pth-big { font-size: 64px; font-weight: 800; line-height: .9; letter-spacing: -.03em; margin-top: -6px; } .pth-big span { font-size: 26px; color: rgba(244,241,234,.55); margin-left: 2px; }
+.pth-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.pth-tag { font-size: 12px; font-weight: 700; padding: 5px 12px 5px 10px; border-radius: 99px; display: inline-flex; gap: 6px; align-items: center; }
+.pth-tag::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.pth-tag.ok { color: #7be8b0; background: rgba(123,232,176,.12); } .pth-tag.late { color: #ff9a9a; background: rgba(255,122,122,.14); }
+.pth-sub { font-size: 13px; color: rgba(244,241,234,.6); }
+.pth-barh { display: flex; justify-content: space-between; font-size: 12px; color: rgba(244,241,234,.65); margin-top: 4px; } .pth-barh b { color: #f4f1ea; }
+.pth-bar { display: block; height: 7px; border-radius: 99px; background: rgba(255,255,255,.08); overflow: hidden; } .pth-bar i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, #c99a2e, #f2cc5b); }
+.pth-bar.sm { height: 5px; width: 120px; }
+.pth-steps { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); font-size: 11px; color: rgba(244,241,234,.38); margin-top: -6px; } .pth-steps span.on { color: rgba(244,241,234,.8); }
+.pth-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: 1px solid rgba(255,255,255,.1); border-radius: 18px; background: rgba(255,255,255,.035); }
+.pth-stat { display: grid; gap: 3px; padding: 14px 16px; } .pth-stat + .pth-stat { border-left: 1px solid rgba(255,255,255,.1); }
+.pth-stat small { font-size: 12px; color: rgba(244,241,234,.6); } .pth-stat b { font-size: 22px; } .pth-stat span { font-size: 11.5px; color: rgba(244,241,234,.5); }
+.pth-acts { display: flex; flex-wrap: wrap; gap: 10px; }
+.pth-acts button { width: 132px; display: grid; justify-items: center; gap: 8px; padding: 16px 8px 14px; border-radius: 18px; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.05); color: #f4f1ea; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+.pth-acts button:hover { border-color: rgba(242,204,91,.55); background: rgba(242,204,91,.08); }
+.pth-ic { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,.1); } .pth-ic svg.i { width: 16px; height: 16px; }
+.pth-wait { display: flex; gap: 12px; align-items: center; padding: 14px 16px; border-radius: 18px; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.04); color: #f4f1ea; font: inherit; text-align: left; width: 100%; }
+.pth-wait span:not(.pth-ic):not(.pth-go) { display: grid; gap: 2px; flex: 1; } .pth-wait b { font-size: 14px; } .pth-wait small { font-size: 12px; color: rgba(244,241,234,.55); }
+.pth-wait.todo { cursor: pointer; border-color: rgba(242,204,91,.45); background: rgba(242,204,91,.08); } .pth-wait.todo .pth-ic { background: rgba(242,204,91,.2); color: #f2cc5b; }
+.pth-go { font-size: 13px; font-weight: 700; color: #f2cc5b; }
+.pt-sec { display: grid; gap: 10px; margin-top: 10px; } .pt-sech { display: flex; justify-content: space-between; align-items: baseline; } .pt-sech h2 { margin: 0; font-size: 17px; }
+.pt-list { display: grid; border: 1px solid var(--border); border-radius: 18px; background: var(--surface); overflow: hidden; }
+.pt-item { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 16px; align-items: center; padding: 14px 18px; background: none; border: 0; color: var(--text); font: inherit; text-align: left; width: 100%; }
+button.pt-item { cursor: pointer; } button.pt-item:hover { background: rgba(255,255,255,.03); } .pt-item + .pt-item { border-top: 1px solid var(--border); }
+.pt-item > div:first-child { display: grid; gap: 2px; } .pt-item small { color: var(--text-3); font-size: 12px; }
+.pt-prog { display: grid; gap: 5px; justify-items: end; } .pt-st { font-size: 12px; color: var(--text-2); }
+.pt-empty { display: grid; justify-items: center; gap: 6px; text-align: center; padding: 34px 16px; color: var(--text-2); } .pt-empty svg.i { width: 22px; height: 22px; opacity: .6; } .pt-empty small { color: var(--text-3); max-width: 340px; }
+.pt-tabs { margin-top: 4px; } .pt-more { background: none; border: 0; font: inherit; font-size: 13px; font-weight: 700; color: #f2cc5b; cursor: pointer; }
+@media (max-width: 700px) {
+  .pth { padding: 22px 18px 18px; border-radius: 22px; } .pth-big { font-size: 52px; }
+  .pth-stats { grid-template-columns: 1fr; } .pth-stat + .pth-stat { border-left: 0; border-top: 1px solid rgba(255,255,255,.1); }
+  .pth-acts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); } .pth-acts button { width: auto; }
+  .pth-steps { display: none; } .pt-item { grid-template-columns: minmax(0, 1fr) auto; } .pt-item .pt-prog { display: none; }
+}
 </style>
 
 <aside class="side" id="side" aria-label="Módulos"></aside>
@@ -3258,9 +3302,7 @@ function vPortal() {
       table([{ t: "Produto" }, { t: "Qtd", r: 1 }, { t: "Preço", r: 1 }, { t: "Subtotal", r: 1 }], o.items.map((i) => `<tr><td><div class="who-cell">${thumb(co.products.find((p) => p.sku === i.sku), 28)}<span>${esc(co.products.find((p) => p.sku === i.sku).name)}<small>${i.sku}</small></span></div></td><td class="r num">${nf.format(i.qty)}</td><td class="r num">${money(i.price * (1 - i.disc / 100))}</td><td class="r num">${money(i.sub)}</td></tr>`)) +
       "";
   } else if (PT.tab === "inicio") {
-    body = `<div class="grid g2">${kpi("receipt", "c2", "Cotações abertas", os.filter((o) => o.status === "COTACAO").length)}${kpi("pedidos", "c1", "Pedidos em andamento", andamento.length)}</div>
-
-      <div class="card"><h2>Acompanhe seus pedidos</h2>${andamento.length ? andamento.slice(0, 4).map((o) => `<div class="ptrack"><div class="row" style="justify-content:space-between"><button class="link" data-ptopen="${o.id}"><b>${cc(o)}</b></button><span class="note">${fdate(o.date)} · ${money(o.total)}</span></div>${steps(o)}</div>`).join("") : `<p class="note">Nenhum pedido em andamento.</p>`}</div>
+    body = ptHome(me, os, andamento, cc) + `
       <div class="grid g2"><div class="card"><h2>Compre de novo</h2><div class="list">${(() => { const bp = {}; os.filter(billed).forEach((o) => o.items.forEach((i) => { bp[i.sku] = (bp[i.sku] || 0) + i.qty; })); return Object.entries(bp).sort((a, b) => b[1] - a[1]).slice(0, 4).map(([k]) => { const p = co.products.find((x) => x.sku === k); return `<div class="stockrow">${thumb(p, 34)}<div style="flex:1"><div class="l"><span>${esc(p.name)}</span><button class="btn ghost" data-ptadd="${k}">Adicionar</button></div><small class="note">${p.sku}</small></div></div>`; }).join(""); })()}</div></div>
       <div class="card"><h2>Seu atendimento</h2><div class="who-cell">${avatar(me.seller)}<span><b>${esc(me.seller)}</b><small>vendedor responsável · (11) 98765-4321</small></span></div><p class="note">Peça uma cotação pelo portal e o vendedor responde com os valores.</p><button class="btn" data-pt="msg">Enviar mensagem</button></div></div>`;
   } else if (PT.tab === "pedidos") {
@@ -3280,14 +3322,62 @@ function vPortal() {
     body = `<div class="card"><h2>Mensagens com ${esc(me.seller)}</h2><div class="chat">${co.portalMsgs.map((m) => `<div class="bub ${m.from === "MAX LED" ? "" : "me"}"><small>${esc(m.who)} · ${m.when}</small>${esc(m.msg)}</div>`).join("")}</div>
       <div class="row" style="margin-top:12px"><label class="f grow" for="pt-msg" style="flex:1">Mensagem<input id="pt-msg" placeholder="Escreva sua mensagem"></label><button class="btn" data-pt="sendmsg" style="align-self:flex-end">Enviar</button></div><p class="note">A mensagem chega na caixa comercial do ERP vinculada ao seu cadastro.</p></div>`;
   }
-  return `<div class="portal-top"><div class="who-cell">${avatar(me.name)}<div><small style="opacity:.7">MAX LED · Portal do cliente</small><br><b>Olá, ${esc(me.name)}</b></div></div><span class="mono">${me.doc}</span></div>` +
+  const home = PT.tab === "inicio" && !PT.orderId;
+  return (home ? "" : `<div class="portal-top"><div class="who-cell">${avatar(me.name)}<div><small style="opacity:.7">MAX LED · Portal do cliente</small><br><b>Olá, ${esc(me.name)}</b></div></div><span class="mono">${me.doc}</span></div>`) +
     (S.role !== "CUSTOMER" ? `<p class="note">Pré-visualização do que o cliente vê. Custos, margens, anotações internas e outros clientes nunca aparecem.</p>` : "") +
-    `<div class="tabs">${tabs.map(([k, l]) => `<button data-pt="${k}" class="${!PT.orderId && PT.tab === k ? "on" : ""}">${l}</button>`).join("")}</div>` + body;
+    `<div class="tabs pt-tabs">${tabs.map(([k, l]) => `<button data-pt="${k}" class="${!PT.orderId && PT.tab === k ? "on" : ""}">${l}</button>`).join("")}</div>` + body;
+}
+// Início do portal: um cartão principal com o andamento do pedido mais recente.
+const PT_FLOW = ["AGUARDANDO", "APROVADO", "SEPARACAO", "CONFERENCIA", "PRONTO", "ENVIADO", "ENTREGUE"];
+const PT_LABEL = { AGUARDANDO: "Recebido", APROVADO: "Aprovado", SEPARACAO: "Separando", CONFERENCIA: "Conferindo", PRONTO: "Pronto para envio", ENVIADO: "A caminho", ENTREGUE: "Entregue" };
+const ptPct = (o) => Math.round((Math.max(0, PT_FLOW.indexOf(o.status)) / (PT_FLOW.length - 1)) * 100);
+function ptEta(o) { const d = new Date(o.date); d.setDate(d.getDate() + (o.customer && ufOf(cust(o.customer)) === "SP" ? 5 : 9)); d.setHours(12, 0, 0, 0); return d; }
+function ptHome(me, os, andamento, cc) {
+  const hr = new Date().getHours(); const hi = hr < 12 ? "Bom dia" : hr < 18 ? "Boa tarde" : "Boa noite";
+  const first = (contactsOf(me)[0]?.name || me.name).split(" ")[0];
+  const today = new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" });
+  const quotes = os.filter((o) => o.status === "COTACAO");
+  const main = andamento[0] || os.find((o) => o.status === "ENTREGUE");
+  const ico = (k) => `<span class="pth-ic">${icon(k)}</span>`;
+  let big = "", tag = "", sub = "", bar = "";
+  if (main) {
+    const pct = ptPct(main); const eta = ptEta(main); const n = dayDiff(eta.toISOString()); const late = main.status !== "ENTREGUE" && n < 0;
+    big = `<div class="pth-lbl">Seu pedido <button class="link" data-ptopen="${main.id}">${cc(main)}</button> está</div><div class="pth-big num">${pct}<span>%</span></div>`;
+    tag = main.status === "ENTREGUE" ? `<span class="pth-tag ok">Entregue</span>` : late ? `<span class="pth-tag late">Um pouco mais devagar que o previsto</span>` : `<span class="pth-tag ok">Dentro do prazo</span>`;
+    sub = main.status === "ENTREGUE" ? "todos os seus pedidos já chegaram" : `entrega prevista para ${eta.toLocaleDateString("pt-BR", { day: "numeric", month: "long" })}`;
+    const idx = PT_FLOW.indexOf(main.status);
+    bar = `<div class="pth-barh"><span>Agora: <b>${PT_LABEL[main.status]}</b></span><span><b>${Math.max(0, idx)}</b> de ${PT_FLOW.length - 1} etapas</span></div><div class="pth-bar"><i style="width:${pct}%"></i></div>
+      <div class="pth-steps">${PT_FLOW.filter((s2) => s2 !== "CONFERENCIA").map((s2) => `<span class="${PT_FLOW.indexOf(s2) <= idx ? "on" : ""}">${PT_LABEL[s2]}</span>`).join("")}</div>`;
+  } else {
+    big = `<div class="pth-lbl">Você ainda não tem pedidos</div><div class="pth-big num">0<span>%</span></div>`; sub = "peça sua primeira cotação pelo portal";
+  }
+  const etas = andamento.map(ptEta); const nextEta = etas.filter((d) => dayDiff(d.toISOString()) >= 0).sort((a, b) => a - b)[0]; const lateN = etas.filter((d) => dayDiff(d.toISOString()) < 0).length;
+  const stat = (l, v, s2) => `<div class="pth-stat"><small>${l}</small><b class="num">${v}</b><span>${s2}</span></div>`;
+  const last = os.find((o) => o.status !== "COTACAO" && o.status !== "CANCELADO");
+  const wait = quotes.length
+    ? `<button class="pth-wait todo" data-pt="pedidos">${ico("alert")}<span><b>${quotes.length === 1 ? "1 cotação esperando você" : `${quotes.length} cotações esperando você`}</b><small>confira os itens e aprove para virar pedido</small></span><span class="pth-go">Ver ›</span></button>`
+    : `<div class="pth-wait">${ico("check")}<span><b>Nada esperando por você</b><small>seus pedidos estão em dia com a sua parte</small></span></div>`;
+  const hero = `<section class="pth">
+    <div class="pth-hi">${hi}, ${esc(first)} · ${today.charAt(0).toUpperCase() + today.slice(1)}</div>
+    ${big}<div class="pth-row">${tag}<span class="pth-sub">${sub}</span></div>${bar}
+    <div class="pth-stats">${stat("Cotações abertas", quotes.length, quotes.length ? "aguardando sua aprovação" : "nenhuma pendente")}${stat("Pedidos em andamento", andamento.length, andamento.length ? `${andamento.filter((o) => o.status === "ENVIADO").length} a caminho` : "nada em produção")}${stat("Próxima entrega", nextEta ? (dayDiff(nextEta.toISOString()) === 0 ? "Hoje" : `${dayDiff(nextEta.toISOString())} dia${dayDiff(nextEta.toISOString()) > 1 ? "s" : ""}`) : lateN ? "Em atraso" : "-", nextEta ? `para ${nextEta.toLocaleDateString("pt-BR", { day: "numeric", month: "short" }).replace(".", "")}${lateN ? ` · ${lateN} atrasado(s)` : ""}` : lateN ? "o vendedor já foi avisado" : "sem entrega prevista")}</div>
+    <div class="pth-acts"><button data-pt="catalogo">${ico("plus")}Pedir cotação</button><button data-pt="pedidos">${ico("pedidos")}Meus pedidos</button>${last ? `<button data-ptrep="${last.id}">${ico("estoque")}Repetir último</button>` : ""}<button data-pt="msg">${ico("emails")}Falar com vendedor</button></div>
+    ${wait}</section>`;
+  const qList = quotes.length ? `<div class="pt-sec"><div class="pt-sech"><h2>Cotações para aprovar</h2><button class="pt-more" data-pt="pedidos">Ver tudo</button></div><div class="pt-list">${quotes.slice(0, 3).map((o) => `<div class="pt-item"><div><b>${cc(o)}</b><small>${fdate(o.date)} · ${o.items.length} item(ns) · ${money(o.total)}</small></div><div class="row"><button class="btn ghost" data-ptopen="${o.id}">Ver itens</button><button class="btn" data-ptacc="${o.id}">Aprovar</button></div></div>`).join("")}</div></div>` : "";
+  const recent = os.filter((o) => o.status !== "COTACAO").slice(0, 5);
+  const oList = `<div class="pt-sec"><div class="pt-sech"><h2>Seus pedidos</h2><button class="pt-more" data-pt="pedidos">Ver tudo</button></div>${recent.length ? `<div class="pt-list">${recent.map((o) => `<button class="pt-item" data-ptopen="${o.id}"><div><b>${cc(o)}</b><small>${fdate(o.date)} · ${o.items.length} item(ns)</small></div><div class="pt-prog"><span class="pt-st">${o.status === "CANCELADO" ? "Cancelado" : PT_LABEL[o.status]}</span><span class="pth-bar sm"><i style="width:${o.status === "CANCELADO" ? 0 : ptPct(o)}%"></i></span></div><b class="num">${money(o.total)}</b></button>`).join("")}</div>` : `<div class="pt-empty">${icon("pedidos")}<b>Nenhum pedido ainda</b><small>Quando você aprovar uma cotação, o pedido aparece aqui com o andamento.</small></div>`}</div>`;
+  return hero + qList + oList;
 }
 function activeDoc2(co, o) { return co.docs.find((d) => d.order === o.id && d.status !== "Cancelada"); }
 function portalAction(ds) {
   const co = portalCo();
   if (ds.ptopen) { PT.orderId = ds.ptopen; return render(); }
+  if (ds.ptacc) {
+    const prev = S.company; S.company = "A";
+    try { const o = co.orders.find((x) => x.id === ds.ptacc); o.accepted = now(); log(o, "Cliente aprovou a cotação pelo portal"); submit(o, true); toast(`Cotação A-${String(o.n).padStart(5, "0")} aprovada: virou pedido.`); }
+    finally { S.company = prev; }
+    return render();
+  }
   if (ds.ptadd) { PT.cart[ds.ptadd] = (PT.cart[ds.ptadd] || 0) + (co.products.find((p) => p.sku === ds.ptadd).price < 1 ? 100 : 1); toast("Produto adicionado ao pedido."); return render(); }
   if (ds.ptrm) { delete PT.cart[ds.ptrm]; return render(); }
   if (ds.ptrep) { const o = co.orders.find((x) => x.id === ds.ptrep); o.items.forEach((i) => { PT.cart[i.sku] = (PT.cart[i.sku] || 0) + i.qty; }); PT.orderId = null; PT.tab = "catalogo"; toast("Itens do pedido copiados para o carrinho."); return render(); }
@@ -3978,7 +4068,7 @@ function vCompras() {
     table([{ t: "Nº" }, { t: "Fornecedor" }, { t: "Tipo" }, { t: "Andamento" }, { t: "Previsão" }, { t: "Total", r: 1 }, { t: "" }],
       rows.map((p) => { const st2 = cpStep(p);
         return `<tr class="${lateEta(p) ? "warnrow" : ""}"><td class="num">${p.detail ? `<button class="link" data-impopen="${p.n}">${p.n}</button>` : p.n}</td><td>${esc(p.supplier)}${p.invoice ? `<small class="mono note" style="display:block">${esc(p.invoice)}</small>` : ""}</td><td>${p.imp ? pill(["Importação", "p-info"]) : "Nacional"}</td>
-          <td><div class="steps" title="${esc(p.status)}">${CP_STEPS.map((_, i) => `<span class="${i <= st2 ? "on" : ""}"></span>`).join("")}</div><small class="note">${esc(st2 === 3 ? "Recebida" : p.status)}</small></td>
+          <td><div class="cpsteps" title="${esc(p.status)}">${CP_STEPS.map((_, i) => `<span class="${i <= st2 ? "on" : ""}"></span>`).join("")}</div><small class="note">${esc(st2 === 3 ? "Recebida" : p.status)}</small></td>
           <td class="num">${p.eta ? `${fdate(p.eta)}${st2 < 3 ? `<small class="note" style="display:block;color:${lateEta(p) ? "var(--bad)" : ""}">${lateEta(p) ? `atrasada ${-dayDiff(p.eta)} dia(s)` : dueTxt(p.eta)}</small>` : ""}` : "-"}</td><td class="r num">${money(p.total)}</td>
           <td class="r">${st2 === 0 ? (canAppr ? `<button class="btn ghost" data-cpappr="${p.n}">Aprovar</button>` : `<span class="note">aguarda Diretoria</span>`) : st2 < 3 && !p.imp ? `<button class="btn ghost" data-cprecv="${p.n}">Registrar recebimento</button>` : st2 < 3 && p.detail ? `<button class="btn ghost" data-impopen="${p.n}">Abrir</button>` : ""}</td></tr>`; }), "Nenhum pedido de compra com estes filtros.") +
     `<div class="g2b"><div class="card"><div class="bh"><h2>${icon("alert")}Reposição sugerida</h2>${rep.length && can("compras") ? `<button class="btn" data-act="cp-rfq">Pedir cotação (${rep.length})</button>` : ""}</div>${rep.length ? `<div class="list">${rep.slice(0, 6).map((r) => `<div class="row" style="justify-content:space-between"><span>${esc(r.p.name)} <small class="mono note">${r.p.sku}</small></span><span class="row"><span class="num" style="color:${r.a < 0 ? "var(--bad)" : "var(--warn)"}">${nf.format(r.a)} disp.</span><b class="num">+${nf.format(r.sug || r.p.minStock)}</b></span></div>`).join("")}</div>` : `<p class="note">Nenhum item abaixo do mínimo.</p>`}<p class="note" style="margin:8px 0 0">Quantidade = 1,5 × mínimo + programado em 30 dias − disponível.</p></div>
@@ -4097,7 +4187,7 @@ document.addEventListener("click", (ev) => {
       INV.counts = {}; INV.n++; toast(`Inventário ${id} aplicado: ${n} ajuste(s) lançado(s).`); return render();
     }
     if (ds.ptdl && S.view !== "portal") return toast(`${ds.ptdl}: no sistema real o arquivo é baixado aqui.`);
-    if (ds.pt !== undefined || ds.ptopen || ds.ptadd || ds.ptrm || ds.ptrep || ds.ptdl) return portalAction(ds);
+    if (ds.pt !== undefined || ds.ptopen || ds.ptacc || ds.ptadd || ds.ptrm || ds.ptrep || ds.ptdl) return portalAction(ds);
     if (ds.mbox !== undefined) { MF.box = ds.mbox; MF.mailId = null; mailDraft = null; return render(); }
     if (ds.mail) { MF.mailId = ds.mail; const m = C().mails.find((x) => x.id === ds.mail); if (m) m.read = true; return render(); }
     if (ds.act?.startsWith("mail-")) return mailAction(ds.act);
