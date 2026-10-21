@@ -1015,7 +1015,8 @@ button.pt-item { cursor: pointer; } button.pt-item:hover { background: rgba(255,
 .ftiles { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; }
 .ftile { display: grid; gap: 3px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 13px 14px; min-width: 0; }
 .ftile small { font-size: 11.5px; color: var(--text-2); } .ftile b { font-size: 21px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ftile span { font-size: 11px; color: var(--text-3); }
-.ftile.good b { color: var(--good); } .ftile.bad b { color: var(--bad); }
+.ftile.good b { color: var(--good); } .ftile.bad b { color: var(--bad); } .ftile.warn b { color: var(--warn); }
+button.ftile { font: inherit; color: var(--text); text-align: left; cursor: pointer; } button.ftile:hover { border-color: rgba(242,204,91,.55); }
 @media (max-width: 1280px) { .ftiles { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 560px) { .ftiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } .ftile b { font-size: 18px; } }
 .dgrid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 14px; } .dgrid > .card { margin: 0; min-width: 0; }
@@ -1026,6 +1027,7 @@ button.pt-item { cursor: pointer; } button.pt-item:hover { background: rgba(255,
 .dnut { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; } .dnut-l { display: grid; gap: 6px; flex: 1; min-width: 150px; font-size: 12.5px; }
 .dnut-l span { display: flex; align-items: center; gap: 8px; } .dnut-l i { width: 10px; height: 10px; border-radius: 3px; flex: none; } .dnut-l b { margin-left: auto; }
 .fin-conc { margin-top: 12px; padding: 11px 14px; }
+.qrow b, .qrow .tk-age { white-space: nowrap; }
 .qrow { display: flex; justify-content: space-between; align-items: center; gap: 10px; } .qrow > span:first-child { min-width: 0; }
 .ib.wa { display: inline-grid; place-items: center; text-decoration: none; color: #7be8b0; } .ib.wa svg.i { width: 14px; height: 14px; }
 .btn.sm { padding: 5px 10px; font-size: 12px; }
@@ -2441,15 +2443,6 @@ function autoAction(ds, act) {
 // ---------------------------------------------------------------------------
 function dashCard(title, body, go2, label) { return `<div class="card dcard"><div class="row" style="justify-content:space-between"><h2 style="margin:0">${title}</h2>${go2 ? `<button class="link" data-go="${go2}">${label || "Abrir"} →</button>` : ""}</div>${body}</div>`; }
 function hello() { const h = new Date().getHours(); return `${h < 12 ? "Bom dia" : h < 18 ? "Boa tarde" : "Boa noite"}, ${role().user.split(" ")[0]}`; }
-function vPainelEstoque() {
-  const sep = C().orders.filter((o) => ["APROVADO", "SEPARACAO", "CONFERENCIA"].includes(o.status)); const ready = C().orders.filter((o) => o.status === "PRONTO");
-  const xml = (C().nfIn || []).filter((x) => !x.status.startsWith("Entrada")); const low = C().products.filter((p) => !p.kit && availSimple(p) < p.minStock); const mlOver = C().listings.filter((l) => l.pub > Math.floor(avail(prod(l.sku)) / l.units));
-  return head(hello(), "Estoque e expedição de hoje") + `<div class="grid g4">${kpi("expedicao", "c1", "Para separar/conferir", sep.length)}${kpi("check", "c3", "Prontos para despachar", ready.length)}${kpi("fiscal", "c2", "XML para conferir", xml.length)}${kpi("alert", "c4", "Abaixo do mínimo", low.length)}</div>
-    <div class="grid g2">${dashCard("Fila de separação", sep.length ? `<div class="list">${sep.slice(0, 6).map((o) => `<div class="hbar"><div class="l"><button class="link" data-open="${o.id}">${code(o)} · ${esc(cust(o.customer).name)}</button>${pill(STATUS[o.status])}</div><small class="note">${o.items.length} item(ns) · ${o.channel}</small></div>`).join("")}</div>` : `<p class="note">Fila vazia.</p>`, "expedicao")}
-    ${dashCard("Recebimentos (XML do e-mail)", xml.length ? `<div class="list">${xml.map((x) => `<div class="hbar"><div class="l"><span>NF ${x.n} · ${esc(x.supplier)}</span>${pill([x.status, x.status === "Produto sem vínculo" ? "p-bad" : "p-warn"])}</div></div>`).join("")}</div>` : `<p class="note">Nada para conferir.</p>`, "estoque", "Conferir")}
-    ${dashCard("Abaixo do mínimo", low.length ? `<div class="list">${low.map((p) => `<div class="hbar"><div class="l"><span>${p.sku} · ${esc(p.name)}</span><b class="num" style="color:var(--bad)">${nf.format(availSimple(p))}/${nf.format(p.minStock)}</b></div></div>`).join("")}</div>` : `<p class="note">Tudo acima do mínimo.</p>`, "estoque")}
-    ${dashCard("Mercado Livre", mlOver.length ? `<div class="alert bad">${icon("alert")}<span>${mlOver.length} anúncio(s) com estoque publicado acima do disponível.</span></div>` : `<div class="alert good">${icon("check")}<span>Anúncios sincronizados.</span></div>`, "estoque", "Ver anúncios")}</div>`;
-}
 function vPainelFiscal() {
   const pend = C().orders.filter((o) => FLOW.indexOf(o.status) >= 2 && o.status !== "CANCELADO" && !activeDoc(o)); const xml = (C().nfIn || []).filter((x) => !x.status.startsWith("Entrada"));
   return head(hello(), "Fiscal de hoje") + `<div class="grid g3">${kpi("fiscal", "c1", "Pedidos sem NF-e", pend.length)}${kpi("emails", "c2", "XML de entrada pendentes", xml.length)}${kpi("check", "c3", "NF-e emitidas no mês", C().docs.filter((d) => new Date(d.when ? d.when.split(" ")[0].split("/").reverse().join("-") : 0) >= new Date(new Date().getFullYear(), new Date().getMonth(), 1)).length || C().docs.length)}</div>
@@ -4401,6 +4394,44 @@ function pfAction(ds, act) {
 }
 document.addEventListener("input", (ev) => { if (ev.target.id === "pf-paste" && draft) draft.paste = ev.target.value; });
 
+function vPainelEstoque() {
+  const c = C(); const rows = stockRows(); const K = (v) => money(v).replace(",00", "");
+  const sep = c.orders.filter((o) => ["APROVADO", "SEPARACAO", "CONFERENCIA"].includes(o.status)).sort((a, b) => stageAge(b) - stageAge(a));
+  const ready = c.orders.filter((o) => o.status === "PRONTO"); const noNf = ready.filter((o) => !activeDoc(o));
+  const xml = (c.nfIn || []).filter((x) => !x.status.startsWith("Entrada"));
+  const mlOver = c.listings.filter((l) => l.status !== "Pausado" && l.pub > Math.floor(avail(prod(l.sku)) / l.units));
+  const cnt = (k) => rows.filter((r) => r.sit === k); const neg = cnt("neg"), low = cnt("low"), idle = cnt("idle");
+  const val = rows.reduce((s2, r) => s2 + r.val, 0); const health = rows.length ? cnt("ok").length / rows.length : 1;
+  const covs = rows.filter((r) => r.cov !== null); const covAvg = covs.length ? Math.round(covs.reduce((s2, r) => s2 + Math.min(r.cov, 180), 0) / covs.length) : 0;
+  const cmv30 = rows.reduce((s2, r) => s2 + r.s30 * r.p.cost, 0); const giro = val ? (cmv30 * 12) / val : 0;
+  const idleVal = idle.reduce((s2, r) => s2 + r.val, 0);
+  const d30 = Array.from({ length: 30 }, (_, i) => new Date(days(i - 29)));
+  const outU = d30.map((d) => c.orders.filter((o) => ["ENVIADO", "ENTREGUE"].includes(o.status) && new Date(o.date).toDateString() === d.toDateString()).reduce((s2, o) => s2 + o.items.reduce((a, i) => a + i.qty, 0), 0));
+  const PAL = ["#f2cc5b", "#7be8b0", "#8fb8ff", "#ff9a9a", "#c7a6ff", "#ffb36b", "#9aa3b2"];
+  const byFam = {}; rows.forEach((r) => { byFam[r.p.fam] = (byFam[r.p.fam] || 0) + r.val; }); const fams = Object.entries(byFam).sort((a, b) => b[1] - a[1]);
+  const abc = rows.map((r) => ({ r, v: r.s30 * r.p.price })).sort((a, b) => b.v - a.v); const tot = abc.reduce((s2, x) => s2 + x.v, 0) || 1; let acc = 0;
+  abc.forEach((x) => { acc += x.v; x.cls = acc / tot <= 0.8 ? "A" : acc / tot <= 0.95 ? "B" : "C"; });
+  const abcG = ["A", "B", "C"].map((k) => { const xs = abc.filter((x) => x.cls === k); return [`Curva ${k}`, xs.reduce((s2, x) => s2 + x.v, 0), `${xs.length} itens · ${k === "A" ? "80%" : k === "B" ? "15%" : "5%"}`]; });
+  const rupt = rows.filter((r) => r.a < 0 || (r.cov !== null && r.cov < 15)).sort((a, b) => (a.a < 0 ? -1 : a.cov) - (b.a < 0 ? -1 : b.cov)).slice(0, 6);
+  const parado = idle.slice().sort((a, b) => b.val - a.val).slice(0, 5);
+  const tile = (l, v, sub, tone, go2) => `<${go2 ? `button data-stgo="${go2}"` : "div"} class="ftile ${tone || ""} ${go2 ? "clk" : ""}"><small>${l}</small><b class="num">${v}</b><span>${sub}</span></${go2 ? "button" : "div"}>`;
+  return head(hello(), "Estoque e expedição de hoje", `<button class="btn ghost" data-go="expedicao">Expedição</button><button class="btn" data-go="estoque">${icon("estoque")}Movimentar estoque</button>`) +
+    `<section class="shero"><div class="sh-main"><small>Saúde do estoque</small><div class="sh-big num">${Math.round(health * 100)}%</div><div class="sh-meta">dos ${rows.length} itens estão <b>acima do mínimo e girando</b></div><div class="pth-bar"><i style="width:${health * 100}%"></i></div>
+      <div class="sh-row"><span class="pth-tag ${neg.length ? "late" : "ok"}">${neg.length ? `${neg.length} item(ns) negativo(s)` : "Nenhum item negativo"}</span><span class="sh-sub">${low.length} abaixo do mínimo · ${idle.length} sem giro em 30 dias · cobertura média <b>${covAvg} dias</b></span></div></div>
+      <div class="sh-side"><div><small>Valor em estoque (custo)</small><b class="num">${K(val)}</b><span>giro anual estimado ${giro.toFixed(1).replace(".", ",")}×</span></div><div><small>Dinheiro parado</small><b class="num">${K(idleVal)}</b><span>itens sem venda nos últimos 30 dias</span></div></div></section>` +
+    `<div class="ftiles">${tile("Para separar/conferir", sep.length, `${sep.filter((o) => stageAge(o) > 48).length} parado(s) há +48h`, sep.some((o) => stageAge(o) > 48) ? "bad" : "", "exp")}${tile("Prontos para despachar", ready.length, noNf.length ? `${noNf.length} aguardando NF-e` : "todos com NF-e", noNf.length ? "warn" : "good", "exp")}${tile("XML para conferir", xml.length, "notas de fornecedor do e-mail", xml.length ? "warn" : "", "receb")}${tile("Negativos", neg.length, "vendidos sem saldo", neg.length ? "bad" : "good", "neg")}${tile("Abaixo do mínimo", low.length, "precisam de reposição", low.length ? "warn" : "good", "low")}${tile("Anúncios ML acima do saldo", mlOver.length, mlOver.length ? "sincronize para não vender sem ter" : "sincronizados", mlOver.length ? "bad" : "good", "ml")}</div>
+    <div class="dgrid">
+      <div class="card c8"><div class="bh"><h2>Saídas por dia · unidades despachadas em 30 dias</h2><span class="note">média ${nf.format(Math.round(outU.reduce((a, b) => a + b, 0) / 30))} un./dia</span></div>${colChart(d30.map((d) => String(d.getDate())), [{ values: outU, color: "#f2cc5b" }], { label: "Saídas por dia" }).replace(/(<text class="ax axm"[^>]*>)(\d+)(<\/text>)/g, (m, a, n, b) => (+n % 3 === 0 || +n === new Date().getDate() ? m : ""))}</div>
+      <div class="card c4"><h2>Valor em estoque por família</h2><div class="dnut">${donut(fams.map(([, v], i) => ({ v, color: PAL[i % PAL.length] })))}<div class="dnut-l">${fams.map(([k, v], i) => `<span><i style="background:${PAL[i % PAL.length]}"></i>${esc(k)}<b class="num">${K(v)}</b></span>`).join("")}</div></div></div>
+      <div class="card c4"><div class="bh"><h2>Ruptura prevista</h2><button class="pt-more" data-stgo="low">Repor ›</button></div>${rupt.length ? `<div class="list">${rupt.map((r) => `<div class="qrow"><span>${esc(r.p.name)}<small class="note mono" style="display:block">${r.p.sku} · ${nf.format(r.a)} disp. · vende ${nf.format(Math.round(r.s30 / 30))}/dia</small></span><b class="num" style="color:${r.a < 0 || r.cov < 7 ? "var(--bad)" : "var(--warn)"}">${r.a < 0 ? "faltando" : `${r.cov} dias`}</b></div>`).join("")}</div>` : `<p class="note">Nenhum item acaba nos próximos 15 dias.</p>`}</div>
+      <div class="card c4"><h2>Curva ABC · venda em 30 dias</h2>${hbars(abcG)}<p class="note" style="margin:8px 0 0">Itens A merecem contagem cíclica semanal e estoque de segurança maior.</p></div>
+      <div class="card c4"><div class="bh"><h2>Estoque parado</h2><button class="pt-more" data-stgo="idle">Ver todos ›</button></div>${parado.length ? hbars(parado.map((r) => [esc(r.p.name), r.val, `${nf.format(r.p.phys)} un.`])) : `<p class="note">Todos os itens venderam nos últimos 30 dias.</p>`}</div>
+      <div class="card c6"><div class="bh"><h2>Fila de separação</h2><button class="pt-more" data-go="expedicao">Expedição ›</button></div>${sep.length ? `<div class="list">${sep.slice(0, 6).map((o) => `<div class="qrow"><span><button class="link" data-open="${o.id}">${code(o)}</button> ${chanTag(o)} · ${esc(cust(o.customer).name)}<small class="note" style="display:block">${o.items.length} item(ns) · ${nf.format(o.items.reduce((a, i) => a + i.qty, 0))} un. · ${STATUS[o.status][0]}</small></span><span class="tk-age ${stageAge(o) > 48 ? "bad" : ""}">${icon("clock")}${ageTxt(stageAge(o))}</span></div>`).join("")}</div>` : `<p class="note">Fila vazia.</p>`}</div>
+      <div class="card c6"><div class="bh"><h2>Recebimentos (XML do e-mail)</h2><button class="pt-more" data-stgo="receb">Conferir ›</button></div>${xml.length ? `<div class="list">${xml.map((x) => `<div class="qrow"><span>NF ${x.n} · ${esc(x.supplier)}<small class="note" style="display:block">${x.items.length} item(ns)</small></span>${pill([x.status, x.status === "Produto sem vínculo" ? "p-bad" : "p-warn"])}</div>`).join("")}</div>` : `<p class="note">Nada para conferir.</p>`}
+        ${mlOver.length ? `<div class="alert bad" style="margin-top:12px">${icon("alert")}<span>${mlOver.length} anúncio(s) do Mercado Livre com mais unidades publicadas do que o disponível. <button class="link plain" data-stgo="ml">Sincronizar</button></span></div>` : ""}</div>
+    </div>`;
+}
+
 function go(view) { ST.inline = null; PF2.edit = null; S.proposal = null; S.dockOpen = null; PX.open = null; NFI.open = null; KF.leadId = null; KF.newLead = false; S.cliTab = null; mailDraft = null; pgDraft = null; cliDraft = null; PT.orderId = null; S.clienteId = null; S.prodSku = null; S.batchErrors = null; S.view = view; S.orderId = null; S.tab = null; S.composing = false; S.danfe = null; S.impView = null; nfDraft = null; impDraft = null; render(); window.scrollTo(0, 0); }
 
 document.addEventListener("click", (ev) => {
@@ -4424,6 +4455,7 @@ document.addEventListener("click", (ev) => {
     if (ds.act === "e-add") { return includeItem(); }
     if (ds.pfsug || ["pf-sugall", "pf-paste", "pf-paste-go"].includes(ds.act)) return pfAction(ds, ds.act);
     if (ds.act === "pf-freightauto") { draft.freightTyped = false; return render(); }
+    if (ds.stgo) { const g2 = ds.stgo; if (g2 === "exp") return go("expedicao"); if (g2 === "ml") return go("mercadolivre"); go("estoque"); if (g2 === "receb") { S.tab = "receb"; ST.sit = ""; } else ST.sit = g2; render(); return window.scrollTo(0, 0); }
     if (ds.go2fin) { go("financeiro"); S.tab = ds.go2fin; render(); return window.scrollTo(0, 0); }
     if (ds.act === "novo-painel") { return newSale(); }
     if (ds.stsit !== undefined || ds.qtype || ds.qundo !== undefined || ds.stin || ["qm-go", "st-lote", "st-lote-go", "in-cancel", "in-go", "st-clear", "st-buy"].includes(ds.act)) return stockAction(ds, ds.act);
