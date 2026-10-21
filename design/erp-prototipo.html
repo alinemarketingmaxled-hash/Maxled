@@ -884,6 +884,26 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; gap: 8
 .pl { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } .pi { display: grid; gap: 2px; text-align: left; background: rgba(255,255,255,.04); border: 1px solid var(--border); border-radius: 14px; padding: 10px 12px; color: var(--text); font: inherit; cursor: pointer; } .pi b { font-size: 24px; color: #f2cc5b; } .pi span { font-size: 12px; color: var(--text-2); } .pi:hover { border-color: rgba(242,204,91,.55); }
 @media (max-width: 1280px) { .bento .s2x, .bento .s3 { grid-column: span 6; } .bento .s4 { grid-column: span 6; } .bento .s6 { grid-column: span 12; } .bento .r2 { grid-row: auto; } }
 @media (max-width: 700px) { .bento > .card { grid-column: 1 / -1 !important; } .quick { width: 100%; } }
+
+/* Estoque rápido */
+.stkbar { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; }
+.stk { display: grid; gap: 2px; text-align: left; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 12px 14px; color: var(--text); font: inherit; cursor: pointer; }
+.stk small { font-size: 11.5px; color: var(--text-2); } .stk b { font-size: 22px; }
+.stk.bad b { color: var(--bad); } .stk.warn b { color: var(--warn); }
+.stk.on { border-color: #f2cc5b; box-shadow: 0 0 0 3px rgba(242,204,91,.15); } .stk.static { cursor: default; } .stk:not(.static):hover { border-color: rgba(242,204,91,.5); }
+.qmove h2 { display: flex; align-items: center; gap: 8px; } .qmove h2 svg.i { width: 18px; height: 18px; color: #f2cc5b; }
+.qm-line { display: grid; grid-template-columns: minmax(0, 1.4fr) 90px auto minmax(0, 1fr) auto; gap: 10px; align-items: end; }
+.qm-types { flex-wrap: wrap; } .qm-types button { padding: 7px 10px; font-size: 12px; }
+.qm-recent { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 10px; }
+.qm-chip { display: inline-flex; gap: 8px; align-items: center; font-size: 12px; background: rgba(123,232,176,.1); color: var(--good); border-radius: 99px; padding: 4px 10px; } .qm-chip.undone { background: rgba(255,255,255,.05); color: var(--text-3); text-decoration: line-through; }
+.stt table { min-width: 1120px; font-size: 13px; table-layout: auto; }
+.stt th, .stt td { padding-left: 8px; padding-right: 8px; }
+.stt td:nth-child(2) { min-width: 250px; } .stt td:nth-child(2) .who-cell span { line-height: 1.3; }
+.stt td:last-child { width: 1%; white-space: nowrap; }
+.cov { font-weight: 700; } .cov.bad { color: var(--bad); } .cov.warn { color: var(--warn); }
+.inlrow td { background: rgba(242,204,91,.06) !important; } .inl { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+@media (max-width: 1280px) { .stkbar { grid-template-columns: repeat(3, minmax(0, 1fr)); } .qm-line { grid-template-columns: repeat(2, minmax(0, 1fr)); } .qm-line > .f:nth-child(3) { grid-column: 1 / -1; } }
+@media (max-width: 560px) { .stkbar { grid-template-columns: repeat(2, minmax(0, 1fr)); } .qm-line { grid-template-columns: minmax(0, 1fr); } }
 </style>
 
 <aside class="side" id="side" aria-label="Módulos"></aside>
@@ -2414,7 +2434,7 @@ function pickSug(i) {
   return true;
 }
 document.addEventListener("input", (ev) => {
-  if (ev.target.id === "cf-q" || ev.target.id === "pr-q" || ev.target.id === "mf-q" || ev.target.id === "pt-q" || ev.target.id === "kf-q" || ev.target.id === "pp-q") { const id = ev.target.id; ({ "cf-q": CF, "pr-q": PRF, "mf-q": MF, "pt-q": PT, "kf-q": KF, "pp-q": PF2 })[id].q = ev.target.value; clearTimeout(window.__pfT); window.__pfT = setTimeout(() => { render(); const el = $(id); if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); } }, 250); return; }
+  if (ev.target.id === "cf-q" || ev.target.id === "pr-q" || ev.target.id === "mf-q" || ev.target.id === "pt-q" || ev.target.id === "kf-q" || ev.target.id === "pp-q" || ev.target.id === "st-q" || ev.target.id === "st-mq") { const id = ev.target.id; if (id === "st-mq") { ST.mq = ev.target.value; clearTimeout(window.__pfT); window.__pfT = setTimeout(() => { render(); const el = $(id); if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); } }, 250); return; } ({ "cf-q": CF, "pr-q": PRF, "mf-q": MF, "pt-q": PT, "kf-q": KF, "pp-q": PF2, "st-q": ST })[id].q = ev.target.value; clearTimeout(window.__pfT); window.__pfT = setTimeout(() => { render(); const el = $(id); if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); } }, 250); return; }
   if (ev.target.id === "pf-q") { PF.q = ev.target.value; PF.page = 0; clearTimeout(window.__pfT); window.__pfT = setTimeout(() => { render(); const el = $("pf-q"); if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); } }, 250); return; } if (draft && (ev.target.id === "e-sku" || ev.target.id === "c-find")) showSug(ev.target); });
 document.addEventListener("mousedown", (ev) => { const b = ev.target.closest("[data-sug]"); if (b) { ev.preventDefault(); try { pickSug(+b.dataset.sug); } catch (e) { toast(e.message); } } });
 document.addEventListener("focusout", (ev) => {
@@ -2512,6 +2532,98 @@ function vPedido() {
     <div class="card"><h2>Histórico do pedido</h2><ol class="timeline">${o.events.map((e) => `<li>${esc(e.msg)}<small>${e.when} · ${esc(e.who)}</small></li>`).join("")}</ol></div>`;
 }
 
+// ---------------------------------------------------------------------------
+// Estoque rápido: lançamento por código/EAN com Enter, ações em linha,
+// filtros por situação, cobertura em dias e pedido de compra em lote.
+// ---------------------------------------------------------------------------
+const ST = { q: "", fam: "", sit: "", sel: new Set(), inline: null, recent: [], qType: "Entrada", qReason: "", sort: "sit", lote: false, mq: "", mtype: "" };
+const REVERSE = { "Entrada": "Ajuste (−)", "Devolução": "Ajuste (−)", "Ajuste (+)": "Ajuste (−)", "Ajuste (−)": "Ajuste (+)", "Bloqueio": "Desbloqueio", "Desbloqueio": "Bloqueio" };
+function sold30() {
+  const since = Date.now() - 30 * 864e5; const m = {};
+  C().orders.filter((o) => billed(o) && o.status !== "CANCELADO" && new Date(o.date) >= since).forEach((o) => o.items.forEach((i) => explode(i).forEach(([k, n]) => { m[k] = (m[k] || 0) + n; })));
+  return m;
+}
+function findProduct(code) {
+  const c = code.trim(); if (!c) return null; const up = c.toUpperCase(); const ps = C().products.filter((p) => !p.kit);
+  return ps.find((p) => p.sku === up) || ps.find((p) => prodTech(p).ean === c) || (() => { const m = ps.filter((p) => matchWords(`${p.sku} ${p.name}`, c)); return m.length === 1 ? m[0] : null; })();
+}
+function stockRows() {
+  const s30 = sold30(); const need = schedDemand(30);
+  return C().products.filter((p) => !p.kit).map((p) => {
+    const a = availSimple(p); const daily = (s30[p.sku] || 0) / 30; const cov = daily ? Math.floor(Math.max(0, a) / daily) : null;
+    const sug = Math.max(0, Math.ceil((p.minStock * 1.5 + (need[p.sku] || 0) - a) / 10) * 10);
+    const sit = a < 0 ? "neg" : a < p.minStock ? "low" : !s30[p.sku] ? "idle" : "ok";
+    return { p, a, s30: s30[p.sku] || 0, cov, sug, sit, val: Math.max(0, p.phys) * p.cost };
+  });
+}
+function vEstoqueSaldos() {
+  const canMove = ["MEDIATOR", "STOCK"].includes(S.role); const all = stockRows(); const fams = [...new Set(all.map((r) => r.p.fam))];
+  const cnt = (k) => all.filter((r) => r.sit === k).length;
+  let rows = all.filter((r) => (!ST.fam || r.p.fam === ST.fam) && (!ST.sit || r.sit === ST.sit) && (!ST.q || matchWords(`${r.p.sku} ${r.p.name} ${prodTech(r.p).ean}`, ST.q)));
+  const ord = { neg: 0, low: 1, idle: 3, ok: 2 };
+  rows.sort(ST.sort === "cov" ? (x, y) => (x.cov ?? 1e9) - (y.cov ?? 1e9) : ST.sort === "val" ? (x, y) => y.val - x.val : ST.sort === "sku" ? (x, y) => x.p.sku.localeCompare(y.p.sku) : (x, y) => ord[x.sit] - ord[y.sit] || (x.cov ?? 1e9) - (y.cov ?? 1e9));
+  const sitPill = (r) => r.sit === "neg" ? pill([`Negativo`, "p-bad"]) : r.sit === "low" ? pill(["Abaixo do mínimo", "p-warn"]) : r.sit === "idle" ? pill(["Sem giro 30d", "p-neutral"]) : pill(["Ok", "p-good"]);
+  const k = (key, label, val, tone) => `<button class="stk ${ST.sit === key ? "on" : ""} ${tone || ""}" data-stsit="${key}"><small>${label}</small><b class="num">${val}</b></button>`;
+  const sel = [...ST.sel].filter((s) => all.some((r) => r.p.sku === s));
+  const quick = canMove ? `<div class="card qmove"><div class="bh"><h2>${icon("estoque")}Movimentação rápida</h2><span class="note">Bipe o código de barras ou digite SKU/nome · <kbd>Enter</kbd> registra</span></div>
+    <div class="qm-line"><label class="f" for="qm-code">Código / EAN / produto<input id="qm-code" list="qm-list" autocomplete="off" placeholder="ex.: LED-5MM-BR ou 789..."><datalist id="qm-list">${C().products.filter((p) => !p.kit).map((p) => `<option value="${p.sku}">${esc(p.name)}</option>`).join("")}</datalist></label>
+      <label class="f" for="qm-qty">Qtd<input id="qm-qty" type="number" min="1" value="1"></label>
+      <div class="f"><span>Tipo</span><div class="seg qm-types">${["Entrada", "Ajuste (+)", "Ajuste (−)", "Bloqueio", "Desbloqueio", "Devolução"].map((x) => `<button data-qtype="${x}" class="${ST.qType === x ? "on" : ""}">${x}</button>`).join("")}</div></div>
+      <label class="f" for="qm-reason">Motivo (fica salvo)<input id="qm-reason" value="${esc(ST.qReason)}" placeholder="ex.: recebimento NF 3398"></label>
+      <div class="f pf-btn"><button class="btn" data-act="qm-go">Registrar</button></div></div><div id="err"></div>
+    ${ST.recent.length ? `<div class="qm-recent"><span class="note">Lançados agora:</span>${ST.recent.slice(0, 6).map((m, i) => `<span class="qm-chip ${m.undone ? "undone" : ""}">${m.type} ${nf.format(m.qty)} × ${m.sku}${m.undone ? " · desfeito" : `<button class="link" data-qundo="${i}">desfazer</button>`}</span>`).join("")}</div>` : ""}
+    <div class="row" style="margin-top:8px"><button class="link" data-act="st-lote">${ST.lote ? "Fechar lançamento em lote" : "Lançamento em lote (colar lista)"}</button></div>
+    ${ST.lote ? `<div class="form" style="grid-template-columns:minmax(0,2fr) minmax(0,1fr) auto;margin-top:8px"><label class="f" for="st-lote">Uma linha por item: SKU ou EAN e quantidade<textarea id="st-lote" rows="5" placeholder="LED-5MM-BR 3000\nSENS-PIR-HC;60\nDRV-12V-2A	40"></textarea></label><label class="f" for="st-lote-reason">Motivo<input id="st-lote-reason" value="${esc(ST.qReason)}" placeholder="ex.: recebimento NF 3398"></label><div class="f" style="align-self:end"><button class="btn" data-act="st-lote-go">Lançar ${ST.qType.toLowerCase()} em lote</button></div></div>` : ""}</div>` : `<p class="note">Seu perfil consulta saldos; ajustes são feitos pela equipe de estoque.</p>`;
+  const tot = all.reduce((x, r) => x + r.val, 0);
+  return `<div class="stkbar">${k("", "Todos os itens", all.length)}${k("neg", "Negativos", cnt("neg"), "bad")}${k("low", "Abaixo do mínimo", cnt("low"), "warn")}${k("idle", "Sem giro 30 dias", cnt("idle"))}<div class="stk static"><small>Valor em estoque (custo)</small><b class="num">${money(tot).replace(",00", "")}</b></div><div class="stk static"><small>Reservado para pedidos</small><b class="num">${nf.format(all.reduce((x, r) => x + r.p.res, 0))} un.</b></div></div>` + quick +
+    `<div class="filters"><label class="f grow" for="st-q">Buscar<input id="st-q" value="${esc(ST.q)}" placeholder="SKU, nome ou EAN"></label><label class="f" for="st-fam">Família<select id="st-fam"><option value="">Todas</option>${fams.map((f) => `<option ${ST.fam === f ? "selected" : ""}>${f}</option>`).join("")}</select></label><label class="f" for="st-sort">Ordenar<select id="st-sort">${[["sit", "Urgência"], ["cov", "Cobertura (menor)"], ["val", "Valor em estoque"], ["sku", "SKU"]].map(([v, l]) => `<option value="${v}" ${ST.sort === v ? "selected" : ""}>${l}</option>`).join("")}</select></label></div>
+    ${sel.length && can("compras") ? `<div class="bulkbar"><b>${sel.length} item(ns)</b><span class="note">quantidade sugerida: ${sel.map((s) => { const r = all.find((x) => x.p.sku === s); return `${nf.format(r.sug || r.p.minStock)} ${s}`; }).join(", ")}</span><button class="btn" data-act="st-buy">Pedir cotação de compra</button><button class="btn ghost" data-act="st-clear">Limpar</button></div>` : ""}` +
+    `<div class="tbl-wrap stt"><table><thead><tr><th data-nopen><input type="checkbox" data-stall aria-label="Selecionar todos"></th><th>Produto</th><th class="r">Físico</th><th class="r">Reserv.</th><th class="r">Bloq.</th><th class="r">Disponível</th><th class="r">Mín.</th><th class="r">Vendas 30d</th><th class="r">Cobertura</th><th class="r">Repor</th><th>Situação</th>${canMove ? "<th></th>" : ""}</tr></thead><tbody>${rows.map((r) => { const p = r.p; const inl = ST.inline && ST.inline.sku === p.sku;
+      return `<tr class="click ${r.sit === "neg" ? "warnrow" : ""}" data-prod="${p.sku}"><td data-nopen><input type="checkbox" data-stsel="${p.sku}" ${ST.sel.has(p.sku) ? "checked" : ""} aria-label="Selecionar ${p.sku}"></td><td><div class="who-cell">${thumb(p, 30)}<span>${esc(p.name)}<small class="mono">${p.sku} · ${p.fam}</small></span></div></td><td class="r num">${nf.format(p.phys)}</td><td class="r num">${p.res ? nf.format(p.res) : "-"}</td><td class="r num">${p.blk ? nf.format(p.blk) : "-"}</td><td class="r num"><b style="color:${r.a < 0 ? "var(--bad)" : r.a < p.minStock ? "var(--warn)" : "inherit"}">${nf.format(r.a)}</b></td><td class="r num">${nf.format(p.minStock)}</td><td class="r num">${r.s30 ? nf.format(r.s30) : "-"}</td><td class="r num">${r.cov === null ? "-" : `<span class="cov ${r.cov < 15 ? "bad" : r.cov < 30 ? "warn" : ""}">${r.cov} d</span>`}</td><td class="r num">${r.sug ? `<b>${nf.format(r.sug)}</b>` : "-"}</td><td>${sitPill(r)}</td>
+        ${canMove ? `<td data-nopen class="ig-act"><button class="ib" data-stin="${p.sku}" data-sttype="Entrada" title="Entrada">+</button><button class="ib" data-stin="${p.sku}" data-sttype="Ajuste (−)" title="Ajuste para menos">−</button><button class="ib" data-stin="${p.sku}" data-sttype="Bloqueio" title="Bloquear (avaria)">⊘</button></td>` : ""}</tr>
+        ${inl ? `<tr class="inlrow" data-nopen><td colspan="${canMove ? 12 : 11}"><div class="inl"><b>${ST.inline.type}</b> · ${esc(p.name)}<input id="in-qty" class="ig-in" type="number" min="1" value="1" style="width:90px" aria-label="Quantidade"><input id="in-reason" class="ig-in" style="text-align:left;flex:1;min-width:180px" value="${esc(ST.qReason)}" placeholder="Motivo" aria-label="Motivo"><button class="btn" data-act="in-go">Confirmar</button><button class="btn ghost" data-act="in-cancel">Cancelar</button><span id="err"></span></div></td></tr>` : ""}`; }).join("") || `<tr><td colspan="12" class="note">Nenhum item com esses filtros.</td></tr>`}</tbody></table></div>
+    <p class="note">Cobertura = quantos dias o disponível dura no ritmo de vendas dos últimos 30 dias. Repor = 1,5 × mínimo + programado em 30 dias − disponível.</p>`;
+}
+function vEstoqueMovs() {
+  const ms = C().moves.filter((m) => (!ST.mtype || m.type === ST.mtype) && (!ST.mq || matchWords(`${m.sku} ${m.doc} ${m.user}`, ST.mq)));
+  const types = [...new Set(C().moves.map((m) => m.type))];
+  return `<div class="filters"><label class="f grow" for="st-mq">Buscar<input id="st-mq" value="${esc(ST.mq)}" placeholder="SKU, documento ou usuário"></label><label class="f" for="st-mtype">Tipo<select id="st-mtype"><option value="">Todos</option>${types.map((t) => `<option ${ST.mtype === t ? "selected" : ""}>${t}</option>`).join("")}</select></label></div>` +
+    table([{ t: "Data" }, { t: "Tipo" }, { t: "SKU" }, { t: "Qtd", r: 1 }, { t: "Documento / motivo" }, { t: "Usuário" }, { t: "Físico / reserv. / bloq. após" }],
+      ms.slice(0, 200).map((m) => `<tr><td class="num">${m.when}</td><td>${pill([m.type, /Entrada|Devolução|\(\+\)|Desbloqueio/.test(m.type) ? "p-good" : /Saída|\(−\)|Bloqueio/.test(m.type) ? "p-bad" : "p-info"])}</td><td class="mono">${m.sku}</td><td class="r num">${nf.format(m.qty)}</td><td>${esc(m.doc)}</td><td>${esc(m.user)}</td><td class="num">${m.after}</td></tr>`), "Nenhum movimento com esses filtros.");
+}
+function stockMove(type, sku, qty, reason) {
+  if (!(qty > 0)) throw new Error("Quantidade deve ser maior que zero.");
+  if (!reason) throw new Error("Informe o motivo (ele fica salvo para os próximos lançamentos).");
+  move(type, sku, qty, reason); ST.qReason = reason; ST.recent.unshift({ type, sku, qty, reason });
+}
+function stockAction(ds, act) {
+  if (ds.stsit !== undefined) { ST.sit = ds.stsit; return render(); }
+  if (ds.qtype) { ST.qType = ds.qtype; ST.qReason = $("qm-reason")?.value.trim() ?? ST.qReason; render(); return setTimeout(() => $("qm-code")?.focus()); }
+  if (act === "qm-go") {
+    const p = findProduct($("qm-code").value); if (!p) throw new Error("Produto não encontrado: confira o código ou escolha na lista.");
+    stockMove(ST.qType, p.sku, Math.floor(+$("qm-qty").value), $("qm-reason").value.trim());
+    toast(`${ST.qType} de ${nf.format(Math.floor(+$("qm-qty").value))} × ${p.sku} registrada.`); render(); return setTimeout(() => $("qm-code")?.focus());
+  }
+  if (ds.qundo !== undefined) { const m = ST.recent[+ds.qundo]; if (m.undone) return; move(REVERSE[m.type], m.sku, m.qty, `Desfaz: ${m.reason}`); m.undone = true; toast(`${m.type} de ${m.sku} desfeita (movimento contrário registrado).`); return render(); }
+  if (act === "st-lote") { ST.lote = !ST.lote; return render(); }
+  if (act === "st-lote-go") {
+    const reason = $("st-lote-reason").value.trim(); const lines = $("st-lote").value.split("\n").map((l) => l.trim()).filter(Boolean); const bad = []; const ok = [];
+    lines.forEach((l) => { const m = l.match(/^(.+?)[\s;,\t]+(\d+)$/); const p = m && findProduct(m[1]); if (!p) bad.push(l); else ok.push([p.sku, +m[2]]); });
+    if (bad.length) throw new Error(`Não reconheci: ${bad.slice(0, 3).join(" | ")}${bad.length > 3 ? "…" : ""}. Nada foi lançado.`);
+    if (!ok.length) throw new Error("Cole ao menos uma linha.");
+    ok.forEach(([sku, q]) => stockMove(ST.qType, sku, q, reason)); ST.lote = false; toast(`${ok.length} item(ns) lançados em lote.`); return render();
+  }
+  if (ds.stin) { ST.inline = { sku: ds.stin, type: ds.sttype }; render(); return setTimeout(() => $("in-qty")?.select()); }
+  if (act === "in-cancel") { ST.inline = null; return render(); }
+  if (act === "in-go") { stockMove(ST.inline.type, ST.inline.sku, Math.floor(+$("in-qty").value), $("in-reason").value.trim()); toast(`${ST.inline.type} registrada em ${ST.inline.sku}.`); ST.inline = null; return render(); }
+  if (act === "st-clear") { ST.sel.clear(); return render(); }
+  if (act === "st-buy") {
+    const rows = stockRows(); const items = [...ST.sel].map((s) => { const r = rows.find((x) => x.p.sku === s); return [s, r.sug || r.p.minStock]; });
+    C().rfqs.unshift({ n: C().rfqs.length + 1, items, status: "Em cotação" }); ST.sel.clear();
+    toast(`Cotação de compra com ${items.length} item(ns) enviada aos fornecedores.`); go("compras"); S.tab = "rfq"; return render();
+  }
+}
+
 function vEstoque() {
   const tab = ["mov", "ml", "prog", "inv", "receb"].includes(S.tab) ? S.tab : "saldos";
   const canMove = ["MEDIATOR","STOCK"].includes(S.role);
@@ -2520,16 +2632,7 @@ function vEstoque() {
   if (tab !== "saldos" && tab !== "mov") return head("Estoque", `Físico, reservado, bloqueado e disponível · ${esc(C().name)}`) + tabsH + ({ ml: vEstoqueML, prog: vEstoqueProg, inv: vInventario, receb: vNfEntrada })[tab]();
   const need = schedDemand(30); const mlPub = {}; C().listings.forEach((l) => explode({ sku: l.sku, qty: l.pub * l.units }).forEach(([k, n]) => { mlPub[k] = (mlPub[k] || 0) + n; }));
   return head("Estoque", `Físico, reservado, bloqueado e disponível · ${esc(C().name)}`) + tabsH +
-    (tab === "saldos" ? table([{ t: "SKU" }, { t: "Produto" }, { t: "Físico", r: 1 }, { t: "Reservado", r: 1 }, { t: "Bloqueado", r: 1 }, { t: "Disponível", r: 1 }, { t: "No ML", r: 1 }, { t: "Programado 30d", r: 1 }, { t: "Mínimo", r: 1 }, { t: "Situação" }],
-      C().products.filter((p) => !p.kit).map((p) => { const a = availSimple(p); return `<tr class="click" data-prod="${p.sku}"><td class="mono">${p.sku}</td><td>${esc(p.name)}</td><td class="r num">${nf.format(p.phys)}</td><td class="r num">${nf.format(p.res)}</td><td class="r num">${nf.format(p.blk)}</td><td class="r num"><b>${nf.format(a)}</b></td><td class="r num" style="${mlPub[p.sku] > a ? "color:var(--bad)" : ""}">${mlPub[p.sku] ? nf.format(mlPub[p.sku]) : "-"}</td><td class="r num" style="${need[p.sku] > a ? "color:var(--bad)" : ""}">${need[p.sku] ? nf.format(need[p.sku]) : "-"}</td><td class="r num">${nf.format(p.minStock)}</td><td>${a < 0 ? pill([`Negativo (${nf.format(a)})`, "p-bad"]) : a === 0 ? pill(["Sem saldo", "p-bad"]) : a < p.minStock ? pill(["Abaixo do mínimo", "p-warn"]) : pill(["Ok", "p-good"])}</td></tr>`; })) +
-      (canMove ? `<div class="card"><h2>Lançar movimento</h2><div class="form">
-        <label class="f" for="m-type">Tipo<select id="m-type">${["Entrada", "Devolução", "Ajuste (+)", "Ajuste (−)", "Bloqueio", "Desbloqueio"].map((x) => `<option>${x}</option>`).join("")}</select></label>
-        <label class="f" for="m-sku">Produto<select id="m-sku">${C().products.filter((p) => !p.kit).map((p) => `<option>${p.sku}</option>`).join("")}</select></label>
-        <label class="f" for="m-qty">Quantidade<input id="m-qty" type="number" min="1" value="100"></label>
-        <label class="f span2" for="m-reason">Motivo (obrigatório)<input id="m-reason" placeholder="ex.: recebimento NF 3321 / avaria na conferência"></label>
-        <div class="f" style="align-self:end"><button class="btn" data-act="mov">Registrar</button></div></div><div id="err"></div></div>` : `<p class="note">Seu perfil consulta saldos; ajustes são feitos pela equipe de estoque.</p>`)
-    : table([{ t: "Data" }, { t: "Tipo" }, { t: "SKU" }, { t: "Qtd", r: 1 }, { t: "Documento" }, { t: "Usuário" }, { t: "Físico / reserv. / bloq. após" }],
-      C().moves.map((m) => `<tr><td class="num">${m.when}</td><td>${m.type}</td><td class="mono">${m.sku}</td><td class="r num">${nf.format(m.qty)}</td><td class="mono">${esc(m.doc)}</td><td>${esc(m.user)}</td><td class="num">${m.after}</td></tr>`)));
+    (tab === "saldos" ? vEstoqueSaldos() : vEstoqueMovs());
 }
 
 function vExpedicao() {
@@ -3653,7 +3756,7 @@ function vConfig() {
 // Eventos
 // ---------------------------------------------------------------------------
 function err(e) { const box = $("err"); if (box) box.innerHTML = `<div class="alert bad" style="margin-top:10px">${esc(e.message)}</div>`; else toast(e.message); }
-function go(view) { PF2.edit = null; S.proposal = null; S.dockOpen = null; PX.open = null; NFI.open = null; KF.leadId = null; KF.newLead = false; S.cliTab = null; mailDraft = null; pgDraft = null; cliDraft = null; PT.orderId = null; S.clienteId = null; S.prodSku = null; S.batchErrors = null; S.view = view; S.orderId = null; S.tab = null; S.composing = false; S.danfe = null; S.impView = null; nfDraft = null; impDraft = null; render(); window.scrollTo(0, 0); }
+function go(view) { ST.inline = null; PF2.edit = null; S.proposal = null; S.dockOpen = null; PX.open = null; NFI.open = null; KF.leadId = null; KF.newLead = false; S.cliTab = null; mailDraft = null; pgDraft = null; cliDraft = null; PT.orderId = null; S.clienteId = null; S.prodSku = null; S.batchErrors = null; S.view = view; S.orderId = null; S.tab = null; S.composing = false; S.danfe = null; S.impView = null; nfDraft = null; impDraft = null; render(); window.scrollTo(0, 0); }
 
 document.addEventListener("click", (ev) => {
   if (S.dockOpen && !ev.target.closest("#nav")) { S.dockOpen = null; renderDock(); }
@@ -3665,7 +3768,7 @@ document.addEventListener("click", (ev) => {
     else { PF.sel.has(cb.dataset.sel) ? PF.sel.delete(cb.dataset.sel) : PF.sel.add(cb.dataset.sel); }
     return render();
   }
-  if (ev.target.closest("[data-nopen]")) return;
+  if (ev.target.closest("[data-nopen]") && !ev.target.closest("button")) return;
   const t = ev.target.closest("button, a[data-act], a[data-pxwa], tr[data-open], tr[data-cli], tr[data-prod], div[data-cli]"); if (!t) return;
   const ds = t.dataset; const o = S.orderId && C().orders.find((x) => x.id === S.orderId);
   try {
@@ -3675,6 +3778,7 @@ document.addEventListener("click", (ev) => {
     if (ds.act === "novo") { return startDraft(); }
     if (ds.act === "e-add") { return includeItem(); }
     if (ds.act === "novo-painel") { return newSale(); }
+    if (ds.stsit !== undefined || ds.qtype || ds.qundo !== undefined || ds.stin || ["qm-go", "st-lote", "st-lote-go", "in-cancel", "in-go", "st-clear", "st-buy"].includes(ds.act)) return stockAction(ds, ds.act);
     if (ds.nfopen || ds.act === "nfin-close" || ds.act === "nfin-sync" || ds.act === "nfin-ok") return nfinAction(ds, ds.act);
     if (ds.gonf) { const e = (C().nfIn || []).find((x) => x.n === +ds.gonf); go(can("fiscal") ? "fiscal" : "estoque"); S.tab = can("fiscal") ? "entrada" : "receb"; NFI.open = e?.key || null; render(); return; }
     if (ds.act === "prop-open") { S.proposal = o.id; render(); return window.scrollTo(0, 0); }
@@ -3805,10 +3909,16 @@ document.addEventListener("change", (ev) => {
     setTimeout(render); return;
   }
   if (el.dataset.ig && draft) { const it = draft.items[+el.dataset.idx]; const v = +el.value; if (el.dataset.ig === "qty") { if (!(v >= 1)) { toast("Quantidade deve ser maior que zero."); return render(); } it.qty = Math.floor(v); } if (el.dataset.ig === "price") { if (!(v > 0)) { toast("Valor unitário inválido."); return render(); } it.price = v; } if (el.dataset.ig === "disc") { if (!(v >= 0 && v <= 100)) { toast("Desconto entre 0 e 100%."); return render(); } it.disc = v; } setTimeout(render); return; }
-  if (["pf-q", "cf-q", "pr-q", "mf-q", "pt-q", "kf-q", "pp-q"].includes(el.id)) return;
+  if (["pf-q", "cf-q", "pr-q", "mf-q", "pt-q", "kf-q", "pp-q", "st-q", "st-mq", "qm-code", "qm-qty", "in-qty", "in-reason"].includes(el.id)) return;
   if (el.dataset.autotog) return autoAction(el.dataset, null);
   if (el.dataset.rmasol) { const r = C().rmas.find((x) => x.n === +el.dataset.rmasol); if (el.value === "Recusado") { r.status = "Recusado"; r.solution = "-"; } else if (el.value) { r.solution = el.value; r.status = "Aprovado"; } toast(`RMA-${String(r.n).padStart(4, "0")}: ${el.value.toLowerCase()}.`); setTimeout(render); return; }
   if (el.id?.startsWith("goal-")) { C().goals[el.id.slice(5)] = Math.max(0, +el.value || 0); toast("Meta atualizada."); setTimeout(render); return; }
+  if (el.dataset.stsel) { ST.sel.has(el.dataset.stsel) ? ST.sel.delete(el.dataset.stsel) : ST.sel.add(el.dataset.stsel); return render(); }
+  if (el.dataset.stall !== undefined) { const ids = [...document.querySelectorAll("[data-stsel]")].map((x) => x.dataset.stsel); const all = ids.every((i) => ST.sel.has(i)); ids.forEach((i) => (all ? ST.sel.delete(i) : ST.sel.add(i))); return render(); }
+  if (el.id === "st-fam") { ST.fam = el.value; return render(); }
+  if (el.id === "st-sort") { ST.sort = el.value; return render(); }
+  if (el.id === "st-mtype") { ST.mtype = el.value; return render(); }
+  if (el.id === "qm-reason") { ST.qReason = el.value.trim(); return; }
   if (el.id === "px-seller") { PX.seller = el.value; return render(); }
   if (el.dataset.ppsel) { PF2.sel.has(el.dataset.ppsel) ? PF2.sel.delete(el.dataset.ppsel) : PF2.sel.add(el.dataset.ppsel); return render(); }
   if (["pp-seg", "pp-uf", "pp-min"].includes(el.id)) { PF2[{ "pp-seg": "seg", "pp-uf": "uf", "pp-min": "min" }[el.id]] = el.id === "pp-min" ? +el.value : el.value; return render(); }
@@ -3951,6 +4061,11 @@ $("cmd").addEventListener("keydown", (ev) => {
 });
 $("cmdres").addEventListener("mousedown", (ev) => { const b = ev.target.closest("[data-cmd]"); if (b) { ev.preventDefault(); execCmd(+b.dataset.cmd); } });
 $("cmd").addEventListener("blur", () => setTimeout(hideCmd, 120));
+document.addEventListener("keydown", (ev) => {
+  if (ev.key !== "Enter") return;
+  const id = ev.target.id; const act = ["qm-code", "qm-qty", "qm-reason"].includes(id) ? "qm-go" : ["in-qty", "in-reason"].includes(id) ? "in-go" : null;
+  if (!act) return; ev.preventDefault(); try { stockAction({}, act); } catch (e) { err(e); }
+});
 document.addEventListener("keydown", (ev) => { if (ev.key === "Escape" && S.dockOpen) { S.dockOpen = null; renderDock(); } });
 document.addEventListener("keydown", (ev) => { if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === "k") { ev.preventDefault(); $("cmd").focus(); } });
 
