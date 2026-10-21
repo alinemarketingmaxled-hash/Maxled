@@ -833,6 +833,57 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; gap: 8
 .goal-bar span { position: absolute; top: -3px; width: 2px; height: 13px; background: #fff; opacity: .7; border-radius: 2px; }
 .goal-s { margin: 0; font-size: 11.5px; color: var(--text-2); }
 @media (min-width: 1100px) { .mobile-goals { display: none; } }
+
+/* Painel em blocos (bento) */
+.hello { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px; }
+.hello h1 { margin: 0; font-size: clamp(26px, 3.2vw, 40px); line-height: 1.08; letter-spacing: -.02em; }
+.hello h1 span { color: var(--text-2); font-weight: 600; }
+.hello .note { margin: 8px 0 0; }
+.quick { display: flex; flex-wrap: wrap; gap: 8px; }
+.qk { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,.05); border: 1px solid var(--border); color: var(--text); border-radius: 99px; padding: 9px 14px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.qk svg.i { width: 16px; height: 16px; color: #f2cc5b; }
+.qk:first-child { background: var(--grad); color: #1b1206; border-color: transparent; } .qk:first-child svg.i { color: #1b1206; }
+.qk:hover { border-color: rgba(242,204,91,.6); }
+.bento { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 16px; grid-auto-flow: dense; }
+.bento > .card { margin: 0; border-radius: 22px; }
+.bento .s2x { grid-column: span 3; } .bento .s3 { grid-column: span 3; } .bento .s4 { grid-column: span 4; } .bento .s6 { grid-column: span 6; } .bento .r2 { grid-row: span 2; }
+.bh { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; } .bh h2 { margin: 0; }
+.va { background: rgba(255,255,255,.06); border: 1px solid var(--border); color: var(--text-2); border-radius: 99px; padding: 4px 10px; font: inherit; font-size: 11.5px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.va:hover { color: #f2cc5b; border-color: rgba(242,204,91,.5); }
+.dl { font-weight: 800; font-size: 12px; } .dl.up { color: var(--good); } .dl.down { color: var(--bad); }
+.b-hero { position: relative; overflow: hidden; min-height: 250px; background: linear-gradient(135deg, rgba(60,44,14,.9), rgba(20,17,12,.9)); border-color: rgba(242,204,91,.35); }
+.hero-art { position: absolute; right: -60px; top: -70px; width: 320px; height: 320px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fff3c4, #f2cc5b 30%, #c9952a 55%, rgba(138,97,20,.0) 72%); filter: blur(2px); opacity: .55; }
+.hero-art::after { content: ""; position: absolute; inset: 40px; border-radius: 50%; border: 1px solid rgba(255,240,200,.35); box-shadow: 0 0 0 30px rgba(242,204,91,.06), 0 0 0 60px rgba(242,204,91,.04); }
+.hero-in { position: relative; display: grid; gap: 4px; }
+.hk { margin: 0; font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,240,200,.75); }
+.hv { margin: 0; font-size: clamp(30px, 3.4vw, 44px); font-weight: 800; letter-spacing: -.02em; color: #fff7dd; }
+.hs { margin: 0; font-size: 13px; color: rgba(255,240,200,.8); }
+.hero-chart { margin-top: 6px; } .hero-chart svg { max-height: 130px; }
+.b-goal { display: grid; justify-items: center; align-content: start; } .b-goal .bh { justify-self: stretch; }
+.gauge { width: 100%; max-width: 220px; } .g-bg, .g-fg { fill: none; stroke-width: 10; stroke-linecap: round; } .g-bg { stroke: rgba(255,255,255,.08); } .g-fg { stroke: url(#none); stroke: #f2cc5b; filter: drop-shadow(0 0 6px rgba(242,204,91,.45)); } .g-tick { stroke: rgba(255,255,255,.18); stroke-width: 1; }
+.gv { margin: -26px 0 2px; font-size: 30px; font-weight: 800; }
+.gleg { display: flex; gap: 12px; margin-top: 10px; font-size: 11.5px; color: var(--text-2); flex-wrap: wrap; justify-content: center; } .gleg i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; } .gleg .d1 { background: #f2cc5b; } .gleg .d2 { background: rgba(255,255,255,.25); }
+.b-cal { display: flex; flex-direction: column; }
+.cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; font-size: 12px; }
+.cal b { color: var(--text-3); font-size: 10.5px; } .cal span { padding: 6px 0; border-radius: 9px; color: var(--text-2); position: relative; }
+.cal span.busy::after { content: ""; position: absolute; left: 50%; bottom: 2px; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: #f2cc5b; }
+.cal span.today { background: var(--grad); color: #1b1206; font-weight: 800; } .cal span.today::after { background: #1b1206; }
+.agh { margin: 14px 0 8px; font-size: 13px; }
+.agl { display: grid; gap: 8px; } .agi { display: grid; gap: 1px; text-align: left; background: rgba(255,255,255,.04); border: 1px solid var(--border); border-left: 3px solid #f2cc5b; border-radius: 12px; padding: 8px 10px; color: var(--text); font: inherit; cursor: pointer; }
+.agi small { font-size: 10.5px; text-transform: uppercase; letter-spacing: .08em; color: var(--text-3); } .agi b { font-size: 13px; font-weight: 650; } .agi span { font-size: 11.5px; color: var(--text-2); }
+.b-kpi .kl { margin: 4px 0 0; color: var(--text-2); font-size: 13px; } .kv2 { margin: 2px 0; font-size: 28px; font-weight: 800; } .ks { margin: 0 0 6px; font-size: 11.5px; color: var(--text-3); }
+.heat { display: grid; grid-template-columns: 34px repeat(8, minmax(0, 1fr)); gap: 5px; align-items: center; }
+.heat small { font-size: 11px; color: var(--text-3); } .heat small.wk { text-align: center; font-size: 10px; }
+.heat i { display: block; height: 22px; border-radius: 6px; background: rgba(255,255,255,.05); }
+.heat i.l1, .hleg i.l1 { background: rgba(242,204,91,.18); } .heat i.l2, .hleg i.l2 { background: rgba(242,204,91,.38); } .heat i.l3, .hleg i.l3 { background: rgba(242,204,91,.62); } .heat i.l4, .hleg i.l4 { background: #f2cc5b; box-shadow: 0 0 10px rgba(242,204,91,.45); } .heat i.fut { background: transparent; border: 1px dashed rgba(255,255,255,.08); }
+.hleg { display: flex; gap: 10px; font-size: 11px; color: var(--text-3); flex-wrap: wrap; } .hleg i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 4px; vertical-align: -1px; }
+.chbars { display: flex; gap: 10px; align-items: flex-end; height: 170px; padding-top: 10px; }
+.chb { flex: 1; display: grid; grid-template-rows: 1fr auto; gap: 6px; height: 100%; text-align: center; } .chb small { font-size: 11px; color: var(--text-2); }
+.chb .bar { align-self: end; border-radius: 14px; background: var(--grad); display: grid; place-items: start center; padding-top: 6px; } .chb .bar span { font-size: 11px; font-weight: 800; color: #1b1206; background: rgba(255,255,255,.7); border-radius: 99px; padding: 1px 6px; }
+.chb .bar.st { background: repeating-linear-gradient(135deg, rgba(242,204,91,.55) 0 6px, rgba(242,204,91,.2) 6px 12px); }
+.pl { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } .pi { display: grid; gap: 2px; text-align: left; background: rgba(255,255,255,.04); border: 1px solid var(--border); border-radius: 14px; padding: 10px 12px; color: var(--text); font: inherit; cursor: pointer; } .pi b { font-size: 24px; color: #f2cc5b; } .pi span { font-size: 12px; color: var(--text-2); } .pi:hover { border-color: rgba(242,204,91,.55); }
+@media (max-width: 1280px) { .bento .s2x, .bento .s3 { grid-column: span 6; } .bento .s4 { grid-column: span 6; } .bento .s6 { grid-column: span 12; } .bento .r2 { grid-row: auto; } }
+@media (max-width: 700px) { .bento > .card { grid-column: 1 / -1 !important; } .quick { width: 100%; } }
 </style>
 
 <aside class="side" id="side" aria-label="Módulos"></aside>
@@ -1289,75 +1340,66 @@ function vPainel() {
   if (S.role === "SALES_MANAGER") return vPainelGerente();
   return vPainelExec();
 }
+// ---------------------------------------------------------------------------
+// Painel executivo em blocos (bento): saudação com atalhos, cartão de
+// destaque do faturamento, meta em meia-lua, calendário com agenda, mapa de
+// calor das vendas e blocos menores com "Ver tudo".
+// ---------------------------------------------------------------------------
+function gauge(pct) {
+  const p = Math.max(0, Math.min(1, pct)); const a = Math.PI * (1 - p); const x = 60 + 48 * Math.cos(a), y = 60 - 48 * Math.sin(a);
+  return `<svg viewBox="0 0 120 68" class="gauge" aria-hidden="true"><path d="M12 60 A48 48 0 0 1 108 60" class="g-bg"/><path d="M12 60 A48 48 0 0 1 ${x.toFixed(1)} ${y.toFixed(1)}" class="g-fg"/>${Array.from({ length: 11 }, (_, i) => { const t = Math.PI * (1 - i / 10); return `<line x1="${60 + 38 * Math.cos(t)}" y1="${60 - 38 * Math.sin(t)}" x2="${60 + 34 * Math.cos(t)}" y2="${60 - 34 * Math.sin(t)}" class="g-tick"/>`; }).join("")}</svg>`;
+}
 function vPainelExec() {
-  const all = visibleOrders(); const months = lastMonths(6);
+  const all = visibleOrders(); const months = lastMonths(6); const t = new Date();
   const byMonth = (fn) => months.map((m) => fn(all.filter((o) => billed(o) && monthKey(o.date) === m.key)));
-  const salesM = byMonth((os) => os.reduce((s, o) => s + o.total, 0));
-  const ordersM = byMonth((os) => os.length);
-  const ticketM = salesM.map((v, i) => (ordersM[i] ? v / ordersM[i] : 0));
-  const custM = byMonth((os) => new Set(os.map((o) => o.customer)).size);
-  const t = new Date(); const dayFrac = t.getDate() / new Date(t.getFullYear(), t.getMonth() + 1, 0).getDate();
-  // Variação contra o mês anterior proporcional ao dia de hoje (comparação justa).
+  const salesM = byMonth((os) => os.reduce((s, o) => s + o.total, 0)); const ordersM = byMonth((os) => os.length);
+  const ticketM = salesM.map((v, i) => (ordersM[i] ? v / ordersM[i] : 0)); const custM = byMonth((os) => new Set(os.map((o) => o.customer)).size);
+  const dayFrac = t.getDate() / new Date(t.getFullYear(), t.getMonth() + 1, 0).getDate();
   const dPct = (arr) => { const prev = arr[4] * dayFrac; return prev ? ((arr[5] - prev) / prev) * 100 : 0; };
-  const goal = S.company === "A" ? (role().own ? 15000 : 40000) : 120000;
-  const proj = salesM[5] / Math.max(dayFrac, .05);
+  const goal = S.company === "A" ? (role().own ? C().goals.sales : C().goals.sales * SELLERS.length) : 120000;
+  const proj = salesM[5] / Math.max(dayFrac, .05); const gp = salesM[5] / goal;
   const cur = all.filter((o) => billed(o) && monthKey(o.date) === months[5].key);
-  // Vendas por dia (últimos 30 dias)
-  const days30 = Array.from({ length: 30 }, (_, i) => { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - (29 - i)); return d; });
-  const perDay = days30.map((d) => all.filter((o) => billed(o) && new Date(o.date).toDateString() === d.toDateString()).reduce((s, o) => s + o.total, 0));
-  const dmax = Math.max(...perDay, 1);
-  // Funil (90 dias)
-  const since = new Date(); since.setDate(since.getDate() - 90);
-  const recent = all.filter((o) => new Date(o.date) >= since);
-  const funnel = [["Cotações", recent.length], ["Aprovados", recent.filter(billed).length], ["Faturados (NF-e)", recent.filter((o) => activeDoc(o)).length], ["Entregues", recent.filter((o) => o.status === "ENTREGUE").length]];
-  // Top clientes (90 dias)
+  const delta = (v) => `<span class="dl ${v < 0 ? "down" : "up"}">${v < 0 ? "▼" : "▲"} ${Math.abs(v).toFixed(1).replace(".", ",")}%</span>`;
+  const viewAll = (go2) => can(go2) ? `<button class="va" data-go="${go2}" aria-label="Ver tudo">Ver tudo ↗</button>` : "";
+  // Mapa de calor: 8 semanas × Seg–Sáb.
+  const weeks = Array.from({ length: 8 }, (_, w) => { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - d.getDay() + 1 - (7 - w) * 7); return d; });
+  const heat = weeks.map((ws) => Array.from({ length: 6 }, (_, k) => { const d = new Date(ws); d.setDate(d.getDate() + k); return { d, v: d > t ? null : all.filter((o) => billed(o) && new Date(o.date).toDateString() === d.toDateString()).reduce((s, o) => s + o.total, 0) }; }));
+  const hmax = Math.max(1, ...heat.flat().map((c) => c.v || 0));
+  const lvl = (v) => (v === null ? "fut" : v === 0 ? "l0" : v < hmax * .25 ? "l1" : v < hmax * .5 ? "l2" : v < hmax * .8 ? "l3" : "l4");
+  // Calendário + agenda de hoje.
+  const first = new Date(t.getFullYear(), t.getMonth(), 1); const startDow = (first.getDay() + 6) % 7; const dim = new Date(t.getFullYear(), t.getMonth() + 1, 0).getDate();
+  const busy = new Set(C().recv.filter((r) => r.paid < r.amount && new Date(r.due).getMonth() === t.getMonth()).map((r) => new Date(r.due).getDate()));
+  (C().schedules || []).filter((s) => s.active && new Date(s.next).getMonth() === t.getMonth()).forEach((s) => busy.add(new Date(s.next).getDate()));
+  const agenda = [
+    ...cadTasks().slice(0, 3).map((x) => ["Tarefa", `${x.type} · ${x.l.company}`, x.late ? "atrasada" : "hoje", "crm"]),
+    ...(C().visits || []).slice(0, 2).map((v) => ["Visita", `${v.time} · ${visitName(v)}`, v.bairro, "rota"]),
+    ...C().recv.filter((r) => r.paid < r.amount && new Date(r.due).toDateString() === t.toDateString()).slice(0, 2).map((r) => ["Recebimento", `${cust(r.customer).name}`, money(r.amount - r.paid), "financeiro"]),
+  ].filter((a) => can(a[3])).slice(0, 4);
+  const ch = {}; cur.forEach((o) => { ch[o.channel] = (ch[o.channel] || 0) + o.total; }); const chParts = Object.entries(ch).sort((a, b) => b[1] - a[1]); const chMax = chParts[0]?.[1] || 1;
+  const since = new Date(); since.setDate(since.getDate() - 90); const recent = all.filter((o) => new Date(o.date) >= since);
   const tc = {}; recent.filter(billed).forEach((o) => { tc[o.customer] = tc[o.customer] || { v: 0, n: 0 }; tc[o.customer].v += o.total; tc[o.customer].n++; });
-  const topC = Object.entries(tc).sort((a, b) => b[1].v - a[1].v).slice(0, 6); const tcmax = topC[0]?.[1].v || 1;
-  // Atividade recente
-  const feed = all.flatMap((o) => o.events.slice(0, 2).map((e) => ({ ...e, o }))).sort((a, b) => (b.o.date || "").localeCompare(a.o.date || "")).slice(0, 7);
-  const low = C().products.filter((p) => !p.kit && availSimple(p) < p.minStock);
-  const overdue = C().recv.filter((r) => r.paid < r.amount && new Date(r.due) < new Date());
-  const byProd = {}; cur.forEach((o) => o.items.forEach((i) => { byProd[i.sku] = (byProd[i.sku] || 0) + i.sub; }));
-  const top = Object.entries(byProd).sort((a, b) => b[1] - a[1]).slice(0, 5); const tmax = top[0]?.[1] || 1;
-  const ch = {}; cur.forEach((o) => { ch[o.channel] = (ch[o.channel] || 0) + o.total; });
-  const chColors = ["var(--c1)", "var(--c3)", "var(--c2)", "var(--c4)"];
-  const chParts = Object.entries(ch).sort((a, b) => b[1] - a[1]).map(([k, v], i) => ({ k, v, color: chColors[i % 4] }));
-  return head(`Olá, ${role().user.split(" ")[0]}`, `${esc(C().name)} · ${t.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })}${role().own ? " · somente seus pedidos" : ""}`,
-      ["MEDIATOR","MANAGER","SALES_MANAGER","SELLER"].includes(S.role) ? `<button class="btn" data-act="novo-painel">${icon("plus")}Novo pedido <kbd>F2</kbd></button>` : "") + `
-  <div class="grid g4">
-    ${kpiRich("money", "Faturamento do mês", money(salesM[5]), dPct(salesM), salesM, `projeção ${money(proj)}`)}
-    ${kpiRich("receipt", "Pedidos aprovados", ordersM[5], dPct(ordersM), ordersM, `${all.filter((o) => o.status === "AGUARDANDO").length} aguardando aprovação`)}
-    ${kpiRich("ticket", "Ticket médio", money(ticketM[5]), ticketM[4] ? ((ticketM[5] - ticketM[4]) / ticketM[4]) * 100 : 0, ticketM, `mês anterior ${money(ticketM[4])}`)}
-    ${kpiRich("users", "Clientes atendidos", custM[5], dPct(custM), custM, `${C().customers.length} na carteira`)}
-  </div>
-  <div class="grid g3x">
-    <div class="card goal"><h2>Meta do mês</h2>${ring(salesM[5] / goal, "Meta do mês", `de ${money(goal).replace(",00", "")}`)}
-      <dl class="kv"><dt>Realizado</dt><dd class="num">${money(salesM[5])}</dd><dt>Falta</dt><dd class="num">${money(Math.max(0, goal - salesM[5]))}</dd><dt>Projeção</dt><dd class="num" style="color:${proj >= goal ? "var(--good)" : "var(--warn)"}">${money(proj)} ${proj >= goal ? "· bate a meta" : "· abaixo da meta"}</dd></dl>
-      ${role().own ? "" : (() => { const bs = {}; cur.forEach((o) => { bs[o.seller] = (bs[o.seller] || 0) + o.total; }); const rk = Object.entries(bs).sort((a, b) => b[1] - a[1]); const mx = rk[0]?.[1] || 1; return `<h2 style="justify-self:stretch;margin:8px 0 0">Vendedores no mês</h2><div class="list" style="width:100%">${rk.map(([n, v], i) => `<div class="hbar"><div class="l"><span class="who-cell">${avatar(n)}<span>${i + 1}º ${esc(n)}</span></span><b class="num">${money(v)}</b></div><div class="t"><i style="width:${(v / mx) * 100}%;background:var(--grad)"></i></div></div>`).join("")}</div>`; })()}</div>
-    <div class="card"><h2>Vendas por dia <small>últimos 30 dias · maior dia ${money(dmax)}</small></h2>
-      <div class="daybars">${perDay.map((v, i) => `<i title="${days30[i].toLocaleDateString("pt-BR")}: ${money(v)}" style="height:${Math.max(2, (v / dmax) * 100)}%" class="${i === 29 ? "today" : ""}"></i>`).join("")}</div>
-      <div class="dayaxis"><span>${days30[0].toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}</span><span>${days30[15].toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}</span><span>hoje</span></div>
-      <h2 style="margin-top:18px">Evolução mensal <small>faturamento</small></h2>
-      ${areaChart(months.map((m, i) => (i === 5 ? m.label + "*" : m.label)), [{ values: salesM, color: "var(--c1)" }])}
-      <div class="legend"><span><i style="background:var(--c1)"></i>Faturamento</span><span>* mês em andamento</span></div></div>
-    <div class="card"><h2>Funil de vendas <small>últimos 90 dias</small></h2>
-      <div class="funnel">${funnel.map(([l, n], i) => `<div class="fstep" style="--w:${Math.max(28, (n / (funnel[0][1] || 1)) * 100)}%"><div class="fbar"><b class="num">${n}</b><span>${l}</span></div>${i ? `<small>${funnel[0][1] ? Math.round((n / funnel[0][1]) * 100) : 0}% das cotações</small>` : ""}</div>`).join("")}</div>
-      <h2 style="margin-top:18px">Pendências</h2><div class="list" style="gap:6px">
-      ${[["clock", "Aguardando aprovação", all.filter((o) => o.status === "AGUARDANDO").length, "pedidos"], ["expedicao", "Para separar e conferir", all.filter((o) => ["APROVADO","SEPARACAO","CONFERENCIA"].includes(o.status)).length, "expedicao"], ["fiscal", "Aprovados sem NF-e", all.filter((o) => billed(o) && o.status !== "CANCELADO" && !activeDoc(o)).length, "fiscal"], ["alert", "Estoque abaixo do mínimo", low.length, "estoque"], ["financeiro", "Títulos vencidos", can("financeiro") ? overdue.length : "-", "financeiro"]]
-        .map(([ic, l, n, g]) => `<div class="pend sm"><span class="chip c1">${icon(ic)}</span><span>${l}</span>${can(g) ? `<button class="link cnt" data-go="${g}">${n}</button>` : `<b>${n}</b>`}</div>`).join("")}</div></div>
-  </div>
-  <div class="grid g3x">
-    <div class="card"><h2>Melhores clientes <small>90 dias</small></h2><div class="list">
-      ${topC.map(([id, v]) => `<div class="hbar click-row" data-cli="${id}"><div class="l"><span class="who-cell">${avatar(cust(id).name)}<span>${esc(cust(id).name)}<small>${v.n} pedido(s) · ${esc(cust(id).city || "")}</small></span></span><b class="num">${money(v.v)}</b></div><div class="t"><i style="width:${(v.v / tcmax) * 100}%;background:var(--grad)"></i></div></div>`).join("") || `<p class="note">Sem vendas no período.</p>`}</div></div>
-    <div class="card"><h2>Atividade recente</h2><ol class="timeline">${feed.map((f) => `<li><span><button class="link" data-open="${f.o.id}">${code(f.o)}</button> · ${esc(f.msg)}</span><small>${f.when} · ${esc(f.who)} · ${esc(cust(f.o.customer).name)}</small></li>`).join("")}</ol></div>
-    <div class="card"><h2>Estoque crítico <small>${low.length} abaixo do mínimo</small></h2><div class="list">
-      ${C().products.filter((p) => !p.kit).map((p) => ({ p, ratio: availSimple(p) / p.minStock })).sort((a, b) => a.ratio - b.ratio).slice(0, 5).map(({ p, ratio }) => `<div class="stockrow">${thumb(p, 38)}<div style="min-width:0;flex:1"><div class="l"><span>${esc(p.name)}</span><b class="num" style="color:${ratio < 1 ? "var(--bad)" : "var(--text)"}">${nf.format(availSimple(p))}</b></div><div class="t"><i style="width:${Math.min(100, ratio * 50)}%;background:${ratio < 1 ? "var(--bad)" : "var(--grad)"}"></i></div><small class="note">mínimo ${nf.format(p.minStock)} · ${ratio < 1 ? "repor" : "ok"}</small></div></div>`).join("")}</div></div>
-  </div>
-  <div class="grid g2">
-    <div class="card"><h2>Produtos mais vendidos <small>mês atual</small></h2><div class="list">
-      ${top.map(([sku, v]) => `<div class="stockrow">${thumb(prod(sku), 38)}<div style="min-width:0;flex:1"><div class="l"><span>${esc(prod(sku).name)} <span class="mono" style="color:var(--text-3)">${sku}</span></span><b class="num">${money(v)}</b></div><div class="t"><i style="width:${(v / tmax) * 100}%;background:var(--grad)"></i></div></div></div>`).join("") || `<p class="note">Sem vendas no mês.</p>`}</div></div>
-    <div class="card"><h2>Vendas por canal <small>mês atual</small></h2>
-      <div class="donut-wrap">${donut(chParts)}<div class="list">${chParts.map((p) => `<div class="hbar"><div class="l"><span style="display:inline-flex;align-items:center;gap:8px"><i style="width:10px;height:10px;border-radius:3px;background:${p.color};display:inline-block"></i>${esc(p.k)}</span><b class="num">${money(p.v)}</b></div><small class="note">${((p.v / (salesM[5] || 1)) * 100).toFixed(0)}% do faturamento</small></div>`).join("")}</div></div></div>
+  const topC = Object.entries(tc).sort((a, b) => b[1].v - a[1].v).slice(0, 4);
+  const low = C().products.filter((p) => !p.kit).map((p) => ({ p, ratio: availSimple(p) / p.minStock })).sort((a, b) => a.ratio - b.ratio).slice(0, 4);
+  const pend = [["Aguardando aprovação", all.filter((o) => o.status === "AGUARDANDO").length, "pedidos"], ["Para separar", all.filter((o) => ["APROVADO", "SEPARACAO", "CONFERENCIA"].includes(o.status)).length, "expedicao"], ["Sem NF-e", all.filter((o) => billed(o) && o.status !== "CANCELADO" && !activeDoc(o)).length, "fiscal"], ["XML para conferir", (C().nfIn || []).filter((x) => !x.status.startsWith("Entrada")).length, "fiscal"]].filter(([, , g]) => can(g));
+  const quick = [["novo-painel", "plus", "Novo pedido", "pedidos"], ["", "prospeccao", "Prospectar", "prospeccao"], ["", "rota", "Montar rota", "rota"], ["", "fiscal", "Emitir NF-e", "fiscal"], ["", "financeiro", "Conciliar banco", "financeiro"]].filter(([, , , g]) => can(g));
+  return `<section class="hello"><div><h1>Olá, ${esc(role().user.split(" ")[0])}!<br><span>O que vamos fazer hoje?</span></h1><p class="note">${esc(C().name)} · ${t.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })}${role().own ? " · somente seus pedidos" : ""}</p></div>
+    <div class="quick">${quick.map(([act, ic, l, g]) => `<button class="qk" ${act ? `data-act="${act}"` : `data-go="${g}"`}>${icon(ic)}<span>${l}</span></button>`).join("")}</div></section>
+  <div class="bento">
+    <div class="card b-hero s6"><div class="hero-art" aria-hidden="true"></div><div class="hero-in"><p class="hk">Faturamento de ${t.toLocaleDateString("pt-BR", { month: "long" })}</p><p class="hv num">${money(salesM[5])}</p><p class="hs">${delta(dPct(salesM))} contra o mesmo ponto do mês passado · projeção <b>${money(proj)}</b></p>
+      <div class="hero-chart">${areaChart(months.map((m, i) => (i === 5 ? m.label + "*" : m.label)), [{ values: salesM, color: "#f2cc5b" }])}</div></div></div>
+    <div class="card s3 b-goal"><div class="bh"><h2>Meta do mês</h2>${can("config") ? `<button class="va" data-go="config">Ajustar ↗</button>` : ""}</div>${gauge(gp)}<p class="gv num">${Math.round(gp * 100)}%</p><p class="note" style="text-align:center;margin:0">${money(salesM[5]).replace(",00", "")} de ${money(goal).replace(",00", "")}</p>
+      <div class="gleg"><span><i class="d1"></i>Realizado</span><span><i class="d2"></i>${proj >= goal ? "Bate a meta" : `Falta ${money(Math.max(0, goal - salesM[5])).replace(",00", "")}`}</span></div></div>
+    <div class="card s3 r2 b-cal"><div class="bh"><h2>${t.toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}</h2></div>
+      <div class="cal">${["S", "T", "Q", "Q", "S", "S", "D"].map((d) => `<b>${d}</b>`).join("")}${Array.from({ length: startDow }, () => "<span></span>").join("")}${Array.from({ length: dim }, (_, i) => `<span class="${i + 1 === t.getDate() ? "today" : ""} ${busy.has(i + 1) ? "busy" : ""}">${i + 1}</span>`).join("")}</div>
+      <h3 class="agh">Agenda de hoje</h3><div class="agl">${agenda.map(([k, l, s, g]) => `<button class="agi" data-go="${g}"><small>${k}</small><b>${esc(l)}</b><span>${esc(s)}</span></button>`).join("") || `<p class="note">Nada marcado para hoje.</p>`}</div></div>
+    ${[["receipt", "Pedidos aprovados", ordersM[5], dPct(ordersM), ordersM, "pedidos"], ["ticket", "Ticket médio", money(ticketM[5]), ticketM[4] ? ((ticketM[5] - ticketM[4]) / ticketM[4]) * 100 : 0, ticketM, "relatorios"], ["users", "Clientes atendidos", custM[5], dPct(custM), custM, "clientes"]].map(([ic, l, v, dp, ser, g]) => `<div class="card s2x b-kpi"><div class="bh"><span class="chip c1">${icon(ic)}</span>${viewAll(g)}</div><p class="kl">${l}</p><p class="kv2 num">${v}</p><p class="ks">${delta(dp)} vs mês anterior</p>${spark(ser)}</div>`).join("")}
+    <div class="card s6 b-heat"><div class="bh"><h2>Vendas por dia <small>últimas 8 semanas</small></h2><div class="hleg"><span><i class="l1"></i>Baixo</span><span><i class="l2"></i>Médio</span><span><i class="l3"></i>Alto</span><span><i class="l4"></i>Melhor</span></div></div>
+      <div class="heat">${["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((dn, k) => `<small>${dn}</small>${heat.map((w) => `<i class="${lvl(w[k].v)}" title="${w[k].d.toLocaleDateString("pt-BR")}: ${w[k].v === null ? "-" : money(w[k].v)}"></i>`).join("")}`).join("")}<small></small>${weeks.map((w) => `<small class="wk">${w.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}</small>`).join("")}</div></div>
+    <div class="card s3 b-ch"><div class="bh"><h2>Por canal</h2>${viewAll("relatorios")}</div><div class="chbars">${chParts.map(([k, v], i) => `<div class="chb"><div class="bar ${i ? "st" : ""}" style="height:${Math.max(12, (v / chMax) * 100)}%"><span>${Math.round((v / (salesM[5] || 1)) * 100)}%</span></div><small>${esc(k)}</small></div>`).join("") || `<p class="note">Sem vendas no mês.</p>`}</div></div>
+    <div class="card s3 b-pend"><div class="bh"><h2>Pendências</h2></div><div class="pl">${pend.map(([l, n, g]) => `<button class="pi" data-go="${g}"><b class="num">${n}</b><span>${l}</span></button>`).join("")}</div></div>
+    <div class="card s4"><div class="bh"><h2>Melhores clientes <small>90 dias</small></h2>${viewAll("clientes")}</div><div class="list">${topC.map(([id, v]) => `<div class="hbar click-row" data-cli="${id}"><div class="l"><span class="who-cell">${avatar(cust(id).name)}<span>${esc(cust(id).name)}<small>${v.n} pedido(s)</small></span></span><b class="num">${money(v.v).replace(",00", "")}</b></div></div>`).join("") || `<p class="note">Sem vendas.</p>`}</div></div>
+    <div class="card s4"><div class="bh"><h2>Estoque crítico</h2>${viewAll("estoque")}</div><div class="list">${low.map(({ p, ratio }) => `<div class="stockrow">${thumb(p, 34)}<div style="min-width:0;flex:1"><div class="l"><span>${esc(p.name)}</span><b class="num" style="color:${ratio < 1 ? "var(--bad)" : "var(--good)"}">${nf.format(availSimple(p))}</b></div><div class="t"><i style="width:${Math.min(100, Math.max(0, ratio) * 50)}%;background:${ratio < 1 ? "var(--bad)" : "var(--grad)"}"></i></div></div></div>`).join("")}</div></div>
+    <div class="card s4"><div class="bh"><h2>Atividade recente</h2>${viewAll("pedidos")}</div><ol class="timeline">${all.flatMap((o) => o.events.slice(0, 1).map((e) => ({ ...e, o }))).sort((a, b) => (b.o.date || "").localeCompare(a.o.date || "")).slice(0, 5).map((f) => `<li><span><button class="link" data-open="${f.o.id}">${code(f.o)}</button> · ${esc(f.msg)}</span><small>${f.when} · ${esc(cust(f.o.customer).name)}</small></li>`).join("")}</ol></div>
   </div>`;
 }
 
