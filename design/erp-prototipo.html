@@ -904,6 +904,46 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; gap: 8
 .inlrow td { background: rgba(242,204,91,.06) !important; } .inl { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 @media (max-width: 1280px) { .stkbar { grid-template-columns: repeat(3, minmax(0, 1fr)); } .qm-line { grid-template-columns: repeat(2, minmax(0, 1fr)); } .qm-line > .f:nth-child(3) { grid-column: 1 / -1; } }
 @media (max-width: 560px) { .stkbar { grid-template-columns: repeat(2, minmax(0, 1fr)); } .qm-line { grid-template-columns: minmax(0, 1fr); } }
+
+/* Módulos operacionais */
+.stkbar.ops { grid-template-columns: repeat(var(--n), minmax(0, 1fr)); }
+.stk .stk-sub { font-size: 11px; color: var(--text-3); } .stk.good b { color: var(--good); }
+@media (max-width: 1280px) { .stkbar.ops { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .stkbar.ops { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.g2b { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; } .g2b > .card { min-width: 0; }
+.g2b.fs-g { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+@media (max-width: 1000px) { .g2b, .g2b.fs-g { grid-template-columns: minmax(0, 1fr); } }
+.hbars { display: grid; gap: 10px; }
+.hbar { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 2fr) auto; gap: 12px; align-items: center; font-size: 12.5px; }
+.hbar .hb-l { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .hbar .hb-l small { display: block; color: var(--text-3); font-size: 11px; overflow: hidden; text-overflow: ellipsis; }
+.hbar .track, .covbar .track { display: block; height: 8px; background: rgba(255,255,255,.07); border-radius: 99px; overflow: hidden; }
+.hbar .track i, .covbar .track i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, #c99a2e, #f2cc5b); }
+.covbar .track i.bad { background: var(--bad); } .covbar { display: grid; gap: 4px; min-width: 130px; } .covbar small.bad { color: var(--bad); font-weight: 700; } .covbar .track { height: 6px; }
+.ticket.late { border-color: rgba(255,122,122,.5); }
+.tk-top, .tk-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.tk-cli { font-weight: 600; }
+.kanban.xpk { align-items: start; } .tk-foot small { white-space: nowrap; } .tk-foot b { white-space: nowrap; }
+.tk-skus { font-size: 11.5px; color: var(--text-2); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tk-age { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-2); background: rgba(255,255,255,.07); border-radius: 99px; padding: 2px 8px; white-space: nowrap; }
+.tk-age svg.i { width: 12px; height: 12px; } .tk-age.bad { color: var(--bad); background: rgba(255,122,122,.13); }
+.chan { font-size: 10px; font-weight: 700; letter-spacing: .02em; padding: 1px 7px; border-radius: 99px; background: rgba(255,230,0,.15); color: #ffe45c; } .chan.pt { background: rgba(120,180,255,.15); color: #9cc6ff; }
+.lane-empty { margin: 0; display: flex; gap: 6px; align-items: center; justify-content: center; padding: 18px 6px; border: 1px dashed var(--border); border-radius: 12px; }
+.lane-empty svg.i { width: 14px; height: 14px; }
+.pickbox { display: inline-block; width: 16px; height: 16px; border: 1.5px solid var(--text-3); border-radius: 4px; }
+td.ck, th.ck { width: 34px; }
+.keyc { margin-right: 6px; } .fs-g td.num, .fs-g td.mono, .fs-g .link { white-space: nowrap; } .fs-g td { padding-left: 10px; padding-right: 10px; }
+.cat { font-size: 12px; padding: 2px 8px; border-radius: 99px; background: rgba(255,255,255,.07); white-space: nowrap; }
+.steps { display: flex; gap: 4px; margin-bottom: 3px; } .steps span { width: 22px; height: 6px; border-radius: 99px; background: rgba(255,255,255,.1); } .steps span.on { background: #f2cc5b; }
+.cal14 { display: grid; grid-template-columns: repeat(14, minmax(0, 1fr)); gap: 6px; height: 150px; }
+.cal14 .d { display: grid; grid-template-rows: 1fr auto; gap: 4px; min-width: 0; }
+.cal14 .bars { display: flex; gap: 2px; align-items: flex-end; height: 100%; border-bottom: 1px solid var(--border); }
+.cal14 .bars i { flex: 1; min-height: 2px; border-radius: 3px 3px 0 0; }
+.cal14 i.in, .legend i.in { background: var(--good); } .cal14 i.out, .legend i.out { background: #f2cc5b; }
+.cal14 small { font-size: 10.5px; text-align: center; color: var(--text-3); } .cal14 small.we { opacity: .55; }
+.legend { display: flex; gap: 12px; font-size: 12px; color: var(--text-2); } .legend span { display: inline-flex; gap: 5px; align-items: center; } .legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+a.btn.wa { text-decoration: none; display: inline-flex; gap: 6px; align-items: center; } a.btn.wa svg.i { width: 14px; height: 14px; }
+.mlt table { min-width: 1100px; font-size: 13px; } .mlt td:first-child { min-width: 250px; } .mlt .btn { padding: 6px 10px; font-size: 12px; } .mlt th, .mlt td { padding-left: 9px; padding-right: 9px; } .mlt td.num, .mlt small.mono { white-space: nowrap; }
+@media print { body.printing #nav, body.printing .side, body.printing header { display: none !important; } }
 </style>
 
 <aside class="side" id="side" aria-label="Módulos"></aside>
@@ -1045,7 +1085,7 @@ function seed() {
   seedHistory(st);
   st.companies.A.negOk = true; st.companies.B.negOk = true;
   seedExtra(st);
-  seedCrm(st); seedSuppliers(st); seedBank(st); seedProspects(st); seedPstages(st); seedGoals(st); seedVisits(st); seedPosVenda(st); seedAuto(st);
+  seedCrm(st); seedSuppliers(st); seedBank(st); seedProspects(st); seedPstages(st); seedGoals(st); seedVisits(st); seedPosVenda(st); seedAuto(st); seedFinOps(st);
   for (const co of Object.values(st.companies)) { co.nfIn = []; co.autoStock = false; const prev = st.company; st.company = co.code; co.mails.slice().reverse().forEach((m) => autoPullXml(co, m, true)); st.company = prev; }
   const o1 = createOrder("c1", "Bruno Alves", [["KIT-LED-25", 4, 9.90, 0], ["RES-1K-14W", 200, 0.08, 0]], { freight: 18, inst: 2 }, true);
   submit(o1, true); emitNF(o1, true); advance(o1, "SEPARACAO", true); advance(o1, "CONFERENCIA", true); advance(o1, "PRONTO", true);
@@ -1169,7 +1209,7 @@ function advance(o, to, silent) {
     o.carrier = o.carrier || "Correios SEDEX"; o.tracking = o.tracking || `BR${Math.floor(Math.random() * 1e9)}BR`;
   }
   if (to === "CONFERENCIA") o.pickedBy = role().user;
-  o.status = to;
+  o.status = to; o.stageAt = new Date().toISOString();
   const msg = { SEPARACAO: "Separação iniciada", CONFERENCIA: "Separação concluída", PRONTO: "Conferido e embalado", ENVIADO: `Despachado via ${o.carrier} (rastreio ${o.tracking}); baixa de estoque`, ENTREGUE: "Entrega confirmada" }[to];
   log(o, msg); if (!silent) toast(msg + ".");
 }
@@ -2635,32 +2675,7 @@ function vEstoque() {
     (tab === "saldos" ? vEstoqueSaldos() : vEstoqueMovs());
 }
 
-function vExpedicao() {
-  const cols = [["APROVADO", "Para separar"], ["SEPARACAO", "Em separação"], ["CONFERENCIA", "Em conferência"], ["PRONTO", "Prontos para expedir"], ["ENVIADO", "Aguardando entrega"]];
-  const canMove = ["MEDIATOR", "STOCK"].includes(S.role);
-  return head("Expedição", "Separação, conferência, embalagem e despacho · avance um pedido ou a coluna inteira") +
-    (S.batchErrors && S.view === "expedicao" ? `<div class="alert warn">${icon("alert")}<span>${S.batchErrors.map(esc).join("<br>")}</span></div>` : "") +
-    `<div class="kanban">${cols.map(([s2, l]) => { const os = C().orders.filter((o) => o.status === s2); const nx = NEXT_STEP[s2];
-      return `<div class="lane"><h3><span>${l}</span><span class="pill p-neutral">${os.length}</span></h3>
-      ${canMove && os.length > 1 ? `<button class="btn ghost" data-advall="${s2}">${nx[1]}: todos (${os.length})</button>` : ""}
-      ${os.map((o) => `<div class="ticket"><span class="row" style="justify-content:space-between"><button class="link" data-open="${o.id}">${code(o)}</button><span class="num" style="font-weight:700">${money(o.total)}</span></span><span>${esc(cust(o.customer).name)}</span><small class="note">${o.items.length} item(ns)${s2 === "PRONTO" && !activeDoc(o) ? " · aguardando NF-e" : ""}${o.tracking ? ` · ${esc(o.tracking)}` : ""}</small>
-        ${canMove ? (s2 === "PRONTO" && !activeDoc(o) ? (["MEDIATOR","FISCAL"].includes(S.role) ? `<button class="btn ghost" data-nf="${o.id}">Emitir NF-e</button>` : "") : `<button class="btn" data-adv1="${o.id}">${nx[1]}</button>`) : ""}</div>`).join("") || `<p class="note" style="margin:0">Nenhum pedido.</p>`}</div>`; }).join("")}</div>
-    <div class="alert warn">${icon("alert")}<span>O despacho só é liberado com NF-e autorizada e dá a baixa do estoque reservado uma única vez por item.</span></div>` + vOcorrencias();
-}
 
-function vFiscal() {
-  if (nfDraft) return vNfForm();
-  if (S.danfe) return vDanfe();
-  const pend = C().orders.filter((o) => FLOW.indexOf(o.status) >= 2 && o.status !== "CANCELADO" && !activeDoc(o));
-  const waiting = (C().nfIn || []).filter((x) => !x.status.startsWith("Entrada")).length;
-  const ftabs = `<div class="tabs"><button data-tab="saida" class="${S.tab !== "entrada" ? "on" : ""}">NF-e de saída</button><button data-tab="entrada" class="${S.tab === "entrada" ? "on" : ""}">NF-e de entrada (XML do e-mail) ${waiting ? `<span class="count-in">${waiting}</span>` : ""}</button></div>`;
-  if (S.tab === "entrada") return head("Fiscal", "Notas de fornecedores puxadas da caixa nfe@") + ftabs + vNfEntrada();
-  return head("Fiscal", "Ambiente de homologação · provedor: simulador (sem valor fiscal)") + ftabs +
-    `<div class="alert warn">${icon("alert")}<span>O provedor fiscal real e o certificado digital ainda precisam ser configurados. Até lá, as notas são emitidas só em homologação.</span></div>
-    ${S.batchErrors && S.view === "fiscal" ? `<div class="alert warn">${icon("alert")}<span>Notas que precisam de ajuste antes de emitir:<br>${S.batchErrors.map(esc).join("<br>")}</span></div>` : ""}<div class="card"><h2>Pendentes de emissão · ${pend.length} ${pend.length >= 1 && ["MEDIATOR","FISCAL"].includes(S.role) ? `<button class="btn" data-act="nf-all">${icon("fiscal")}Emitir todas (${pend.length})</button>` : ""}</h2>${pend.length ? `<div class="list">${pend.map((o) => `<div class="row" style="justify-content:space-between"><span><button class="link" data-open="${o.id}">${code(o)}</button> · ${esc(cust(o.customer).name)} · ${money(o.total)}</span>${["MEDIATOR","FISCAL"].includes(S.role) ? `<button class="btn" data-nf="${o.id}">${icon("fiscal")}Preencher e emitir NF-e</button>` : ""}</div>`).join("")}</div>` : `<p class="note">Nenhum pedido aprovado sem nota.</p>`}</div>` +
-    `<p class="note" style="margin:0">Clique no número da nota para ver o DANFE e o XML.</p>` + table([{ t: "NF-e" }, { t: "Pedido" }, { t: "Chave de acesso" }, { t: "Status" }, { t: "Total", r: 1 }, { t: "Autorizada em" }],
-      C().docs.map((d) => { const o = C().orders.find((x) => x.id === d.order); return `<tr><td class="num"><button class="link" data-danfe="${d.id}">NF-e ${d.n}</button></td><td><button class="link" data-open="${o.id}">${code(o)}</button></td><td class="mono">${d.key}</td><td>${pill(["Autorizada", "p-good"])}</td><td class="r num">${money(d.total)}</td><td class="num">${d.when}</td></tr>`; }), "Nenhuma nota emitida.");
-}
 
 // ---------------------------------------------------------------------------
 // NF-e: formulário fiscal antes da emissão + DANFE depois de autorizada.
@@ -2898,42 +2913,8 @@ function finTabs() {
   const t = S.tab || "receber";
   return `<div class="tabs">${[["receber", "Contas a receber"], ["pagar", "Contas a pagar"], ["fluxo", "Fluxo de caixa"], ["aging", "Inadimplência"], ["concil", "Conciliação bancária"], ["dre", "Resultado (DRE)"]].map(([k, l]) => `<button data-tab="${k}" class="${t === k ? "on" : ""}">${l}</button>`).join("")}</div>`;
 }
-function vFinBase() {
-  const tab = S.tab === "pagar" ? "pagar" : "receber";
-  const recv = C().recv; const open = recv.filter((r) => r.paid < r.amount);
-  const sumOpen = open.reduce((s, r) => s + r.amount - r.paid, 0);
-  const sumLate = open.filter((r) => new Date(r.due) < new Date()).reduce((s, r) => s + r.amount - r.paid, 0);
-  const canPay = ["MEDIATOR","FINANCE","MANAGER"].includes(S.role);
-  return head("Financeiro", `Faturamento, contas a receber, liquidação e conciliação · ${esc(C().name)}`) +
-    `<div class="grid g4">${kpi("money", "c2", "A receber", money(sumOpen))}${kpi("alert", "c4", "Vencido", money(sumLate))}${kpi("financeiro", "c1", "A pagar", money(C().pays.reduce((s2, p) => s2 + p.amount - p.paid, 0)))}${kpi("relatorios", "c3", "Inadimplência", (sumOpen ? ((sumLate / sumOpen) * 100).toFixed(1) : "0.0").replace(".", ",") + "%")}</div>
-    ${finTabs()}<div id="err"></div>` +
-    (tab === "receber" ? table([{ t: "Pedido" }, { t: "Cliente" }, { t: "Parcela" }, { t: "Vencimento" }, { t: "Valor", r: 1 }, { t: "Pago", r: 1 }, { t: "Status" }, { t: "Baixa" }],
-      recv.map((r) => { const o = C().orders.find((x) => x.id === r.order); return `<tr><td><button class="link" data-open="${o.id}">${code(o)}</button></td><td>${esc(cust(r.customer).name)}</td><td>${r.inst}</td><td class="num">${fdate(r.due)}</td><td class="r num">${money(r.amount)}</td><td class="r num">${money(r.paid)}</td><td>${pill(recvStatus(r))}</td><td>${canPay && r.paid < r.amount ? `<div class="row"><input aria-label="Valor da baixa" id="pay-${r.id}" type="number" step="0.01" min="0.01" value="${(r.amount - r.paid).toFixed(2)}" style="width:96px"><button class="btn ghost" data-pay="${r.id}">Baixar</button></div>` : ""}</td></tr>`; }), "Títulos aparecem quando uma NF-e é autorizada.")
-    : table([{ t: "Descrição" }, { t: "Categoria" }, { t: "Vencimento" }, { t: "Valor", r: 1 }, { t: "Aprovação" }, { t: "Ação" }],
-      C().pays.map((p) => `<tr><td>${esc(p.desc)}</td><td>${p.cat}</td><td class="num">${fdate(p.due)}</td><td class="r num">${money(p.amount)}</td><td>${p.paid >= p.amount ? pill(["Pago", "p-good"]) : p.approved ? pill(["Aprovada", "p-info"]) : pill(["A aprovar", "p-warn"])}</td>
-        <td>${p.paid >= p.amount ? "" : !p.approved ? (["MEDIATOR","MANAGER"].includes(S.role) ? `<button class="btn ghost" data-papprove="${p.id}">Aprovar</button>` : `<span class="note">aguarda Diretoria</span>`) : canPay ? `<button class="btn ghost" data-ppay="${p.id}">Pagar</button>` : ""}</td></tr>`)));
-}
 
-function vCompras() {
-  if (S.impView === "novo" && impDraft) return vImpForm();
-  if (typeof S.impView === "number") return vImpDetail(S.impView);
-  const ctab = ["rfq", "forn"].includes(S.tab) ? S.tab : "ped";
-  const ctabs = `<div class="tabs">${[["ped", "Pedidos de compra"], ["rfq", "Solicitação e cotação"], ["forn", "Fornecedores"]].map(([k, l]) => `<button data-tab="${k}" class="${ctab === k ? "on" : ""}">${l}</button>`).join("")}</div>`;
-  if (ctab !== "ped") return head("Compras e importação", "Solicitação, cotação, aprovação, recebimento e rateio de custos") + ctabs + (ctab === "rfq" ? vRfq() : vFornecedores());
-  return head("Compras e importação", "Solicitação, cotação, aprovação, recebimento e rateio de custos", `<button class="btn" data-act="imp-new">${icon("plus")}Nova importação (invoice)</button>`) + ctabs +
-    table([{ t: "Nº" }, { t: "Fornecedor" }, { t: "Invoice" }, { t: "Tipo" }, { t: "Status" }, { t: "Total (R$)", r: 1 }],
-      C().purchases.map((p) => `<tr><td class="num">${p.detail ? `<button class="link" data-impopen="${p.n}">${p.n}</button>` : p.n}</td><td>${esc(p.supplier)}</td><td class="mono">${esc(p.invoice || "-")}</td><td>${p.imp ? pill(["Importação", "p-info"]) : "Nacional"}</td><td>${esc(p.status)}</td><td class="r num">${money(p.total)}</td></tr>`)) +
-    `<div class="card"><h2>Como o custo de importação é calculado</h2><p class="note">Itens em moeda estrangeira × câmbio, mais frete, seguro, despesas aduaneiras e tributos rateados por valor, quantidade ou peso (critério validado pela contabilidade). No recebimento, o custo médio do produto é atualizado e as contas a pagar ficam aguardando aprovação da Diretoria.</p></div>`;
-}
 
-function vML() {
-  const c = C();
-  return head("Mercado Livre", c.listings.length ? "Conta conectada · pedidos pagos entram já aprovados, com reserva de estoque" : "Esta empresa não opera no Mercado Livre") +
-    table([{ t: "Anúncio" }, { t: "Título" }, { t: "SKU vinculado" }, { t: "Unid./venda", r: 1 }, { t: "Disponível p/ anúncio", r: 1 }, { t: "Publicado", r: 1 }, { t: "Último sync" }],
-      c.listings.map((l) => `<tr><td class="mono">${l.id}</td><td>${esc(l.title)}</td><td class="mono">${l.sku}</td><td class="r num">${l.units}</td><td class="r num">${nf.format(Math.floor(avail(prod(l.sku)) / l.units))}</td><td class="r num">${nf.format(l.pub)}</td><td>${l.sync}</td></tr>`), "Nenhum anúncio vinculado.") +
-    `<div class="card"><h2>Fila de integração</h2>${c.events.length ? `<div class="list">${c.events.map((e) => `<div class="row" style="justify-content:space-between"><span class="mono">${e.key}</span><span>${esc(e.msg)}</span>${e.status === "ERRO" ? `<span class="row">${pill(["Erro", "p-bad"])}<button class="btn ghost" data-reproc="${e.key}">Reprocessar</button></span>` : pill(["Processado", "p-good"])}</div>`).join("")}</div>` : `<p class="note">Sem eventos.</p>`}
-    <p class="note" style="margin-bottom:0">Notificações repetidas do mesmo pedido não criam um segundo pedido nem reservam duas vezes.</p></div>`;
-}
 
 // ---------------------------------------------------------------------------
 // Clientes: carteira com classificação ABC e ficha completa.
@@ -3756,6 +3737,316 @@ function vConfig() {
 // Eventos
 // ---------------------------------------------------------------------------
 function err(e) { const box = $("err"); if (box) box.innerHTML = `<div class="alert bad" style="margin-top:10px">${esc(e.message)}</div>`; else toast(e.message); }
+// ---------------------------------------------------------------------------
+// Módulos operacionais: cartões que filtram, busca, ações em lote e visuais.
+// ---------------------------------------------------------------------------
+const XP = { q: "", f: "", ch: "", mode: "quadro" };
+const FS = { q: "", f: "", sel: new Set(), lim: 10 };
+const FN = { q: "", f: "", sel: new Set(), pq: "", pf: "", psel: new Set() };
+const CP = { q: "", f: "" };
+const MLF = { q: "", f: "" };
+const OPF = { xp: XP, fs: FS, fn: FN, cp: CP, ml: MLF };
+const OSEL = { fs: FS.sel, fn: FN.sel, fp: FN.psel };
+const OSEARCH = { "xp-q": [XP, "q"], "fs-q": [FS, "q"], "fn-q": [FN, "q"], "fp-q": [FN, "pq"], "cp-q": [CP, "q"], "ml-q": [MLF, "q"] };
+const dayDiff = (iso) => Math.round((new Date(iso).setHours(12, 0, 0, 0) - new Date().setHours(12, 0, 0, 0)) / 864e5);
+const dueTxt = (iso) => { const n = dayDiff(iso); return n === 0 ? "hoje" : n > 0 ? `em ${n} dia${n > 1 ? "s" : ""}` : `há ${-n} dia${n < -1 ? "s" : ""}`; };
+const stageAge = (o) => Math.max(0, Math.round((Date.now() - new Date(o.stageAt || o.date).getTime()) / 36e5));
+const ageTxt = (h) => (h < 24 ? `${h}h` : `${Math.floor(h / 24)}d`);
+const custPhone = (c) => c.phone || `(11) 9${String(7100 + (parseInt(String(c.id).replace(/\D/g, ""), 10) || 1) * 137).slice(0, 4)}-${String(2300 + (parseInt(String(c.id).replace(/\D/g, ""), 10) || 1) * 71).slice(0, 4)}`;
+function sbar(key, field, items) {
+  const st = OPF[key];
+  return `<div class="stkbar ops" style="--n:${items.length}">${items.map(([k, label, val, tone, sub]) => {
+    const inner = `<small>${label}</small><b class="num">${val}</b>${sub ? `<span class="stk-sub">${sub}</span>` : ""}`;
+    return k === null ? `<div class="stk static ${tone || ""}">${inner}</div>` : `<button class="stk ${st[field] === k ? "on" : ""} ${tone || ""}" data-opf="${key}:${field}:${k}">${inner}</button>`;
+  }).join("")}</div>`;
+}
+function hbars(rows, fmt = money, tone = "") {
+  const max = Math.max(1, ...rows.map((r) => r[1]));
+  return rows.length ? `<div class="hbars">${rows.map(([l, v, sub]) => `<div class="hbar ${tone}"><span class="hb-l">${l}${sub ? `<small>${sub}</small>` : ""}</span><span class="track"><i style="width:${Math.max(2, (v / max) * 100)}%"></i></span><b class="num">${fmt(v)}</b></div>`).join("")}</div>` : `<p class="note">Sem dados.</p>`;
+}
+const selBox = (k, id) => `<td data-nopen class="ck"><input type="checkbox" data-osel="${k}:${id}" ${OSEL[k].has(id) ? "checked" : ""} aria-label="Selecionar ${esc(id)}"></td>`;
+const chanTag = (o) => (o.channel === "Mercado Livre" ? `<span class="chan ml">ML</span>` : o.channel === "Portal" ? `<span class="chan pt">Portal</span>` : "");
+
+// --- Expedição -------------------------------------------------------------
+function vExpedicao() {
+  const cols = [["APROVADO", "Para separar"], ["SEPARACAO", "Em separação"], ["CONFERENCIA", "Em conferência"], ["PRONTO", "Prontos para expedir"], ["ENVIADO", "Aguardando entrega"]];
+  const canMove = ["MEDIATOR", "STOCK"].includes(S.role);
+  const act = C().orders.filter((o) => cols.some(([s2]) => s2 === o.status));
+  const late = (o) => o.status !== "ENVIADO" && stageAge(o) > 48;
+  const noNf = (o) => o.status === "PRONTO" && !activeDoc(o);
+  const chans = [...new Set(act.map((o) => o.channel))];
+  const units = (o) => o.items.reduce((s2, i) => s2 + i.qty, 0);
+  const pass = (o) => (!XP.ch || o.channel === XP.ch) && (!XP.q || matchWords(`${code(o)} ${cust(o.customer).name} ${o.tracking || ""} ${o.items.map((i) => i.sku).join(" ")}`, XP.q)) &&
+    (XP.f === "late" ? late(o) : XP.f === "nonf" ? noNf(o) : XP.f === "pick" ? ["APROVADO", "SEPARACAO"].includes(o.status) : XP.f === "ml" ? o.channel === "Mercado Livre" : true);
+  const shown = act.filter(pass);
+  const transit = act.filter((o) => o.status === "ENVIADO");
+  const bar = sbar("xp", "f", [["", "Em andamento", act.length], ["pick", "Para separar", act.filter((o) => ["APROVADO", "SEPARACAO"].includes(o.status)).length], ["late", "Parados há +48h", act.filter(late).length, "bad"], ["nonf", "Prontos sem NF-e", act.filter(noNf).length, "warn"], ["ml", "Mercado Livre", act.filter((o) => o.channel === "Mercado Livre").length], [null, "Em trânsito", money(transit.reduce((s2, o) => s2 + o.total, 0)).replace(",00", ""), "", `${transit.length} pedido(s)`]]);
+  const filters = `<div class="filters"><label class="f grow" for="xp-q">Buscar<input id="xp-q" value="${esc(XP.q)}" placeholder="Pedido, cliente, SKU ou rastreio"></label><label class="f" for="xp-ch">Canal<select id="xp-ch"><option value="">Todos</option>${chans.map((c) => `<option ${XP.ch === c ? "selected" : ""}>${esc(c)}</option>`).join("")}</select></label><div class="f"><span>Visão</span><div class="seg">${[["quadro", "Quadro"], ["onda", "Lista de separação"]].map(([k, l]) => `<button data-xpmode="${k}" class="${XP.mode === k ? "on" : ""}">${l}</button>`).join("")}</div></div></div>`;
+  const ticket = (o, s2) => { const nx = NEXT_STEP[s2]; const h = stageAge(o);
+    return `<div class="ticket ${late(o) ? "late" : ""}"><span class="tk-top"><span class="row" style="gap:6px"><button class="link" data-open="${o.id}">${code(o)}</button>${chanTag(o)}</span><span class="tk-age ${late(o) ? "bad" : ""}" title="Tempo nesta etapa">${icon("clock")}${ageTxt(h)}</span></span>
+      <span class="tk-cli">${esc(cust(o.customer).name)}</span>
+      <span class="tk-skus">${o.items.slice(0, 2).map((i) => `${nf.format(i.qty)}× ${i.sku}`).join(" · ")}${o.items.length > 2 ? ` · +${o.items.length - 2}` : ""}</span>
+      <span class="tk-foot"><small class="note">${o.items.length} it. · ${nf.format(units(o))} un.</small><b class="num">${money(o.total)}</b></span>
+      ${noNf(o) ? `<span class="pill p-warn">Aguardando NF-e</span>` : ""}${o.tracking ? `<small class="note mono">${esc(o.carrier || "")} · ${esc(o.tracking)}</small>` : ""}
+      ${canMove ? (noNf(o) ? (["MEDIATOR", "FISCAL"].includes(S.role) ? `<button class="btn ghost" data-nf="${o.id}">Emitir NF-e</button>` : "") : `<button class="btn" data-adv1="${o.id}">${nx[1]}</button>`) : ""}</div>`; };
+  let body;
+  if (XP.mode === "onda") {
+    const pick = shown.filter((o) => ["APROVADO", "SEPARACAO"].includes(o.status)); const agg = {};
+    pick.forEach((o) => o.items.forEach((i) => explode(i).forEach(([k, n]) => { agg[k] = agg[k] || { q: 0, os: [] }; agg[k].q += n; if (!agg[k].os.includes(code(o))) agg[k].os.push(code(o)); })));
+    const rows = Object.entries(agg).sort((a, b) => prod(a[0]).fam.localeCompare(prod(b[0]).fam) || a[0].localeCompare(b[0]));
+    body = `<div class="card"><div class="bh"><h2>${icon("estoque")}Separação em onda · ${pick.length} pedido(s), ${rows.length} SKU(s)</h2><div class="row">${canMove && pick.some((o) => o.status === "APROVADO") ? `<button class="btn ghost" data-advall="APROVADO">Iniciar separação de todos</button>` : ""}<button class="btn" data-act="xp-print">${icon("receipt")}Imprimir lista</button></div></div>
+      <p class="note">Itens somados de todos os pedidos para o separador passar uma vez em cada prateleira (ordem por família). Kits já aparecem desmontados.</p>` +
+      table([{ t: "✓" }, { t: "Produto" }, { t: "Família" }, { t: "Quantidade", r: 1 }, { t: "Físico", r: 1 }, { t: "Pedidos" }],
+        rows.map(([k, v]) => { const p = prod(k); return `<tr><td><span class="pickbox"></span></td><td><div class="who-cell">${thumb(p, 28)}<span>${esc(p.name)}<small class="mono">${k}</small></span></div></td><td>${p.fam}</td><td class="r num"><b>${nf.format(v.q)}</b></td><td class="r num">${p.phys < v.q ? `<span style="color:var(--bad)">${nf.format(p.phys)}</span>` : nf.format(p.phys)}</td><td class="note">${v.os.join(", ")}</td></tr>`; }), "Nada para separar com estes filtros.") + `</div>`;
+  } else {
+    body = `<div class="kanban xpk">${cols.map(([s2, l]) => { const os = shown.filter((o) => o.status === s2); const nx = NEXT_STEP[s2];
+      return `<div class="lane"><h3><span>${l}</span><span class="pill p-neutral">${os.length}</span></h3>
+      ${canMove && os.length > 1 && !(s2 === "PRONTO" && os.some(noNf)) ? `<button class="btn ghost" data-advall="${s2}">${nx[1]}: todos (${os.length})</button>` : ""}
+      ${os.map((o) => ticket(o, s2)).join("") || `<p class="note lane-empty">${icon("check")}Nada aqui${XP.q || XP.f || XP.ch ? " com estes filtros" : ""}.</p>`}</div>`; }).join("")}</div>`;
+  }
+  const shipped = C().orders.filter((o) => ["ENVIADO", "ENTREGUE"].includes(o.status)); const byCar = {};
+  shipped.forEach((o) => { const k = o.carrier || "Correios SEDEX"; byCar[k] = (byCar[k] || 0) + 1; });
+  const lateList = act.filter(late).sort((a, b) => stageAge(b) - stageAge(a)).slice(0, 5);
+  return head("Expedição", "Separação, conferência, embalagem e despacho · avance um pedido ou a coluna inteira") + bar + filters +
+    (S.batchErrors && S.view === "expedicao" ? `<div class="alert warn">${icon("alert")}<span>${S.batchErrors.map(esc).join("<br>")}</span></div>` : "") + body +
+    `<div class="g2b"><div class="card"><h2>Despachos por transportadora</h2>${hbars(Object.entries(byCar).sort((a, b) => b[1] - a[1]), (v) => `${v} pedido(s)`)}</div>
+    <div class="card"><h2>Mais tempo parado na etapa</h2>${lateList.length ? `<div class="list">${lateList.map((o) => `<div class="row" style="justify-content:space-between"><span><button class="link" data-open="${o.id}">${code(o)}</button> · ${esc(cust(o.customer).name)}</span><span class="row"><span class="note">${STATUS[o.status]?.[0] || o.status}</span><span class="tk-age bad">${ageTxt(stageAge(o))}</span></span></div>`).join("")}</div>` : `<p class="note">Nenhum pedido parado há mais de 48 horas.</p>`}</div></div>
+    <div class="alert warn">${icon("alert")}<span>O despacho só é liberado com NF-e autorizada e dá a baixa do estoque reservado uma única vez por item.</span></div>` + vOcorrencias();
+}
+
+// --- Fiscal (saída) --------------------------------------------------------
+function vFiscal() {
+  if (nfDraft) return vNfForm();
+  if (S.danfe) return vDanfe();
+  const pend = C().orders.filter((o) => FLOW.indexOf(o.status) >= 2 && o.status !== "CANCELADO" && !activeDoc(o));
+  const waiting = (C().nfIn || []).filter((x) => !x.status.startsWith("Entrada")).length;
+  const ftabs = `<div class="tabs"><button data-tab="saida" class="${S.tab !== "entrada" ? "on" : ""}">NF-e de saída</button><button data-tab="entrada" class="${S.tab === "entrada" ? "on" : ""}">NF-e de entrada (XML do e-mail) ${waiting ? `<span class="count-in">${waiting}</span>` : ""}</button></div>`;
+  if (S.tab === "entrada") return head("Fiscal", "Notas de fornecedores puxadas da caixa nfe@") + ftabs + vNfEntrada();
+  const canEmit = ["MEDIATOR", "FISCAL"].includes(S.role);
+  const pre = pend.map((o) => { const d = nfDefaults(o); return { o, d, errs: nfErrors(d) }; });
+  const okN = pre.filter((x) => !x.errs.length).length;
+  const docs = C().docs.filter((d) => d.status !== "Cancelada"); const fat = docs.reduce((s2, d) => s2 + d.total, 0);
+  const q = (o) => !FS.q || matchWords(`${code(o)} ${cust(o.customer).name}`, FS.q);
+  const rows = pre.filter((x) => q(x.o) && (FS.f === "ok" ? !x.errs.length : FS.f === "adj" ? x.errs.length : true));
+  const sel = [...FS.sel].filter((id) => pre.some((x) => x.o.id === id && !x.errs.length));
+  const byUf = {}; docs.forEach((d) => { const o = C().orders.find((x) => x.id === d.order); const uf = ufOf(cust(o.customer)) || "?"; byUf[uf] = (byUf[uf] || 0) + d.total; });
+  const intra = docs.filter((d) => ufOf(cust(C().orders.find((x) => x.id === d.order).customer)) === EMIT_UF).length;
+  const emitted = docs.filter((d) => { const o = C().orders.find((x) => x.id === d.order); return !FS.q || matchWords(`NF ${d.n} ${code(o)} ${cust(o.customer).name} ${d.key.replace(/\s/g, "")}`, FS.q); });
+  return head("Fiscal", "Ambiente de homologação · provedor: simulador (sem valor fiscal)") + ftabs +
+    `<div class="alert warn">${icon("alert")}<span>O provedor fiscal real e o certificado digital ainda precisam ser configurados. Até lá, as notas são emitidas só em homologação.</span></div>` +
+    sbar("fs", "f", [["", "Pendentes de emissão", pend.length], ["ok", "Prontas para emitir", okN, "good"], ["adj", "Precisam de ajuste", pend.length - okN, "warn"], [null, "NF-e autorizadas", docs.length, "", `${intra} em ${EMIT_UF} · ${docs.length - intra} interestadual`], [null, "Valor faturado", money(fat).replace(",00", "")], [null, "Entradas aguardando", waiting, waiting ? "warn" : ""]]) +
+    (S.batchErrors && S.view === "fiscal" ? `<div class="alert warn">${icon("alert")}<span>Notas que precisam de ajuste antes de emitir:<br>${S.batchErrors.map(esc).join("<br>")}</span></div>` : "") +
+    `<div class="filters"><label class="f grow" for="fs-q">Buscar<input id="fs-q" value="${esc(FS.q)}" placeholder="Pedido, cliente, número da nota ou chave"></label></div>` +
+    `<div class="card"><div class="bh"><h2>${icon("fiscal")}Pendentes de emissão · ${rows.length}</h2>${canEmit ? `<div class="row">${sel.length ? `<button class="btn" data-act="fs-emit">Emitir selecionadas (${sel.length})</button>` : ""}${okN ? `<button class="btn ghost" data-act="nf-all">Emitir todas as prontas (${okN})</button>` : ""}</div>` : ""}</div>
+      <p class="note">A pré-validação roda as mesmas regras da emissão (CNPJ, NCM, CFOP por UF, transporte). Notas prontas podem ser emitidas direto daqui; as demais abrem o formulário.</p>` +
+      table([...(canEmit ? [{ t: "" }] : []), { t: "Pedido" }, { t: "Cliente" }, { t: "UF" }, { t: "CFOP" }, { t: "Itens", r: 1 }, { t: "Total", r: 1 }, { t: "Pré-validação" }, { t: "" }],
+        rows.map(({ o, d, errs }) => `<tr>${canEmit ? (errs.length ? `<td class="ck"></td>` : selBox("fs", o.id)) : ""}<td><button class="link" data-open="${o.id}">${code(o)}</button> ${chanTag(o)}</td><td>${esc(cust(o.customer).name)}</td><td>${ufOf(cust(o.customer)) || "-"}</td><td class="mono">${[...new Set(d.items.map((i) => i.cfop))].join(", ")}</td><td class="r num">${o.items.length}</td><td class="r num">${money(o.total)}</td>
+          <td>${errs.length ? `<span class="pill p-warn" title="${esc(errs.join(" · "))}">${esc(errs[0])}${errs.length > 1 ? ` (+${errs.length - 1})` : ""}</span>` : pill(["Pronta", "p-good"])}</td>
+          <td class="r">${canEmit ? `<div class="row" style="justify-content:flex-end;flex-wrap:nowrap">${errs.length ? "" : `<button class="btn" data-fsquick="${o.id}">Emitir</button>`}<button class="btn ghost" data-nf="${o.id}">${errs.length ? "Corrigir e emitir" : "Revisar"}</button></div>` : ""}</td></tr>`), "Nenhum pedido aprovado sem nota.") + `</div>` +
+    `<div class="g2b fs-g"><div class="card"><h2>Notas autorizadas</h2>` + table([{ t: "NF-e" }, { t: "Pedido" }, { t: "Cliente" }, { t: "Chave de acesso" }, { t: "Total", r: 1 }, { t: "Autorizada" }],
+      emitted.slice(0, FS.lim).map((d) => { const o = C().orders.find((x) => x.id === d.order); const k = d.key.replace(/\s/g, ""); return `<tr><td class="num"><button class="link" data-danfe="${d.id}">NF-e ${d.n}</button></td><td><button class="link" data-open="${o.id}">${code(o)}</button></td><td>${esc(cust(o.customer).name)}</td><td class="mono"><span class="keyc" title="${d.key}">${k.slice(0, 6)}…${k.slice(-6)}</span><button class="ib" data-copykey="${k}" title="Copiar chave">⧉</button></td><td class="r num">${money(d.total)}</td><td class="num">${d.when}</td></tr>`; }), "Nenhuma nota emitida.") +
+      `<div class="row" style="justify-content:space-between;margin-top:8px"><p class="note" style="margin:0">Mostrando ${Math.min(FS.lim, emitted.length)} de ${emitted.length} · clique no número para ver o DANFE e baixar o XML.</p>${emitted.length > FS.lim ? `<button class="btn ghost" data-act="fs-more">Mostrar mais 20</button>` : ""}</div></div>
+      <div class="card"><h2>Faturamento por UF de destino</h2>${hbars(Object.entries(byUf).sort((a, b) => b[1] - a[1]).map(([uf, v]) => [uf, v, uf === EMIT_UF ? "CFOP 5xxx" : "CFOP 6xxx · DIFAL se consumidor final"]))}</div></div>`;
+}
+function emitSelected(ids) {
+  if (!["MEDIATOR", "FISCAL"].includes(S.role)) throw new Error("Seu perfil não emite NF-e.");
+  let ok = 0; const fails = [];
+  ids.forEach((id) => { const o = C().orders.find((x) => x.id === id); if (!o || activeDoc(o)) return; const d = nfDefaults(o); const errs = nfErrors(d); if (errs.length) { fails.push(`${code(o)}: ${errs[0]}`); return; } emitNF(o, true); activeDoc(o).fiscal = d; ok++; });
+  ids.forEach((id) => FS.sel.delete(id));
+  S.batchErrors = fails.length ? fails : null;
+  toast(`${ok} NF-e emitida(s)${fails.length ? `; ${fails.length} precisa(m) de ajuste` : ""}.`); render();
+}
+
+// --- Financeiro ------------------------------------------------------------
+function vFinBase() {
+  const tab = S.tab === "pagar" ? "pagar" : "receber";
+  const canPay = ["MEDIATOR", "FINANCE", "MANAGER"].includes(S.role); const canAppr = ["MEDIATOR", "MANAGER"].includes(S.role);
+  const left = (x) => r2(x.amount - x.paid);
+  const recv = C().recv; const open = recv.filter((r) => r.paid < r.amount);
+  const sumOpen = open.reduce((s2, r) => s2 + left(r), 0);
+  const lateR = open.filter((r) => dayDiff(r.due) < 0); const sumLate = lateR.reduce((s2, r) => s2 + left(r), 0);
+  const pays = C().pays; const openP = pays.filter((p) => p.paid < p.amount);
+  if (tab === "receber") {
+    const wk = open.filter((r) => dayDiff(r.due) >= 0 && dayDiff(r.due) <= 7);
+    const paid = recv.filter((r) => r.paid >= r.amount);
+    const pass = (r) => (FN.f === "open" ? r.paid < r.amount : FN.f === "late" ? r.paid < r.amount && dayDiff(r.due) < 0 : FN.f === "week" ? wk.includes(r) : FN.f === "paid" ? r.paid >= r.amount : true) &&
+      (!FN.q || matchWords(`${code(C().orders.find((x) => x.id === r.order))} ${cust(r.customer).name}`, FN.q));
+    const rows = recv.filter(pass).sort((a, b) => (a.paid >= a.amount) - (b.paid >= b.amount) || new Date(a.due) - new Date(b.due));
+    const sel = [...FN.sel].filter((id) => open.some((r) => r.id === id)); const selSum = sel.reduce((s2, id) => s2 + left(recv.find((r) => r.id === id)), 0);
+    const buckets = [["A vencer", (n) => n >= 0], ["1 a 30 dias", (n) => n < 0 && n >= -30], ["31 a 60 dias", (n) => n < -30 && n >= -60], ["61 a 90 dias", (n) => n < -60 && n >= -90], ["Mais de 90 dias", (n) => n < -90]]
+      .map(([l, f]) => [l, open.filter((r) => f(dayDiff(r.due))).reduce((s2, r) => s2 + left(r), 0)]);
+    const byCli = {}; open.forEach((r) => { byCli[r.customer] = (byCli[r.customer] || 0) + left(r); });
+    const top = Object.entries(byCli).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([id, v]) => { const lt = lateR.filter((r) => r.customer === id).reduce((s2, r) => s2 + left(r), 0); return [esc(cust(id).name), v, lt ? `${money(lt)} vencido` : `limite ${money(creditLimit(id)).replace(",00", "")}`]; });
+    return head("Financeiro", `Faturamento, contas a receber, liquidação e conciliação · ${esc(C().name)}`) + finTabs() +
+      sbar("fn", "f", [["", "Todos os títulos", recv.length], ["open", "Em aberto", money(sumOpen).replace(",00", ""), "", `${open.length} título(s)`], ["late", "Vencido", money(sumLate).replace(",00", ""), "bad", `${lateR.length} título(s)`], ["week", "Vence em 7 dias", money(wk.reduce((s2, r) => s2 + left(r), 0)).replace(",00", ""), "warn", `${wk.length} título(s)`], ["paid", "Recebido", money(paid.reduce((s2, r) => s2 + r.amount, 0)).replace(",00", ""), "good"], [null, "Inadimplência", (sumOpen ? ((sumLate / sumOpen) * 100).toFixed(1) : "0.0").replace(".", ",") + "%", sumLate ? "bad" : ""]]) +
+      `<div class="g2b"><div class="card"><h2>Aging dos títulos em aberto</h2>${hbars(buckets, money)}</div><div class="card"><h2>Maiores saldos por cliente</h2>${hbars(top)}</div></div>` +
+      `<div class="filters"><label class="f grow" for="fn-q">Buscar<input id="fn-q" value="${esc(FN.q)}" placeholder="Cliente ou pedido"></label></div><div id="err"></div>` +
+      (sel.length && canPay ? `<div class="bulkbar"><b>${sel.length} título(s) · ${money(selSum)}</b><span class="note">baixa pelo saldo total de cada título</span><button class="btn" data-act="fn-bulkpay">Baixar selecionados</button><button class="btn ghost" data-act="fn-clear">Limpar</button></div>` : "") +
+      table([...(canPay ? [{ t: "" }] : []), { t: "Pedido" }, { t: "Cliente" }, { t: "Parcela" }, { t: "Vencimento" }, { t: "Valor", r: 1 }, { t: "Saldo", r: 1 }, { t: "Status" }, { t: "Ações" }],
+        rows.map((r) => { const o = C().orders.find((x) => x.id === r.order); const c = cust(r.customer); const isOpen = r.paid < r.amount; const isLate = isOpen && dayDiff(r.due) < 0;
+          const msg = `Olá, ${c.name}! Aqui é do financeiro da ${C().name}. Consta em aberto a parcela ${r.inst} do pedido ${code(o)}, no valor de ${money(left(r))}, com vencimento em ${fdate(r.due)}. Posso reenviar o boleto ou a chave Pix?`;
+          return `<tr class="${isLate ? "warnrow" : ""}">${canPay ? (isOpen ? selBox("fn", r.id) : `<td class="ck"></td>`) : ""}<td><button class="link" data-open="${o.id}">${code(o)}</button></td><td>${esc(c.name)}</td><td>${r.inst}</td><td class="num">${fdate(r.due)}${isOpen ? `<small class="note" style="display:block;color:${isLate ? "var(--bad)" : ""}">${dueTxt(r.due)}</small>` : ""}</td><td class="r num">${money(r.amount)}</td><td class="r num">${isOpen ? money(left(r)) : "-"}</td><td>${pill(recvStatus(r))}</td>
+            <td>${isOpen ? `<div class="row" style="flex-wrap:nowrap">${canPay ? `<input aria-label="Valor da baixa" id="pay-${r.id}" type="number" step="0.01" min="0.01" value="${left(r).toFixed(2)}" style="width:96px"><button class="btn ghost" data-pay="${r.id}">Baixar</button>` : ""}${isLate ? `<a class="btn ghost wa" href="${waLink(custPhone(c), msg)}" target="_blank" rel="noopener" title="Cobrar pelo WhatsApp">${icon("emails")}Cobrar</a>` : ""}</div>` : ""}</td></tr>`; }), "Títulos aparecem quando uma NF-e é autorizada.");
+  }
+  // Contas a pagar
+  const wkP = openP.filter((p) => dayDiff(p.due) >= 0 && dayDiff(p.due) <= 7); const lateP = openP.filter((p) => dayDiff(p.due) < 0);
+  const appr = openP.filter((p) => !p.approved);
+  const pass = (p) => (FN.pf === "appr" ? !p.approved && p.paid < p.amount : FN.pf === "week" ? wkP.includes(p) : FN.pf === "late" ? lateP.includes(p) : FN.pf === "paid" ? p.paid >= p.amount : FN.pf === "open" ? p.paid < p.amount : true) &&
+    (!FN.pq || matchWords(`${p.desc} ${p.cat}`, FN.pq));
+  const rows = pays.filter(pass).sort((a, b) => (a.paid >= a.amount) - (b.paid >= b.amount) || new Date(a.due) - new Date(b.due));
+  const sel = [...FN.psel].filter((id) => openP.some((p) => p.id === id)); const selP = sel.map((id) => pays.find((p) => p.id === id));
+  const cal = Array.from({ length: 14 }, (_, i) => { const inn = open.filter((r) => dayDiff(r.due) === i).reduce((s2, r) => s2 + left(r), 0); const out = openP.filter((p) => dayDiff(p.due) === i).reduce((s2, p) => s2 + left(p), 0); const d = new Date(days(i)); return { inn, out, d }; });
+  const cmax = Math.max(1, ...cal.flatMap((x) => [x.inn, x.out]));
+  const byCat = {}; openP.forEach((p) => { byCat[p.cat] = (byCat[p.cat] || 0) + left(p); });
+  return head("Financeiro", `Contas a pagar, aprovação da Diretoria e agenda de pagamentos · ${esc(C().name)}`) + finTabs() +
+    sbar("fn", "pf", [["", "Todas as contas", pays.length], ["open", "A pagar", money(openP.reduce((s2, p) => s2 + left(p), 0)).replace(",00", ""), "", `${openP.length} conta(s)`], ["appr", "Aguardando aprovação", appr.length, appr.length ? "warn" : "", money(appr.reduce((s2, p) => s2 + left(p), 0)).replace(",00", "")], ["week", "Vence em 7 dias", money(wkP.reduce((s2, p) => s2 + left(p), 0)).replace(",00", ""), "", `${wkP.length} conta(s)`], ["late", "Vencidas", lateP.length, lateP.length ? "bad" : "", money(lateP.reduce((s2, p) => s2 + left(p), 0)).replace(",00", "")], ["paid", "Pagas", pays.filter((p) => p.paid >= p.amount).length, "good"]]) +
+    `<div class="g2b fin-g"><div class="card"><div class="bh"><h2>Próximos 14 dias</h2><span class="legend"><span><i class="in"></i>Entradas</span><span><i class="out"></i>Saídas</span></span></div><div class="cal14">${cal.map((x, i) => `<div class="d" title="${fdate(x.d.toISOString())}: entra ${money(x.inn)} · sai ${money(x.out)}"><div class="bars"><i class="in" style="height:${(x.inn / cmax) * 100}%"></i><i class="out" style="height:${(x.out / cmax) * 100}%"></i></div><small class="${[0, 6].includes(x.d.getDay()) ? "we" : ""}">${i === 0 ? "hoje" : x.d.getDate()}</small></div>`).join("")}</div>${lateP.length ? `<p class="note" style="margin:8px 0 0;color:var(--bad)">${lateP.length} conta(s) vencida(s) somando ${money(lateP.reduce((s2, p) => s2 + left(p), 0))} não aparecem no gráfico.</p>` : ""}</div>
+    <div class="card"><h2>Em aberto por categoria</h2>${hbars(Object.entries(byCat).sort((a, b) => b[1] - a[1]))}</div></div>` +
+    `<div class="filters"><label class="f grow" for="fp-q">Buscar<input id="fp-q" value="${esc(FN.pq)}" placeholder="Fornecedor, descrição ou categoria"></label></div><div id="err"></div>` +
+    (sel.length && (canPay || canAppr) ? `<div class="bulkbar"><b>${sel.length} conta(s) · ${money(selP.reduce((s2, p) => s2 + left(p), 0))}</b>${canAppr && selP.some((p) => !p.approved) ? `<button class="btn" data-act="fp-appr">Aprovar (${selP.filter((p) => !p.approved).length})</button>` : ""}${canPay && selP.some((p) => p.approved) ? `<button class="btn" data-act="fp-pay">Pagar aprovadas (${selP.filter((p) => p.approved).length})</button>` : ""}<button class="btn ghost" data-act="fp-clear">Limpar</button></div>` : "") +
+    table([...(canPay || canAppr ? [{ t: "" }] : []), { t: "Descrição" }, { t: "Categoria" }, { t: "Vencimento" }, { t: "Valor", r: 1 }, { t: "Aprovação" }, { t: "Ação" }],
+      rows.map((p) => { const isOpen = p.paid < p.amount; const isLate = isOpen && dayDiff(p.due) < 0;
+        return `<tr class="${isLate ? "warnrow" : ""}">${canPay || canAppr ? (isOpen ? selBox("fp", p.id) : `<td class="ck"></td>`) : ""}<td>${esc(p.desc)}</td><td><span class="cat">${esc(p.cat)}</span></td><td class="num">${fdate(p.due)}${isOpen ? `<small class="note" style="display:block;color:${isLate ? "var(--bad)" : ""}">${dueTxt(p.due)}</small>` : ""}</td><td class="r num">${money(p.amount)}</td><td>${!isOpen ? pill(["Pago", "p-good"]) : p.approved ? pill(["Aprovada", "p-info"]) : pill(["A aprovar", "p-warn"])}</td>
+        <td>${!isOpen ? "" : !p.approved ? (canAppr ? `<button class="btn ghost" data-papprove="${p.id}">Aprovar</button>` : `<span class="note">aguarda Diretoria</span>`) : canPay ? `<button class="btn ghost" data-ppay="${p.id}">Pagar</button>` : ""}</td></tr>`; }), "Nenhuma conta com estes filtros.");
+}
+function finAction(act) {
+  if (act === "fn-clear") { FN.sel.clear(); return render(); }
+  if (act === "fp-clear") { FN.psel.clear(); return render(); }
+  if (act === "fn-bulkpay") {
+    if (!["MEDIATOR", "FINANCE", "MANAGER"].includes(S.role)) throw new Error("Seu perfil não registra baixas.");
+    const rs = [...FN.sel].map((id) => C().recv.find((r) => r.id === id)).filter((r) => r && r.paid < r.amount);
+    const tot = rs.reduce((s2, r) => s2 + r.amount - r.paid, 0); rs.forEach((r) => payRecv(r, r2(r.amount - r.paid), true)); FN.sel.clear();
+    toast(`${rs.length} título(s) baixado(s): ${money(tot)}.`); return render();
+  }
+  if (act === "fp-appr") {
+    if (!["MEDIATOR", "MANAGER"].includes(S.role)) throw new Error("Só a Diretoria aprova pagamentos.");
+    const ps = [...FN.psel].map((id) => C().pays.find((p) => p.id === id)).filter((p) => p && !p.approved && p.paid < p.amount);
+    ps.forEach((p) => { p.approved = true; }); toast(`${ps.length} pagamento(s) aprovado(s) pela Diretoria.`); return render();
+  }
+  if (act === "fp-pay") {
+    if (!["MEDIATOR", "FINANCE", "MANAGER"].includes(S.role)) throw new Error("Seu perfil não registra pagamentos.");
+    const ps = [...FN.psel].map((id) => C().pays.find((p) => p.id === id)).filter((p) => p && p.approved && p.paid < p.amount);
+    const skip = [...FN.psel].length - ps.length; ps.forEach((p) => { p.paid = p.amount; FN.psel.delete(p.id); });
+    toast(`${ps.length} pagamento(s) registrado(s)${skip ? `; ${skip} ainda sem aprovação ficaram selecionados` : ""}.`); return render();
+  }
+}
+function seedFinOps(st) {
+  const A = st.companies.A, B = st.companies.B;
+  A.pays.push(
+    { id: "p3", desc: "Aluguel galpão Vila Leopoldina", cat: "Ocupação", amount: 6800, due: days(5), approved: true, paid: 0 },
+    { id: "p4", desc: "Energia elétrica (Enel)", cat: "Ocupação", amount: 1240.35, due: days(1), approved: true, paid: 0 },
+    { id: "p5", desc: "DAS Simples Nacional · setembro", cat: "Impostos", amount: 4380.12, due: days(8), approved: false, paid: 0 },
+    { id: "p6", desc: "Folha de pagamento · setembro", cat: "Pessoal", amount: 21500, due: days(-6), approved: true, paid: 21500 },
+    { id: "p7", desc: "EletroParts Atacado · NF 8871", cat: "Fornecedores", amount: 3120, due: days(12), approved: false, paid: 0 },
+    { id: "p8", desc: "Escritório de contabilidade", cat: "Serviços", amount: 1150, due: days(-4), approved: true, paid: 0 },
+    { id: "p10", desc: "Internet e telefonia", cat: "Serviços", amount: 289.9, due: days(10), approved: true, paid: 0 },
+    { id: "p11", desc: "Tarifa Mercado Livre · outubro", cat: "Marketplace", amount: 1874.6, due: days(3), approved: true, paid: 0 },
+  );
+  B.pays.push(
+    { id: "p12", desc: "Aluguel armazém Santos", cat: "Ocupação", amount: 9500, due: days(6), approved: true, paid: 0 },
+    { id: "p13", desc: "Despachante aduaneiro · DI 24/1188", cat: "Importação", amount: 2300, due: days(2), approved: true, paid: 0 },
+  );
+  A.purchases.push(
+    { n: 2, supplier: "EletroParts Atacado", status: "Aprovada, aguardando recebimento", total: 3120, imp: false, eta: days(2), items: 4 },
+    { n: 3, supplier: "MakerHub Importadora", status: "Em trânsito", total: 4870, imp: false, eta: days(-1), items: 3 },
+    { n: 4, supplier: "LuzTec Fitas e Drivers", status: "Aguardando aprovação da diretoria", total: 7640, imp: false, eta: days(6), items: 2 },
+  );
+  A.purchases[0].eta = days(-9); A.purchases[0].items = 6;
+  B.purchases[0].eta = days(18); B.purchases[0].items = 2;
+}
+
+// --- Compras ---------------------------------------------------------------
+const CP_STEPS = ["Solicitada", "Aprovada", "Em trânsito", "Recebida"];
+const cpStep = (p) => (p.received || /^Recebida/.test(p.status) ? 3 : /trânsito|embarcad/i.test(p.status) ? 2 : /aguardando recebimento|^Aprovada/i.test(p.status) ? 1 : 0);
+function vCompras() {
+  if (S.impView === "novo" && impDraft) return vImpForm();
+  if (typeof S.impView === "number") return vImpDetail(S.impView);
+  const ctab = ["rfq", "forn"].includes(S.tab) ? S.tab : "ped";
+  const ctabs = `<div class="tabs">${[["ped", "Pedidos de compra"], ["rfq", "Solicitação e cotação"], ["forn", "Fornecedores"]].map(([k, l]) => `<button data-tab="${k}" class="${ctab === k ? "on" : ""}">${l}</button>`).join("")}</div>`;
+  if (ctab !== "ped") return head("Compras e importação", "Solicitação, cotação, aprovação, recebimento e rateio de custos") + ctabs + (ctab === "rfq" ? vRfq() : vFornecedores());
+  const ps = C().purchases; const open = ps.filter((p) => cpStep(p) < 3);
+  const canAppr = ["MEDIATOR", "MANAGER"].includes(S.role);
+  const lateEta = (p) => cpStep(p) < 3 && p.eta && dayDiff(p.eta) < 0;
+  const pass = (p) => (CP.f === "open" ? cpStep(p) < 3 : CP.f === "appr" ? cpStep(p) === 0 : CP.f === "recv" ? [1, 2].includes(cpStep(p)) : CP.f === "late" ? lateEta(p) : CP.f === "imp" ? p.imp : true) &&
+    (!CP.q || matchWords(`${p.n} ${p.supplier} ${p.invoice || ""} ${p.status}`, CP.q));
+  const rows = ps.filter(pass).sort((a, b) => cpStep(a) - cpStep(b) || b.n - a.n);
+  const rep = stockRows().filter((r) => ["neg", "low"].includes(r.sit)).sort((a, b) => a.a - b.a);
+  const sups = (C().suppliers || []).filter((s) => s.buy12).map((s) => [esc(s.name), s.buy12, `${s.lead} dias · ${esc(s.terms)}`]).sort((a, b) => b[1] - a[1]);
+  return head("Compras e importação", "Solicitação, cotação, aprovação, recebimento e rateio de custos", `<button class="btn ghost" data-tab="rfq">${icon("plus")}Nova cotação</button><button class="btn" data-act="imp-new">${icon("plus")}Nova importação (invoice)</button>`) + ctabs +
+    sbar("cp", "f", [["", "Todos os pedidos", ps.length], ["open", "Em aberto", open.length, "", money(open.reduce((s2, p) => s2 + p.total, 0)).replace(",00", "")], ["appr", "Aguardando aprovação", ps.filter((p) => cpStep(p) === 0).length, "warn"], ["recv", "A receber", ps.filter((p) => [1, 2].includes(cpStep(p))).length], ["late", "Entrega atrasada", ps.filter(lateEta).length, "bad"], ["imp", "Importações", ps.filter((p) => p.imp).length]]) +
+    `<div class="filters"><label class="f grow" for="cp-q">Buscar<input id="cp-q" value="${esc(CP.q)}" placeholder="Número, fornecedor ou invoice"></label></div><div id="err"></div>` +
+    table([{ t: "Nº" }, { t: "Fornecedor" }, { t: "Tipo" }, { t: "Andamento" }, { t: "Previsão" }, { t: "Total", r: 1 }, { t: "" }],
+      rows.map((p) => { const st2 = cpStep(p);
+        return `<tr class="${lateEta(p) ? "warnrow" : ""}"><td class="num">${p.detail ? `<button class="link" data-impopen="${p.n}">${p.n}</button>` : p.n}</td><td>${esc(p.supplier)}${p.invoice ? `<small class="mono note" style="display:block">${esc(p.invoice)}</small>` : ""}</td><td>${p.imp ? pill(["Importação", "p-info"]) : "Nacional"}</td>
+          <td><div class="steps" title="${esc(p.status)}">${CP_STEPS.map((_, i) => `<span class="${i <= st2 ? "on" : ""}"></span>`).join("")}</div><small class="note">${esc(st2 === 3 ? "Recebida" : p.status)}</small></td>
+          <td class="num">${p.eta ? `${fdate(p.eta)}${st2 < 3 ? `<small class="note" style="display:block;color:${lateEta(p) ? "var(--bad)" : ""}">${lateEta(p) ? `atrasada ${-dayDiff(p.eta)} dia(s)` : dueTxt(p.eta)}</small>` : ""}` : "-"}</td><td class="r num">${money(p.total)}</td>
+          <td class="r">${st2 === 0 ? (canAppr ? `<button class="btn ghost" data-cpappr="${p.n}">Aprovar</button>` : `<span class="note">aguarda Diretoria</span>`) : st2 < 3 && !p.imp ? `<button class="btn ghost" data-cprecv="${p.n}">Registrar recebimento</button>` : st2 < 3 && p.detail ? `<button class="btn ghost" data-impopen="${p.n}">Abrir</button>` : ""}</td></tr>`; }), "Nenhum pedido de compra com estes filtros.") +
+    `<div class="g2b"><div class="card"><div class="bh"><h2>${icon("alert")}Reposição sugerida</h2>${rep.length && can("compras") ? `<button class="btn" data-act="cp-rfq">Pedir cotação (${rep.length})</button>` : ""}</div>${rep.length ? `<div class="list">${rep.slice(0, 6).map((r) => `<div class="row" style="justify-content:space-between"><span>${esc(r.p.name)} <small class="mono note">${r.p.sku}</small></span><span class="row"><span class="num" style="color:${r.a < 0 ? "var(--bad)" : "var(--warn)"}">${nf.format(r.a)} disp.</span><b class="num">+${nf.format(r.sug || r.p.minStock)}</b></span></div>`).join("")}</div>` : `<p class="note">Nenhum item abaixo do mínimo.</p>`}<p class="note" style="margin:8px 0 0">Quantidade = 1,5 × mínimo + programado em 30 dias − disponível.</p></div>
+    <div class="card"><h2>Compras por fornecedor (12 meses)</h2>${hbars(sups)}</div></div>
+    <div class="card"><h2>Como o custo de importação é calculado</h2><p class="note" style="margin:0">Itens em moeda estrangeira × câmbio, mais frete, seguro, despesas aduaneiras e tributos rateados por valor, quantidade ou peso (critério validado pela contabilidade). No recebimento, o custo médio do produto é atualizado e as contas a pagar ficam aguardando aprovação da Diretoria.</p></div>`;
+}
+function cpAction(ds, act) {
+  if (ds.cpappr) {
+    if (!["MEDIATOR", "MANAGER"].includes(S.role)) throw new Error("Só a Diretoria aprova compras.");
+    const p = C().purchases.find((x) => x.n === +ds.cpappr); p.status = "Aprovada, aguardando recebimento"; toast(`Pedido de compra ${p.n} aprovado e enviado a ${p.supplier}.`); return render();
+  }
+  if (ds.cprecv) {
+    const p = C().purchases.find((x) => x.n === +ds.cprecv); p.status = "Recebida"; p.received = true;
+    toast(`Compra ${p.n} recebida. A entrada no estoque vem do XML da NF-e do fornecedor (aba Fiscal › Entrada).`); return render();
+  }
+  if (act === "cp-rfq") {
+    const items = stockRows().filter((r) => ["neg", "low"].includes(r.sit)).map((r) => [r.p.sku, r.sug || r.p.minStock]);
+    C().rfqs.unshift({ n: C().rfqs.length + 1, items, status: "Em cotação" }); S.tab = "rfq";
+    toast(`Cotação de compra com ${items.length} item(ns) enviada aos fornecedores.`); return render();
+  }
+}
+
+// --- Mercado Livre ---------------------------------------------------------
+function mlRow(l) {
+  const p = prod(l.sku); const disp = Math.max(0, Math.floor(avail(p) / l.units)); const daily = l.sold30 / 30;
+  const cov = daily ? Math.floor(disp / daily) : null;
+  const risk = l.status === "Ativo" && (l.pub > disp || (cov !== null && cov < 7));
+  return { l, p, disp, cov, risk, rev: (l.price || 0) * (l.sold30 || 0) };
+}
+function vML() {
+  const c = C();
+  if (!c.listings.length) return head("Mercado Livre", "Esta empresa não opera no Mercado Livre") + `<div class="card"><p class="note" style="margin:0">Conecte uma conta do Mercado Livre em Configurações para importar anúncios e pedidos desta empresa.</p></div>`;
+  const all = c.listings.map(mlRow); const errs = c.events.filter((e) => e.status === "ERRO");
+  const pass = (r) => (MLF.f === "Ativo" || MLF.f === "Pausado" ? r.l.status === MLF.f : MLF.f === "risk" ? r.risk : true) && (!MLF.q || matchWords(`${r.l.id} ${r.l.title} ${r.l.sku}`, MLF.q));
+  const rows = all.filter(pass).sort((a, b) => b.risk - a.risk || b.rev - a.rev);
+  const off = all.filter((r) => r.l.pub !== r.disp && r.l.status === "Ativo").length;
+  return head("Mercado Livre", "Conta conectada · pedidos pagos entram já aprovados, com reserva de estoque", off ? `<button class="btn" data-act="ml-syncall">${icon("estoque")}Sincronizar estoque (${off})</button>` : "") +
+    sbar("ml", "f", [["", "Anúncios", all.length], ["Ativo", "Ativos", all.filter((r) => r.l.status === "Ativo").length, "good"], ["Pausado", "Pausados", all.filter((r) => r.l.status === "Pausado").length], ["risk", "Risco de ruptura", all.filter((r) => r.risk).length, "bad"], [null, "Vendas 30 dias", `${nf.format(all.reduce((s2, r) => s2 + r.l.sold30, 0))} un.`], [null, "Faturamento 30 dias", money(all.reduce((s2, r) => s2 + r.rev, 0)).replace(",00", "")]]) +
+    `<div class="filters"><label class="f grow" for="ml-q">Buscar<input id="ml-q" value="${esc(MLF.q)}" placeholder="Título, código MLB ou SKU"></label></div>` +
+    `<div class="tbl-wrap mlt"><table><thead><tr><th>Anúncio</th><th class="r">Preço</th><th class="r">Vendas 30d</th><th class="r">Fat. 30d</th><th>Publicado × disponível</th><th class="r">Cobertura</th><th>Status</th><th></th></tr></thead><tbody>${rows.map((r) => { const { l, p, disp, cov } = r; const w = Math.min(100, disp ? (l.pub / disp) * 100 : 100);
+      return `<tr class="${r.risk ? "warnrow" : ""}"><td><div class="who-cell">${thumb(p, 30)}<span>${esc(l.title)}<small class="mono">${l.id} · ${l.sku}${l.units > 1 ? ` · ${l.units} un./venda` : ""}</small></span></div></td><td class="r num">${money(l.price || 0)}</td><td class="r num">${nf.format(l.sold30 || 0)}</td><td class="r num">${money(r.rev).replace(",00", "")}</td>
+        <td><div class="covbar"><span class="row" style="justify-content:space-between"><small class="num">${nf.format(l.pub)} pub.</small><small class="num ${l.pub > disp ? "bad" : ""}">${nf.format(disp)} disp.</small></span><span class="track"><i class="${l.pub > disp ? "bad" : ""}" style="width:${w}%"></i></span></div></td>
+        <td class="r num">${cov === null ? "-" : `<span style="color:${cov < 7 ? "var(--bad)" : cov < 15 ? "var(--warn)" : ""}">${cov} dias</span>`}</td><td>${pill([l.status, l.status === "Ativo" ? "p-good" : "p-neutral"])}<small class="note" style="display:block">${esc(l.sync)}</small></td>
+        <td class="r"><div class="row" style="justify-content:flex-end;flex-wrap:nowrap">${l.pub !== disp ? `<button class="btn ghost" data-mlsync="${l.id}" title="Publicar o disponível real">Sinc.</button>` : ""}<button class="btn ghost" data-mltog="${l.id}">${l.status === "Ativo" ? "Pausar" : "Ativar"}</button></div></td></tr>`; }).join("") || `<tr><td colspan="8" class="note">Nenhum anúncio com estes filtros.</td></tr>`}</tbody></table></div>
+    <p class="note" style="margin:0">Risco de ruptura: anúncio publicado com mais unidades do que o estoque disponível, ou cobertura menor que 7 dias no ritmo de vendas atual.</p>` +
+    `<div class="g2b"><div class="card"><h2>Mais vendidos (faturamento 30 dias)</h2>${hbars(all.slice().sort((a, b) => b.rev - a.rev).slice(0, 6).map((r) => [esc(r.l.title.length > 34 ? r.l.title.slice(0, 33) + "…" : r.l.title), r.rev, `${r.l.sold30} vendas`]))}</div>
+    <div class="card"><div class="bh"><h2>Fila de integração</h2>${errs.length ? pill([`${errs.length} com erro`, "p-bad"]) : pill(["Tudo processado", "p-good"])}</div>${c.events.length ? `<div class="list">${c.events.slice().sort((a, b) => (b.status === "ERRO") - (a.status === "ERRO")).map((e) => `<div class="row" style="justify-content:space-between;gap:10px"><span style="min-width:0"><span class="mono note" style="display:block">${e.key}</span>${esc(e.msg)}</span>${e.status === "ERRO" ? `<span class="row" style="flex-wrap:nowrap">${pill(["Erro", "p-bad"])}<button class="btn ghost" data-reproc="${e.key}">Reprocessar</button></span>` : pill(["Processado", "p-good"])}</div>`).join("")}</div>` : `<p class="note">Sem eventos.</p>`}
+    <p class="note" style="margin:8px 0 0">Notificações repetidas do mesmo pedido não criam um segundo pedido nem reservam duas vezes.</p></div></div>`;
+}
+function mlAction(ds, act) {
+  const c = C();
+  if (ds.mlsync) { const r = mlRow(c.listings.find((x) => x.id === ds.mlsync)); r.l.pub = r.disp; r.l.sync = "agora"; toast(`${r.l.id}: ${nf.format(r.disp)} unidade(s) publicadas.`); return render(); }
+  if (ds.mltog) { const l = c.listings.find((x) => x.id === ds.mltog); l.status = l.status === "Ativo" ? "Pausado" : "Ativo"; l.sync = "agora"; toast(`Anúncio ${l.id} ${l.status === "Ativo" ? "reativado" : "pausado"}.`); return render(); }
+  if (act === "ml-syncall") { let n = 0; c.listings.forEach((l) => { const r = mlRow(l); if (l.status === "Ativo" && l.pub !== r.disp) { l.pub = r.disp; l.sync = "agora"; n++; } }); toast(`${n} anúncio(s) sincronizados com o estoque disponível.`); return render(); }
+}
+
+document.addEventListener("input", (ev) => {
+  const m = OSEARCH[ev.target.id]; if (!m) return;
+  m[0][m[1]] = ev.target.value; const id = ev.target.id;
+  clearTimeout(window.__pfT); window.__pfT = setTimeout(() => { render(); const el = $(id); if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); } }, 250);
+});
+document.addEventListener("change", (ev) => {
+  const el = ev.target; if (!el.isConnected) return;
+  if (el.dataset.osel) { const i = el.dataset.osel.indexOf(":"); const set = OSEL[el.dataset.osel.slice(0, i)]; const id = el.dataset.osel.slice(i + 1); set.has(id) ? set.delete(id) : set.add(id); return render(); }
+  if (el.dataset.oselall) { const k = el.dataset.oselall; const set = OSEL[k]; const ids = [...document.querySelectorAll(`[data-osel^="${k}:"]`)].map((x) => x.dataset.osel.slice(k.length + 1)); const all = ids.length && ids.every((i) => set.has(i)); ids.forEach((i) => (all ? set.delete(i) : set.add(i))); return render(); }
+  if (el.id === "xp-ch") { XP.ch = el.value; return render(); }
+});
+
 function go(view) { ST.inline = null; PF2.edit = null; S.proposal = null; S.dockOpen = null; PX.open = null; NFI.open = null; KF.leadId = null; KF.newLead = false; S.cliTab = null; mailDraft = null; pgDraft = null; cliDraft = null; PT.orderId = null; S.clienteId = null; S.prodSku = null; S.batchErrors = null; S.view = view; S.orderId = null; S.tab = null; S.composing = false; S.danfe = null; S.impView = null; nfDraft = null; impDraft = null; render(); window.scrollTo(0, 0); }
 
 document.addEventListener("click", (ev) => {
@@ -3882,6 +4173,16 @@ document.addEventListener("click", (ev) => {
     if (ds.act === "imp-save") { return saveImp(); }
     if (ds.impopen) { S.impView = +ds.impopen; render(); return window.scrollTo(0, 0); }
     if (ds.imprecv) { return receiveImp(+ds.imprecv); }
+    if (ds.opf !== undefined) { const [k, f, v] = ds.opf.split(":"); OPF[k][f] = v; return render(); }
+    if (ds.xpmode) { XP.mode = ds.xpmode; return render(); }
+    if (ds.act === "xp-print") { return window.print(); }
+    if (ds.act === "fs-more") { FS.lim += 20; return render(); }
+    if (ds.act === "fs-emit") { return emitSelected([...FS.sel]); }
+    if (ds.fsquick) { return emitSelected([ds.fsquick]); }
+    if (ds.copykey) { try { navigator.clipboard.writeText(ds.copykey); } catch (e) { /* sem área de transferência */ } return toast("Chave de acesso copiada."); }
+    if (["fn-clear", "fp-clear", "fn-bulkpay", "fp-appr", "fp-pay"].includes(ds.act)) return finAction(ds.act);
+    if (ds.cpappr || ds.cprecv || ds.act === "cp-rfq") return cpAction(ds, ds.act);
+    if (ds.mlsync || ds.mltog || ds.act === "ml-syncall") return mlAction(ds, ds.act);
     if (ds.pay) { payRecv(C().recv.find((r) => r.id === ds.pay), Number($(`pay-${ds.pay}`).value)); return render(); }
     if (ds.papprove) { C().pays.find((p) => p.id === ds.papprove).approved = true; toast("Pagamento aprovado pela Diretoria."); return render(); }
     if (ds.ppay) { const p = C().pays.find((x) => x.id === ds.ppay); p.paid = p.amount; toast("Pagamento registrado."); return render(); }
