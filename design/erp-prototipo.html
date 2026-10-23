@@ -1060,7 +1060,8 @@ button.ftile { font: inherit; color: var(--text); text-align: left; cursor: poin
    O escuro continua sendo o padrão; html[data-mode="light"] troca os tokens
    e as poucas cores fixas pensadas para fundo escuro. Os cartões de destaque
    preto e dourado continuam escuros nos dois temas. */
-html[data-mode="light"] {
+/* :not(#_) só aumenta a prioridade: vence o bloco do modo escuro do sistema. */
+html[data-mode="light"]:root:not(#_) {
   color-scheme: light; --mutedbar: rgba(60, 45, 20, .3);
   --bg: #f6f3ec; --surface: #ffffff; --surface-2: #faf7f0; --border: #e7dfcf;
   --text: #120e07; --text-2: #383124; --text-3: #5c5343;
