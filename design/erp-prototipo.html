@@ -1063,8 +1063,8 @@ button.ftile { font: inherit; color: var(--text); text-align: left; cursor: poin
 html[data-mode="light"] {
   color-scheme: light; --mutedbar: rgba(60, 45, 20, .3);
   --bg: #f6f3ec; --surface: #ffffff; --surface-2: #faf7f0; --border: #e7dfcf;
-  --text: #1d1810; --text-2: #5e5547; --text-3: #8d8474;
-  --side: #fffdf8; --side-2: #f6f0e3; --side-text: #4a4235;
+  --text: #120e07; --text-2: #383124; --text-3: #5c5343;
+  --side: #fffdf8; --side-2: #f6f0e3; --side-text: #2a241a;
   --brand: #a8761b; --brand-soft: rgba(201, 149, 42, .12);
   --grad-soft: linear-gradient(135deg, rgba(242,204,91,.28), rgba(201,149,42,.14));
   --good: #12844a; --good-soft: #e2f4e9; --info: #2f5fd6; --info-soft: #e8eefd;
@@ -1086,6 +1086,14 @@ html[data-mode="light"] .pf-auto { background: #fffaf0; }
 html[data-mode="light"] .pfa-h h3, html[data-mode="light"] .pfs-q { color: #8a5f0a; }
 html[data-mode="light"] .hbar .track i, html[data-mode="light"] .covbar .track i { background: linear-gradient(90deg, #c9952a, #e0b23c); }
 .themebtn svg.i { width: 18px; height: 18px; }
+html[data-mode="light"] body { color: var(--text); }
+html[data-mode="light"] ::placeholder { color: #7a705e; opacity: 1; }
+html[data-mode="light"] .nav button, html[data-mode="light"] .side-sec, html[data-mode="light"] .dm-h { color: var(--side-text); }
+html[data-mode="light"] .chart text, html[data-mode="light"] .lc .ax { fill: #4f4739; }
+html[data-mode="light"] .chan { background: rgba(230, 180, 0, .22); color: #6e5000; } html[data-mode="light"] .chan.pt { background: rgba(47, 95, 214, .12); color: #2f5fd6; }
+html[data-mode="light"] .tabs button .count-in { background: var(--bad); color: #fff; }
+html[data-mode="light"] body { font-weight: 450; }
+html[data-mode="light"] .head p, html[data-mode="light"] .note { color: var(--text-2); }
 .tbtns { display: flex; gap: 8px; align-items: center; flex: none; }
 html[data-mode="light"] .dock { background: rgba(255, 253, 248, .88); box-shadow: 0 18px 40px rgba(60, 40, 10, .18); }
 html[data-mode="light"] .dock button { background: rgba(60, 45, 20, .05); color: var(--text-2); }
