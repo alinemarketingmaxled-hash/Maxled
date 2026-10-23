@@ -245,7 +245,7 @@ tr.click:hover td { background: var(--surface-2); }
    Visual único e escuro por escolha: fundo grafite com brilhos âmbar e
    roxo, cards de vidro fosco, destaques no degradê dourado→laranja. */
 :root, :root[data-theme="light"], :root[data-theme="dark"] {
-  color-scheme: dark;
+  color-scheme: dark; --mutedbar: rgba(255, 255, 255, .35);
   --bg: #0f0e0c;
   --surface: rgba(255, 255, 255, .055);
   --surface-2: rgba(255, 255, 255, .08);
@@ -1055,6 +1055,138 @@ button.ftile { font: inherit; color: var(--text); text-align: left; cursor: poin
 .pfs-q { font-weight: 800; color: #f2cc5b; font-size: 13px; white-space: nowrap; }
 .pf-pastebtn { font-size: 12px; margin-left: 10px; font-weight: 600; }
 .pf-paste { display: grid; gap: 8px; margin-top: 10px; padding: 12px; border-radius: 12px; background: rgba(255,255,255,.03); border: 1px solid var(--border); }
+
+/* ===== Tema claro (botão no topo) =====
+   O escuro continua sendo o padrão; html[data-mode="light"] troca os tokens
+   e as poucas cores fixas pensadas para fundo escuro. Os cartões de destaque
+   preto e dourado continuam escuros nos dois temas. */
+html[data-mode="light"] {
+  color-scheme: light; --mutedbar: rgba(60, 45, 20, .3);
+  --bg: #f6f3ec; --surface: #ffffff; --surface-2: #faf7f0; --border: #e7dfcf;
+  --text: #1d1810; --text-2: #5e5547; --text-3: #8d8474;
+  --side: #fffdf8; --side-2: #f6f0e3; --side-text: #4a4235;
+  --brand: #a8761b; --brand-soft: rgba(201, 149, 42, .12);
+  --grad-soft: linear-gradient(135deg, rgba(242,204,91,.28), rgba(201,149,42,.14));
+  --good: #12844a; --good-soft: #e2f4e9; --info: #2f5fd6; --info-soft: #e8eefd;
+  --warn: #b36500; --warn-soft: #fcefd9; --bad: #cf3545; --bad-soft: #fde7e9; --neutral-soft: #efe9dc;
+  --shadow: 0 1px 2px rgba(60, 40, 10, .06), 0 8px 24px rgba(60, 40, 10, .07);
+}
+html[data-mode="light"] body { background: radial-gradient(900px 600px at 8% -5%, rgba(242, 204, 91, .28), transparent 60%), radial-gradient(800px 700px at 100% 105%, rgba(201, 149, 42, .16), transparent 60%), #f6f3ec; }
+html[data-mode="light"] body::before { background: #f6f3ec; }
+html[data-mode="light"] .top, html[data-mode="light"] .cbar { background: rgba(255, 253, 248, .75); }
+html[data-mode="light"] .side { background: rgba(255, 253, 248, .85); }
+html[data-mode="light"] .card, html[data-mode="light"] .tbl-wrap, html[data-mode="light"] .lane, html[data-mode="light"] .tabs, html[data-mode="light"] .stk, html[data-mode="light"] .ftile { box-shadow: var(--shadow); }
+html[data-mode="light"] .btn.ghost { background: #fff; color: #8a5f0a; border-color: rgba(168, 118, 27, .5); }
+html[data-mode="light"] .btn.ghost:hover { background: #fdf3dc; }
+html[data-mode="light"] .link, html[data-mode="light"] .pt-more { color: #8a5f0a; }
+html[data-mode="light"] .sh-big, html[data-mode="light"] .pth-big { -webkit-text-fill-color: transparent; }
+html[data-mode="light"] .chart text { fill: var(--text-3); }
+html[data-mode="light"] .lane-empty { border-color: var(--border); }
+html[data-mode="light"] .pf-auto { background: #fffaf0; }
+html[data-mode="light"] .pfa-h h3, html[data-mode="light"] .pfs-q { color: #8a5f0a; }
+html[data-mode="light"] .hbar .track i, html[data-mode="light"] .covbar .track i { background: linear-gradient(90deg, #c9952a, #e0b23c); }
+.themebtn svg.i { width: 18px; height: 18px; }
+.tbtns { display: flex; gap: 8px; align-items: center; flex: none; }
+html[data-mode="light"] .dock { background: rgba(255, 253, 248, .88); box-shadow: 0 18px 40px rgba(60, 40, 10, .18); }
+html[data-mode="light"] .dock button { background: rgba(60, 45, 20, .05); color: var(--text-2); }
+html[data-mode="light"] .dock button.on { background: var(--grad); color: #1b1206; }
+html[data-mode="light"] .dock button:hover { background: rgba(60, 45, 20, .09); }
+html[data-mode="light"] .dock > button.open { background: rgba(201, 149, 42, .16); }
+html[data-mode="light"] .dockmenu { background: rgba(255, 253, 248, .98); box-shadow: 0 24px 60px rgba(60, 40, 10, .22); }
+html[data-mode="light"] .tabs button span:not(.count-in) { background: rgba(60, 45, 20, .1); color: var(--text-2); }
+html[data-mode="light"] .tabs button.on span { background: rgba(0, 0, 0, .12); color: var(--brand-ink); }
+html[data-mode="light"] .brand b { color: var(--text); }
+html[data-mode="light"] .ctx select { color: var(--text); }
+html[data-mode="light"] .nav button:hover { color: var(--text); }
+html[data-mode="light"] .step.done i { color: var(--text); }
+html[data-mode="light"] .brand b { color: var(--text); }
+html[data-mode="light"] .ctx select { background: #ffffff; }
+html[data-mode="light"] .ticket { background: rgba(40, 30, 10, 0.053); }
+html[data-mode="light"] th { background: rgba(40, 30, 10, 0.022); }
+html[data-mode="light"] tr.click:hover td { background: rgba(40, 30, 10, 0.030); }
+html[data-mode="light"] .chip.c1, html[data-mode="light"] .chip.c2, html[data-mode="light"] .chip.c3 { color: #9a6b0c; }
+html[data-mode="light"] .f input, html[data-mode="light"] .f select, html[data-mode="light"] .f textarea, html[data-mode="light"] td input { background: #ffffff; }
+html[data-mode="light"] .step.done i { color: #9a6b0c; }
+html[data-mode="light"] .pend { background: rgba(40, 30, 10, 0.030); }
+html[data-mode="light"] .avatar { box-shadow: 0 0 0 2px rgba(40, 30, 10, 0.090); }
+html[data-mode="light"] td select { background: #ffffff; }
+html[data-mode="light"] .toolbar button { background: rgba(40, 30, 10, 0.038); }
+html[data-mode="light"] .toolbar button svg.i { color: #9a6b0c; }
+html[data-mode="light"] .toolbar button.on { box-shadow: inset 0 1px 0 rgba(40, 30, 10, 0.140); }
+html[data-mode="light"] .fbar b { color: #9a6b0c; }
+html[data-mode="light"] .thumb { background: radial-gradient(circle at 30% 25%, rgba(255,241,184,.16), rgba(40, 30, 10, 0.022)); }
+html[data-mode="light"] .th-sort.on { color: #9a6b0c; }
+html[data-mode="light"] .bellbox button svg.i { color: #9a6b0c; }
+html[data-mode="light"] .abc-B { color: #9a6b0c; }
+html[data-mode="light"] .abc-C { background: rgba(40, 30, 10, 0.060); }
+html[data-mode="light"] .chips button { background: rgba(40, 30, 10, 0.038); }
+html[data-mode="light"] .price { color: #9a6b0c; }
+html[data-mode="light"] .ufb { color: #9a6b0c; }
+html[data-mode="light"] .okdot { color: #9a6b0c; }
+html[data-mode="light"] .click-row:hover .l span { color: #9a6b0c; }
+html[data-mode="light"] .mf span { color: #9a6b0c; }
+html[data-mode="light"] .mbody { background: rgba(40, 30, 10, 0.022); }
+html[data-mode="light"] .att { background: rgba(40, 30, 10, 0.045); }
+html[data-mode="light"] textarea { background: rgba(40, 30, 10, 0.030); }
+html[data-mode="light"] .bub { background: rgba(40, 30, 10, 0.045); }
+html[data-mode="light"] .stars { color: #9a6b0c; }
+html[data-mode="light"] .ig tbody tr:nth-child(even) td { background: rgba(40, 30, 10, 0.013); }
+html[data-mode="light"] .ig-obs { color: #9a6b0c; }
+html[data-mode="light"] .ig-in { background: rgba(40, 30, 10, 0.030); }
+html[data-mode="light"] .ib { background: rgba(40, 30, 10, 0.030); }
+html[data-mode="light"] .ib:hover:not(:disabled) { color: #9a6b0c; }
+html[data-mode="light"] .ig-empty svg { color: #9a6b0c; }
+html[data-mode="light"] .ig-facts span { background: rgba(40, 30, 10, 0.026); }
+html[data-mode="light"] .ig-tot { background: rgba(40, 30, 10, 0.026); }
+html[data-mode="light"] .ig-tot dd.big { color: #9a6b0c; }
+html[data-mode="light"] .tk-ic { color: #9a6b0c; }
+html[data-mode="light"] .cadsteps > div { background: rgba(40, 30, 10, 0.026); }
+html[data-mode="light"] .cd-d { color: #9a6b0c; }
+html[data-mode="light"] .pf-title .mono { color: #9a6b0c; }
+html[data-mode="light"] .seg { background: rgba(40, 30, 10, 0.038); }
+html[data-mode="light"] .pf-cli { background: rgba(40, 30, 10, 0.015); }
+html[data-mode="light"] .chipbtn b { color: #9a6b0c; }
+html[data-mode="light"] .inp-pre { background: rgba(40, 30, 10, 0.030); }
+html[data-mode="light"] .dm-ic { background: rgba(40, 30, 10, 0.045); color: #9a6b0c; }
+html[data-mode="light"] .scb { background: rgba(40, 30, 10, 0.060); }
+html[data-mode="light"] .reqbar i { background: rgba(40, 30, 10, 0.075); }
+html[data-mode="light"] .script h2 svg { color: #9a6b0c; }
+html[data-mode="light"] .map line { stroke: rgba(40, 30, 10, 0.038); }
+html[data-mode="light"] .rmabar i { background: rgba(40, 30, 10, 0.075); }
+html[data-mode="light"] .sw span { background: rgba(40, 30, 10, 0.090); }
+html[data-mode="light"] .gring .bg { stroke: rgba(40, 30, 10, 0.060); }
+html[data-mode="light"] .sugv { background: rgba(40, 30, 10, 0.022); }
+html[data-mode="light"] .side-i:hover { background: rgba(40, 30, 10, 0.045); }
+html[data-mode="light"] .side-i.on { box-shadow: inset 0 1px 0 rgba(40, 30, 10, 0.140), 0 6px 16px rgba(201,149,42,.3); }
+html[data-mode="light"] .side-i.on .count-in { color: #9a6b0c; }
+html[data-mode="light"] .goal-v { color: #9a6b0c; }
+html[data-mode="light"] .goal-bar { background: rgba(40, 30, 10, 0.075); }
+html[data-mode="light"] .qk { background: rgba(40, 30, 10, 0.038); }
+html[data-mode="light"] .qk svg.i { color: #9a6b0c; }
+html[data-mode="light"] .va { background: rgba(40, 30, 10, 0.045); }
+html[data-mode="light"] .va:hover { color: #9a6b0c; }
+html[data-mode="light"] .g-bg { stroke: rgba(40, 30, 10, 0.060); }
+html[data-mode="light"] .g-tick { stroke: rgba(40, 30, 10, 0.135); }
+html[data-mode="light"] .gleg .d2 { background: rgba(40, 30, 10, 0.140); }
+html[data-mode="light"] .agi { background: rgba(40, 30, 10, 0.030); }
+html[data-mode="light"] .heat i { background: rgba(40, 30, 10, 0.038); }
+html[data-mode="light"] .heat i.fut { border: 1px dashed rgba(40, 30, 10, 0.060); }
+html[data-mode="light"] .chb .bar span { background: rgba(40, 30, 10, 0.140); }
+html[data-mode="light"] .pi { background: rgba(40, 30, 10, 0.030); }
+html[data-mode="light"] .pi b { color: #9a6b0c; }
+html[data-mode="light"] .qmove h2 svg.i { color: #9a6b0c; }
+html[data-mode="light"] .qm-chip.undone { background: rgba(40, 30, 10, 0.038); }
+html[data-mode="light"] .hbar .track, html[data-mode="light"] .covbar .track { background: rgba(40, 30, 10, 0.053); }
+html[data-mode="light"] .tk-age { background: rgba(40, 30, 10, 0.053); }
+html[data-mode="light"] .cat { background: rgba(40, 30, 10, 0.053); }
+html[data-mode="light"] .cpsteps span { background: rgba(40, 30, 10, 0.075); }
+html[data-mode="light"] button.pt-item:hover { background: rgba(40, 30, 10, 0.022); }
+html[data-mode="light"] .pt-more { color: #9a6b0c; }
+html[data-mode="light"] .autotag.man { background: rgba(40, 30, 10, 0.060); }
+html[data-mode="light"] .pfa-h h3 { color: #9a6b0c; }
+html[data-mode="light"] .pfs-q { color: #9a6b0c; }
+html[data-mode="light"] .pf-paste { background: rgba(40, 30, 10, 0.022); }
+
 </style>
 
 <aside class="side" id="side" aria-label="Módulos"></aside>
@@ -1071,7 +1203,7 @@ button.ftile { font: inherit; color: var(--text); text-align: left; cursor: poin
       <label for="company">Empresa<select id="company"></select></label>
       <label for="role">Ver como<select id="role"></select></label>
     </div>
-    <div class="bellwrap"><button class="bell" id="bell" aria-label="Notificações"><svg class="i" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="bdg" id="bellc" hidden></span></button><div class="bellbox" id="bellbox" hidden></div></div>
+    <div class="tbtns"><button class="bell themebtn" id="themebtn" aria-label="Alternar tema claro e escuro" title="Tema claro / escuro"></button><div class="bellwrap"><button class="bell" id="bell" aria-label="Notificações"><svg class="i" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="bdg" id="bellc" hidden></span></button><div class="bellbox" id="bellbox" hidden></div></div></div>
     <div class="who" id="who"></div>
   </div>
 </header>
@@ -4202,7 +4334,7 @@ function lineChart(labels, series, opts = {}) {
   series.forEach((s, si) => {
     const pts = s.values.map((v, i) => `${x(i)},${y(v)}`).join(" "); const id = `lc${Math.random().toString(36).slice(2, 7)}`;
     if (s.fill) g += `<defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${s.color}" stop-opacity=".3"/><stop offset="1" stop-color="${s.color}" stop-opacity="0"/></linearGradient></defs><polygon points="${x(0)},${y(Math.max(sc.lo, 0))} ${pts} ${x(s.values.length - 1)},${y(Math.max(sc.lo, 0))}" fill="url(#${id})"/>`;
-    g += `<polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="${s.dash ? 1.6 : 2.5}" ${s.dash ? `stroke-dasharray="5 5"` : ""} stroke-linejoin="round"/>`;
+    g += `<polyline points="${pts}" fill="none" style="stroke:${s.color}" stroke-width="${s.dash ? 1.6 : 2.5}" ${s.dash ? `stroke-dasharray="5 5"` : ""} stroke-linejoin="round"/>`;
     if (!s.dash) { const li = s.values.length - 1; g += `<circle cx="${x(li)}" cy="${y(s.values[li])}" r="4.5" fill="${s.color}" stroke="var(--surface)" stroke-width="2"/>`; }
     (s.marks || []).forEach((i) => { g += `<circle cx="${x(i)}" cy="${y(s.values[i])}" r="4" fill="var(--bad)"/>`; });
   });
@@ -4216,7 +4348,7 @@ function colChart(labels, series, opts = {}) {
   for (let v = sc.lo; v <= sc.hi + 1e-9; v += sc.step) g += `<line class="grid-l" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text class="ax ay" x="${L - 8}" y="${y(v) + 4}">${kfmt(v)}</text>`;
   labels.forEach((l, i) => {
     const x0 = L + i * gw + (gw - bw * series.length) / 2;
-    series.forEach((s, si) => { const v = s.values[i]; const top = y(Math.max(0, v)), bot = y(Math.min(0, v)); g += `<rect x="${x0 + si * bw}" y="${top}" width="${bw - 3}" height="${Math.max(1, bot - top)}" rx="4" fill="${typeof s.color === "function" ? s.color(v) : s.color}"><title>${l}: ${money(v)}</title></rect>`; });
+    series.forEach((s, si) => { const v = s.values[i]; const top = y(Math.max(0, v)), bot = y(Math.min(0, v)); g += `<rect x="${x0 + si * bw}" y="${top}" width="${bw - 3}" height="${Math.max(1, bot - top)}" rx="4" style="fill:${typeof s.color === "function" ? s.color(v) : s.color}"><title>${l}: ${money(v)}</title></rect>`; });
     g += `<text class="ax axm" x="${L + i * gw + gw / 2}" y="${H - 8}">${l}</text>`;
   });
   return `<svg class="chart lc" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(opts.label || "Gráfico")}">${g}</svg>`;
@@ -4274,7 +4406,7 @@ function vFinDash() {
     <div class="card c8"><div class="bh"><h2>Caixa projetado · 90 dias</h2>${lgd([["#f2cc5b", "Saldo"]])}</div>${lineChart(proj.map((x) => x.d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })), [{ values: proj.map((x) => r2(x.bal)), color: "#f2cc5b", fill: true, marks: negIdx.slice(0, 1) }], { ticks: 7, label: "Caixa projetado" })}
       <p class="note" style="margin:6px 0 0">${minP.bal < 0 ? `<b style="color:var(--bad)">Atenção:</b> o saldo fica negativo em ${minP.d.toLocaleDateString("pt-BR")} (${money(minP.bal)}). Antecipe recebíveis ou renegocie pagamentos dessa semana.` : `Menor saldo previsto: ${money(minP.bal)} em ${minP.d.toLocaleDateString("pt-BR")}.`}</p></div>
     <div class="card c4"><h2>Entradas × saídas por semana</h2>${colChart(weeks.map((w, i) => `S${i + 1}`), [{ values: weeks.map((w) => r2(w.reduce((s2, x) => s2 + x.inn, 0))), color: "#7be8b0" }, { values: weeks.map((w) => r2(w.reduce((s2, x) => s2 + x.out, 0))), color: "#f2cc5b" }], { w: 380, h: 300, label: "Entradas e saídas" })}${lgd([["#7be8b0", "Entradas"], ["#f2cc5b", "Saídas"]])}</div>
-    <div class="card c8"><div class="bh"><h2>Receita, despesas e resultado · 6 meses</h2>${lgd([["#f2cc5b", "Receita"], ["rgba(255,255,255,.35)", "Despesas"], ["#7be8b0", "Resultado"]])}</div>${colChart(fs.ms.map(mLabel), [{ values: fs.rev, color: "#f2cc5b" }, { values: fs.exp, color: "rgba(255,255,255,.3)" }, { values: fs.res, color: (v) => (v < 0 ? "#ff9a9a" : "#7be8b0") }], { label: "Resultado mensal" })}
+    <div class="card c8"><div class="bh"><h2>Receita, despesas e resultado · 6 meses</h2>${lgd([["#f2cc5b", "Receita"], ["var(--mutedbar)", "Despesas"], ["#7be8b0", "Resultado"]])}</div>${colChart(fs.ms.map(mLabel), [{ values: fs.rev, color: "#f2cc5b" }, { values: fs.exp, color: "var(--mutedbar)" }, { values: fs.res, color: (v) => (v < 0 ? "#ff9a9a" : "#7be8b0") }], { label: "Resultado mensal" })}
       <p class="note" style="margin:6px 0 0">Despesas = custo das mercadorias vendidas + despesas operacionais. No sistema real vêm do plano de contas.</p></div>
     <div class="card c4"><h2>Contas a pagar por categoria</h2><div class="dnut">${donut(cats.map(([, v], i) => ({ v, color: PAL[i % PAL.length] })))}<div class="dnut-l">${cats.map(([k, v], i) => `<span><i style="background:${PAL[i % PAL.length]}"></i>${esc(k)}<b class="num">${K(v)}</b></span>`).join("")}</div></div></div>
     <div class="card c4"><h2>Aging dos recebíveis</h2>${hbars(buckets)}<p class="note" style="margin:8px 0 0">Total em aberto ${money(sumOpen)}</p></div>
@@ -4321,7 +4453,7 @@ function vPainelVendedor() {
     `<div class="ftiles">${tile("Pedidos no mês", monthO.length, `${lastO.length} no mês passado`)}${tile("Ticket médio", K(ticket), delta(ticket, lastTicket), ticket >= lastTicket ? "good" : "bad")}${tile("Conversão de cotações", `${Math.round(conv * 100)}%`, `${created.filter(billed).length} de ${created.length} viraram pedido`)}${tile("Clientes positivados", `${posit}/${carteira.length}`, `${carteira.length ? Math.round((posit / carteira.length) * 100) : 0}% da carteira comprou no mês`)}${tile("Ligações hoje", `${st.callsToday}/${g.calls}`, `${st.tries} tentativas no mês`)}${tile("Visitas no mês", `${st.visits}/${g.visits}`, `${(c.visits || []).filter((v) => v.seller === me && !v.out).length} agendada(s)`)}</div>
     <div class="card mobile-goals"><h2>Minhas metas</h2><div class="rings">${ring2(st.callsToday, g.calls, `Ligações hoje · ${st.callsToday}/${g.calls}`)}${ring2(st.tries, g.tries, `Tentativas · ${st.tries}/${g.tries}`)}${ring2(st.quali, g.quali, `Qualificadas · ${st.quali}/${g.quali}`)}${ring2(st.visits, g.visits, `Visitas · ${st.visits}/${g.visits}`)}${ring2(st.sales, g.sales, `Vendas · ${K(st.sales)}`)}</div></div>
     <div class="dgrid">
-      <div class="card c8"><div class="bh"><h2>Vendas acumuladas no mês</h2>${lgd([["#f2cc5b", "Este mês"], ["rgba(255,255,255,.45)", "Mês passado", 1], ["#7be8b0", "Ritmo da meta", 1]])}</div>${lineChart(Array.from({ length: dim }, (_, i) => String(i + 1)), [{ values: lastC, color: "rgba(255,255,255,.45)", dash: 1 }, { values: Array.from({ length: dim }, (_, i) => r2((g.sales * (i + 1)) / dim)), color: "#7be8b0", dash: 1 }, { values: curC, color: "#f2cc5b", fill: true }], { ticks: 10, label: "Vendas acumuladas" })}</div>
+      <div class="card c8"><div class="bh"><h2>Vendas acumuladas no mês</h2>${lgd([["#f2cc5b", "Este mês"], ["var(--mutedbar)", "Mês passado", 1], ["#7be8b0", "Ritmo da meta", 1]])}</div>${lineChart(Array.from({ length: dim }, (_, i) => String(i + 1)), [{ values: lastC, color: "var(--mutedbar)", dash: 1 }, { values: Array.from({ length: dim }, (_, i) => r2((g.sales * (i + 1)) / dim)), color: "#7be8b0", dash: 1 }, { values: curC, color: "#f2cc5b", fill: true }], { ticks: 10, label: "Vendas acumuladas" })}</div>
       <div class="card c4"><div class="bh"><h2>Cotações para fechar</h2><button class="pt-more" data-go="pedidos">Todas ›</button></div>${quotes.length ? `<div class="list">${quotes.slice(0, 5).map(({ o, age }) => `<div class="qrow"><span><button class="link" data-open="${o.id}">${code(o)}</button> · ${esc(cust(o.customer).name)}<small class="note" style="display:block;color:${age > 3 ? "var(--warn)" : ""}">${age ? `parada há ${age} dia(s)` : "criada hoje"}</small></span><span class="row" style="flex-wrap:nowrap"><b class="num">${K(o.total)}</b><a class="ib wa" href="${waLink(custPhone(cust(o.customer)), msgQ(o))}" target="_blank" rel="noopener" title="Cobrar retorno pelo WhatsApp">${icon("emails")}</a></span></div>`).join("")}</div>` : `<p class="note">Nenhuma cotação aberta. Que tal ligar para os clientes da lista de recompra?</p>`}</div>
       <div class="card c4"><div class="bh"><h2>Hora de recomprar</h2><button class="pt-more" data-go="posvenda">Pós-venda ›</button></div>${rep.length ? `<div class="list">${rep.map((x) => `<div class="qrow"><span><button class="link plain" data-cli="${x.cu.id}">${esc(x.cu.name)}</button><small class="note" style="display:block">compra a cada ~${x.every} dias · última há ${x.since} dias</small></span><button class="btn ghost sm" data-newfor="${x.cu.id}">Pedido</button></div>`).join("")}</div>` : `<p class="note">Carteira em dia: ninguém passou do ciclo de compra.</p>`}</div>
       <div class="card c4"><h2>Top clientes do mês</h2>${hbars(Object.entries(topCli).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([id, v]) => [esc(cust(id).name), v]))}</div>
@@ -4432,6 +4564,17 @@ function vPainelEstoque() {
     </div>`;
 }
 
+
+// Tema claro/escuro: escolha de cada pessoa, lembrada neste navegador.
+const SUN = `<svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>`;
+const MOON = `<svg class="i" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>`;
+function setMode(m) {
+  document.documentElement.dataset.mode = m;
+  const b = $("themebtn"); if (b) { b.innerHTML = m === "light" ? MOON : SUN; b.title = m === "light" ? "Usar tema escuro" : "Usar tema claro"; }
+  try { localStorage.setItem("maxled-mode", m); } catch (e) { /* armazenamento indisponível */ }
+}
+(() => { let m = "dark"; try { m = localStorage.getItem("maxled-mode") || "dark"; } catch (e) { /* armazenamento indisponível */ } setMode(m); })();
+document.addEventListener("click", (ev) => { if (ev.target.closest("#themebtn")) setMode(document.documentElement.dataset.mode === "light" ? "dark" : "light"); });
 function go(view) { ST.inline = null; PF2.edit = null; S.proposal = null; S.dockOpen = null; PX.open = null; NFI.open = null; KF.leadId = null; KF.newLead = false; S.cliTab = null; mailDraft = null; pgDraft = null; cliDraft = null; PT.orderId = null; S.clienteId = null; S.prodSku = null; S.batchErrors = null; S.view = view; S.orderId = null; S.tab = null; S.composing = false; S.danfe = null; S.impView = null; nfDraft = null; impDraft = null; render(); window.scrollTo(0, 0); }
 
 document.addEventListener("click", (ev) => {
