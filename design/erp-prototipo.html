@@ -914,10 +914,11 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; gap: 8
 .g2b.fs-g { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
 @media (max-width: 1000px) { .g2b, .g2b.fs-g { grid-template-columns: minmax(0, 1fr); } }
 .hbars { display: grid; gap: 10px; }
-.hbar { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 2fr) auto; gap: 12px; align-items: center; font-size: 12.5px; }
-.hbar .hb-l { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .hbar .hb-l small { display: block; color: var(--text-3); font-size: 11px; overflow: hidden; text-overflow: ellipsis; }
-.hbar .track, .covbar .track { display: block; height: 8px; background: rgba(255,255,255,.07); border-radius: 99px; overflow: hidden; }
-.hbar .track i, .covbar .track i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, #c99a2e, #f2cc5b); }
+.hb { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 2fr) auto; gap: 12px; align-items: center; font-size: 12.5px; }
+.hb .hb-l { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .hb .hb-l small { display: block; color: var(--text-3); font-size: 11px; overflow: hidden; text-overflow: ellipsis; }
+.hb .track, .covbar .track { display: block; height: 8px; background: rgba(255,255,255,.07); border-radius: 99px; overflow: hidden; }
+.hb .track i, .covbar .track i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, #c99a2e, #f2cc5b); }
+.hb.bad .track i { background: linear-gradient(90deg, #d9534f, #ff8585); }
 .covbar .track i.bad { background: var(--bad); } .covbar { display: grid; gap: 4px; min-width: 130px; } .covbar small.bad { color: var(--bad); font-weight: 700; } .covbar .track { height: 6px; }
 .ticket.late { border-color: rgba(255,122,122,.5); }
 .tk-top, .tk-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
@@ -1085,7 +1086,7 @@ html[data-mode="light"] .chart text { fill: var(--text-3); }
 html[data-mode="light"] .lane-empty { border-color: var(--border); }
 html[data-mode="light"] .pf-auto { background: #fffaf0; }
 html[data-mode="light"] .pfa-h h3, html[data-mode="light"] .pfs-q { color: #8a5f0a; }
-html[data-mode="light"] .hbar .track i, html[data-mode="light"] .covbar .track i { background: linear-gradient(90deg, #c9952a, #e0b23c); }
+html[data-mode="light"] .hb .track i, html[data-mode="light"] .covbar .track i { background: linear-gradient(90deg, #c9952a, #e0b23c); }
 .themebtn svg.i { width: 18px; height: 18px; }
 html[data-mode="light"] body { color: var(--text); }
 html[data-mode="light"] ::placeholder { color: #7a705e; opacity: 1; }
@@ -1179,13 +1180,18 @@ html[data-mode="light"] .g-tick { stroke: rgba(40, 30, 10, 0.135); }
 html[data-mode="light"] .gleg .d2 { background: rgba(40, 30, 10, 0.140); }
 html[data-mode="light"] .agi { background: rgba(40, 30, 10, 0.030); }
 html[data-mode="light"] .heat i { background: rgba(40, 30, 10, 0.038); }
+html[data-mode="light"] .heat i.l1, html[data-mode="light"] .hleg i.l1 { background: #f5e2a4; }
+html[data-mode="light"] .heat i.l2, html[data-mode="light"] .hleg i.l2 { background: #e9bf55; }
+html[data-mode="light"] .heat i.l3, html[data-mode="light"] .hleg i.l3 { background: #cf961f; }
+html[data-mode="light"] .heat i.l4, html[data-mode="light"] .hleg i.l4 { background: #9a6b0c; box-shadow: none; }
+html[data-mode="light"] .heat i { box-shadow: inset 0 0 0 1px rgba(60, 45, 20, .06); }
 html[data-mode="light"] .heat i.fut { border: 1px dashed rgba(40, 30, 10, 0.060); }
 html[data-mode="light"] .chb .bar span { background: rgba(40, 30, 10, 0.140); }
 html[data-mode="light"] .pi { background: rgba(40, 30, 10, 0.030); }
 html[data-mode="light"] .pi b { color: #9a6b0c; }
 html[data-mode="light"] .qmove h2 svg.i { color: #9a6b0c; }
 html[data-mode="light"] .qm-chip.undone { background: rgba(40, 30, 10, 0.038); }
-html[data-mode="light"] .hbar .track, html[data-mode="light"] .covbar .track { background: rgba(40, 30, 10, 0.053); }
+html[data-mode="light"] .hb .track, html[data-mode="light"] .covbar .track { background: rgba(40, 30, 10, 0.053); }
 html[data-mode="light"] .tk-age { background: rgba(40, 30, 10, 0.053); }
 html[data-mode="light"] .cat { background: rgba(40, 30, 10, 0.053); }
 html[data-mode="light"] .cpsteps span { background: rgba(40, 30, 10, 0.075); }
@@ -4037,7 +4043,7 @@ function sbar(key, field, items) {
 }
 function hbars(rows, fmt = money, tone = "") {
   const max = Math.max(1, ...rows.map((r) => r[1]));
-  return rows.length ? `<div class="hbars">${rows.map(([l, v, sub]) => `<div class="hbar ${tone}"><span class="hb-l">${l}${sub ? `<small>${sub}</small>` : ""}</span><span class="track"><i style="width:${Math.max(2, (v / max) * 100)}%"></i></span><b class="num">${fmt(v)}</b></div>`).join("")}</div>` : `<p class="note">Sem dados.</p>`;
+  return rows.length ? `<div class="hbars">${rows.map(([l, v, sub]) => `<div class="hb ${tone}"><span class="hb-l">${l}${sub ? `<small>${sub}</small>` : ""}</span><span class="track"><i style="width:${Math.max(2, (v / max) * 100)}%"></i></span><b class="num">${fmt(v)}</b></div>`).join("")}</div>` : `<p class="note">Sem dados.</p>`;
 }
 const selBox = (k, id) => `<td data-nopen class="ck"><input type="checkbox" data-osel="${k}:${id}" ${OSEL[k].has(id) ? "checked" : ""} aria-label="Selecionar ${esc(id)}"></td>`;
 const chanTag = (o) => (o.channel === "Mercado Livre" ? `<span class="chan ml">ML</span>` : o.channel === "Portal" ? `<span class="chan pt">Portal</span>` : "");
